@@ -94,7 +94,7 @@ android {
 
 sonar {
     properties {
-        property("sonar.projectKey", "skillswap")
+        property("sonar.projectKey", "SkillSwap-Swent_SkillSwap")
         property("sonar.projectName", "SkillSwap")
         property("sonar.organization", "skillswap")
         property("sonar.host.url", "https://sonarcloud.io")
