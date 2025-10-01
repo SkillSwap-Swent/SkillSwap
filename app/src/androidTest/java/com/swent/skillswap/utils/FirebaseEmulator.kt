@@ -31,9 +31,11 @@ object FirebaseEmulator {
   const val AUTH_PORT = 9099
 
   val projectID by lazy { FirebaseApp.getInstance().options.projectId }
+
   fun startEmulator() {
-      FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
+    FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
   }
+
   private val httpClient = OkHttpClient()
   private val firestoreEndpoint by lazy {
     "http://${HOST}:$FIRESTORE_PORT/emulator/v1/projects/$projectID/databases/(default)/documents"
