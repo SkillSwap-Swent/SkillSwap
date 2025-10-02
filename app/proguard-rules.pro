@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep all model classes used by serialization (e.g., Gson, Moshi)
+-keep class com.swent.skillswap.models.** { *; }
+
+# Keep all annotated classes/methods
+-keepattributes *Annotation*
+
+# Keep Firebase classes (if using Firebase)
+-keep class com.google.firebase.** { *; }

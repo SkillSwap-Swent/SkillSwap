@@ -4,9 +4,8 @@ import android.util.Log
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.FirebaseApp
-import com.google.firebase.ktx.Firebase
-import com.swent.skillswap.screen.MainScreen
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.screen.MainScreen
 import com.swent.skillswap.utils.FirebaseEmulator
 import io.github.kakaocup.compose.node.element.ComposeScreen
 import org.junit.Assert.*
@@ -24,6 +23,7 @@ class MainActivityTest : TestCase() {
 
   @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
   val ctx = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+
   @Test
   fun test() = run {
     step("Start Main Activity") {
