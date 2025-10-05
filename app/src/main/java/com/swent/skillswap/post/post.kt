@@ -1,0 +1,34 @@
+package com.swent.skillswap.post
+
+import com.google.firebase.Timestamp
+
+interface Post {
+    val uid: String
+    val title: String
+    val description: String
+    val ownerId: String
+    val tags: List<Tags>
+    val paymentMethods: List<PaymentMethod>
+    val expiry: Timestamp
+    val creation: Timestamp
+    val status: PostStatus
+    val media: List<String>
+    val type: PostType
+}
+
+enum class PostType {
+    REQUEST,
+    OFFER
+}
+
+enum class PaymentMethod {
+    MYSKILLS,
+    CASH
+}
+
+enum class PostStatus {
+    DRAFT,
+    POSTED,
+    COMPLETED,
+    EXPIRED
+}

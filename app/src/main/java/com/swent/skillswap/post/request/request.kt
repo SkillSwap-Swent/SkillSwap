@@ -1,0 +1,31 @@
+package com.swent.skillswap.post.request
+
+import com.google.firebase.Timestamp
+import com.swent.skillswap.post.PaymentMethod
+import com.swent.skillswap.post.Post
+import com.swent.skillswap.post.PostStatus
+import com.swent.skillswap.post.PostType
+import com.swent.skillswap.post.Tags
+
+
+data class Request(
+    override val uid: String,
+    override val title: String,
+    override val description: String,
+    override val ownerId: String,
+    override val tags: List<Tags>,
+    override val expiry: Timestamp,
+    override val creation: Timestamp,
+    override val status: PostStatus,
+    override val media: List<String>,
+    override val paymentMethods: List<PaymentMethod>,
+) : Post {
+    override val type: PostType
+        get() = PostType.REQUEST
+
+    fun validate(): Boolean {
+        // TODO: implement proper validation logic
+        return uid.isNotBlank() && title.isNotBlank() && description.isNotBlank() && tags.isNotEmpty()
+    }
+}
+
