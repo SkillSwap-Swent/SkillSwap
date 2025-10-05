@@ -7,7 +7,7 @@ interface Post {
     val title: String
     val description: String
     val ownerId: String
-    val tags: List<Tags>
+    val tags: List<PostTags>
     val paymentMethods: List<PaymentMethod>
     val expiry: Timestamp
     val creation: Timestamp

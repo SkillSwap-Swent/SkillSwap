@@ -1,6 +1,6 @@
 package com.swent.skillswap.post
 
-enum class Tags {
+enum class PostTags {
     ARCHITECTURE,
     CHEMISTRY,
     CIVIL_ENGINEERING,
