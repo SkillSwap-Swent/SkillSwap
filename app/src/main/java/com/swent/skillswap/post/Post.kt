@@ -30,5 +30,5 @@ enum class PostStatus {
     DRAFT,
     POSTED,
     COMPLETED,
-    EXPIRED
+    ARCHIVED
 }
