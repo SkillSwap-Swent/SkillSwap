@@ -95,6 +95,10 @@ android {
     }
 }
 
+ktfmt {
+    kotlinLangStyle()
+}
+
 sonar {
     properties {
         property("sonar.projectKey", "SkillSwap-Swent_SkillSwap")
