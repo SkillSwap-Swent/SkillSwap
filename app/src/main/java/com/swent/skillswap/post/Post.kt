@@ -22,7 +22,7 @@ enum class PostType {
 }
 
 enum class PaymentMethod {
-    MYSKILLS,
+    SKILLS,
     CASH
 }
 
