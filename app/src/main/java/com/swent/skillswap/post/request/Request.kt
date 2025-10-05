@@ -4,9 +4,8 @@ import com.google.firebase.Timestamp
 import com.swent.skillswap.post.PaymentMethod
 import com.swent.skillswap.post.Post
 import com.swent.skillswap.post.PostStatus
-import com.swent.skillswap.post.PostType
 import com.swent.skillswap.post.PostTags
-
+import com.swent.skillswap.post.PostType
 
 data class Request(
     override val uid: String,
@@ -20,12 +19,11 @@ data class Request(
     override val media: List<String>,
     override val paymentMethods: List<PaymentMethod>,
 ) : Post {
-    override val type: PostType
-        get() = PostType.REQUEST
+  override val type: PostType
+    get() = PostType.REQUEST
 
-    fun validate(): Boolean {
-        // TODO: implement proper validation logic
-        return uid.isNotBlank() && title.isNotBlank() && description.isNotBlank() && tags.isNotEmpty()
-    }
+  fun validate(): Boolean {
+    // TODO: implement proper validation logic
+    return uid.isNotBlank() && title.isNotBlank() && description.isNotBlank() && tags.isNotEmpty()
+  }
 }
-
