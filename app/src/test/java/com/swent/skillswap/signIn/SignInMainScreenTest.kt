@@ -1,7 +1,5 @@
 package com.swent.skillswap.signIn
-/**
- * @author Topaze17(Eliott)
- */
+/** @author Topaze17(Eliott) */
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule

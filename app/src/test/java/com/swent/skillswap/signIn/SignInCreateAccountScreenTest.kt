@@ -1,6 +1,4 @@
-/**
- * @author Topaze17(Eliott)
- */
+/** @author Topaze17(Eliott) */
 package com.swent.skillswap.signIn
 
 import androidx.activity.ComponentActivity

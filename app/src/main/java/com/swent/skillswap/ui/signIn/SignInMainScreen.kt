@@ -1,7 +1,4 @@
-/**
- * @author Topaze17(Eliott) used chatGPT for tagging the composable but they were
- *   checked
- */
+/** @author Topaze17(Eliott) used chatGPT for tagging the composable but they were checked */
 package com.swent.skillswap.ui.signIn
 
 import androidx.compose.foundation.Image
