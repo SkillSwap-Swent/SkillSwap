@@ -1,18 +1,14 @@
-package com.swent.skillswap.post.request
+package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
-import com.swent.skillswap.post.PaymentMethod
-import com.swent.skillswap.post.Post
-import com.swent.skillswap.post.PostStatus
-import com.swent.skillswap.post.PostTags
-import com.swent.skillswap.post.PostType
+import com.swent.skillswap.model.tags.EveryTag
 
 data class Request(
     override val uid: String,
     override val title: String,
     override val description: String,
     override val ownerId: String,
-    override val tags: List<PostTags>,
+    override val tags: List<EveryTag>,
     override val expiry: Timestamp,
     override val creation: Timestamp,
     override val status: PostStatus,

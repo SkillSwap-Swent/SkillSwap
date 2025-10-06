@@ -1,7 +1,11 @@
 package com.swent.skillswap.post
 
 import com.google.firebase.Timestamp
-import com.swent.skillswap.post.request.Request
+import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.post.PostStatus
+import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.tags.PostTag
 import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -21,7 +25,7 @@ class PostDataClassTest {
                 title = "Need help with Kotlin",
                 description = "Looking for an expert to teach me Kotlin.",
                 ownerId = "user456",
-                tags = listOf(PostTags.COMPUTER_SCIENCE, PostTags.DATA_SCIENCE),
+                tags = listOf(PostTag.REOCCURRING),
                 expiry = expiryDate,
                 creation = creationDate,
                 status = PostStatus.POSTED,
@@ -33,7 +37,7 @@ class PostDataClassTest {
         assertEquals("Need help with Kotlin", request.title)
         assertEquals("Looking for an expert to teach me Kotlin.", request.description)
         assertEquals("user456", request.ownerId)
-        assertEquals(listOf(PostTags.COMPUTER_SCIENCE, PostTags.DATA_SCIENCE), request.tags)
+        assertEquals(listOf(PostTag.REOCCURRING), request.tags)
         assertEquals(expiryDate, request.expiry)
         assertEquals(creationDate, request.creation)
         assertEquals(PostStatus.POSTED, request.status)
@@ -50,7 +54,7 @@ class PostDataClassTest {
                 title = "Valid Title",
                 description = "Valid Description",
                 ownerId = "owner1",
-                tags = listOf(PostTags.PHYSICS),
+                tags = listOf(PostTag.REOCCURRING),
                 expiry = Timestamp.now(),
                 creation = Timestamp.now(),
                 status = PostStatus.DRAFT,
@@ -68,7 +72,7 @@ class PostDataClassTest {
                 title = "Valid Title",
                 description = "Valid Description",
                 ownerId = "owner1",
-                tags = listOf(PostTags.PHYSICS),
+                tags = listOf(PostTag.REOCCURRING),
                 expiry = Timestamp.now(),
                 creation = Timestamp.now(),
                 status = PostStatus.DRAFT,
@@ -92,17 +96,17 @@ class PostDataClassTest {
     @Test
     fun testPostEnums() {
         // Test PostType enum
-        PostType.values().forEach { assertEquals(it, PostType.valueOf(it.name)) }
+        PostType.entries.forEach { assertEquals(it, PostType.valueOf(it.name)) }
 
         // Test PaymentMethod enum
-        PaymentMethod.values().forEach { assertEquals(it, PaymentMethod.valueOf(it.name)) }
+        PaymentMethod.entries.forEach { assertEquals(it, PaymentMethod.valueOf(it.name)) }
 
         // Test PostStatus enum
-        PostStatus.values().forEach { assertEquals(it, PostStatus.valueOf(it.name)) }
+        PostStatus.entries.forEach { assertEquals(it, PostStatus.valueOf(it.name)) }
     }
 
     @Test
     fun testPostTagsEnum() {
-        PostTags.values().forEach { assertEquals(it, PostTags.valueOf(it.name)) }
+        PostTag.entries.forEach { assertEquals(it, PostTag.valueOf(it.name)) }
     }
 }
