@@ -1,3 +1,7 @@
+/**
+ * @author Topaze17(Eliott) used chatGPT for tagging the composable but they were
+ *   checked
+ */
 package com.swent.skillswap.ui.signIn
 
 import androidx.compose.foundation.background
@@ -56,7 +60,8 @@ fun SignInCreateAccountScreen(
             Spacer(modifier = Modifier.height(100.dp))
             Text(
                 text = "Create an account",
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE),
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 24.sp
             )

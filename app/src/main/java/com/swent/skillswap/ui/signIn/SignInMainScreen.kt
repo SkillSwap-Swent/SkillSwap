@@ -1,9 +1,9 @@
-package com.swent.skillswap.ui.signIn
-
 /**
- * @author Topaze17(Eliott) used chatGPT for comment and tagging the composable but they were
+ * @author Topaze17(Eliott) used chatGPT for tagging the composable but they were
  *   checked
  */
+package com.swent.skillswap.ui.signIn
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,8 +33,6 @@ import com.swent.skillswap.R
 object SignInTags {
     const val LOGO = "SIGN_IN_LOGO"
     const val GOOGLE_BUTTON = "SIGN_IN_GOOGLE_BUTTON"
-    const val GOOGLE_LOGO = "SIGN_IN_GOOGLE_LOGO"
-    const val GOOGLE_TEXT = "SIGN_IN_GOOGLE_TEXT"
     const val SIGN_IN_BUTTON = "SIGN_IN_BUTTON"
     const val OR_TEXT = "SIGN_IN_OR_TEXT"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
@@ -72,12 +70,11 @@ fun SignInMainScreen(
                     Image(
                         painter = painterResource(R.drawable.google_logo),
                         contentDescription = "Google logo",
-                        modifier = Modifier.size(20.dp).testTag(SignInTags.GOOGLE_LOGO)
+                        modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Sign in with Google",
-                        modifier = Modifier.testTag(SignInTags.GOOGLE_TEXT)
                     )
                 }
             }

@@ -1,0 +1,36 @@
+package com.swent.skillswap.signIn
+/**
+ * @author Topaze17(Eliott)
+ */
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.ui.signIn.SignInMainScreen
+import com.swent.skillswap.ui.signIn.SignInTags
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class SignInMainScreenTest : TestCase() {
+
+    @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Before
+    fun setUp() {
+        composeTestRule.setContent { SignInMainScreen() }
+    }
+
+    @Test
+    fun testEverythingIsDisplay() {
+        composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.OR_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
+    }
+}
