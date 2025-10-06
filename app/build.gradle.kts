@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.sonar)
     alias(libs.plugins.gms)
     id("jacoco")
+    kotlin("plugin.serialization") version "1.9.24"
 }
 
 android {
@@ -176,6 +177,9 @@ dependencies {
 
     // Networking with OkHttp
     implementation(libs.okhttp)
+
+    //Serialization
+    implementation(libs.kotlinx.serialization.json.v163)
 }
 
 tasks.withType<Test> {
