@@ -1,6 +1,5 @@
 package com.swent.skillswap.ui.signIn
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,7 +38,7 @@ object CreateAccountTags {
     const val PASSWORD_FIELD = "CREATE_PASSWORD_FIELD"
     const val CONFIRM_PASSWORD_FIELD = "CREATE_CONFIRM_PASSWORD_FIELD"
     const val SKILLS_FLOW = "CREATE_SKILLS_FLOW"
-    const val SKILL_CHIP_PREFIX = "CREATE_SKILL_"   // final tag = SKILL_CHIP_PREFIX + skill.name
+    const val SKILL_CHIP_PREFIX = "CREATE_SKILL_" // final tag = SKILL_CHIP_PREFIX + skill.name
 
     const val DONE_BUTTON = "CREATE_DONE_BUTTON"
 }
@@ -48,112 +47,145 @@ object CreateAccountTags {
 @Preview(showBackground = true)
 @Composable
 fun SignInCreateAccountScreen(
-    /*TODO remove comment once viewModel made ->*/ /*viewModel: CreateAccountViewModel = viewModel()*/
-    goToMainScreen : () -> Unit = {}
+    /*TODO remove comment once viewModel made ->*/
+    /*viewModel: CreateAccountViewModel = viewModel()*/
+    goToMainScreen: () -> Unit = {}
 ) {
     Scaffold { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)
-            .fillMaxSize(1f))
-        {
+        Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f)) {
             Spacer(modifier = Modifier.height(100.dp))
-            Text(text = "Create an account",
+            Text(
+                text = "Create an account",
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 color = MaterialTheme.colorScheme.primary,
-                fontSize = 24.sp)
+                fontSize = 24.sp
+            )
             Spacer(modifier = Modifier.height(100.dp))
             TextField(
-                value = ""/*TODO value from viewModel to add*/,
-                label = {Text(text = "Username", color = Color(0x5F000000))},
+                value = "" /*TODO value from viewModel to add*/,
+                label = { Text(text = "Username", color = Color(0x5F000000)) },
                 singleLine = true,
-                placeholder = {Text(text = "username")},
-                supportingText = {Text(text = ""/*TODO error message*/)},
-                onValueChange = {/*TODO on value change logic with view event*/},
+                placeholder = { Text(text = "username") },
+                supportingText = { Text(text = "" /*TODO error message*/) },
+                onValueChange = { /*TODO on value change logic with view event*/},
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f).height(26.dp)
-                    .testTag(CreateAccountTags.USERNAME_FIELD)
+                colors =
+                    TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .height(26.dp)
+                        .testTag(CreateAccountTags.USERNAME_FIELD)
             )
             Spacer(modifier = Modifier.height(20.dp))
-            Box(modifier = Modifier.height(210.dp).width(300.dp)
-                .align(Alignment.CenterHorizontally)) {
-                FlowRow( horizontalArrangement = Arrangement.spacedBy(4.dp),
+            Box(
+                modifier = Modifier.height(210.dp).width(300.dp).align(Alignment.CenterHorizontally)
+            ) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.testTag(CreateAccountTags.SKILLS_FLOW)) {
-                    for(skill in SkillName.entries) {
-                        Text(text = skill.name, fontSize = 11.sp,
-                            /*TODO remove when true theme are there color = MaterialTheme.colorScheme.secondary,*/ modifier = Modifier
-                            .background(color = MaterialTheme.colorScheme.tertiary,
-                                shape = RoundedCornerShape(percent = 50)).padding(5.dp,0.dp)
-                            .clickable(enabled = true, onClick = {/*TODO Click logic on skill*/})
-                            .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name))
+                    modifier = Modifier.testTag(CreateAccountTags.SKILLS_FLOW)
+                ) {
+                    for (skill in SkillName.entries) {
+                        Text(
+                            text = skill.name,
+                            fontSize = 11.sp,
+                            /*TODO remove when true theme are there color = MaterialTheme.colorScheme.secondary,*/ modifier =
+                                Modifier.background(
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        shape = RoundedCornerShape(percent = 50)
+                                    )
+                                    .padding(5.dp, 0.dp)
+                                    .clickable(
+                                        enabled = true,
+                                        onClick = { /*TODO Click logic on skill*/}
+                                    )
+                                    .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
+                        )
                     }
                 }
-
             }
             Spacer(modifier = Modifier.height(20.dp))
             TextField(
-                value = ""/*TODO value from viewModel to add*/,
-                label = {Text(text = "Email", color = Color(0x5F000000))},
+                value = "" /*TODO value from viewModel to add*/,
+                label = { Text(text = "Email", color = Color(0x5F000000)) },
                 singleLine = true,
-                placeholder = {Text(text = "your.email@gmail.com")},
-                supportingText = {Text(text = ""/*TODO error message*/)},
-                onValueChange = {/*TODO on value change logic with view event*/},
+                placeholder = { Text(text = "your.email@gmail.com") },
+                supportingText = { Text(text = "" /*TODO error message*/) },
+                onValueChange = { /*TODO on value change logic with view event*/},
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f).height(26.dp)
-                    .testTag(CreateAccountTags.EMAIL_FIELD)
+                colors =
+                    TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .height(26.dp)
+                        .testTag(CreateAccountTags.EMAIL_FIELD)
             )
             Spacer(modifier = Modifier.height(30.dp))
             TextField(
-                value = ""/*TODO value from viewModel to add*/,
-                label = {Text(text = "Password", color = Color(0x5F000000))},
+                value = "" /*TODO value from viewModel to add*/,
+                label = { Text(text = "Password", color = Color(0x5F000000)) },
                 singleLine = true,
-                placeholder = {Text(text = "password")},
-                supportingText = {Text(text = ""/*TODO error message*/)},
-                onValueChange = {/*TODO on value change logic with view event*/},
+                placeholder = { Text(text = "password") },
+                supportingText = { Text(text = "" /*TODO error message*/) },
+                onValueChange = { /*TODO on value change logic with view event*/},
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f).height(26.dp)
-                    .testTag(CreateAccountTags.PASSWORD_FIELD)
+                colors =
+                    TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .height(26.dp)
+                        .testTag(CreateAccountTags.PASSWORD_FIELD)
             )
             Spacer(modifier = Modifier.height(30.dp))
             TextField(
-                value = ""/*TODO value from viewModel to add*/,
-                label = {Text(text = "Confirm Password", color = Color(0x5F000000))},
+                value = "" /*TODO value from viewModel to add*/,
+                label = { Text(text = "Confirm Password", color = Color(0x5F000000)) },
                 singleLine = true,
-                placeholder = {Text(text = "confirm password")},
-                supportingText = {Text(text = ""/*TODO error message*/)},
-                onValueChange = {/*TODO on value change logic with view event*/},
+                placeholder = { Text(text = "confirm password") },
+                supportingText = { Text(text = "" /*TODO error message*/) },
+                onValueChange = { /*TODO on value change logic with view event*/},
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f).height(26.dp)
-                    .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+                colors =
+                    TextFieldDefaults.colors(
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    ),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .height(26.dp)
+                        .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
             )
             Spacer(modifier = Modifier.height(80.dp))
-            OutlinedButton(onClick = {/*TODO CLICK LOGIC DONE*/},
-                colors = ButtonColors(MaterialTheme.colorScheme.primary, Color.White,
-                    MaterialTheme.colorScheme.primary, Color.White)
-                , modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.33f)
-                    .testTag(CreateAccountTags.DONE_BUTTON).testTag(CreateAccountTags.DONE_BUTTON)
+            OutlinedButton(
+                onClick = { /*TODO CLICK LOGIC DONE*/},
+                colors =
+                    ButtonColors(
+                        MaterialTheme.colorScheme.primary,
+                        Color.White,
+                        MaterialTheme.colorScheme.primary,
+                        Color.White
+                    ),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.33f)
+                        .testTag(CreateAccountTags.DONE_BUTTON)
+                        .testTag(CreateAccountTags.DONE_BUTTON)
             ) {
                 Text(text = "Done")
             }
         }
-
     }
 }
-
