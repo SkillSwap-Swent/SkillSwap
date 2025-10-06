@@ -16,9 +16,11 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme =
-    darkColorScheme(primary = SkillSwapDarkThemePrimary,
+    darkColorScheme(
+        primary = SkillSwapDarkThemePrimary,
         secondary = SkillSwapDarkThemeSecondary,
-        tertiary = SkillSwapDarkThemeTertiary)
+        tertiary = SkillSwapDarkThemeTertiary
+    )
 
 private val LightColorScheme =
     lightColorScheme(
