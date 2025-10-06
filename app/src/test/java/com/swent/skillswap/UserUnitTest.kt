@@ -1,8 +1,8 @@
 package com.swent.skillswap
 
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Availability
 import com.swent.skillswap.model.user.Skill
-import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
 import java.time.DayOfWeek
 import java.time.LocalTime
