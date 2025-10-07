@@ -56,7 +56,7 @@ fun SignInCreateAccountScreen(
 ) {
     Scaffold { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f)) {
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(60.dp))
             Text(
                 text = "Create an account",
                 modifier =
@@ -132,7 +132,7 @@ fun SignInCreateAccountScreen(
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
             )
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             OutlinedButton(
                 onClick = { /*TODO CLICK LOGIC DONE*/},
                 colors =
@@ -149,6 +149,7 @@ fun SignInCreateAccountScreen(
             ) {
                 Text(text = "Done")
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
