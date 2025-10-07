@@ -13,13 +13,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import com.swent.skillswap.resources.C
-import com.swent.skillswap.ui.theme.SampleAppTheme
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SampleAppTheme {
+            SkillSwapAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier =
@@ -41,5 +41,5 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    SampleAppTheme { Greeting("Android") }
+    SkillSwapAppTheme { Greeting("Android") }
 }
