@@ -1,12 +1,15 @@
-/* TODO : COMPLETE /!\ Written with help of Copilot */
-
+/*
+ * /!\ Written with help of Copilot
+ * > complete all the repetitive code (construction of instances for example)
+ * > helped me with all the plugin management stuff
+ * > some special functions like joinToString()
+ */
 
 package com.swent.skillswap.model.user
 
 import java.time.DayOfWeek
 import java.time.LocalTime
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 
@@ -24,7 +27,7 @@ data class SerializableUser(
     val availability: String = ""
 )
 /*
- * Serializable version of Skill to convert to/from JSON automatically with kotlinx.serialization
+ * Serializable version of Skill class to convert to/from JSON automatically with kotlinx.serialization
  */
 @Serializable
 data class SerializableSkill(
@@ -34,7 +37,7 @@ data class SerializableSkill(
 )
 
 /*
- * Serializable version of Availability to convert to/from JSON automatically with kotlinx.serialization
+ * Serializable version of Availability class to convert to/from JSON automatically with kotlinx.serialization
  */
 @Serializable
 data class SerializableAvailability(
@@ -52,9 +55,9 @@ fun serializeUser(user: User): String {
             user.username,
             user.email,
             user.profilePicture,
-            user.skillSet.map { serializeSkill(it) }.joinToString { "|" },
+            serializeSkills(user.skillSet),
             user.rating,
-            user.availability.map { serializeAvailability(it) }.joinToString { "|" }
+            serializeAvailabilities(user.availability)
         )
     return Json.encodeToString(serialized)
 }
@@ -66,26 +69,48 @@ fun deserializeUser(user: String): User {
         deserialized.username,
         deserialized.email,
         deserialized.profilePicture,
-        if (deserialized.skillSet.isEmpty()) setOf()
-        else deserialized.skillSet.split("|").map { deserializeSkill(it) }.toSet(),
+        deserializeSkills(deserialized.skillSet),
         deserialized.rating,
-        if (deserialized.availability.isEmpty()) listOf()
-        else deserialized.availability.split("|").map { deserializeAvailability(it) }
+        deserializeAvailabilities(deserialized.availability)
     )
 }
 
 /* HELPER FUNCTIONS */
-fun serializeSkill(skill: Skill): String {
+/*
+ * These functions serialize/deserialize sets of skills and lists of availabilities
+ */
+fun serializeSkills(skillSet: Set<Skill>): String {
+    return skillSet.map { serializeSingleSkill(it) }.joinToString(separator = "|")
+}
+
+fun deserializeSkills(skillSet: String): Set<Skill> {
+    if (skillSet.isEmpty()) return setOf()
+    return skillSet.split("|").map { deserializeSingleSkill(it) }.toSet()
+}
+
+fun serializeAvailabilities(availabilityList: List<Availability>): String {
+    return availabilityList.map { serializeSingleAvailability(it) }.joinToString(separator = "|")
+}
+
+fun deserializeAvailabilities(availabilityList: String): List<Availability> {
+    if (availabilityList.isEmpty()) return listOf()
+    return availabilityList.split("|").map { deserializeSingleAvailability(it) }
+}
+
+/*
+ * These functions serialize/deserialize single skills and single availabilities
+ */
+fun serializeSingleSkill(skill: Skill): String {
     val serialized = SerializableSkill(skill.name.name, skill.rank, skill.description)
     return Json.encodeToString(serialized)
 }
 
-fun deserializeSkill(skill: String): Skill {
+fun deserializeSingleSkill(skill: String): Skill {
     val deserialized = Json.decodeFromString<SerializableSkill>(skill)
     return Skill(SkillName.valueOf(deserialized.name), deserialized.rank, deserialized.description)
 }
 
-fun serializeAvailability(availability: Availability): String {
+fun serializeSingleAvailability(availability: Availability): String {
     val serialized =
         SerializableAvailability(
             availability.day.name,
@@ -95,7 +120,7 @@ fun serializeAvailability(availability: Availability): String {
     return Json.encodeToString(serialized)
 }
 
-fun deserializeAvailability(availability: String): Availability {
+fun deserializeSingleAvailability(availability: String): Availability {
     val deserialized = Json.decodeFromString<SerializableAvailability>(availability)
     return Availability(
         DayOfWeek.valueOf(deserialized.day),
