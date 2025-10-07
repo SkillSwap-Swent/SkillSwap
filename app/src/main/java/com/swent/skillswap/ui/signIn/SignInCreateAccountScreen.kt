@@ -23,6 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -63,26 +65,16 @@ fun SignInCreateAccountScreen(
                 fontSize = 24.sp
             )
             Spacer(modifier = Modifier.height(100.dp))
-            TextField(
-                value = "" /*TODO value from viewModel to add*/,
-                label = { Text(text = "Username", color = Color(0x5F000000)) },
-                singleLine = true,
-                placeholder = { Text(text = "username") },
-                supportingText = { Text(text = "" /*TODO error message*/) },
-                onValueChange = { /*TODO on value change logic with view event*/},
-                shape = RoundedCornerShape(10.dp),
-                colors =
-                    TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
+            SkillSwapTextField(
+                /*TODO remove comment once viewModel done
+                TODO value = ,
+                TODO supportText = ,*/
+                label = "Username",
+                placeholder = "username",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
-                        .height(26.dp)
                         .testTag(CreateAccountTags.USERNAME_FIELD)
             )
-            Spacer(modifier = Modifier.height(20.dp))
             Box(
                 modifier = Modifier.height(210.dp).width(300.dp).align(Alignment.CenterHorizontally)
             ) {
@@ -110,67 +102,37 @@ fun SignInCreateAccountScreen(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            TextField(
-                value = "" /*TODO value from viewModel to add*/,
-                label = { Text(text = "Email", color = Color(0x5F000000)) },
-                singleLine = true,
-                placeholder = { Text(text = "your.email@gmail.com") },
-                supportingText = { Text(text = "" /*TODO error message*/) },
-                onValueChange = { /*TODO on value change logic with view event*/},
-                shape = RoundedCornerShape(10.dp),
-                colors =
-                    TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
+            SkillSwapTextField(
+                /*TODO remove comment once viewModel done
+                TODO value = ,
+                TODO supportText = ,*/
+                label = "Email",
+                placeholder = "your.email@gmail.com",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
-                        .height(26.dp)
                         .testTag(CreateAccountTags.EMAIL_FIELD)
             )
-            Spacer(modifier = Modifier.height(30.dp))
-            TextField(
-                value = "" /*TODO value from viewModel to add*/,
-                label = { Text(text = "Password", color = Color(0x5F000000)) },
-                singleLine = true,
-                placeholder = { Text(text = "password") },
-                supportingText = { Text(text = "" /*TODO error message*/) },
-                onValueChange = { /*TODO on value change logic with view event*/},
-                shape = RoundedCornerShape(10.dp),
-                colors =
-                    TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
+            SkillSwapTextField(
+                /*TODO remove comment once viewModel done
+                TODO value = ,
+                TODO supportText = ,*/
+                label = "Password",
+                placeholder = "password",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
-                        .height(26.dp)
                         .testTag(CreateAccountTags.PASSWORD_FIELD)
             )
-            Spacer(modifier = Modifier.height(30.dp))
-            TextField(
-                value = "" /*TODO value from viewModel to add*/,
-                label = { Text(text = "Confirm Password", color = Color(0x5F000000)) },
-                singleLine = true,
-                placeholder = { Text(text = "confirm password") },
-                supportingText = { Text(text = "" /*TODO error message*/) },
-                onValueChange = { /*TODO on value change logic with view event*/},
-                shape = RoundedCornerShape(10.dp),
-                colors =
-                    TextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
+            SkillSwapTextField(
+                /*TODO remove comment once viewModel done
+                TODO value = ,
+                TODO supportText = ,*/
+                label = "Confirm Password",
+                placeholder = "confirm password",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
-                        .height(26.dp)
                         .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
             )
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(30.dp))
             OutlinedButton(
                 onClick = { /*TODO CLICK LOGIC DONE*/},
                 colors =
@@ -184,10 +146,34 @@ fun SignInCreateAccountScreen(
                     Modifier.align(Alignment.CenterHorizontally)
                         .fillMaxWidth(0.33f)
                         .testTag(CreateAccountTags.DONE_BUTTON)
-                        .testTag(CreateAccountTags.DONE_BUTTON)
             ) {
                 Text(text = "Done")
             }
         }
     }
+}
+
+@Composable
+fun SkillSwapTextField(
+    modifier: Modifier = Modifier,
+    value: MutableState<String> = mutableStateOf(""),
+    supportText: String = "",
+    label: String = "",
+    placeholder: String = ""
+) {
+    TextField(
+        value = value.value /*TODO value from viewModel to add*/,
+        label = { Text(text = label, color = Color(0x5F000000)) },
+        singleLine = true,
+        placeholder = { Text(text = placeholder, color = Color(0x5F000000)) },
+        supportingText = { Text(text = supportText /*TODO error message*/) },
+        onValueChange = { it -> value.value = it },
+        shape = RoundedCornerShape(10.dp),
+        colors =
+            TextFieldDefaults.colors(
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
+        modifier = modifier.fillMaxWidth(0.8f)
+    )
 }
