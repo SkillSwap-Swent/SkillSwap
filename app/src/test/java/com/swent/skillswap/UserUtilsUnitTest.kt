@@ -86,7 +86,7 @@ class UserUtilsUnitTest {
                 email = "",
                 profilePicture = "",
                 skillSet = setOf(),
-                rating = Float.NaN, //illegal arg that should throw an exception
+                rating = Float.NaN, // illegal arg that should throw an exception
                 availability = listOf()
             )
         serializeUser(user)
