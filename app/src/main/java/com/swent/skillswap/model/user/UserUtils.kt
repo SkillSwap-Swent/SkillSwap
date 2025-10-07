@@ -49,6 +49,7 @@ data class SerializableAvailability(
 /* Main pair of function to serialize/deserialize User objects to/from JSON strings */
 
 fun serializeUser(user: User): String {
+    require(!user.rating.isNaN()) // rating should not be NaN => cannot be serialized by Json
     val serialized =
         SerializableUser(
             user.uid,
