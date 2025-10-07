@@ -29,7 +29,6 @@ class UserUtilsUnitTest {
         val skill2 = Skill(SkillName.CHEMISTRY, 2f, "qnededefj3of")
         val skills = setOf(skill1, skill2)
         val serialized = serializeSkills(skills)
-        print(serialized + "\n")
         assertEquals(skills, deserializeSkills(serialized))
     }
 
