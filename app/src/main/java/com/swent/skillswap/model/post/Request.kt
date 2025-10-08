@@ -1,3 +1,4 @@
+/** Credits: Code: Alexander Magnus */
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
@@ -9,11 +10,11 @@ data class Request(
     override val description: String,
     override val ownerId: String,
     override val tags: List<EveryTag>,
+    override val paymentMethods: List<PaymentMethod>,
     override val expiry: Timestamp,
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
-    override val paymentMethods: List<PaymentMethod>,
 ) : Post {
     override val type: PostType
         get() = PostType.REQUEST
