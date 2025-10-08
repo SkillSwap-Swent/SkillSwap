@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -45,6 +46,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,6 +59,7 @@ import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import kotlin.Boolean
 
 object CreateAccountTags {
 
@@ -82,7 +87,8 @@ fun View() {
 fun SignInCreateAccountScreen(
     /*TODO remove comment once viewModel made ->*/
     /*viewModel: CreateAccountViewModel = viewModel()*/
-    goToMainScreen: () -> Unit = {}
+    goToMainScreen: () -> Unit = {},
+    googleAccount: Boolean = false
 ) {
     var selectedSkills by remember {
         mutableStateOf(setOf<SkillTag>())
@@ -197,6 +203,7 @@ fun SignInCreateAccountScreen(
                 TODO supportText = ,*/
                 label = "Email",
                 placeholder = "your.email@gmail.com",
+                enabled = !googleAccount,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.EMAIL_FIELD)
@@ -207,6 +214,7 @@ fun SignInCreateAccountScreen(
                 TODO supportText = ,*/
                 label = "Password",
                 placeholder = "enter password",
+                enabled = !googleAccount,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.PASSWORD_FIELD)
@@ -216,6 +224,7 @@ fun SignInCreateAccountScreen(
                 TODO value = ,
                 TODO supportText = ,*/
                 label = "Confirm Password",
+                enabled = !googleAccount,
                 placeholder = "enter password",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
@@ -250,7 +259,8 @@ fun SkillSwapTextField(
     supportText: String = "",
     label: String = "",
     placeholder: String = "",
-    onValueChange: () -> Unit = {}
+    onValueChange: () -> Unit = {},
+    enabled: Boolean = true
 ) {
     TextField(
         value = value.value,
@@ -262,6 +272,7 @@ fun SkillSwapTextField(
             value.value = it
             onValueChange()
         },
+        enabled = enabled,
         shape = RoundedCornerShape(10.dp),
         colors =
             TextFieldDefaults.colors(
@@ -279,7 +290,8 @@ fun SkillSwapPasswordTextField(
     value: MutableState<String> = mutableStateOf(""),
     supportText: String = "",
     label: String = "",
-    placeholder: String = ""
+    placeholder: String = "",
+    enabled: Boolean = true,
 ) {
     var showPassword by remember { mutableStateOf(false) }
     TextField(
@@ -289,7 +301,15 @@ fun SkillSwapPasswordTextField(
         placeholder = { Text(placeholder, color = Color(0x5F000000)) },
         supportingText = { Text(text = supportText) },
         singleLine = true,
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                autoCorrect = false,
+                capitalization = KeyboardCapitalization.None,
+                imeAction = ImeAction.Done
+            ),
         shape = RoundedCornerShape(10.dp),
+        enabled = enabled,
         colors =
             TextFieldDefaults.colors(
                 unfocusedIndicatorColor = Color.Transparent,
