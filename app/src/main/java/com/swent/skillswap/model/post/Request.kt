@@ -20,4 +20,5 @@ data class Request(
         get() = PostType.REQUEST
 
     // TODO: implement proper validation logic
+    // https://github.com/orgs/SkillSwap-Swent/projects/1/views/2?filterQuery=&pane=issue&itemId=132697400
 }
