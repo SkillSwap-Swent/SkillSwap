@@ -52,11 +52,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
-import com.swent.skillswap.model.user.SkillName
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 object CreateAccountTags {
+
     const val TITLE = "CREATE_TITLE"
     const val USERNAME_FIELD = "CREATE_USERNAME_FIELD"
     const val EMAIL_FIELD = "CREATE_EMAIL_FIELD"
@@ -84,7 +85,7 @@ fun SignInCreateAccountScreen(
     goToMainScreen: () -> Unit = {}
 ) {
     var selectedSkills by remember {
-        mutableStateOf(setOf<SkillName>())
+        mutableStateOf(setOf<SkillTag>())
     } /*TODO move it to the viewModel once created*/
     Scaffold { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f)) {
@@ -120,7 +121,7 @@ fun SignInCreateAccountScreen(
             ) {
                 val suggestions =
                     remember(query.value) {
-                        SkillName.entries
+                        SkillTag.entries
                             .filter {
                                 query.value.isNotBlank() &&
                                     it.name.contains(query.value, ignoreCase = true)
@@ -146,8 +147,8 @@ fun SignInCreateAccountScreen(
                 ) {
                     SkillForDropDownMenu(
                         suggestions,
-                        { skillName ->
-                            selectedSkills = selectedSkills + skillName
+                        { skillTag ->
+                            selectedSkills = selectedSkills + skillTag
                             query.value = ""
                         }
                     )
@@ -310,12 +311,12 @@ fun SkillSwapPasswordTextField(
 }
 
 @Composable
-fun SkillForDropDownMenu(suggestion: List<SkillName>, onPick: (SkillName) -> Unit) {
-    suggestion.forEach { skillName ->
+fun SkillForDropDownMenu(suggestion: List<SkillTag>, onPick: (SkillTag) -> Unit) {
+    suggestion.forEach { skillTag ->
         DropdownMenuItem(
-            text = { Text(skillName.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            onClick = { onPick(skillName) },
-            modifier = Modifier.testTag(SKILL_SUGGESTION_PREFIX + skillName)
+            text = { Text(skillTag.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            onClick = { onPick(skillTag) },
+            modifier = Modifier.testTag(SKILL_SUGGESTION_PREFIX + skillTag)
         )
     }
 }

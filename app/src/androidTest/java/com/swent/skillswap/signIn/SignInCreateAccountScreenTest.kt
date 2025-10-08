@@ -10,7 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import com.swent.skillswap.model.user.SkillName
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import org.junit.Before
@@ -42,45 +42,43 @@ class SignInCreateAccountScreenTest : TestCase() {
 
     @Test
     fun testInputSkillsCanInputSkill() {
-        val skillName = SkillName.MACHINE_DESIGN.name
+        val skillTag = SkillTag.MACHINE_DESIGN.name
         composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_INPUT).performClick()
-        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_INPUT).performTextInput(skillName)
+        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_INPUT).performTextInput(skillTag)
         composeTestRule.waitUntil(5_000) {
             composeTestRule
-                .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillName)
+                .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillTag)
                 .isDisplayed()
         }
         composeTestRule
-            .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillName)
+            .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillTag)
             .performClick()
         composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
         composeTestRule
-            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillName)
+            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillTag)
             .assertIsDisplayed()
     }
 
     @Test
     fun testCanRemoveSkill() {
-        val skillName = SkillName.MACHINE_DESIGN.name
+        val skillTag = SkillTag.MACHINE_DESIGN.name
         composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_INPUT).performClick()
-        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_INPUT).performTextInput(skillName)
+        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_INPUT).performTextInput(skillTag)
         composeTestRule.waitUntil(5_000) {
             composeTestRule
-                .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillName)
+                .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillTag)
                 .isDisplayed()
         }
         composeTestRule
-            .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillName)
+            .onNodeWithTag(CreateAccountTags.SKILL_SUGGESTION_PREFIX + skillTag)
             .performClick()
         composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
         composeTestRule
-            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillName)
+            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillTag)
             .assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillTag).performClick()
         composeTestRule
-            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillName)
-            .performClick()
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillName)
+            .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillTag)
             .assertDoesNotExist()
     }
 }
