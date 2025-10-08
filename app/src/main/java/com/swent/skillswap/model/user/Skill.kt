@@ -1,30 +1,5 @@
 package com.swent.skillswap.model.user
 
-data class Skill(val name: SkillName, val rank: Float, val description: String)
+import com.swent.skillswap.model.tags.SkillTag
 
-enum class SkillName {
-    CALCULUS,
-    LINEAR_ALGEBRA,
-    DIFFERENTIAL_EQUATIONS,
-    PHYSICS_MECHANICS,
-    PHYSICS_ELECTROMAGNETISM,
-    CHEMISTRY,
-    COMPUTER_PROGRAMMING,
-    DATA_STRUCTURES,
-    ALGORITHMS,
-    DATABASES,
-    OPERATING_SYSTEMS,
-    CIRCUIT_ANALYSIS,
-    DIGITAL_LOGIC,
-    MICROCONTROLLERS,
-    FLUID_MECHANICS,
-    THERMODYNAMICS,
-    MATERIALS_ENGINEERING,
-    STRUCTURAL_ANALYSIS,
-    TRANSPORT_PHENOMENA,
-    CONTROL_SYSTEMS,
-    SIGNAL_PROCESSING,
-    MACHINE_DESIGN,
-    PROJECT_MANAGEMENT,
-    ENGINEERING_ETHICS
-}
+data class Skill(val name: SkillTag, val rank: Float, val description: String)

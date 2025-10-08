@@ -1,8 +1,8 @@
 package com.swent.skillswap
 
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Availability
 import com.swent.skillswap.model.user.Skill
-import com.swent.skillswap.model.user.SkillName
 import com.swent.skillswap.model.user.User
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -14,7 +14,7 @@ class UserUnitTest {
 
     @Test
     fun createUserAndCheckProperties() {
-        val skill = Skill(SkillName.LINEAR_ALGEBRA, 3f, "")
+        val skill = Skill(SkillTag.LINEAR_ALGEBRA, 3f, "")
         val availability = Availability(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(17, 0))
         val user =
             User(
@@ -39,7 +39,7 @@ class UserUnitTest {
 
     @Test
     fun testUserEqualityAndCopy() {
-        val skill = Skill(SkillName.LINEAR_ALGEBRA, 3f, "")
+        val skill = Skill(SkillTag.LINEAR_ALGEBRA, 3f, "")
         val availability = Availability(DayOfWeek.TUESDAY, LocalTime.of(10, 0), LocalTime.of(18, 0))
         val user1 =
             User(
