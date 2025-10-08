@@ -38,6 +38,22 @@ interface Post {
     val media: List<String>
     /** The type of the post, indicating whether it's an offer or a request. */
     val type: PostType
+
+    /**
+     * Validates the essential fields of the post to ensure they are not empty. This is a temporary
+     * implementation until the inheritors implement a proper validation.
+     *
+     * @return `true` if the post is valid, `false` otherwise.
+     */
+    fun validate(): Boolean {
+        return uid.isNotBlank() &&
+            title.isNotBlank() &&
+            description.isNotBlank() &&
+            tags.isNotEmpty() &&
+            paymentMethods.isNotEmpty() &&
+            expiry.toDate().after(Timestamp.now().toDate()) &&
+            creation.toDate().before(Timestamp.now().toDate())
+    }
 }
 
 /** Enum representing the type of a post. */

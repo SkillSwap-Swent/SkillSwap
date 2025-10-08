@@ -19,11 +19,5 @@ data class Request(
     override val type: PostType
         get() = PostType.REQUEST
 
-    fun validate(): Boolean {
-        // TODO: implement proper validation logic
-        return uid.isNotBlank() &&
-            title.isNotBlank() &&
-            description.isNotBlank() &&
-            tags.isNotEmpty()
-    }
+    // TODO: implement proper validation logic
 }
