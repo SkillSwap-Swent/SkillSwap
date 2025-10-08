@@ -14,6 +14,20 @@ import org.junit.Test
 
 class PostDataClassTest {
 
+    val request1 =
+        Request(
+            uid = "123",
+            title = "Need help with Kotlin",
+            description = "Looking for an expert to teach me Kotlin.",
+            ownerId = "user456",
+            tags = listOf(PostTag.REOCCURRING),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = listOf("media_url_1", "media_url_2"),
+            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+        )
+
     @Test
     fun testRequestDataClass() {
         val creationDate = Timestamp(Date())
@@ -48,37 +62,12 @@ class PostDataClassTest {
 
     @Test
     fun testRequestValidation_valid() {
-        val request =
-            Request(
-                uid = "1",
-                title = "Valid Title",
-                description = "Valid Description",
-                ownerId = "owner1",
-                tags = listOf(PostTag.REOCCURRING),
-                expiry = Timestamp.now(),
-                creation = Timestamp.now(),
-                status = PostStatus.DRAFT,
-                media = emptyList(),
-                paymentMethods = emptyList()
-            )
-        assertTrue(request.validate())
+        assertTrue(request1.validate())
     }
 
     @Test
     fun testRequestValidation_invalid() {
-        val baseRequest =
-            Request(
-                uid = "1",
-                title = "Valid Title",
-                description = "Valid Description",
-                ownerId = "owner1",
-                tags = listOf(PostTag.REOCCURRING),
-                expiry = Timestamp.now(),
-                creation = Timestamp.now(),
-                status = PostStatus.DRAFT,
-                media = emptyList(),
-                paymentMethods = emptyList()
-            )
+        val baseRequest = request1.copy()
 
         // Test invalid UID
         assertFalse(baseRequest.copy(uid = "").validate())

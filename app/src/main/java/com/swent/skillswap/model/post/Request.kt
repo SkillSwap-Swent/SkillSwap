@@ -1,3 +1,4 @@
+/** Credits: Code: Alexander Magnus */
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
@@ -9,20 +10,15 @@ data class Request(
     override val description: String,
     override val ownerId: String,
     override val tags: List<EveryTag>,
+    override val paymentMethods: List<PaymentMethod>,
     override val expiry: Timestamp,
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
-    override val paymentMethods: List<PaymentMethod>,
 ) : Post {
     override val type: PostType
         get() = PostType.REQUEST
 
-    fun validate(): Boolean {
-        // TODO: implement proper validation logic
-        return uid.isNotBlank() &&
-            title.isNotBlank() &&
-            description.isNotBlank() &&
-            tags.isNotEmpty()
-    }
+    // TODO: implement proper validation logic
+    // https://github.com/orgs/SkillSwap-Swent/projects/1/views/2?filterQuery=&pane=issue&itemId=132697400
 }
