@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.ui.signIn.SignInMainScreen
@@ -26,10 +27,15 @@ class SignInMainScreenTest : TestCase() {
 
     @Test
     fun testEverythingIsDisplay() {
+        composeTestRule.onNodeWithTag(SignInTags.LOGO).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.OR_TEXT).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.OR_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
     }
 }

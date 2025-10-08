@@ -87,8 +87,9 @@ fun SignInCreateAccountScreen(
     var selectedSkills by remember {
         mutableStateOf(setOf<SkillTag>())
     } /*TODO move it to the viewModel once created*/
+    val scroll = rememberScrollState()
     Scaffold { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f)) {
+        Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f).verticalScroll(scroll)) {
             Spacer(modifier = Modifier.height(60.dp))
             Text(
                 text = "Create an account",
@@ -158,7 +159,7 @@ fun SignInCreateAccountScreen(
                 modifier =
                     Modifier.height(100.dp).fillMaxWidth(0.8f).align(Alignment.CenterHorizontally)
             ) {
-                val scroll = rememberScrollState()
+                val flowScroll = rememberScrollState()
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalArrangement = Arrangement.spacedBy(1.dp),
