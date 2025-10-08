@@ -11,23 +11,22 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.Calendar
 
 class PostDataClassTest {
 
-    val request1 =             Request(
-        uid = "123",
-        title = "Need help with Kotlin",
-        description = "Looking for an expert to teach me Kotlin.",
-        ownerId = "user456",
-        tags = listOf(PostTag.REOCCURRING),
-        expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
-        creation = Timestamp.now(),
-        status = PostStatus.POSTED,
-        media = listOf("media_url_1", "media_url_2"),
-        paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
-    )
-
+    val request1 =
+        Request(
+            uid = "123",
+            title = "Need help with Kotlin",
+            description = "Looking for an expert to teach me Kotlin.",
+            ownerId = "user456",
+            tags = listOf(PostTag.REOCCURRING),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = listOf("media_url_1", "media_url_2"),
+            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+        )
 
     @Test
     fun testRequestDataClass() {
