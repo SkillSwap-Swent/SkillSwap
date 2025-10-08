@@ -3,6 +3,7 @@ package com.swent.skillswap.ui.signIn
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -24,15 +36,25 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.user.SkillName
+import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 object CreateAccountTags {
     const val TITLE = "CREATE_TITLE"
@@ -40,20 +62,30 @@ object CreateAccountTags {
     const val EMAIL_FIELD = "CREATE_EMAIL_FIELD"
     const val PASSWORD_FIELD = "CREATE_PASSWORD_FIELD"
     const val CONFIRM_PASSWORD_FIELD = "CREATE_CONFIRM_PASSWORD_FIELD"
+    const val SKILLS_INPUT = "CREATE_SKILLS_INPUT"
     const val SKILLS_FLOW = "CREATE_SKILLS_FLOW"
+    const val SKILL_SUGGESTION_PREFIX = "CREATE_SKILL_SUGGESTION_"
     const val SKILL_CHIP_PREFIX = "CREATE_SKILL_" // final tag = SKILL_CHIP_PREFIX + skill.name
 
     const val DONE_BUTTON = "CREATE_DONE_BUTTON"
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Preview(showBackground = true)
+@Composable
+fun View() {
+    SkillSwapAppTheme(dynamicColor = false, content = { SignInCreateAccountScreen() })
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SignInCreateAccountScreen(
     /*TODO remove comment once viewModel made ->*/
     /*viewModel: CreateAccountViewModel = viewModel()*/
     goToMainScreen: () -> Unit = {}
 ) {
+    var selectedSkills by remember {
+        mutableStateOf(setOf<SkillName>())
+    } /*TODO move it to the viewModel once created*/
     Scaffold { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f)) {
             Spacer(modifier = Modifier.height(60.dp))
@@ -64,7 +96,7 @@ fun SignInCreateAccountScreen(
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 24.sp
             )
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(76.dp))
             SkillSwapTextField(
                 /*TODO remove comment once viewModel done
                 TODO value = ,
@@ -75,33 +107,88 @@ fun SignInCreateAccountScreen(
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.USERNAME_FIELD)
             )
-            Box(
-                modifier = Modifier.height(210.dp).width(300.dp).align(Alignment.CenterHorizontally)
+            var expanded by remember { mutableStateOf(false) }
+            val query = remember { mutableStateOf("") }
+            var hasFocus by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                modifier =
+                    Modifier.fillMaxWidth(1f)
+                        .align(Alignment.CenterHorizontally)
+                        .wrapContentSize(Alignment.TopCenter)
             ) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.testTag(CreateAccountTags.SKILLS_FLOW)
+                val suggestions =
+                    remember(query.value) {
+                        SkillName.entries
+                            .filter {
+                                query.value.isNotBlank() &&
+                                    it.name.contains(query.value, ignoreCase = true)
+                            }
+                            .take(5)
+                    }
+                SkillSwapTextField(
+                    value = query,
+                    /*TODO remove comment once viewModel done
+                    TODO supportText = ,*/
+                    label = "Skills",
+                    placeholder = "choose a skill",
+                    modifier =
+                        Modifier.menuAnchor()
+                            .onFocusChanged { hasFocus = it.isFocused }
+                            .testTag(CreateAccountTags.SKILLS_INPUT)
+                )
+                DropdownMenu(
+                    expanded = expanded && hasFocus && suggestions.isNotEmpty(),
+                    onDismissRequest = { expanded = false },
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier.fillMaxWidth(0.8f).focusable(false)
                 ) {
-                    for (skill in SkillName.entries) {
-                        Text(
-                            text = skill.name,
-                            fontSize = 11.sp,
-                            /*TODO remove when true theme are there color = MaterialTheme.colorScheme.secondary,*/ modifier =
+                    SkillForDropDownMenu(
+                        suggestions,
+                        { skillName ->
+                            selectedSkills = selectedSkills + skillName
+                            query.value = ""
+                        }
+                    )
+                }
+            }
+            Box(
+                modifier =
+                    Modifier.height(100.dp).fillMaxWidth(0.8f).align(Alignment.CenterHorizontally)
+            ) {
+                val scroll = rememberScrollState()
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalArrangement = Arrangement.spacedBy(1.dp),
+                    modifier =
+                        Modifier.testTag(CreateAccountTags.SKILLS_FLOW).verticalScroll(scroll)
+                ) {
+                    for (skill in selectedSkills) {
+                        Box(
+                            modifier =
                                 Modifier.background(
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        shape = RoundedCornerShape(percent = 50)
+                                        color =
+                                            MaterialTheme.colorScheme
+                                                .tertiary /*TODO util fun for getting primary color of enum object*/,
+                                        shape = RoundedCornerShape(50)
                                     )
-                                    .padding(5.dp, 0.dp)
-                                    .clickable(
-                                        enabled = true,
-                                        onClick = { /*TODO Click logic on skill*/}
-                                    )
+                                    .clickable { selectedSkills = selectedSkills - skill }
+                                    .padding(horizontal = 2.dp, vertical = 0.dp)
                                     .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
-                        )
+                        ) {
+                            Text(
+                                text = skill.name /*TODO util function for better enum name*/,
+                                fontSize = 10.sp,
+                                color =
+                                    MaterialTheme.colorScheme
+                                        .secondary /*TODO util fun for getting secondary color of enum object*/,
+                            )
+                        }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
             SkillSwapTextField(
                 /*TODO remove comment once viewModel done
                 TODO value = ,
@@ -112,22 +199,22 @@ fun SignInCreateAccountScreen(
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.EMAIL_FIELD)
             )
-            SkillSwapTextField(
+            SkillSwapPasswordTextField(
                 /*TODO remove comment once viewModel done
                 TODO value = ,
                 TODO supportText = ,*/
                 label = "Password",
-                placeholder = "password",
+                placeholder = "enter password",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.PASSWORD_FIELD)
             )
-            SkillSwapTextField(
+            SkillSwapPasswordTextField(
                 /*TODO remove comment once viewModel done
                 TODO value = ,
                 TODO supportText = ,*/
                 label = "Confirm Password",
-                placeholder = "confirm password",
+                placeholder = "enter password",
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
@@ -160,21 +247,75 @@ fun SkillSwapTextField(
     value: MutableState<String> = mutableStateOf(""),
     supportText: String = "",
     label: String = "",
-    placeholder: String = ""
+    placeholder: String = "",
+    onValueChange: () -> Unit = {}
 ) {
     TextField(
-        value = value.value /*TODO value from viewModel to add*/,
+        value = value.value,
         label = { Text(text = label, color = Color(0x5F000000)) },
         singleLine = true,
         placeholder = { Text(text = placeholder, color = Color(0x5F000000)) },
-        supportingText = { Text(text = supportText /*TODO error message*/) },
-        onValueChange = { it -> value.value = it },
+        supportingText = { Text(text = supportText) },
+        onValueChange = { it ->
+            value.value = it
+            onValueChange()
+        },
         shape = RoundedCornerShape(10.dp),
         colors =
             TextFieldDefaults.colors(
                 unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
             ),
         modifier = modifier.fillMaxWidth(0.8f)
     )
+}
+
+@Composable
+fun SkillSwapPasswordTextField(
+    modifier: Modifier = Modifier,
+    value: MutableState<String> = mutableStateOf(""),
+    supportText: String = "",
+    label: String = "",
+    placeholder: String = ""
+) {
+    var showPassword by remember { mutableStateOf(false) }
+    TextField(
+        value = value.value,
+        onValueChange = { value.value = it },
+        label = { Text(label, color = Color(0x5F000000)) },
+        placeholder = { Text(placeholder, color = Color(0x5F000000)) },
+        supportingText = { Text(text = supportText) },
+        singleLine = true,
+        shape = RoundedCornerShape(10.dp),
+        colors =
+            TextFieldDefaults.colors(
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
+        visualTransformation =
+            if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            val image = if (showPassword) Icons.Filled.Close else Icons.Filled.Search
+
+            val description = if (showPassword) "Hide password" else "Show password"
+
+            IconButton(onClick = { showPassword = !showPassword }) {
+                Icon(imageVector = image, contentDescription = description)
+            }
+        },
+        modifier = modifier.fillMaxWidth(0.8f)
+    )
+}
+
+@Composable
+fun SkillForDropDownMenu(suggestion: List<SkillName>, onPick: (SkillName) -> Unit) {
+    suggestion.forEach { skillName ->
+        DropdownMenuItem(
+            text = { Text(skillName.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            onClick = { onPick(skillName) },
+            modifier = Modifier.testTag(SKILL_SUGGESTION_PREFIX + skillName)
+        )
+    }
 }
