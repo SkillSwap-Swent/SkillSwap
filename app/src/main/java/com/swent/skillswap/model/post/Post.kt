@@ -1,5 +1,7 @@
 /**
- * Credits: Code: Alexander Magnus Comments: Gemini
+ * Credits: Alexander Magnus
+ *
+ * Comments: Gemini
  *
  * This file defines the data structures for posts within the SkillSwap application. It includes the
  * central `Post` interface, which outlines the common properties for all post types, and several

@@ -1,4 +1,10 @@
-/** Credits: Code: Alexander Magnus Comments: Gemini Template: CS-311 */
+/**
+ * Credits: Code: Alexander Magnus
+ *
+ * Comments: Gemini
+ *
+ * Template: CS-311
+ */
 package com.swent.skillswap.model.post
 
 import com.swent.skillswap.model.tags.EveryTag

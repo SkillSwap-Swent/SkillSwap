@@ -1,4 +1,8 @@
-/** Credits: Code: Alexander Magnus Comments: Gemini Template: CS-311 */
+/**
+ * Credits: Alexander Magnus, some helper methods created with the help of Gemini and ChatGPT
+ *
+ * Template: CS-311
+ */
 package com.swent.skillswap.model.post
 
 import com.google.firebase.firestore.CollectionReference
@@ -51,7 +55,8 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
             query = query.whereEqualTo("status", status)
         }
 
-        // perform complex seachKeys filter to bypass limit of single whereArrayContainsAny per query
+        // perform complex seachKeys filter to bypass limit of single whereArrayContainsAny per
+        // query
         val searchKeys = buildSearchKeys(titleContains, paymentMethods, tags)
         if (searchKeys.isNotEmpty()) {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
