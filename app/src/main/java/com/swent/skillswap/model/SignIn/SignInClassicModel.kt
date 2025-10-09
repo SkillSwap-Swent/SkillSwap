@@ -26,7 +26,12 @@ class SignInClassicModel : SignInAbstractClass() {
         val password = classicParams.password
         val skills = classicParams.skills
         val username = classicParams.username
-        require(email.isNotBlank() && password.isNotBlank() && skills.isNotEmpty() && username.isNotBlank())
+        require(
+            email.isNotBlank() &&
+                password.isNotBlank() &&
+                skills.isNotEmpty() &&
+                username.isNotBlank()
+        )
         /*TODO Wait for UserUtils
         val auth = FirebaseAuth.getInstance()
         val result = auth.createUserWithEmailAndPassword(email, password).await()
