@@ -232,7 +232,7 @@ fun SignInCreateAccountScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             OutlinedButton(
-                onClick = { /*TODO CLICK LOGIC DONE*/},
+                onClick = goToMainScreen,
                 colors =
                     ButtonColors(
                         MaterialTheme.colorScheme.primary,
