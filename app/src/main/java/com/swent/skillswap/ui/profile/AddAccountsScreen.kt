@@ -18,9 +18,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AddAccountsScreen(onBackClick: () -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Title
@@ -35,26 +33,20 @@ fun AddAccountsScreen(onBackClick: () -> Unit) {
         // Back button
         Button(
             onClick = onBackClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent
-            ),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
             shape = RoundedCornerShape(8.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFF0F3F66),
-                                Color(0xFF1E7ECC)
-                            )
+                modifier =
+                    Modifier.fillMaxSize()
+                        .background(
+                            brush =
+                                Brush.horizontalGradient(
+                                    colors = listOf(Color(0xFF0F3F66), Color(0xFF1E7ECC))
+                                )
                         )
-                    )
-                    .clip(RoundedCornerShape(8.dp)),
+                        .clip(RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

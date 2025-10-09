@@ -33,4 +33,3 @@ class TestProfileActivity : ComponentActivity() {
 fun ProfileScreenPreview() {
     SkillSwapAppTheme { ProfileMainScreen() }
 }
-
