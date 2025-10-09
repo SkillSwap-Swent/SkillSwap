@@ -46,5 +46,11 @@ class SignInMainScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performScrollTo()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
     }
 }
