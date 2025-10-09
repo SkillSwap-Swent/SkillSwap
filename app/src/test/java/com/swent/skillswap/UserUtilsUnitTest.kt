@@ -1,5 +1,6 @@
 package com.swent.skillswap
 
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.*
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -11,7 +12,7 @@ class UserUtilsUnitTest {
 
     @Test
     fun correctSerializationOfSkill() {
-        val skill = Skill(SkillName.LINEAR_ALGEBRA, 3f, "")
+        val skill = Skill(SkillTag.LINEAR_ALGEBRA, 3f, "")
         val serialized = serializeSingleSkill(skill)
         assertEquals(skill, deserializeSingleSkill(serialized))
     }
@@ -25,8 +26,8 @@ class UserUtilsUnitTest {
 
     @Test
     fun correctSerializationOfSetOfSkills() {
-        val skill1 = Skill(SkillName.LINEAR_ALGEBRA, 3f, "qnfj3of")
-        val skill2 = Skill(SkillName.CHEMISTRY, 2f, "qnededefj3of")
+        val skill1 = Skill(SkillTag.LINEAR_ALGEBRA, 3f, "qnfj3of")
+        val skill2 = Skill(SkillTag.CHEMISTRY, 2f, "qnededefj3of")
         val skills = setOf(skill1, skill2)
         val serialized = serializeSkills(skills)
         assertEquals(skills, deserializeSkills(serialized))
@@ -44,8 +45,8 @@ class UserUtilsUnitTest {
 
     @Test
     fun correctSerializationOfUser() {
-        val skill1 = Skill(SkillName.LINEAR_ALGEBRA, 3f, "qnfj3of")
-        val skill2 = Skill(SkillName.CHEMISTRY, 2f, "qnededefj3of")
+        val skill1 = Skill(SkillTag.LINEAR_ALGEBRA, 3f, "qnfj3of")
+        val skill2 = Skill(SkillTag.CHEMISTRY, 2f, "qnededefj3of")
 
         val availability = Availability(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(17, 0))
         val user =
