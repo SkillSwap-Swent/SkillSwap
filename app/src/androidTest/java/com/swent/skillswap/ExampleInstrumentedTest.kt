@@ -3,7 +3,6 @@ package com.swent.skillswap
 import android.util.Log
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.firebase.FirebaseApp
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.screen.MainScreen
 import com.swent.skillswap.utils.FirebaseEmulator
@@ -29,7 +28,7 @@ class MainActivityTest : TestCase() {
         step("Start Main Activity") {
             ComposeScreen.onComposeScreen<MainScreen>(composeTestRule) {
                 simpleText {
-                    FirebaseApp.initializeApp(ctx)
+                    FirebaseEmulator.startEmulator()
                     assert(FirebaseEmulator.isRunning) { Log.e("Firebase", "not running") }
                     assertIsDisplayed()
                     assertTextEquals("Hello Android!")
