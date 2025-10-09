@@ -36,7 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,10 +56,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
-import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.viewModel.CreateAccountViewModel
+import com.swent.skillswap.viewModel.CreateAccountVmFactory
 import kotlin.Boolean
 
 object CreateAccountTags {
@@ -73,27 +75,26 @@ object CreateAccountTags {
     const val SKILLS_FLOW = "CREATE_SKILLS_FLOW"
     const val SKILL_SUGGESTION_PREFIX = "CREATE_SKILL_SUGGESTION_"
     const val SKILL_CHIP_PREFIX = "CREATE_SKILL_" // final tag = SKILL_CHIP_PREFIX + skill.name
-
+    const val ERROR = "FIELD_ERROR"
     const val DONE_BUTTON = "CREATE_DONE_BUTTON"
 }
 
 @Preview(showBackground = true)
 @Composable
-fun View() {
+fun CreateAccountPreview() {
     SkillSwapAppTheme(dynamicColor = false, content = { SignInCreateAccountScreen() })
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SignInCreateAccountScreen(
-    /*TODO remove comment once viewModel made ->*/
-    /*viewModel: CreateAccountViewModel = viewModel()*/
     goToMainScreen: () -> Unit = {},
-    googleAccount: Boolean = FirebaseAuth.getInstance().currentUser != null
+    googleAccount: Boolean =
+        false /*TODO Remove when using it in main app FirebaseAuth.getInstance().currentUser != null*/
 ) {
-    var selectedSkills by remember {
-        mutableStateOf(setOf<SkillTag>())
-    } /*TODO move it to the viewModel once created*/
+    val vm: CreateAccountViewModel =
+        viewModel(factory = CreateAccountVmFactory(goToMainScreen, googleAccount))
+    val uiState by vm.uiState.collectAsState()
     val scroll = rememberScrollState()
     Scaffold { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues).fillMaxSize(1f).verticalScroll(scroll)) {
@@ -107,9 +108,9 @@ fun SignInCreateAccountScreen(
             )
             Spacer(modifier = Modifier.height(76.dp))
             SkillSwapTextField(
-                /*TODO remove comment once viewModel done
-                TODO value = ,
-                TODO supportText = ,*/
+                value = uiState.username,
+                supportText = uiState.usernameError,
+                onValueChange = { it -> vm.onUsernameChange(it) },
                 label = "Username",
                 placeholder = "username",
                 modifier =
@@ -137,9 +138,9 @@ fun SignInCreateAccountScreen(
                             .take(5)
                     }
                 SkillSwapTextField(
-                    value = query,
-                    /*TODO remove comment once viewModel done
-                    TODO supportText = ,*/
+                    value = query.value,
+                    onValueChange = { it: String -> query.value = it },
+                    supportText = uiState.skillsError,
                     label = "Skills",
                     placeholder = "choose a skill",
                     modifier =
@@ -156,7 +157,7 @@ fun SignInCreateAccountScreen(
                     SkillForDropDownMenu(
                         suggestions,
                         { skillTag ->
-                            selectedSkills = selectedSkills + skillTag
+                            vm.addSkill(skillTag)
                             query.value = ""
                         }
                     )
@@ -171,9 +172,9 @@ fun SignInCreateAccountScreen(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalArrangement = Arrangement.spacedBy(1.dp),
                     modifier =
-                        Modifier.testTag(CreateAccountTags.SKILLS_FLOW).verticalScroll(scroll)
+                        Modifier.testTag(CreateAccountTags.SKILLS_FLOW).verticalScroll(flowScroll)
                 ) {
-                    for (skill in selectedSkills) {
+                    for (skill in uiState.skills) {
                         Box(
                             modifier =
                                 Modifier.background(
@@ -182,7 +183,7 @@ fun SignInCreateAccountScreen(
                                                 .tertiary /*TODO util fun for getting primary color of enum object*/,
                                         shape = RoundedCornerShape(50)
                                     )
-                                    .clickable { selectedSkills = selectedSkills - skill }
+                                    .clickable { vm.removeSkill(skill) }
                                     .padding(horizontal = 2.dp, vertical = 0.dp)
                                     .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
                         ) {
@@ -199,31 +200,37 @@ fun SignInCreateAccountScreen(
             }
             Spacer(modifier = Modifier.height(24.dp))
             SkillSwapTextField(
-                /*TODO remove comment once viewModel done
-                TODO value = ,
-                TODO supportText = ,*/
+                value = uiState.email,
+                supportText = uiState.emailError,
+                onValueChange = { it -> vm.onEmailChange(it) },
                 label = "Email",
                 placeholder = "your.email@gmail.com",
                 enabled = !googleAccount,
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        capitalization = KeyboardCapitalization.None,
+                        imeAction = ImeAction.Next
+                    ),
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.EMAIL_FIELD)
             )
             SkillSwapPasswordTextField(
-                /*TODO remove comment once viewModel done
-                TODO value = ,
-                TODO supportText = ,*/
+                value = uiState.password,
+                supportText = uiState.passwordError,
                 label = "Password",
                 placeholder = "enter password",
+                onValueChange = { it -> vm.onPasswordChange(it) },
                 enabled = !googleAccount,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(CreateAccountTags.PASSWORD_FIELD)
             )
             SkillSwapPasswordTextField(
-                /*TODO remove comment once viewModel done
-                TODO value = ,
-                TODO supportText = ,*/
+                value = uiState.confirmPassword,
+                supportText = uiState.confirmPasswordError,
+                onValueChange = { it -> vm.onConfirmPasswordChange(it) },
                 label = "Confirm Password",
                 enabled = !googleAccount,
                 placeholder = "enter password",
@@ -233,7 +240,7 @@ fun SignInCreateAccountScreen(
             )
             Spacer(modifier = Modifier.height(20.dp))
             OutlinedButton(
-                onClick = { /*TODO CLICK LOGIC DONE*/},
+                onClick = { vm.done() },
                 colors =
                     ButtonColors(
                         MaterialTheme.colorScheme.primary,
@@ -256,23 +263,28 @@ fun SignInCreateAccountScreen(
 @Composable
 fun SkillSwapTextField(
     modifier: Modifier = Modifier,
-    value: MutableState<String> = mutableStateOf(""),
+    value: String = "",
     supportText: String = "",
     label: String = "",
     placeholder: String = "",
-    onValueChange: () -> Unit = {},
+    onValueChange: (String) -> Unit = {},
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     enabled: Boolean = true
 ) {
     TextField(
-        value = value.value,
+        value = value,
         label = { Text(text = label, color = Color(0x5F000000)) },
         singleLine = true,
         placeholder = { Text(text = placeholder, color = Color(0x5F000000)) },
-        supportingText = { Text(text = supportText) },
-        onValueChange = { it ->
-            value.value = it
-            onValueChange()
+        supportingText = {
+            Text(
+                text = supportText,
+                color = Color.Red,
+                modifier = Modifier.testTag(CreateAccountTags.ERROR)
+            )
         },
+        onValueChange = { it -> onValueChange(it) },
+        keyboardOptions = keyboardOptions,
         enabled = enabled,
         shape = RoundedCornerShape(10.dp),
         colors =
@@ -288,19 +300,26 @@ fun SkillSwapTextField(
 @Composable
 fun SkillSwapPasswordTextField(
     modifier: Modifier = Modifier,
-    value: MutableState<String> = mutableStateOf(""),
+    value: String = "",
     supportText: String = "",
     label: String = "",
     placeholder: String = "",
+    onValueChange: (String) -> Unit = {},
     enabled: Boolean = true,
 ) {
     var showPassword by remember { mutableStateOf(false) }
     TextField(
-        value = value.value,
-        onValueChange = { value.value = it },
+        value = value,
+        onValueChange = { it -> onValueChange(it) },
         label = { Text(label, color = Color(0x5F000000)) },
         placeholder = { Text(placeholder, color = Color(0x5F000000)) },
-        supportingText = { Text(text = supportText) },
+        supportingText = {
+            Text(
+                text = supportText,
+                color = Color.Red,
+                modifier = Modifier.testTag(CreateAccountTags.ERROR)
+            )
+        },
         singleLine = true,
         keyboardOptions =
             KeyboardOptions(

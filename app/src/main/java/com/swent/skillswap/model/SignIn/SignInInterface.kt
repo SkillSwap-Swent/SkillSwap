@@ -45,13 +45,13 @@ sealed interface CreateAccountParams
  *
  * @property username Desired username.
  * @property email User's email address.
- * @property skills List of user skill tags (domain-specific data).
+ * @property skills Set of user skill tags (domain-specific data).
  * @property password User's chosen password.
  */
 data class CreateAccountClassicParams(
     val username: String,
     val email: String,
-    val skills: List<SkillTag>,
+    val skills: Set<SkillTag>,
     val password: String
 ) : CreateAccountParams
 
@@ -59,9 +59,9 @@ data class CreateAccountClassicParams(
  * Parameters required to create an account linked to a Google account.
  *
  * @property username Desired username.
- * @property skills List of user skill tags (domain-specific data).
+ * @property skills Set of user skill tags (domain-specific data).
  */
-data class CreateAccountGoogleParams(val username: String, val skills: List<SkillTag>) :
+data class CreateAccountGoogleParams(val username: String, val skills: Set<SkillTag>) :
     CreateAccountParams
 
 /**
