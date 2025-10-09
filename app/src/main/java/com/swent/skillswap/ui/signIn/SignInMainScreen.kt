@@ -99,7 +99,7 @@ fun SignInMainScreen(
                     "Create an account", /*TODO remove comment when color theme correct color = MaterialTheme.colorScheme.secondary,*/
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .clickable(enabled = true, onClick = goToCreateAccountScreen)
+                        .clickable(enabled = true, onClick = { /*TODO CLICK LOGIC CREATE ACCOUNT*/})
                         .testTag(SignInTags.CREATE_ACCOUNT_TEXT)
             )
         }
