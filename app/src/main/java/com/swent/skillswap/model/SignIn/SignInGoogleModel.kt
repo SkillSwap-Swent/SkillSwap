@@ -9,6 +9,7 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.tasks.await
 
 /**
  * Handles authentication with Google Sign-In using the Android Credential Manager and Firebase
@@ -65,9 +66,10 @@ class SignInGoogleModel : SignInAbstractClass() {
         val auth = FirebaseAuth.getInstance()
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
 
-        auth.signInWithCredential(firebaseCredential).addOnFailureListener {
-            throw Exception("failed connection")
-        }
+        auth
+            .signInWithCredential(firebaseCredential)
+            .addOnFailureListener { throw Exception("failed connection") }
+            .await()
     }
 
     /**
