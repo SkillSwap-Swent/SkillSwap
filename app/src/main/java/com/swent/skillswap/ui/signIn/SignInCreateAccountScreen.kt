@@ -45,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import com.swent.skillswap.ui.theme.SkillSwapHalfTransparent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -61,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.ui.theme.SkillSwapHalfTransparent
 import com.swent.skillswap.viewModel.CreateAccountViewModel
 import com.swent.skillswap.viewModel.CreateAccountVmFactory
 import kotlin.Boolean
