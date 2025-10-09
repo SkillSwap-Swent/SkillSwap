@@ -3,6 +3,8 @@ package com.swent.skillswap.ui.offerScreen
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
+import com.swent.skillswap.model.offer.FakeOfferNavigation
+import com.swent.skillswap.model.offer.FakeOfferRepository
 import com.swent.skillswap.model.offer.Offer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +27,7 @@ data class OfferScreenUiState(val offers: List<Offer> = emptyList(), val current
  * @property repository The data source used to retrieve and update offers.
  */
 class OfferScreenViewModel(
-    private val navigation: OfferNavigation = FakeNavigation(),
+    private val navigation: OfferNavigation = FakeOfferNavigation(),
     private val repository: OfferRepository = FakeOfferRepository()
 ) : ViewModel() {
     /**

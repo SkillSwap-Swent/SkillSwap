@@ -1,8 +1,11 @@
-package com.swent.skillswap.ui.offerScreen
+package com.swent.skillswap.model.offer
 
-import com.swent.skillswap.model.offer.Offer
+import com.swent.skillswap.ui.offerScreen.OfferRepository
 
-/** Fake implementation of [OfferRepository] for testing without network or database. */
+/**
+ * Fake implementation of [com.swent.skillswap.ui.offerScreen.OfferRepository] for testing without
+ * network or database.
+ */
 class FakeOfferRepository : OfferRepository {
 
     private val acceptedOffers = mutableListOf<Pair<Offer, String>>()
@@ -48,15 +51,4 @@ class FakeOfferRepository : OfferRepository {
     fun getAcceptedOffers(): List<Pair<Offer, String>> = acceptedOffers.toList()
 
     fun getSkippedOffers(): List<Pair<Offer, String>> = skippedOffers.toList()
-}
-/** Fake implementation of [OfferNavigation] for testing navigation logic. */
-class FakeNavigation : OfferNavigation {
-
-    private val _visitedProfiles = mutableSetOf<String>() // use set to avoid duplicates
-
-    override fun goToProfileView(userId: String) {
-        _visitedProfiles.add(userId)
-    }
-
-    fun getVisitedProfiles() = _visitedProfiles.toList()
 }

@@ -15,6 +15,8 @@ import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.swipeUp
+import com.swent.skillswap.model.offer.FakeOfferNavigation
+import com.swent.skillswap.model.offer.FakeOfferRepository
 import com.swent.skillswap.model.offer.Offer
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -27,9 +29,9 @@ class OfferScreenInstrumentedTest {
     /** Helper to set up screen with fake repository returning specified offers. */
     private fun setContentWithRepositoryReturning(
         vararg returnedOffers: Offer
-    ): Triple<OfferScreenViewModel, FakeOfferRepository, FakeNavigation> {
+    ): Triple<OfferScreenViewModel, FakeOfferRepository, FakeOfferNavigation> {
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
 
         repository.preloadOffers(*returnedOffers)
 
@@ -71,12 +73,14 @@ class OfferScreenInstrumentedTest {
     fun swipeRight_callsAcceptOnRepository() {
         val offer = Offer(give = "G", receive = "R", authorID = "auth", thumbnail = "t")
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
 
         val vm = OfferScreenViewModel(navigation, repository)
         vm.setUiState(OfferScreenUiState(listOf(offer), current = offer))
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
 
         composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).performTouchInput {
             swipeRight()
@@ -92,12 +96,14 @@ class OfferScreenInstrumentedTest {
     fun swipeLeft_callsGoToProfile() {
         val offer = Offer(give = "G", receive = "R", authorID = "authorX", thumbnail = "t")
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
 
         val vm = OfferScreenViewModel(navigation, repository)
         vm.setUiState(OfferScreenUiState(listOf(offer), current = offer))
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
 
         composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).performTouchInput {
             swipeLeft()
@@ -157,11 +163,13 @@ class OfferScreenInstrumentedTest {
     fun swipeDown_fetchesNewOfferWhenAtEnd() {
         val first = Offer(give = "First", receive = "1", authorID = "u1", thumbnail = "t1")
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
         val vm = OfferScreenViewModel(navigation, repository)
         vm.setUiState(OfferScreenUiState(listOf(first), current = first))
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
 
         // swipe down → triggers fetching new offer (from fake)
         composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).performTouchInput {
@@ -177,11 +185,12 @@ class OfferScreenInstrumentedTest {
     @Test
     fun emptyOfferList_initializesWithRepositoryOffer() {
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
         val vm = OfferScreenViewModel(navigation, repository)
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
-
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
         composeTestRule.waitForIdle()
 
         val state = vm.uiState.value
@@ -192,13 +201,15 @@ class OfferScreenInstrumentedTest {
     @Test
     fun next_onEmptyOffers_fetchesOffer() {
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
         val vm = OfferScreenViewModel(navigation, repository)
 
         // Clear UI state to simulate empty offers
         vm.setUiState(OfferScreenUiState(emptyList(), Offer()))
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
         composeTestRule.waitForIdle()
 
         // Trigger next() manually
@@ -214,11 +225,13 @@ class OfferScreenInstrumentedTest {
     fun previous_onFirstOffer_doesNotCrash() {
         val first = Offer(give = "First", receive = "1", authorID = "u1", thumbnail = "t1")
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
         val vm = OfferScreenViewModel(navigation, repository)
         vm.setUiState(OfferScreenUiState(listOf(first), current = first))
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
         composeTestRule.waitForIdle()
 
         // Trigger previous() on first offer → should not crash
@@ -232,11 +245,13 @@ class OfferScreenInstrumentedTest {
     @Test
     fun swipeOnEmptyOffers_doesNotCrash() {
         val repository = FakeOfferRepository()
-        val navigation = FakeNavigation()
+        val navigation = FakeOfferNavigation()
         val vm = OfferScreenViewModel(navigation, repository)
         vm.setUiState(OfferScreenUiState(emptyList(), Offer()))
 
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
+        }
         composeTestRule.waitForIdle()
 
         // Attempt swipe actions on empty card
