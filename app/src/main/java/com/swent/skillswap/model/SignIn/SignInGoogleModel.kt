@@ -65,7 +65,9 @@ class SignInGoogleModel : SignInAbstractClass() {
         val auth = FirebaseAuth.getInstance()
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
 
-        auth.signInWithCredential(firebaseCredential).addOnFailureListener { /* show error */}
+        auth.signInWithCredential(firebaseCredential).addOnFailureListener {
+            throw Exception("failed connection")
+        }
     }
 
     /**

@@ -56,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
@@ -88,7 +89,7 @@ fun SignInCreateAccountScreen(
     /*TODO remove comment once viewModel made ->*/
     /*viewModel: CreateAccountViewModel = viewModel()*/
     goToMainScreen: () -> Unit = {},
-    googleAccount: Boolean = false
+    googleAccount: Boolean = FirebaseAuth.getInstance().currentUser != null
 ) {
     var selectedSkills by remember {
         mutableStateOf(setOf<SkillTag>())
