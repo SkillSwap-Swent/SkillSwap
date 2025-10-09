@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import com.swent.skillswap.ui.theme.SkillSwapHalfTransparent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -273,9 +274,9 @@ fun SkillSwapTextField(
 ) {
     TextField(
         value = value,
-        label = { Text(text = label, color = Color(0x5F000000)) },
+        label = { Text(text = label, color = SkillSwapHalfTransparent) },
         singleLine = true,
-        placeholder = { Text(text = placeholder, color = Color(0x5F000000)) },
+        placeholder = { Text(text = placeholder, color = SkillSwapHalfTransparent) },
         supportingText = {
             Text(
                 text = supportText,
@@ -311,8 +312,8 @@ fun SkillSwapPasswordTextField(
     TextField(
         value = value,
         onValueChange = { it -> onValueChange(it) },
-        label = { Text(label, color = Color(0x5F000000)) },
-        placeholder = { Text(placeholder, color = Color(0x5F000000)) },
+        label = { Text(label, color = SkillSwapHalfTransparent) },
+        placeholder = { Text(placeholder, color = SkillSwapHalfTransparent) },
         supportingText = {
             Text(
                 text = supportText,
