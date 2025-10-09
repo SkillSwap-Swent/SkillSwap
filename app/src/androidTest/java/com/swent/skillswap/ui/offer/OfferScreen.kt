@@ -35,11 +35,8 @@ class OfferScreenInstrumentedTest {
 
         val vm = OfferScreenViewModel(navigation, repository)
         composeTestRule.setContent {
-            Box(modifier = Modifier.fillMaxSize()) {
-                OfferScreen(vm = vm)
-            }
+            Box(modifier = Modifier.fillMaxSize()) { OfferScreen(vm = vm) }
         }
-
 
         composeTestRule.waitForIdle()
         return Triple(vm, repository, navigation)
