@@ -91,6 +91,7 @@ class SignInGoogleModel : SignInAbstractClass() {
         val googleParams: CreateAccountGoogleParams = params as CreateAccountGoogleParams
         val username = params.username
         val skills = params.skills
+        require(username.isNotBlank() && skills.isNotEmpty())
         /*TODO Wait for UserUtils*/
     }
 }
