@@ -1,5 +1,8 @@
 package com.swent.skillswap.ui.offerScreen
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -31,7 +34,12 @@ class OfferScreenInstrumentedTest {
         repository.preloadOffers(*returnedOffers)
 
         val vm = OfferScreenViewModel(navigation, repository)
-        composeTestRule.setContent { OfferScreen(vm = vm) }
+        composeTestRule.setContent {
+            Box(modifier = Modifier.fillMaxSize()) {
+                OfferScreen(vm = vm)
+            }
+        }
+
 
         composeTestRule.waitForIdle()
         return Triple(vm, repository, navigation)
@@ -48,6 +56,8 @@ class OfferScreenInstrumentedTest {
             )
 
         val (vm, repo, nav) = setContentWithRepositoryReturning(offer)
+
+        composeTestRule.waitForIdle()
 
         composeTestRule
             .onNodeWithTag(OfferScreenTestTags.OFFER_GIVE)
