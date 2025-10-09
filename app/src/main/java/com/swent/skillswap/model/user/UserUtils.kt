@@ -7,6 +7,7 @@
 
 package com.swent.skillswap.model.user
 
+import com.swent.skillswap.model.tags.SkillTag
 import java.time.DayOfWeek
 import java.time.LocalTime
 import kotlinx.serialization.Serializable
@@ -108,7 +109,7 @@ fun serializeSingleSkill(skill: Skill): String {
 
 fun deserializeSingleSkill(skill: String): Skill {
     val deserialized = Json.decodeFromString<SerializableSkill>(skill)
-    return Skill(SkillName.valueOf(deserialized.name), deserialized.rank, deserialized.description)
+    return Skill(SkillTag.valueOf(deserialized.name), deserialized.rank, deserialized.description)
 }
 
 fun serializeSingleAvailability(availability: Availability): String {
