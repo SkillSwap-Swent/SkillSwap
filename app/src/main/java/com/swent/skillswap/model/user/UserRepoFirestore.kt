@@ -1,3 +1,9 @@
+/*
+ * /!\ Written with help of Copilot
+ * > complete all the repetitive code (construction of instances for example)
+ * > helped me with all the firebase functions
+ */
+
 package com.swent.skillswap.model.user
 
 import android.util.Log
