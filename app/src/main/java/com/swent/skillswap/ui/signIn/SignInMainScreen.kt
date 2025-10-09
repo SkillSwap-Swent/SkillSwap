@@ -1,6 +1,8 @@
 /** @author Topaze17(Eliott) used chatGPT for tagging the composable but they were checked */
 package com.swent.skillswap.ui.signIn
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,11 +25,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
+import com.swent.skillswap.viewModel.SignInViewModel
+import com.swent.skillswap.viewModel.SignInVmFactory
 
 object SignInTags {
     const val LOGO = "SIGN_IN_LOGO"
@@ -40,11 +47,13 @@ object SignInTags {
 @Preview(showBackground = true)
 @Composable
 fun SignInMainScreen(
-    /*TODO remove comment once viewModel made ->*/
-    /*viewModel: ViewModel = viewModel()*/
     goToMainScreen: () -> Unit = {},
-    goToCreateAccountScreen: () -> Unit = {}
+    goToCreateAccountScreen: () -> Unit = {},
+    context: Context = LocalContext.current,
+    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current)
 ) {
+    val vm: SignInViewModel =
+        viewModel(factory = SignInVmFactory(goToMainScreen, goToCreateAccountScreen))
     val scroll = rememberScrollState()
     Scaffold() { padding ->
         Column(
@@ -62,7 +71,7 @@ fun SignInMainScreen(
             )
             Spacer(modifier = Modifier.height(50.dp))
             OutlinedButton(
-                onClick = { /*TODO CLICK LOGIC GOOGLE SIGN IN*/},
+                onClick = { vm.googleSignIn(credentialManager, context as Activity) },
                 colors = ButtonColors(Color.White, Color.Black, Color.White, Color.Black),
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.GOOGLE_BUTTON)
@@ -80,7 +89,7 @@ fun SignInMainScreen(
                 }
             }
             OutlinedButton(
-                onClick = { /*TODO CLICK LOGIC SIGN IN*/},
+                onClick = { vm.classicSignIn() },
                 colors = ButtonColors(Color.White, Color.Black, Color.White, Color.Black),
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.SIGN_IN_BUTTON)
@@ -95,11 +104,11 @@ fun SignInMainScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text =
-                    "Create an account", /*TODO remove comment when color theme correct color = MaterialTheme.colorScheme.secondary,*/
+                text = "Create an account",
+                color = MaterialTheme.colorScheme.secondary,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .clickable(enabled = true, onClick = { /*TODO CLICK LOGIC CREATE ACCOUNT*/})
+                        .clickable(enabled = true, onClick = { vm.createAccount() })
                         .testTag(SignInTags.CREATE_ACCOUNT_TEXT)
             )
         }
