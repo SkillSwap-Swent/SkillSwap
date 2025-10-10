@@ -78,6 +78,13 @@ jobs:
         run: |
           ./gradlew ktfmtFormat
 
+      - name: Checkout PR branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
+    
+
       - name: Commit formatting changes
         if: github.event_name == 'pull_request'
         run: |
