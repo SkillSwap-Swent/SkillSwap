@@ -31,17 +31,17 @@ class PostDataClassTest {
 
     val offer1 =
         Offer(
-        uid = "123",
-        title = "Offering help with Kotlin",
-        description = "Took CS-311. I am an expert in Kotlin",
-        ownerId = "user678",
-        tags = listOf(PostTag.REOCCURRING),
-        expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
-        creation = Timestamp.now(),
-        status = PostStatus.POSTED,
-        media = listOf("media_url_1", "media_url_2"),
-        paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
-    )
+            uid = "123",
+            title = "Offering help with Kotlin",
+            description = "Took CS-311. I am an expert in Kotlin",
+            ownerId = "user678",
+            tags = listOf(PostTag.REOCCURRING),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = listOf("media_url_1", "media_url_2"),
+            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+        )
 
     @Test
     fun testRequestDataClass() {
