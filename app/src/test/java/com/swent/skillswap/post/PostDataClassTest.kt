@@ -1,6 +1,7 @@
 package com.swent.skillswap.post
 
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
@@ -28,6 +29,20 @@ class PostDataClassTest {
             paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
         )
 
+    val offer1 =
+        Offer(
+        uid = "123",
+        title = "Offering help with Kotlin",
+        description = "Took CS-311. I am an expert in Kotlin",
+        ownerId = "user678",
+        tags = listOf(PostTag.REOCCURRING),
+        expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
+        creation = Timestamp.now(),
+        status = PostStatus.POSTED,
+        media = listOf("media_url_1", "media_url_2"),
+        paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+    )
+
     @Test
     fun testRequestDataClass() {
         val creationDate = Timestamp(Date())
@@ -35,7 +50,7 @@ class PostDataClassTest {
 
         val request =
             Request(
-                uid = "request123",
+                uid = "123",
                 title = "Need help with Kotlin",
                 description = "Looking for an expert to teach me Kotlin.",
                 ownerId = "user456",
@@ -47,7 +62,7 @@ class PostDataClassTest {
                 paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
             )
 
-        assertEquals("request123", request.uid)
+        assertEquals("123", request.uid)
         assertEquals("Need help with Kotlin", request.title)
         assertEquals("Looking for an expert to teach me Kotlin.", request.description)
         assertEquals("user456", request.ownerId)
@@ -61,8 +76,45 @@ class PostDataClassTest {
     }
 
     @Test
+    fun testOfferDataClass() {
+        val creationDate = Timestamp(Date())
+        val expiryDate = Timestamp(Date(System.currentTimeMillis() + 86400000)) // 1 day later
+
+        val offer =
+            Offer(
+                uid = "123",
+                title = "Offering help with Kotlin",
+                description = "Took CS-311. I am an expert in Kotlin",
+                ownerId = "user678",
+                tags = listOf(PostTag.REOCCURRING),
+                expiry = expiryDate,
+                creation = creationDate,
+                status = PostStatus.POSTED,
+                media = listOf("media_url_1", "media_url_2"),
+                paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+            )
+
+        assertEquals("123", offer.uid)
+        assertEquals("Offering help with Kotlin", offer.title)
+        assertEquals("Took CS-311. I am an expert in Kotlin", offer.description)
+        assertEquals("user678", offer.ownerId)
+        assertEquals(listOf(PostTag.REOCCURRING), offer.tags)
+        assertEquals(expiryDate, offer.expiry)
+        assertEquals(creationDate, offer.creation)
+        assertEquals(PostStatus.POSTED, offer.status)
+        assertEquals(listOf("media_url_1", "media_url_2"), offer.media)
+        assertEquals(listOf(PaymentMethod.SKILLS, PaymentMethod.CASH), offer.paymentMethods)
+        assertEquals(PostType.OFFER, offer.type)
+    }
+
+    @Test
     fun testRequestValidation_valid() {
         assertTrue(request1.validate())
+    }
+
+    @Test
+    fun testOfferValidation_valid() {
+        assertTrue(offer1.validate())
     }
 
     @Test
@@ -80,6 +132,23 @@ class PostDataClassTest {
 
         // Test invalid Tags
         assertFalse(baseRequest.copy(tags = emptyList()).validate())
+    }
+
+    @Test
+    fun testOfferValidation_invalid() {
+        val baseOffer = offer1.copy()
+
+        // Test invalid UID
+        assertFalse(baseOffer.copy(uid = "").validate())
+
+        // Test invalid Title
+        assertFalse(baseOffer.copy(title = "").validate())
+
+        // Test invalid Description
+        assertFalse(baseOffer.copy(description = "").validate())
+
+        // Test invalid Tags
+        assertFalse(baseOffer.copy(tags = emptyList()).validate())
     }
 
     @Test
