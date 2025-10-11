@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.swent.skillswap"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.swent.skillswap"

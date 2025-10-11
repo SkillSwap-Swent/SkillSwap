@@ -15,6 +15,7 @@ material = "1.11.0"
 composeBom = "2024.02.02"
 composeActivity = "1.8.2"
 composeViewModel = "2.7.0"
+navigationCompose = "2.7.7"
 lifecycleRuntimeKtx = "2.7.0"
 kaspresso = "1.5.5"
 robolectric = "4.11.1"
@@ -36,7 +37,6 @@ mapsCompose = "4.3.3"
 mapsComposeUtils = "4.3.0"
 # Networking
 okhttp = "4.12.0"
-navigationCompose = "2.9.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
