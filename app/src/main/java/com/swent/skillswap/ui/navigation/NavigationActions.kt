@@ -11,10 +11,6 @@ sealed class Screen(
     object SignInMain : Screen(route = "signIn", name = "signIn")
 
     object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
-
-    object Profile : Screen(route = "profile", name = "User profile")
-
-    object Feed : Screen(route = "feed", name = "Feed")
 }
 
 open class NavigationActions(
@@ -32,10 +28,6 @@ open class NavigationActions(
             return
         } */
         navController.navigate(screen.route) {
-            if (screen.isTopLevelDestination) {
-                launchSingleTop = true
-                popUpTo(screen.route) { inclusive = true }
-            }
             if (screen !is Screen.SignInMain) {
                 // Restore state when reselecting a previously selected item
                 restoreState = true
@@ -44,9 +36,9 @@ open class NavigationActions(
     }
 
     /** Navigate back to the previous screen. */
-    open fun goBack() {
+    /* open fun goBack() {
         navController.popBackStack()
-    }
+    } */
 
     /**
      * Get the current route of the navigation controller.
