@@ -34,6 +34,14 @@ class NavigationTest {
     }
 
     @Test
+    fun testSkillSwapAppWithDefaultNavController() {
+        composeTestRule.setContent { SkillSwapApp() }
+
+        // Verify initial screen is displayed
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
     fun testNavigateToChangesRoute() {
         val navigationActions = setupNavigation()
 
