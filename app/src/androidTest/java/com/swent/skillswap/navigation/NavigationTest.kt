@@ -56,4 +56,16 @@ class NavigationTest {
 
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "create_account") }
     }
+    
+    @Test
+    fun testNavigateBackToSignInMain() {
+      val navigationActions = setupNavigation()
+
+      composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInCreateAccount) }
+      composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "create_account") }
+
+      composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInMain) }
+      composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "signIn") }
+  }
+
 }
