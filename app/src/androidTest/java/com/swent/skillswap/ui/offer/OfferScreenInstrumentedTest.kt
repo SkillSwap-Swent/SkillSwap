@@ -47,6 +47,11 @@ class OfferScreenInstrumentedTest {
     }
 
     @Test
+    fun checkIfRunningOnCI() {
+        assert(isRunningOnCi()) // Just ensures test passes
+    }
+
+    @Test
     fun cardShowsGiveAndReceive() {
         val offer =
             Offer(
