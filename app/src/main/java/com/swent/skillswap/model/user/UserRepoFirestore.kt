@@ -1,7 +1,8 @@
 /*
+ * @author: Léo. MARTI
  * /!\ Written with help of Copilot
  * > complete all the repetitive code (construction of instances for example)
- * > helped me with all the firebase functions
+ * > helped me with the firebase functions and structure
  */
 
 package com.swent.skillswap.model.user
@@ -21,7 +22,9 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     override suspend fun getUser(userID: String): User {
         return try {
             val document =
-                db.collection(USERS_COLLECTION_PATH).get().await().documents.first{ it.id == userID }
+                db.collection(USERS_COLLECTION_PATH).get().await().documents.first {
+                    it.id == userID
+                }
             val data = document.data ?: throw Exception("No data found for user with ID: $userID")
 
             User(
@@ -33,7 +36,6 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 rating = (data["rating"] as? Number)?.toFloat() ?: 0f,
                 availability = deserializeAvailabilities(data["availability"] as String)
             )
-
         } catch (e: Exception) {
             Log.e("UserRepoFirestore", "Error while getting user in getUser", e)
             throw Exception("Error while getting user in getUser")
@@ -41,39 +43,41 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     }
 
     override suspend fun addUser(user: User) {
-        val userData : Map<String,Any> = mapOf(
-            "username" to user.username,
-            "email" to user.email,
-            "profilePicture" to user.profilePicture,
-            "skillSet" to serializeSkills(user.skillSet),
-            "rating" to user.rating,
-            "availability" to serializeAvailabilities(user.availability)
-        )
+        val userData: Map<String, Any> =
+            mapOf(
+                "username" to user.username,
+                "email" to user.email,
+                "profilePicture" to user.profilePicture,
+                "skillSet" to serializeSkills(user.skillSet),
+                "rating" to user.rating,
+                "availability" to serializeAvailabilities(user.availability)
+            )
 
-       db.collection(USERS_COLLECTION_PATH)
-            .document(user.uid)
-            .set(userData)
+        db.collection(USERS_COLLECTION_PATH).document(user.uid).set(userData)
     }
 
     override suspend fun editUser(userID: String, newValue: User) {
-        //check if user exists
+        // check if user exists
         if (
-            (db.collection(USERS_COLLECTION_PATH).get().await().documents
-            .firstOrNull {it.id == userID}) == null){
+            (db.collection(USERS_COLLECTION_PATH).get().await().documents.firstOrNull {
+                it.id == userID
+            }) == null
+        ) {
             Log.e("UserRepoFirestore", "Error while editing user in editUser")
             throw Exception("Error while editing user in editUser: user does not exist")
         }
 
-        //if user exist, edit it
+        // if user exist, edit it
         db.collection(USERS_COLLECTION_PATH)
             .document(userID)
-            .set(mapOf(
-                "username" to newValue.username,
-                "email" to newValue.email,
-                "profilePicture" to newValue.profilePicture,
-                "skillSet" to serializeSkills(newValue.skillSet),
-                "rating" to newValue.rating,
-                "availability" to serializeAvailabilities(newValue.availability)
+            .set(
+                mapOf(
+                    "username" to newValue.username,
+                    "email" to newValue.email,
+                    "profilePicture" to newValue.profilePicture,
+                    "skillSet" to serializeSkills(newValue.skillSet),
+                    "rating" to newValue.rating,
+                    "availability" to serializeAvailabilities(newValue.availability)
                 )
             )
     }
@@ -81,7 +85,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     override suspend fun deleteUser(userID: String) {
         try {
             db.collection(USERS_COLLECTION_PATH).document(userID).delete()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Log.e("UserRepoFirestore", "Error while deleting user in deleteUser", e)
             throw Exception("Error while deleting user in deleteUser")
         }
