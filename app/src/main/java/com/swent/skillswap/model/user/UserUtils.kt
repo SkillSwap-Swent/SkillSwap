@@ -14,19 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 
-/*
- * Serializable version of User to convert to/from JSON automatically with kotlinx.serialization
- */
-@Serializable
-data class SerializableUser(
-    val uid: String = "",
-    val username: String = "",
-    val email: String = "",
-    val profilePicture: String = "",
-    val skillSet: String = "",
-    val rating: Float = 0.0f,
-    val availability: String = ""
-)
+
 /*
  * Serializable version of Skill class to convert to/from JSON automatically with kotlinx.serialization
  */
@@ -47,35 +35,6 @@ data class SerializableAvailability(
     val endTime: String = ""
 )
 
-/* Main pair of function to serialize/deserialize User objects to/from JSON strings */
-
-fun serializeUser(user: User): String {
-    require(!user.rating.isNaN()) // rating should not be NaN => cannot be serialized by Json
-    val serialized =
-        SerializableUser(
-            user.uid,
-            user.username,
-            user.email,
-            user.profilePicture,
-            serializeSkills(user.skillSet),
-            user.rating,
-            serializeAvailabilities(user.availability)
-        )
-    return Json.encodeToString(serialized)
-}
-
-fun deserializeUser(user: String): User {
-    val deserialized = Json.decodeFromString<SerializableUser>(user)
-    return User(
-        deserialized.uid,
-        deserialized.username,
-        deserialized.email,
-        deserialized.profilePicture,
-        deserializeSkills(deserialized.skillSet),
-        deserialized.rating,
-        deserializeAvailabilities(deserialized.availability)
-    )
-}
 
 /* HELPER FUNCTIONS */
 /*
