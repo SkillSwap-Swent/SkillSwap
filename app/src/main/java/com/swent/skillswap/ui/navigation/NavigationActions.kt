@@ -36,9 +36,9 @@ open class NavigationActions(
     }
 
     /** Navigate back to the previous screen. */
-    /* open fun goBack() {
+    open fun goBack() {
         navController.popBackStack()
-    } */
+    }
 
     /**
      * Get the current route of the navigation controller.
