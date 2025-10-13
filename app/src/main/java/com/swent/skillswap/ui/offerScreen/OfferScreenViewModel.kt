@@ -92,7 +92,18 @@ class OfferScreenViewModel(
      */
     fun accept(offer: Offer) {
         repository.accept(offer, uid)
+
+        val state = _uiState.value
+        val remainingOffers = state.offers.filterNot { it == offer }
+
+        if (remainingOffers.isNotEmpty()) {
+            _uiState.value = state.copy(offers = remainingOffers, current = remainingOffers.last())
+        } else {
+            _uiState.value = state.copy(offers = emptyList(), current = Offer())
+            next()
+        }
     }
+
     /**
      * Updates the current offer to the previous one in the list, if available.
      *
@@ -116,6 +127,14 @@ class OfferScreenViewModel(
      */
     fun goToProfile(userId: String) {
         navigation.goToProfileView(userId)
+    }
+
+    fun skip() {
+        val currentOffer = uiState.value.current
+        if (currentOffer.give.isNotEmpty()) {
+            repository.skip(currentOffer, uid)
+            next()
+        }
     }
 
     /** Test helper: directly sets the UI state. Only use in tests. */
