@@ -8,19 +8,14 @@
 package com.swent.skillswap.UserFirestore
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
-import com.swent.skillswap.model.user.USERS_COLLECTION_PATH
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -46,7 +41,6 @@ class UserFireStoreTest {
             FirebaseEmulator.firestore.collection("users").document(doc.id).delete().await()
         }
     }
-
 
     @Test
     fun addAndRetrieveUserwithemptySkillAndAvaibility() = runBlocking {
@@ -79,16 +73,13 @@ class UserFireStoreTest {
 
     @Test
     fun addAndRetrieveUserwithSkillAndAvaibility() = runBlocking {
-        val skill1 = Skill(
-            name = SkillTag.COMPUTER_PROGRAMMING,
-            rank = 4.5f,
-            description = "I love programming"
-        )
-        val skill2 = Skill(
-            name = SkillTag.DATABASES,
-            rank = 3.0f,
-            description = "database is ez"
-        )
+        val skill1 =
+            Skill(
+                name = SkillTag.COMPUTER_PROGRAMMING,
+                rank = 4.5f,
+                description = "I love programming"
+            )
+        val skill2 = Skill(name = SkillTag.DATABASES, rank = 3.0f, description = "database is ez")
 
         val availability1 =
             com.swent.skillswap.model.user.Availability(
@@ -115,7 +106,7 @@ class UserFireStoreTest {
                 availability = listOf(availability1, availability2)
             )
 
-        //add user in firestore
+        // add user in firestore
         repo.addUser(user)
 
         assertEquals(user, repo.getUser(uid))
@@ -134,22 +125,19 @@ class UserFireStoreTest {
                 rating = 5.0f,
                 availability = listOf()
             )
-        //add the basci user
+        // add the basci user
         repo.addUser(basicUser)
 
         assertEquals(basicUser, repo.getUser(uid))
 
-        //the edited user
-        val skill1 = Skill(
-            name = SkillTag.COMPUTER_PROGRAMMING,
-            rank = 4.5f,
-            description = "I love programming"
-        )
-        val skill2 = Skill(
-            name = SkillTag.DATABASES,
-            rank = 3.0f,
-            description = "database is ez"
-        )
+        // the edited user
+        val skill1 =
+            Skill(
+                name = SkillTag.COMPUTER_PROGRAMMING,
+                rank = 4.5f,
+                description = "I love programming"
+            )
+        val skill2 = Skill(name = SkillTag.DATABASES, rank = 3.0f, description = "database is ez")
 
         val availability1 =
             com.swent.skillswap.model.user.Availability(
@@ -182,7 +170,7 @@ class UserFireStoreTest {
     @Test
     fun deleteSingleUserFromMultiple() = runBlocking {
 
-        //User 1
+        // User 1
         val uid1 = repo.getNewUid()
         val user1 =
             User(
@@ -195,17 +183,14 @@ class UserFireStoreTest {
                 availability = listOf()
             )
 
-        //User 2
-        val skill1 = Skill(
-            name = SkillTag.COMPUTER_PROGRAMMING,
-            rank = 4.5f,
-            description = "I love programming"
-        )
-        val skill2 = Skill(
-            name = SkillTag.DATABASES,
-            rank = 3.0f,
-            description = "database is ez"
-        )
+        // User 2
+        val skill1 =
+            Skill(
+                name = SkillTag.COMPUTER_PROGRAMMING,
+                rank = 4.5f,
+                description = "I love programming"
+            )
+        val skill2 = Skill(name = SkillTag.DATABASES, rank = 3.0f, description = "database is ez")
 
         val availability1 =
             com.swent.skillswap.model.user.Availability(
@@ -235,13 +220,13 @@ class UserFireStoreTest {
         repo.addUser(user1)
         repo.addUser(user2)
 
-        //delete user 1
+        // delete user 1
         repo.deleteUser(user1.uid)
 
-        //get user 1 should throw an exception
-        assertThrows(Exception::class.java) { runBlocking{repo.getUser(user1.uid)}}
+        // get user 1 should throw an exception
+        assertThrows(Exception::class.java) { runBlocking { repo.getUser(user1.uid) } }
 
-        //get user 2 should work
+        // get user 2 should work
         assertEquals(user2, repo.getUser(user2.uid))
     }
 }
