@@ -15,6 +15,7 @@ material = "1.11.0"
 composeBom = "2024.02.02"
 composeActivity = "1.8.2"
 composeViewModel = "2.7.0"
+navigationCompose = "2.7.7"
 lifecycleRuntimeKtx = "2.7.0"
 kaspresso = "1.5.5"
 robolectric = "4.11.1"
@@ -80,6 +81,7 @@ kaspresso = { group = "com.kaspersky.android-components", name = "kaspresso", ve
 kaspresso-compose = { group = "com.kaspersky.android-components", name = "kaspresso-compose-support", version.ref = "kaspresso" }
 
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

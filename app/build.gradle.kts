@@ -127,6 +127,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.reflect)
     globalTestImplementation(libs.androidx.junit)
