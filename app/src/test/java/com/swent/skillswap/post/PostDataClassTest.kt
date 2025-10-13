@@ -11,6 +11,7 @@ import com.swent.skillswap.model.tags.SkillTag
 import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -108,5 +109,10 @@ class PostDataClassTest {
 
         val skillTag = EveryTag.valueOf(SkillTag.ALGORITHMS.toString())
         assertEquals(SkillTag.ALGORITHMS.toString(), skillTag.toString())
+    }
+
+    @Test
+    fun testEveryTagCasting_incorrect() {
+        assertThrows(IllegalArgumentException::class.java) { EveryTag.valueOf("Walter White") }
     }
 }

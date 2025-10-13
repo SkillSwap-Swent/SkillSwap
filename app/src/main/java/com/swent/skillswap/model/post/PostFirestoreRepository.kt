@@ -33,7 +33,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
         val query: Query =
             buildQuery(type, ownerId, status, titleContains, paymentMethods, tags, numberOfPosts)
 
-        return query.get().await().map { documentToPost(it) }
+        return query.get().await().map { documentToPost(it) }.sortedByDescending { it.creation }
     }
 
     private fun buildQuery(
@@ -144,19 +144,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
                         media
                     )
                 // TODO("Replace with Offer when it's implemented")
-                PostType.OFFER ->
-                    Request(
-                        uid,
-                        title,
-                        description,
-                        ownerId,
-                        tags,
-                        paymentMethods,
-                        expiry,
-                        creation,
-                        status,
-                        media
-                    )
+                PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
@@ -164,7 +152,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
 
     private fun getCollectionPath(type: PostType): CollectionReference {
         return when (type) {
-            PostType.OFFER -> db.collection(OFFERS_COLLECTION_PATH)
+            PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
             PostType.REQUEST -> db.collection(REQUESTS_COLLECTION_PATH)
         }
     }

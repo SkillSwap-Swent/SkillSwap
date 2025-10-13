@@ -5,11 +5,11 @@ import com.google.firebase.Timestamp
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -49,137 +49,168 @@ class PostRepositoryInstrumentedTest {
     }
 
     @Test
-    fun addAndGet_roundTrip_success() = runBlocking {
-        val id = repo.getNewUid(PostType.REQUEST)
-        val req = request1.copy(uid = id)
+    fun addAndGet_roundTrip_success() {
+        runTest {
+            val id = repo.getNewUid(PostType.REQUEST)
+            val req = request1.copy(uid = id)
 
-        repo.addPost(req)
+            repo.addPost(req)
 
-        val fetched = repo.getPost(PostType.REQUEST, id) as Request
-        assertEquals(req.uid, fetched.uid)
-        assertEquals(req.title, fetched.title)
-        assertEquals(req.description, fetched.description)
-        assertEquals(req.ownerId, fetched.ownerId)
-        assertEquals(req.tags, fetched.tags)
-        assertEquals(req.paymentMethods, fetched.paymentMethods)
-        assertEquals(req.status, fetched.status)
-        assertEquals(req.media, fetched.media)
-        assertEquals(PostType.REQUEST, fetched.type)
+            val fetched = repo.getPost(PostType.REQUEST, id) as Request
+            assertEquals(req.uid, fetched.uid)
+            assertEquals(req.title, fetched.title)
+            assertEquals(req.description, fetched.description)
+            assertEquals(req.ownerId, fetched.ownerId)
+            assertEquals(req.tags, fetched.tags)
+            assertEquals(req.paymentMethods, fetched.paymentMethods)
+            assertEquals(req.status, fetched.status)
+            assertEquals(req.media, fetched.media)
+            assertEquals(PostType.REQUEST, fetched.type)
+        }
     }
 
     @Test
-    fun addPost_invalid_throws() = runBlocking {
+    fun addPost_invalid_throws() {
         val badId: String = repo.getNewUid(PostType.REQUEST)
         val badTitle: Request = request1.copy(uid = badId, title = "")
 
-        try {
-            repo.addPost(badTitle)
-            fail("Expected IllegalArgumentException when adding invalid post")
-        } catch (_: IllegalArgumentException) {
-            // expected — test passes
+        assertThrows(IllegalArgumentException::class.java) { runTest { repo.addPost(badTitle) } }
+    }
+
+    @Test
+    fun editPost_invalid_throws() {
+
+        runTest {
+            val id = repo.getNewUid(PostType.REQUEST)
+            val original = request1.copy(uid = id, title = "Need help with Kotlin")
+            repo.addPost(original)
+            val bad: Request = original.copy(title = "")
+
+            assertThrows(IllegalStateException::class.java) { runTest { repo.editPost(id, bad) } }
         }
     }
 
     @Test
-    fun editPost_invalid_throws() = runBlocking {
-        val id = repo.getNewUid(PostType.REQUEST)
-        val original = request1.copy(uid = id, title = "Need help with Kotlin")
-        repo.addPost(original)
-        val bad: Request = original.copy(title = "")
+    fun editPost_overwritesDocument() {
+        runTest {
+            val id = repo.getNewUid(PostType.REQUEST)
+            val original = request1.copy(uid = id, title = "Need help with Kotlin")
+            repo.addPost(original)
 
-        try {
-            repo.editPost(id, bad)
-            fail("Expected IllegalArgumentException when adding invalid post")
-        } catch (_: IllegalArgumentException) {
-            // expected — test passes
+            val updated =
+                original.copy(
+                    title = "Need help with Advanced Kotlin",
+                    description = "Coroutines & Flows deep dive"
+                )
+            repo.editPost(id, updated)
+
+            val fetched = repo.getPost(PostType.REQUEST, id) as Request
+            assertEquals("Need help with Advanced Kotlin", fetched.title)
+            assertEquals("Coroutines & Flows deep dive", fetched.description)
         }
     }
 
     @Test
-    fun editPost_overwritesDocument() = runBlocking {
-        val id = repo.getNewUid(PostType.REQUEST)
-        val original = request1.copy(uid = id, title = "Need help with Kotlin")
-        repo.addPost(original)
+    fun deletePost_removesDocument() {
+        runTest {
+            val id: String = repo.getNewUid(PostType.REQUEST)
+            val req: Request = request1.copy(uid = id)
+            repo.addPost(req)
 
-        val updated =
-            original.copy(
-                title = "Need help with Advanced Kotlin",
-                description = "Coroutines & Flows deep dive"
-            )
-        repo.editPost(id, updated)
+            repo.deletePost(PostType.REQUEST, id)
 
-        val fetched = repo.getPost(PostType.REQUEST, id) as Request
-        assertEquals("Need help with Advanced Kotlin", fetched.title)
-        assertEquals("Coroutines & Flows deep dive", fetched.description)
-    }
-
-    @Test
-    fun deletePost_removesDocument() = runBlocking {
-        val id: String = repo.getNewUid(PostType.REQUEST)
-        val req: Request = request1.copy(uid = id)
-        repo.addPost(req)
-
-        repo.deletePost(PostType.REQUEST, id)
-
-        try {
-            repo.getPost(PostType.REQUEST, id)
-            fail("Expected IllegalArgumentException when fetching a deleted post")
-        } catch (_: IllegalArgumentException) {
-            // ✅ expected — test passes
+            assertThrows(IllegalStateException::class.java) {
+                runTest { repo.getPost(PostType.REQUEST, id) }
+            }
         }
     }
 
     @Test
-    fun getMultiplePosts_filters_owner_and_status() = runBlocking {
-        val a1 =
-            request1.copy(
-                uid = repo.getNewUid(PostType.REQUEST),
-                ownerId = "ownerA",
-                status = PostStatus.POSTED
-            )
-        val a2 =
-            request1.copy(
-                uid = repo.getNewUid(PostType.REQUEST),
-                ownerId = "ownerA",
-                status = PostStatus.ARCHIVED
-            )
-        val b1 =
-            request1.copy(
-                uid = repo.getNewUid(PostType.REQUEST),
-                ownerId = "ownerB",
-                status = PostStatus.POSTED
-            )
-        repo.addPost(a1)
-        repo.addPost(a2)
-        repo.addPost(b1)
+    fun getMultiplePosts_filters_owner_and_status() {
 
-        val results =
-            repo.getMultiplePosts(
-                numberOfPosts = 10,
-                type = PostType.REQUEST,
-                ownerId = "ownerA",
-                status = PostStatus.POSTED
-            )
+        runTest {
+            val a1 =
+                request1.copy(
+                    uid = repo.getNewUid(PostType.REQUEST),
+                    ownerId = "ownerA",
+                    status = PostStatus.POSTED
+                )
+            val a2 =
+                request1.copy(
+                    uid = repo.getNewUid(PostType.REQUEST),
+                    ownerId = "ownerA",
+                    status = PostStatus.ARCHIVED
+                )
+            val b1 =
+                request1.copy(
+                    uid = repo.getNewUid(PostType.REQUEST),
+                    ownerId = "ownerB",
+                    status = PostStatus.POSTED
+                )
+            repo.addPost(a1)
+            repo.addPost(a2)
+            repo.addPost(b1)
 
-        assertEquals(1, results.size)
-        assertEquals(a1.uid, (results.first() as Request).uid)
+            val results =
+                repo.getMultiplePosts(
+                    numberOfPosts = 10,
+                    type = PostType.REQUEST,
+                    ownerId = "ownerA",
+                    status = PostStatus.POSTED
+                )
+
+            assertEquals(1, results.size)
+            assertEquals(a1.uid, (results.first() as Request).uid)
+        }
     }
 
     @Test
-    fun getMultiplePosts_searchKeys_filters() = runBlocking {
-        val id = repo.getNewUid(PostType.REQUEST)
-        val req = request1.copy(uid = id, title = "Need help with Kotlin Concurrency")
-        repo.addPost(req)
+    fun getMultiplePosts_searchKeys_filters() {
 
-        val results =
-            repo.getMultiplePosts(
-                numberOfPosts = 10,
-                type = PostType.REQUEST,
-                titleContains = "help Kotlin",
-                tags = listOf(PostTag.REOCCURRING),
-                paymentMethods = listOf(PaymentMethod.SKILLS)
-            )
+        runTest {
+            val id = repo.getNewUid(PostType.REQUEST)
+            val req = request1.copy(uid = id, title = "Need help with Kotlin Concurrency")
+            repo.addPost(req)
 
-        assertTrue(results.any { (it as Request).uid == id })
+            val results =
+                repo.getMultiplePosts(
+                    numberOfPosts = 10,
+                    type = PostType.REQUEST,
+                    titleContains = "help Kotlin",
+                    tags = listOf(PostTag.REOCCURRING),
+                    paymentMethods = listOf(PaymentMethod.SKILLS)
+                )
+
+            assertTrue(results.any { (it as Request).uid == id })
+        }
+    }
+
+    @Test
+    fun getPost_wrongType_throws() {
+        runTest {
+            val id = repo.getNewUid(PostType.REQUEST)
+            val req = request1.copy(uid = id)
+
+            assertThrows(IllegalStateException::class.java) {
+                runTest { repo.getPost(PostType.OFFER, id) }
+            }
+        }
+    }
+
+    @Test
+    fun deletePost_nonexistent_throws() {
+        runTest {
+            val ghost = repo.getNewUid(PostType.REQUEST)
+
+            assertThrows(IllegalStateException::class.java) {
+                runTest { repo.deletePost(PostType.REQUEST, ghost) }
+            }
+        }
+    }
+
+    // TODO: temporary tests while offers aren't implemented
+    @Test
+    fun getUid_Offer_fails() {
+        assertThrows(NotImplementedError::class.java) { repo.getNewUid(PostType.OFFER) }
     }
 }
