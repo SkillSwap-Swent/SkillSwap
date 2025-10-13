@@ -3,17 +3,11 @@ package com.swent.skillswap.navigation
 /* With the help of Claude Sonnet 4.5 for repetitive tasks */
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.performClick
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performTextInput
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.swent.skillswap.SkillSwapApp
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.signIn.SignInTags
-import com.swent.skillswap.ui.signIn.CreateAccountTags
-
 import org.junit.Rule
 import org.junit.Test
 
@@ -98,27 +92,26 @@ class NavigationTest {
 
     @Test
     fun testCurrentRouteReturnsEmptyWhenDestinationIsNull() {
-      lateinit var navController: NavHostController
-      lateinit var navigationActions: NavigationActions
+        lateinit var navController: NavHostController
+        lateinit var navigationActions: NavigationActions
 
-      composeTestRule.setContent {
-          // Create a nav controller without a proper NavHost setup
-          navController = rememberNavController()
-          navigationActions = NavigationActions(navController)
-      }
+        composeTestRule.setContent {
+            // Create a nav controller without a proper NavHost setup
+            navController = rememberNavController()
+            navigationActions = NavigationActions(navController)
+        }
 
-      composeTestRule.runOnIdle {
-          // Before any navigation graph is set, currentDestination should be null
-          assert(navController.currentDestination == null) {
-              "Expected null destination before NavHost setup"
-          }
+        composeTestRule.runOnIdle {
+            // Before any navigation graph is set, currentDestination should be null
+            assert(navController.currentDestination == null) {
+                "Expected null destination before NavHost setup"
+            }
 
-          // Verify currentRoute returns empty string for null destination
-          val route = navigationActions.currentRoute()
-          assert(route == "") {
-              "currentRoute() should return empty string when destination is null, got: $route"
-          }
-      }
-  }
-
+            // Verify currentRoute returns empty string for null destination
+            val route = navigationActions.currentRoute()
+            assert(route == "") {
+                "currentRoute() should return empty string when destination is null, got: $route"
+            }
+        }
+    }
 }
