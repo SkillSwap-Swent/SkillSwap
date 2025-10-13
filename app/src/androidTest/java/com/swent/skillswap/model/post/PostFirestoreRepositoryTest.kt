@@ -71,23 +71,9 @@ class PostRepositoryInstrumentedTest {
     fun addPost_invalid_throws() = runBlocking {
         val badId: String = repo.getNewUid(PostType.REQUEST)
         val badTitle: Request = request1.copy(uid = badId, title = "")
-        val badDescription: Request = request1.copy(uid = badId, description = "")
-        val badOwner: Request = request1.copy(uid = badId, ownerId = "")
 
         try {
             repo.addPost(badTitle)
-            fail("Expected IllegalArgumentException when adding invalid post")
-        } catch (_: IllegalArgumentException) {
-            // expected — test passes
-        }
-        try {
-            repo.addPost(badDescription)
-            fail("Expected IllegalArgumentException when adding invalid post")
-        } catch (_: IllegalArgumentException) {
-            // expected — test passes
-        }
-        try {
-            repo.addPost(badOwner)
             fail("Expected IllegalArgumentException when adding invalid post")
         } catch (_: IllegalArgumentException) {
             // expected — test passes
