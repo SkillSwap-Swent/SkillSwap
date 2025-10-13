@@ -19,22 +19,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,8 +42,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,7 +51,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags.SKILL_SUGGESTION_PREFIX
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.theme.SkillSwapHalfTransparent
+import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
+import com.swent.skillswap.ui.utils.SkillSwapTextField
 import com.swent.skillswap.viewModel.CreateAccountViewModel
 import com.swent.skillswap.viewModel.CreateAccountVmFactory
 import kotlin.Boolean
@@ -259,97 +251,6 @@ fun SignInCreateAccountScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
-}
-
-@Composable
-fun SkillSwapTextField(
-    modifier: Modifier = Modifier,
-    value: String = "",
-    supportText: String = "",
-    label: String = "",
-    placeholder: String = "",
-    onValueChange: (String) -> Unit = {},
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    enabled: Boolean = true
-) {
-    TextField(
-        value = value,
-        label = { Text(text = label, color = SkillSwapHalfTransparent) },
-        singleLine = true,
-        placeholder = { Text(text = placeholder, color = SkillSwapHalfTransparent) },
-        supportingText = {
-            Text(
-                text = supportText,
-                color = Color.Red,
-                modifier = Modifier.testTag(CreateAccountTags.ERROR)
-            )
-        },
-        onValueChange = { it -> onValueChange(it) },
-        keyboardOptions = keyboardOptions,
-        enabled = enabled,
-        shape = RoundedCornerShape(10.dp),
-        colors =
-            TextFieldDefaults.colors(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
-        modifier = modifier.fillMaxWidth(0.8f)
-    )
-}
-
-@Composable
-fun SkillSwapPasswordTextField(
-    modifier: Modifier = Modifier,
-    value: String = "",
-    supportText: String = "",
-    label: String = "",
-    placeholder: String = "",
-    onValueChange: (String) -> Unit = {},
-    enabled: Boolean = true,
-) {
-    var showPassword by remember { mutableStateOf(false) }
-    TextField(
-        value = value,
-        onValueChange = { it -> onValueChange(it) },
-        label = { Text(label, color = SkillSwapHalfTransparent) },
-        placeholder = { Text(placeholder, color = SkillSwapHalfTransparent) },
-        supportingText = {
-            Text(
-                text = supportText,
-                color = Color.Red,
-                modifier = Modifier.testTag(CreateAccountTags.ERROR)
-            )
-        },
-        singleLine = true,
-        keyboardOptions =
-            KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                autoCorrect = false,
-                capitalization = KeyboardCapitalization.None,
-                imeAction = ImeAction.Done
-            ),
-        shape = RoundedCornerShape(10.dp),
-        enabled = enabled,
-        colors =
-            TextFieldDefaults.colors(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
-        visualTransformation =
-            if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = {
-            val image = if (showPassword) Icons.Filled.Close else Icons.Filled.Search
-
-            val description = if (showPassword) "Hide password" else "Show password"
-
-            IconButton(onClick = { showPassword = !showPassword }) {
-                Icon(imageVector = image, contentDescription = description)
-            }
-        },
-        modifier = modifier.fillMaxWidth(0.8f)
-    )
 }
 
 @Composable
