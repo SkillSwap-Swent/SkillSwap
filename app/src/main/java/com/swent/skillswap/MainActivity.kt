@@ -6,13 +6,20 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.swent.skillswap.resources.C
+import com.swent.skillswap.ui.navigation.NavigationActions
+import com.swent.skillswap.ui.navigation.Screen
+import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
+import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,20 +33,31 @@ class MainActivity : ComponentActivity() {
                         Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    SkillSwapApp()
                 }
             }
         }
     }
 }
 
+// Enabling navController to be passed as an argument to facilitate testing
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(text = "Hello $name!", modifier = modifier.semantics { testTag = C.Tag.greeting })
-}
+fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
+    val navigationActions = remember(navController) { NavigationActions(navController) }
+    val startDestination = Screen.SignInMain.route
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SkillSwapAppTheme { Greeting("Android") }
+    NavHost(navController = navController, startDestination = startDestination) {
+        composable(Screen.SignInMain.route) {
+            SignInMainScreen(
+                goToCreateAccountScreen = {
+                    navigationActions.navigateTo(Screen.SignInCreateAccount)
+                },
+            )
+        }
+        composable(Screen.SignInCreateAccount.route) {
+            SignInCreateAccountScreen(
+                goToMainScreen = { navigationActions.navigateTo(Screen.SignInMain) },
+            )
+        }
+    }
 }
