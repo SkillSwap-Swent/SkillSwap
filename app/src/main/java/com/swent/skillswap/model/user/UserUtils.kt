@@ -14,7 +14,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 
-
 /*
  * Serializable version of Skill class to convert to/from JSON automatically with kotlinx.serialization
  */
@@ -34,7 +33,6 @@ data class SerializableAvailability(
     val startTime: String = "",
     val endTime: String = ""
 )
-
 
 /* HELPER FUNCTIONS */
 /*
