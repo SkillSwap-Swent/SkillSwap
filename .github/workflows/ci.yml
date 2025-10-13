@@ -29,7 +29,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of Sonar analysis (if we use Sonar Later)
-
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Kernel-based Virtual Machine (KVM) is an open source virtualization technology built into Linux. Enabling it allows the Android emulator to run faster.
       - name: Enable KVM group perms
@@ -77,11 +77,6 @@ jobs:
         run: |
           chmod +x ./gradlew          
 
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Format & commit (same-repo PRs)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
@@ -96,13 +91,11 @@ jobs:
             git add -A
             git commit -m "chore: auto format Kotlin files"
             git push
-          fi
-          
+          fi     
 
       - name: Run standard ktfmt check all PRs for SonarQube report
         run:
           ./gradlew ktfmtCheck
-
 
          # Decode secrets: google-services.json
       - name: Decode secrets
@@ -114,7 +107,6 @@ jobs:
           else
             echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
           fi  
-           
 
       # This step runs gradle commands to build the application
       - name: Assemble
