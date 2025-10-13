@@ -51,8 +51,7 @@ interface Post {
             description.isNotBlank() &&
             tags.isNotEmpty() &&
             paymentMethods.isNotEmpty() &&
-            expiry.toDate().after(Timestamp.now().toDate()) &&
-            creation.toDate().before(Timestamp.now().toDate())
+                (creation.toDate().before(Timestamp.now().toDate()) || creation.toDate() == Timestamp.now().toDate())
     }
 }
 
