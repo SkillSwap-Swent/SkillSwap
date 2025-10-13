@@ -102,7 +102,7 @@ class PostDataClassTest {
     }
 
     @Test
-    fun testEveryTagCasting(){
+    fun testEveryTagCasting() {
         val postTag = EveryTag.valueOf(PostTag.REOCCURRING.toString())
         assertEquals(PostTag.REOCCURRING.toString(), postTag.toString())
 

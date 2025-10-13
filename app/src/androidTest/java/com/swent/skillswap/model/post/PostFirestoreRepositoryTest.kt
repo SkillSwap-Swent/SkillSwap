@@ -70,12 +70,9 @@ class PostRepositoryInstrumentedTest {
     @Test
     fun addPost_invalid_throws() = runBlocking {
         val badId: String = repo.getNewUid(PostType.REQUEST)
-        val badTitle: Request =
-            request1.copy(uid = badId, title = "")
-        val badDescription: Request =
-            request1.copy(uid = badId, description = "")
-        val badOwner: Request =
-            request1.copy(uid = badId, ownerId = "")
+        val badTitle: Request = request1.copy(uid = badId, title = "")
+        val badDescription: Request = request1.copy(uid = badId, description = "")
+        val badOwner: Request = request1.copy(uid = badId, ownerId = "")
 
         try {
             repo.addPost(badTitle)
@@ -102,8 +99,7 @@ class PostRepositoryInstrumentedTest {
         val id = repo.getNewUid(PostType.REQUEST)
         val original = request1.copy(uid = id, title = "Need help with Kotlin")
         repo.addPost(original)
-        val bad: Request =
-            original.copy(title = "")
+        val bad: Request = original.copy(title = "")
 
         try {
             repo.editPost(id, bad)
@@ -124,7 +120,7 @@ class PostRepositoryInstrumentedTest {
                 title = "Need help with Advanced Kotlin",
                 description = "Coroutines & Flows deep dive"
             )
-        repo.editPost( id, updated)
+        repo.editPost(id, updated)
 
         val fetched = repo.getPost(PostType.REQUEST, id) as Request
         assertEquals("Need help with Advanced Kotlin", fetched.title)

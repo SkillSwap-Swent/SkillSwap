@@ -83,7 +83,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
     }
 
     override suspend fun addPost(post: Post) {
-        require(post.validate()) { "Post fields are invalid"}
+        require(post.validate()) { "Post fields are invalid" }
         getCollectionPath(post.type).document(post.uid).set(post).await()
     }
 
@@ -158,7 +158,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
                         media
                     )
             }
-        require (post.validate()) {"Post was not validated successfully"}
+        require(post.validate()) { "Post was not validated successfully" }
         return post
     }
 
