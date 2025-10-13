@@ -99,34 +99,25 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
 
     private fun documentToPost(document: DocumentSnapshot): Post {
         val uid = document.id
-        val title: String = document.getString("title") ?: throw IllegalArgumentException()
-        val description: String =
-            document.getString("description") ?: throw IllegalArgumentException()
-        val ownerId: String = document.getString("ownerId") ?: throw IllegalArgumentException()
+        val title: String = document.getString("title")!!
+        val description: String = document.getString("description")!!
+        val ownerId: String = document.getString("ownerId")!!
 
         @Suppress("UNCHECKED_CAST")
-        val tags =
-            (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }
-                ?: throw IllegalArgumentException("Tags missing or invalid")
+        val tags = (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }!!
 
         @Suppress("UNCHECKED_CAST")
         val paymentMethods =
-            (document.get("paymentMethods") as? List<String>)?.map { PaymentMethod.valueOf(it) }
-                ?: throw IllegalArgumentException("Invalid or missing paymentMethods")
+            (document.get("paymentMethods") as? List<String>)?.map { PaymentMethod.valueOf(it) }!!
 
-        val expiry = document.getTimestamp("expiry") ?: throw IllegalArgumentException()
-        val creation = document.getTimestamp("creation") ?: throw IllegalArgumentException()
+        val expiry = document.getTimestamp("expiry")!!
+        val creation = document.getTimestamp("creation")!!
 
-        val status =
-            document.getString("status")?.let { PostStatus.valueOf(it) }
-                ?: throw IllegalArgumentException("Invalid or missing post status")
+        val status = document.getString("status")?.let { PostStatus.valueOf(it) }!!
 
-        @Suppress("UNCHECKED_CAST")
-        val media = document.get("media") as? List<String> ?: throw IllegalArgumentException()
+        @Suppress("UNCHECKED_CAST") val media = (document.get("media") as? List<String>)!!
 
-        val postType =
-            document.getString("type")?.let { PostType.valueOf(it) }
-                ?: throw IllegalArgumentException("Invalid or missing post type")
+        val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
         val post =
             when (postType) {
