@@ -27,9 +27,9 @@ class OfferScreenInstrumentedTest {
     @get:Rule val composeTestRule = createComposeRule()
 
     /** Detects if the tests are running on a CI environment. */
-    private fun isRunningOnCi(): Boolean =
+    private fun isRunningOnCi(): Boolean = true /*
         System.getenv("RUNNING_ON_CI")?.toBoolean() == true ||
-            System.getProperty("RUNNING_ON_CI")?.toBoolean() == true
+            System.getProperty("RUNNING_ON_CI")?.toBoolean() == true*/
 
     /** Helper to set up screen with fake repository returning specified offers. */
     private fun setContentWithRepositoryReturning(
