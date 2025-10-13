@@ -70,12 +70,11 @@ interface PostRepository {
     /**
      * Edits an existing post in the database.
      *
-     * @param type PostType
      * @param postId The unique identifier of the post to edit.
      * @param newPost The new post object that will replace the old one.
      * @throws Exception Database exceptions will be thrown.
      */
-    suspend fun editPost(type: PostType, postId: String, newPost: Post)
+    suspend fun editPost(postId: String, newPost: Post)
 
     /**
      * Deletes a post from the database.

@@ -5,7 +5,9 @@ import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -97,5 +99,14 @@ class PostDataClassTest {
     @Test
     fun testPostTagsEnum() {
         PostTag.entries.forEach { assertEquals(it, PostTag.valueOf(it.name)) }
+    }
+
+    @Test
+    fun testEveryTagCasting(){
+        val postTag = EveryTag.valueOf(PostTag.REOCCURRING.toString())
+        assertEquals(PostTag.REOCCURRING.toString(), postTag.toString())
+
+        val skillTag = EveryTag.valueOf(SkillTag.ALGORITHMS.toString())
+        assertEquals(SkillTag.ALGORITHMS.toString(), skillTag.toString())
     }
 }

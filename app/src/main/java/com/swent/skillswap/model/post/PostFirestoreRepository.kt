@@ -83,14 +83,14 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
     }
 
     override suspend fun addPost(post: Post) {
-        if (!post.validate()) throw IllegalArgumentException("Post fields are invalid")
+        require(post.validate()) { "Post fields are invalid"}
         getCollectionPath(post.type).document(post.uid).set(post).await()
     }
 
-    override suspend fun editPost(type: PostType, postId: String, newPost: Post) {
-        if (!newPost.validate()) throw IllegalArgumentException("Post fields are invalid")
+    override suspend fun editPost(postId: String, newPost: Post) {
+        require(newPost.validate()) { "Post fields are invalid" }
 
-        getCollectionPath(type).document(postId).set(newPost).await()
+        getCollectionPath(newPost.type).document(postId).set(newPost).await()
     }
 
     override suspend fun deletePost(type: PostType, postId: String) {
@@ -158,7 +158,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
                         media
                     )
             }
-        if (!post.validate()) throw IllegalArgumentException("Post was not validated successfully")
+        require (post.validate()) {"Post was not validated successfully"}
         return post
     }
 
