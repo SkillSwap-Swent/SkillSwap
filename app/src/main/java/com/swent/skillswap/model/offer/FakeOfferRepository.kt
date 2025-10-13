@@ -43,9 +43,7 @@ class FakeOfferRepository : OfferRepository {
         skippedOffers.add(offer to userId)
     }
 
-    override fun getThumbnail(thumbnailId: String) {
-        /* noop */
-    }
+    override fun getThumbnail(thumbnailId: String) {}
 
     /** Helpers for assertions in tests */
     fun getAcceptedOffers(): List<Pair<Offer, String>> = acceptedOffers.toList()

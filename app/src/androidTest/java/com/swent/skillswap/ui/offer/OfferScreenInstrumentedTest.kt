@@ -18,6 +18,7 @@ import com.swent.skillswap.model.offer.FakeOfferNavigation
 import com.swent.skillswap.model.offer.FakeOfferRepository
 import com.swent.skillswap.model.offer.Offer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -271,5 +272,85 @@ class OfferScreenInstrumentedTest {
 
         val current = vm.uiState.value.current
         assert(current.give.isNotEmpty())
+    }
+
+    @Test
+    fun skip_callsSkipOnRepository() {
+        val repository = FakeOfferRepository()
+        val navigation = FakeOfferNavigation()
+        val vm = OfferScreenViewModel(navigation, repository)
+
+        val offer =
+            Offer(
+                give = "Teach Kotlin",
+                receive = "Learn Compose",
+                authorID = "author123",
+                thumbnail = "thumb123"
+            )
+
+        repository.preloadOffers(offer)
+        vm.setUiState(OfferScreenUiState(listOf(offer), offer))
+
+        vm.skip()
+
+        val skipped = repository.getSkippedOffers()
+        assert(skipped.size == 1) { "Expected 1 skipped offer, got ${skipped.size}" }
+        assert(skipped[0].first == offer) { "Expected skipped offer to be the same as input" }
+        assert(skipped[0].second.isNotEmpty()) { "Expected skip to include userId" }
+    }
+
+    @Test
+    fun previous_doesNotReturnAcceptedOffer() {
+        val repository = FakeOfferRepository()
+        val navigation = FakeOfferNavigation()
+        val vm = OfferScreenViewModel(navigation, repository)
+
+        val first = Offer(give = "A", receive = "1", authorID = "u1", thumbnail = "t1")
+        val second = Offer(give = "B", receive = "2", authorID = "u2", thumbnail = "t2")
+        val third = Offer(give = "C", receive = "3", authorID = "u3", thumbnail = "t3")
+
+        vm.setUiState(OfferScreenUiState(offers = listOf(first, second, third), current = first))
+
+        vm.accept(first)
+        val afterAccept = vm.uiState.value
+
+        vm.previous()
+        val afterPrevious = vm.uiState.value
+        vm.previous()
+        val afterSecondPrevious = vm.uiState.value
+
+        assertNotEquals(first, afterAccept.current)
+        assertEquals(second, afterPrevious.current)
+        assertEquals(afterPrevious, afterSecondPrevious)
+        assert(!afterPrevious.offers.contains(first))
+    }
+
+    @Test
+    fun next_resetsToFirstWhenCurrentOfferNotInList() {
+        // Arrange
+        val repository = FakeOfferRepository()
+        val navigation = FakeOfferNavigation()
+        val vm = OfferScreenViewModel(navigation, repository)
+
+        val first = Offer(give = "Offer 1", receive = "R1", authorID = "u1", thumbnail = "t1")
+        val second = Offer(give = "Offer 2", receive = "R2", authorID = "u2", thumbnail = "t2")
+        val unrelated = Offer(give = "Unrelated", receive = "R0", authorID = "u0", thumbnail = "t0")
+
+        vm.setUiState(
+            OfferScreenUiState(
+                offers = listOf(first, second),
+                current = unrelated // current not part of the list
+            )
+        )
+
+        vm.next()
+
+        val newState = vm.uiState.value
+        assertEquals(
+            "When current offer is not in the list, it should reset to the first offer.",
+            first,
+            newState.current
+        )
+        assertEquals("Offer list should remain unchanged.", listOf(first, second), newState.offers)
     }
 }
