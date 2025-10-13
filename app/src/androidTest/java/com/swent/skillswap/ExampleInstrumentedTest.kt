@@ -1,12 +1,14 @@
 package com.swent.skillswap
 
 import android.util.Log
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.FirebaseApp
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import com.swent.skillswap.screen.MainScreen
+import com.swent.skillswap.ui.signIn.SignInTags
 import com.swent.skillswap.utils.FirebaseEmulator
-import io.github.kakaocup.compose.node.element.ComposeScreen
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
@@ -26,14 +28,9 @@ class MainActivityTest : TestCase() {
     @Test
     fun test() = run {
         step("Start Main Activity") {
-            ComposeScreen.onComposeScreen<MainScreen>(composeTestRule) {
-                simpleText {
-                    FirebaseEmulator.startEmulator()
-                    assert(FirebaseEmulator.isRunning) { Log.e("Firebase", "not running") }
-                    assertIsDisplayed()
-                    assertTextEquals("Hello Android!")
-                }
-            }
+            FirebaseApp.initializeApp(ctx)
+            assert(FirebaseEmulator.isRunning) { Log.e("Firebase", "not running") }
+            composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
         }
     }
 }
