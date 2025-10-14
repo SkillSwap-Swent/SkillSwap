@@ -9,9 +9,9 @@ package com.swent.skillswap.model.user
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.swent.skillswap.model.firestore.*
 import kotlinx.coroutines.tasks.await
-
-const val USERS_COLLECTION_PATH = "users" // TODO: change loc
 
 class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
 
@@ -21,11 +21,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
 
     override suspend fun getUser(userID: String): User {
         return try {
-            val document =
-                db.collection(USERS_COLLECTION_PATH)
-                    .document(userID)
-                    .get()
-                    .await()
+            val document = db.collection(USERS_COLLECTION_PATH).document(userID).get().await()
             val data = document.data ?: throw Exception("No data found for user with ID: $userID")
 
             User(
@@ -75,8 +71,9 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                     "skillSet" to serializeSkills(newValue.skillSet),
                     "rating" to newValue.rating,
                     "availability" to serializeAvailabilities(newValue.availability)
-                )
-            ,SetOptions.merge())
+                ),
+                SetOptions.merge()
+            )
     }
 
     override suspend fun deleteUser(userID: String) {
