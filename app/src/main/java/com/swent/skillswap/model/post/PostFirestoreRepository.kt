@@ -10,14 +10,15 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
-import com.swent.skillswap.firebase.FirebasePaths
+import com.swent.skillswap.firebase.FirestorePaths
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
-    val offersCollection = db.collection(FirebasePaths.OFFERS_COLLECTION)
-    val requestsCollection = db.collection(FirebasePaths.REQUESTS_COLLECTION)
+    val offersCollection = db.collection(FirestorePaths.OFFERS_COLLECTION)
+    val requestsCollection = db.collection(FirestorePaths.REQUESTS_COLLECTION)
 
     override fun getNewUid(type: PostType): String {
         return getCollectionPath(type).document().id
@@ -89,7 +90,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         if (paymentMethods.isNotEmpty())
             searchKeys.addAll(paymentMethods.map { it.toString().lowercase() })
         if (tags.isNotEmpty()) searchKeys.addAll(tags.map { it.toString().lowercase() })
-        return searchKeys.distinct().take(10)
+        return searchKeys.distinct().take(FirestoreSettings.MAX_SEARCH_KEYS)
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {
