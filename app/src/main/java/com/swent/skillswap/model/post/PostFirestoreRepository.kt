@@ -13,7 +13,7 @@ import com.swent.skillswap.firebase.FirebasePaths
 import com.swent.skillswap.model.tags.EveryTag
 import kotlinx.coroutines.tasks.await
 
-class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepository {
+class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
     val offersCollection = db.collection(FirebasePaths.OFFERS_COLLECTION)
     val requestsCollection = db.collection(FirebasePaths.REQUESTS_COLLECTION)
