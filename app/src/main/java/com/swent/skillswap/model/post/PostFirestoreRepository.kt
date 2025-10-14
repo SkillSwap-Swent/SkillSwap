@@ -98,7 +98,12 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
 
     override suspend fun addPost(post: Post) {
         require(post.validate()) { "Post fields are invalid" }
-        getCollectionPath(post.type).document(post.uid).set(post).await()
+
+        val docRef = getCollectionPath(post.type).document(post.uid)
+        val snapshot = docRef.get().await()
+
+        require(!snapshot.exists()) { "Post with UID ${post.uid} already exists" }
+        docRef.set(post).await()
     }
 
     override suspend fun editPost(postId: String, newPost: Post) {
