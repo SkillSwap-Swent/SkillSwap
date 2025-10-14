@@ -2,49 +2,41 @@ package com.swent.skillswap.ui.profile
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.swent.skillswap.model.tags.SkillTag
 
 enum class ProfileScreenType {
     MAIN,
-    MY_SKILLS,
-    INFORMATION,
-    SECURITY,
-    ACCOUNT,
-    ACCOUNT_REVIEW,
-    ADD_ACCOUNTS
+    SKILLS,
+    EDIT_SKILLS
 }
 
 @Composable
-fun ProfileMainScreen() {
+fun ProfileMainScreen(
+    userSkills: Set<SkillTag> = emptySet(),
+    onSkillsUpdated: (Set<SkillTag>) -> Unit = {}
+) {
     var currentScreen by remember { mutableStateOf(ProfileScreenType.MAIN) }
+    var currentUserSkills by remember { mutableStateOf(userSkills) }
 
     when (currentScreen) {
         ProfileScreenType.MAIN -> {
             ProfileScreen(
-                onMySkillsClick = { currentScreen = ProfileScreenType.MY_SKILLS },
-                onInformationClick = { currentScreen = ProfileScreenType.INFORMATION },
-                onSecurityClick = { currentScreen = ProfileScreenType.SECURITY },
-                onAccountClick = { currentScreen = ProfileScreenType.ACCOUNT },
-                onAccountReviewClick = { currentScreen = ProfileScreenType.ACCOUNT_REVIEW },
-                onAddAccountsClick = { currentScreen = ProfileScreenType.ADD_ACCOUNTS }
+                userSkills = currentUserSkills,
+                onSkillsClick = { currentScreen = ProfileScreenType.EDIT_SKILLS }
             )
         }
-        ProfileScreenType.MY_SKILLS -> {
+        ProfileScreenType.SKILLS -> {
             MySkillsScreen(onBackClick = { currentScreen = ProfileScreenType.MAIN })
         }
-        ProfileScreenType.INFORMATION -> {
-            InformationScreen(onBackClick = { currentScreen = ProfileScreenType.MAIN })
-        }
-        ProfileScreenType.SECURITY -> {
-            SecurityScreen(onBackClick = { currentScreen = ProfileScreenType.MAIN })
-        }
-        ProfileScreenType.ACCOUNT -> {
-            AccountScreen(onBackClick = { currentScreen = ProfileScreenType.MAIN })
-        }
-        ProfileScreenType.ACCOUNT_REVIEW -> {
-            AccountReviewScreen(onBackClick = { currentScreen = ProfileScreenType.MAIN })
-        }
-        ProfileScreenType.ADD_ACCOUNTS -> {
-            AddAccountsScreen(onBackClick = { currentScreen = ProfileScreenType.MAIN })
+        ProfileScreenType.EDIT_SKILLS -> {
+            SkillsEditScreen(
+                currentSkills = currentUserSkills,
+                onBackClick = { currentScreen = ProfileScreenType.MAIN },
+                onSkillsUpdated = { updatedSkills ->
+                    currentUserSkills = updatedSkills
+                    onSkillsUpdated(updatedSkills)
+                }
+            )
         }
     }
 }
