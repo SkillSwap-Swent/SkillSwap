@@ -11,7 +11,7 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-const val USERS_COLLECTION_PATH = "users" // TODO: is it user ?
+const val USERS_COLLECTION_PATH = "users" // TODO: change loc
 
 class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
 
@@ -22,9 +22,10 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     override suspend fun getUser(userID: String): User {
         return try {
             val document =
-                db.collection(USERS_COLLECTION_PATH).get().await().documents.first {
-                    it.id == userID
-                }
+                db.collection(USERS_COLLECTION_PATH)
+                    .document(userID)
+                    .get()
+                    .await()
             val data = document.data ?: throw Exception("No data found for user with ID: $userID")
 
             User(
@@ -58,11 +59,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
 
     override suspend fun editUser(userID: String, newValue: User) {
         // check if user exists
-        if (
-            (db.collection(USERS_COLLECTION_PATH).get().await().documents.firstOrNull {
-                it.id == userID
-            }) == null
-        ) {
+        if (!db.collection(USERS_COLLECTION_PATH).document().get().await().exists()) {
             Log.e("UserRepoFirestore", "Error while editing user in editUser")
             throw Exception("Error while editing user in editUser: user does not exist")
         }
@@ -79,7 +76,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                     "rating" to newValue.rating,
                     "availability" to serializeAvailabilities(newValue.availability)
                 )
-            )
+            ,SetOptions.merge())
     }
 
     override suspend fun deleteUser(userID: String) {
