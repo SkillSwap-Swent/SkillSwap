@@ -9,6 +9,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirebasePaths
 import com.swent.skillswap.model.tags.EveryTag
 import kotlinx.coroutines.tasks.await
@@ -109,7 +110,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     override suspend fun editPost(postId: String, newPost: Post) {
         require(newPost.validate()) { "Post fields are invalid" }
 
-        getCollectionPath(newPost.type).document(postId).set(newPost).await()
+        getCollectionPath(newPost.type).document(postId).set(newPost, SetOptions.merge()).await()
     }
 
     override suspend fun deletePost(type: PostType, postId: String) {
