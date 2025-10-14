@@ -25,10 +25,10 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
     override suspend fun getMultiplePosts(
         numberOfPosts: Long,
         type: PostType,
-        titleContains: String?,
-        ownerId: String?,
-        paymentMethods: List<PaymentMethod>?,
-        tags: List<EveryTag>?,
+        titleContains: String,
+        ownerId: String,
+        paymentMethods: List<PaymentMethod>,
+        tags: List<EveryTag>,
         status: PostStatus?,
     ): List<Post> {
         val query: Query =
@@ -39,17 +39,17 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
 
     private fun buildQuery(
         type: PostType,
-        ownerId: String?,
+        ownerId: String,
         status: PostStatus?,
-        titleContains: String?,
-        paymentMethods: List<PaymentMethod>?,
-        tags: List<EveryTag>?,
+        titleContains: String,
+        paymentMethods: List<PaymentMethod>,
+        tags: List<EveryTag>,
         numberOfPosts: Long
     ): Query {
         var query: Query = getCollectionPath(type)
 
         // perform equal to filters
-        if (ownerId != null) {
+        if (ownerId != "") {
             query = query.whereEqualTo("ownerId", ownerId)
         }
         if (status != null) {
@@ -66,16 +66,29 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
         return query.limit(numberOfPosts)
     }
 
+    /**
+     * Builds a list of search keys from the given title, payment methods, and tags. The search keys
+     * are used to perform a complex search in Firestore.
+     *
+     * @param titleContains The title to search for.
+     * @param paymentMethods The payment methods to filter by.
+     * @param tags The tags to filter by.
+     * @return A list of search keys. Note: Firestore's 'array-contains-any' is limited to a maximum
+     *   of 10 elements in the comparison array, so this function returns at most 10 distinct search
+     *   keys.
+     */
     private fun buildSearchKeys(
-        titleContains: String?,
-        paymentMethods: List<PaymentMethod>?,
-        tags: List<EveryTag>?
-    ): MutableList<String> {
+        titleContains: String,
+        paymentMethods: List<PaymentMethod>,
+        tags: List<EveryTag>
+    ): List<String> {
         val searchKeys = mutableListOf<String>()
-        titleContains?.let { it -> searchKeys.addAll(it.split(" ").map { it.lowercase() }) }
-        paymentMethods?.let { it -> searchKeys.addAll(it.map { it.toString().lowercase() }) }
-        tags?.let { it -> searchKeys.addAll(it.map { it.toString().lowercase() }) }
-        return searchKeys
+        if (titleContains.isNotBlank())
+            searchKeys.addAll(titleContains.split(" ").map { it.lowercase() })
+        if (paymentMethods.isNotEmpty())
+            searchKeys.addAll(paymentMethods.map { it.toString().lowercase() })
+        if (tags.isNotEmpty()) searchKeys.addAll(tags.map { it.toString().lowercase() })
+        return searchKeys.distinct().take(10)
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {

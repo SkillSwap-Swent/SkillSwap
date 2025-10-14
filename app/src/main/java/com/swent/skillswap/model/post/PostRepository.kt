@@ -42,10 +42,10 @@ interface PostRepository {
         numberOfPosts: Long,
         type: PostType,
         // optional filters
-        titleContains: String? = null,
-        ownerId: String? = null,
-        paymentMethods: List<PaymentMethod>? = null,
-        tags: List<EveryTag>? = null,
+        titleContains: String = "",
+        ownerId: String = "",
+        paymentMethods: List<PaymentMethod> = emptyList(),
+        tags: List<EveryTag> = emptyList(),
         status: PostStatus? = null
     ): List<Post>
 
