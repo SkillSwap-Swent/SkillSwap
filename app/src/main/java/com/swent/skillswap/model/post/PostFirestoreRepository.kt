@@ -9,13 +9,14 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.swent.skillswap.firebase.FirebasePaths
 import com.swent.skillswap.model.tags.EveryTag
 import kotlinx.coroutines.tasks.await
 
-const val OFFERS_COLLECTION_PATH = "offers"
-const val REQUESTS_COLLECTION_PATH = "requests"
-
 class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepository {
+
+    val offersCollection = db.collection(FirebasePaths.OFFERS_COLLECTION)
+    val requestsCollection = db.collection(FirebasePaths.REQUESTS_COLLECTION)
 
     override fun getNewUid(type: PostType): String {
         return getCollectionPath(type).document().id
@@ -144,7 +145,7 @@ class PostFirestoreRepository(private val db: FirebaseFirestore) : PostRepositor
     private fun getCollectionPath(type: PostType): CollectionReference {
         return when (type) {
             PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
-            PostType.REQUEST -> db.collection(REQUESTS_COLLECTION_PATH)
+            PostType.REQUEST -> requestsCollection
         }
     }
 }
