@@ -55,7 +55,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
 
     override suspend fun editUser(userID: String, newValue: User) {
         // check if user exists
-        if (!db.collection(USERS_COLLECTION_PATH).document().get().await().exists()) {
+        if (!db.collection(USERS_COLLECTION_PATH).document(userID).get().await().exists()) {
             Log.e("UserRepoFirestore", "Error while editing user in editUser")
             throw Exception("Error while editing user in editUser: user does not exist")
         }
