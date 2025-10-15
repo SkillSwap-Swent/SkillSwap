@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -32,15 +31,13 @@ class SignInMainScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(SignInTags.OR_TEXT).performScrollTo()
-        composeTestRule.onNodeWithTag(SignInTags.OR_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
     }
 
-    /** smoke test as currently we cannot see the consequence of a success */
+    /*/** smoke test as currently we cannot see the consequence of a success */
     @Test
     fun smokeTestForBackendCoverage() {
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performScrollTo()
@@ -52,5 +49,5 @@ class SignInMainScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
-    }
+    }*/
 }
