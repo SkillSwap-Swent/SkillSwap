@@ -1,3 +1,4 @@
+// AI-Generated: Comprehensive test suite for profile screen components
 package com.swent.skillswap.screen
 
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider

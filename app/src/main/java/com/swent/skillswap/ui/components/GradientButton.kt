@@ -1,3 +1,4 @@
+// AI-Generated: Reusable gradient button component with primary/secondary styles
 package com.swent.skillswap.ui.components
 
 import androidx.compose.foundation.background
@@ -23,6 +24,15 @@ import com.swent.skillswap.ui.theme.ButtonGradientEnd
 import com.swent.skillswap.ui.theme.ButtonGradientStart
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
 
+/**
+ * A reusable gradient button component with primary and secondary styles.
+ *
+ * @param text The text to display on the button
+ * @param onClick The callback function when the button is clicked
+ * @param modifier The modifier to apply to the button
+ * @param isPrimary If true, uses primary gradient (blue), otherwise uses secondary gradient (gray)
+ * @param height The height of the button in dp
+ */
 @Composable
 fun GradientButton(
     text: String,

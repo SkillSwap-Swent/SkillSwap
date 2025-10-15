@@ -1,3 +1,4 @@
+// AI-Generated: Comprehensive test suite for profile screen components
 package com.swent.skillswap.ui.components
 
 import androidx.compose.ui.test.junit4.createComposeRule

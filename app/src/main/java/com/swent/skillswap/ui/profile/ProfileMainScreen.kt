@@ -1,3 +1,4 @@
+// AI-Generated: Profile navigation and state management
 package com.swent.skillswap.ui.profile
 
 import androidx.compose.runtime.*

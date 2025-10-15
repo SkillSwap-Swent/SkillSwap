@@ -1,3 +1,4 @@
+// AI-Generated: Profile screen with accordion-style layout and skills management
 package com.swent.skillswap.ui.profile
 
 import androidx.compose.animation.AnimatedVisibility
@@ -7,7 +8,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,11 +18,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -103,7 +100,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                 )
 
                 // Horizontal divider
-                HorizontalDivider()
+                ProfileDivider()
 
                 // My Username Section
                 AccordionSection(
@@ -127,11 +124,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                 color = Color.White,
                                 fontWeight = FontWeight.Medium,
                                 modifier =
-                                    Modifier.clickable(
-                                            interactionSource =
-                                                remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
+                                    Modifier.clickable {
                                             // TODO: Handle edit username
                                             println("Edit username clicked")
                                         }
@@ -142,7 +135,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                 )
 
                 // Horizontal divider
-                HorizontalDivider()
+                ProfileDivider()
 
                 // Skills Section
                 AccordionSection(
@@ -193,13 +186,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                 fontWeight = FontWeight.Medium,
                                 modifier =
                                     Modifier.fillMaxWidth()
-                                        .clickable(
-                                            interactionSource =
-                                                remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            onSkillsClick()
-                                        }
+                                        .clickable { onSkillsClick() }
                                         .padding(vertical = 8.dp, horizontal = 4.dp)
                             )
                         }
@@ -207,7 +194,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                 )
 
                 // Horizontal divider
-                HorizontalDivider()
+                ProfileDivider()
 
                 // My Preferences Section
                 AccordionSection(
@@ -220,13 +207,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                             Row(
                                 modifier =
                                     Modifier.fillMaxWidth()
-                                        .clickable(
-                                            interactionSource =
-                                                remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            selectedPreference = "Money"
-                                        }
+                                        .clickable { selectedPreference = "Money" }
                                         .padding(vertical = 8.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -264,13 +245,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                             Row(
                                 modifier =
                                     Modifier.fillMaxWidth()
-                                        .clickable(
-                                            interactionSource =
-                                                remember { MutableInteractionSource() },
-                                            indication = null
-                                        ) {
-                                            selectedPreference = "Skills"
-                                        }
+                                        .clickable { selectedPreference = "Skills" }
                                         .padding(vertical = 8.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -321,15 +296,7 @@ fun AccordionSection(
     Column(modifier = Modifier.fillMaxWidth()) {
         // Clickable header row
         Row(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        onToggle()
-                    }
-                    .padding(vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().clickable { onToggle() }.padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -358,18 +325,5 @@ fun AccordionSection(
         ) {
             content()
         }
-    }
-}
-
-@Composable
-fun HorizontalDivider() {
-    Canvas(modifier = Modifier.fillMaxWidth().height(1.dp)) {
-        drawLine(
-            color = ProfileDivider,
-            start = Offset(0f, 0f),
-            end = Offset(size.width, 0f),
-            strokeWidth = 1.dp.toPx(),
-            cap = StrokeCap.Round
-        )
     }
 }

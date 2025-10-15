@@ -1,3 +1,4 @@
+// AI-Generated: Extended color definitions for profile screen components
 package com.swent.skillswap.ui.theme
 
 import androidx.compose.ui.graphics.Color

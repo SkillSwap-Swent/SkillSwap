@@ -9,10 +9,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
-import com.swent.skillswap.resources.C
+import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,13 +18,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SkillSwapAppTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier =
-                        Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
+                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    ProfileTestScreen()
                 }
             }
         }
@@ -34,12 +30,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(text = "Hello $name!", modifier = modifier.semantics { testTag = C.Tag.greeting })
+fun ProfileTestScreen() {
+    Text(
+        text =
+            "Profile Screen Test\n\nTo test the profile screen:\n1. Open ProfileScreen.kt\n2. Use Android Studio Preview\n3. Or create a separate test project",
+        fontSize = 16.sp,
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    SkillSwapAppTheme { Greeting("Android") }
+fun ProfileTestPreview() {
+    SkillSwapAppTheme { ProfileTestScreen() }
 }

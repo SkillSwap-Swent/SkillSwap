@@ -1,3 +1,4 @@
+// AI-Generated: Reusable accordion section component with expand/collapse functionality
 package com.swent.skillswap.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
@@ -23,6 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
 
+/**
+ * A reusable accordion section component that can expand and collapse.
+ *
+ * @param title The title text displayed in the accordion header
+ * @param isExpanded Whether the accordion is currently expanded
+ * @param onToggle The callback function when the accordion header is clicked
+ * @param content The composable content to display when expanded
+ */
 @Composable
 fun AccordionSection(
     title: String,

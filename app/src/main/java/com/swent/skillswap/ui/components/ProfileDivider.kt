@@ -1,3 +1,4 @@
+// AI-Generated: Reusable horizontal divider component for profile screens
 package com.swent.skillswap.ui.components
 
 import androidx.compose.foundation.Canvas
@@ -10,6 +11,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.swent.skillswap.ui.theme.ProfileDivider
 
+/**
+ * A reusable horizontal divider component with consistent styling for profile screens. Uses the
+ * ProfileDivider color from the theme.
+ */
 @Composable
 fun ProfileDivider() {
     Canvas(modifier = Modifier.fillMaxWidth().height(1.dp)) {

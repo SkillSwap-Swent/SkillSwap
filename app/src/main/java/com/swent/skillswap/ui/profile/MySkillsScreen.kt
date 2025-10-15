@@ -1,3 +1,4 @@
+// AI-Generated: Simple skills display screen with back navigation
 package com.swent.skillswap.ui.profile
 
 import androidx.compose.foundation.layout.*
