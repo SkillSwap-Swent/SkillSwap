@@ -1,6 +1,9 @@
 package com.swent.skillswap.signIn
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -16,23 +19,27 @@ import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
+import com.swent.skillswap.viewModel.CreateAccountViewModel
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+val TextColorArgbKey = SemanticsPropertyKey<Int>("TextColorArgb")
+var SemanticsPropertyReceiver.textColorArgb by TextColorArgbKey
+
 @RunWith(AndroidJUnit4::class)
 class SignInCreateAccountScreenTest : TestCase() {
 
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+    val vm: CreateAccountViewModel = CreateAccountViewModel({}, false)
 
     @Before
     fun setUp() {
-        composeTestRule.setContent { SignInCreateAccountScreen() }
+        composeTestRule.setContent { SignInCreateAccountScreen(vm = vm) }
     }
 
     // --- Helpers ---
-
     private fun pressNext() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
     }
@@ -290,17 +297,21 @@ class SignInCreateAccountScreenTest : TestCase() {
     @Test
     fun skills_canAddAndRemoveSkill_withChipToggle() {
         goToSkillsStep()
+        val skillTag = SkillTag.MACHINE_DESIGN
+        val skillName = skillTag.name
 
-        val skillTag = SkillTag.MACHINE_DESIGN.name
-        val chipTag = CreateAccountTags.SKILL_CHIP_PREFIX + skillTag
+        val chipTag = CreateAccountTags.SKILL_CHIP_PREFIX + skillName
 
-        // Add (select) the skill
-        composeTestRule.onNodeWithTag(chipTag).performScrollTo().performClick()
-        composeTestRule.onNodeWithTag(chipTag).assertIsDisplayed()
+        // Scroll to and ensure displayed
+        composeTestRule.onNodeWithTag(chipTag).performScrollTo().assertIsDisplayed()
 
-        // Remove (toggle off) the same skill
+        // Select (click)
         composeTestRule.onNodeWithTag(chipTag).performClick()
-        composeTestRule.onNodeWithTag(chipTag).assertDoesNotExist()
+        assert(vm.uiState.value.skills.contains(skillTag))
+
+        // Deselect (click again)
+        composeTestRule.onNodeWithTag(chipTag).performClick()
+        assert(!vm.uiState.value.skills.contains(skillTag))
     }
 
     @Test

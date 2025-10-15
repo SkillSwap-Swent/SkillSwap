@@ -109,10 +109,10 @@ fun CreateAccountPreview() {
 fun SignInCreateAccountScreen(
     goToMainScreen: () -> Unit = {},
     googleAccount: Boolean =
-        false /*TODO Remove when using it in main app FirebaseAuth.getInstance().currentUser != null*/
-) {
-    val vm: CreateAccountViewModel =
+        false /*TODO Remove when using it in main app FirebaseAuth.getInstance().currentUser != null*/,
+    vm: CreateAccountViewModel =
         viewModel(factory = CreateAccountVmFactory(goToMainScreen, googleAccount))
+) {
     /*val uiState by vm.uiState.collectAsState()*/
     val scroll = rememberScrollState()
     val navController = rememberNavController()
