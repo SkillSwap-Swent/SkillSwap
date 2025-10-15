@@ -1,46 +1,35 @@
 package com.swent.skillswap.ui.profile
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.theme.SkillSwapHalfTransparent
+import com.swent.skillswap.ui.components.GradientButton
+import com.swent.skillswap.ui.theme.ProfileGradientEnd
+import com.swent.skillswap.ui.theme.ProfileGradientStart
+import com.swent.skillswap.ui.theme.ProfileTextPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +44,7 @@ fun SkillsEditScreen(
     var hasFocus by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Title
@@ -71,22 +58,23 @@ fun SkillsEditScreen(
 
         // Skills selection section
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(Color.Black, Color(0xFF2B5080))
+            modifier =
+                Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        brush =
+                            Brush.verticalGradient(
+                                colors = listOf(ProfileGradientStart, ProfileGradientEnd)
+                            )
                     )
-                )
-                .padding(16.dp)
+                    .padding(16.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 // Skills input section
                 Text(
                     text = "Add Skills",
                     fontSize = 16.sp,
-                    color = Color.White,
+                    color = ProfileTextPrimary,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -96,32 +84,36 @@ fun SkillsEditScreen(
                     onExpandedChange = { expanded = it },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val suggestions = remember(query) {
-                        SkillTag.entries
-                            .filter { skill ->
-                                query.isNotBlank() &&
-                                skill.name.contains(query, ignoreCase = true) &&
-                                skill !in selectedSkills
-                            }
-                            .take(5)
-                    }
+                    val suggestions =
+                        remember(query) {
+                            SkillTag.entries
+                                .filter { skill ->
+                                    query.isNotBlank() &&
+                                        skill.name.contains(query, ignoreCase = true) &&
+                                        skill !in selectedSkills
+                                }
+                                .take(5)
+                        }
 
                     TextField(
                         value = query,
                         onValueChange = { query = it },
                         label = { Text("Search skills", color = Color.White.copy(alpha = 0.7f)) },
-                        placeholder = { Text("Type to search...", color = Color.White.copy(alpha = 0.5f)) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .onFocusChanged { hasFocus = it.isFocused }
-                            .fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
+                        placeholder = {
+                            Text("Type to search...", color = Color.White.copy(alpha = 0.5f))
+                        },
+                        modifier =
+                            Modifier.menuAnchor()
+                                .onFocusChanged { hasFocus = it.isFocused }
+                                .fillMaxWidth(),
+                        colors =
+                            TextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
+                            ),
                         shape = RoundedCornerShape(8.dp)
                     )
 
@@ -133,13 +125,13 @@ fun SkillsEditScreen(
                     ) {
                         suggestions.forEach { skill ->
                             DropdownMenuItem(
-                                text = { 
+                                text = {
                                     Text(
-                                        skill.name.replace("_", " ").lowercase().replaceFirstChar { 
-                                            if (it.isLowerCase()) it.titlecase() else it.toString() 
+                                        skill.name.replace("_", " ").lowercase().replaceFirstChar {
+                                            if (it.isLowerCase()) it.titlecase() else it.toString()
                                         },
                                         color = Color.Black
-                                    ) 
+                                    )
                                 },
                                 onClick = {
                                     selectedSkills = selectedSkills + skill
@@ -161,11 +153,7 @@ fun SkillsEditScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                Box(
-                    modifier = Modifier
-                        .height(120.dp)
-                        .fillMaxWidth()
-                ) {
+                Box(modifier = Modifier.height(120.dp).fillMaxWidth()) {
                     val flowScroll = rememberScrollState()
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -174,18 +162,19 @@ fun SkillsEditScreen(
                     ) {
                         selectedSkills.forEach { skill ->
                             Box(
-                                modifier = Modifier
-                                    .background(
-                                        color = Color.White.copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(16.dp)
-                                    )
-                                    .clickable { selectedSkills = selectedSkills - skill }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                                modifier =
+                                    Modifier.background(
+                                            color = Color.White.copy(alpha = 0.2f),
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .clickable { selectedSkills = selectedSkills - skill }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
                             ) {
                                 Text(
-                                    text = skill.name.replace("_", " ").lowercase().replaceFirstChar { 
-                                        if (it.isLowerCase()) it.titlecase() else it.toString() 
-                                    },
+                                    text =
+                                        skill.name.replace("_", " ").lowercase().replaceFirstChar {
+                                            if (it.isLowerCase()) it.titlecase() else it.toString()
+                                        },
                                     fontSize = 12.sp,
                                     color = Color.White
                                 )
@@ -204,75 +193,23 @@ fun SkillsEditScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Cancel button
-            Button(
+            GradientButton(
+                text = "Cancel",
                 onClick = onBackClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Gray.copy(alpha = 0.3f),
-                                    Color.Gray.copy(alpha = 0.5f)
-                                )
-                            )
-                        )
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Cancel",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+                modifier = Modifier.weight(1f),
+                isPrimary = false
+            )
 
             // Save button
-            Button(
+            GradientButton(
+                text = "Save",
                 onClick = {
                     onSkillsUpdated(selectedSkills)
                     onBackClick()
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF0F3F66),
-                                    Color(0xFF1E7ECC)
-                                )
-                            )
-                        )
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Save",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+                modifier = Modifier.weight(1f),
+                isPrimary = true
+            )
         }
     }
 }
