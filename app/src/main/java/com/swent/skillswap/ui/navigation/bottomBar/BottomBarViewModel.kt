@@ -29,7 +29,7 @@ enum class BottomBarScreen {
  * @property selectedScreen The currently selected screen in the bottom bar.
  * @author Joey Gugler Made Using Ai (chatGPT)
  */
-data class BottomBarUiState(val selectedScreen: BottomBarScreen = BottomBarScreen.PROFILE)
+data class BottomBarUiState(val selectedScreen: BottomBarScreen = BottomBarScreen.OFFER)
 
 /**
  * ViewModel for the [BottomBar] composable.
@@ -42,7 +42,7 @@ data class BottomBarUiState(val selectedScreen: BottomBarScreen = BottomBarScree
  * @property uiState The observable UI state of the bottom bar.
  * @author Joey Gugler Made Using Ai (chatGPT)
  */
-class BottomBarViewModel(val navigation: NavigationBottomBar = FakeNavigationBottomBar()) {
+class BottomBarViewModel(val navigation: NavigationBottomBar) {
     /** UI state observed by the BottomBar composable. */
     var uiState: MutableState<BottomBarUiState> = mutableStateOf(BottomBarUiState())
         private set

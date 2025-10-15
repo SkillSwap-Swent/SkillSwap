@@ -11,6 +11,12 @@ sealed class Screen(
     object SignInMain : Screen(route = "signIn", name = "signIn")
 
     object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
+
+    object Offers : Screen(route = "offers", name = "offers")
+
+    object Profile : Screen(route = "profile", name = "profile")
+
+    object Chat : Screen(route = "chat", name = "chat")
 }
 
 open class NavigationActions(
