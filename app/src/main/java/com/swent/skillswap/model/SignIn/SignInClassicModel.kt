@@ -1,9 +1,6 @@
 /** @author Topaze17 used ChatGPT for comment. */
 package com.swent.skillswap.model.SignIn
 
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.tasks.await
-
 /**
  * Handles classic (email and password) authentication using Firebase Authentication.
  *
@@ -13,14 +10,16 @@ import kotlinx.coroutines.tasks.await
 class SignInClassicModel : SignInAbstractClass() {
 
     override suspend fun signIn(params: SignInParams) {
+        /* TODO remove when refactor backend
         val classicParams: SignInClassicParams = params as SignInClassicParams
         val email = classicParams.email
         val password = classicParams.password
         require(email.isNotBlank() && password.isNotBlank()) { "Email and password required." }
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()*/
     }
 
     override suspend fun createAccount(params: CreateAccountParams) {
+        /*TODO remove when refactor backend
         val classicParams: CreateAccountClassicParams = params as CreateAccountClassicParams
         val email = classicParams.email
         val password = classicParams.password
@@ -31,7 +30,7 @@ class SignInClassicModel : SignInAbstractClass() {
                 password.isNotBlank() &&
                 skills.isNotEmpty() &&
                 username.isNotBlank()
-        )
+        )*/
         /*TODO Wait for UserUtils
         val auth = FirebaseAuth.getInstance()
         val result = auth.createUserWithEmailAndPassword(email, password).await()

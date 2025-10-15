@@ -1,5 +1,5 @@
 package com.swent.skillswap.signIn
-
+/* TODO remove when backend online
 import com.swent.skillswap.model.SignIn.CreateAccountClassicParams
 import com.swent.skillswap.model.SignIn.CreateAccountGoogleParams
 import com.swent.skillswap.model.SignIn.SignInClassicModel
@@ -86,3 +86,4 @@ class SignInGoogleModel {
         model.createAccount(CreateAccountGoogleParams(username = "Bob", skills = setOf()))
     }
 }
+*/

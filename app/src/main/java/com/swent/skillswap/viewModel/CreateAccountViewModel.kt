@@ -11,6 +11,7 @@ import com.swent.skillswap.model.SignIn.SignInClassicModel
 import com.swent.skillswap.model.SignIn.SignInGoogleModel
 import com.swent.skillswap.model.SignIn.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.signIn.CreateAccountRoutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -59,87 +60,98 @@ class CreateAccountViewModel(
     }
 
     /** Adds a single skill to the selected skills set. */
-    fun addSkill(skill: SkillTag) {
+    private fun addSkill(skill: SkillTag) {
         _uiState.update { current -> current.copy(skills = current.skills + skill) }
     }
 
     /** Removes a single skill from the selected skills set. */
-    fun removeSkill(skill: SkillTag) {
+    private fun removeSkill(skill: SkillTag) {
         _uiState.update { current -> current.copy(skills = current.skills - skill) }
     }
-    /**
-     * Validates all fields of the current [CreateAccountUIState] and updates the corresponding
-     * error messages.
-     *
-     * Validation rules:
-     * - **Username** must not be blank.
-     * - **Email** must match a standard email pattern.
-     * - **Password** must be at least 8 characters long and contain an uppercase letter.
-     * - **Confirm password** must match the password.
-     * - **At least one skill** must be selected.
-     *
-     * @return `true` if all fields are valid, `false` otherwise.
-     */
-    fun validateInputs(): Boolean {
-        val current = _uiState.value
 
-        // --- Username ---
-        val usernameError = if (current.username.isBlank()) "Username cannot be empty" else ""
+    fun clickSkill(skill: SkillTag) {
+        if (_uiState.value.skills.contains(skill)) removeSkill(skill) else addSkill(skill)
+    }
+    // ---------- Tiny validators ----------
+    private val emailRegex by lazy { "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex() }
 
-        // --- Email ---
-        val emailError =
-            if (isGoogleAccount) ""
-            else {
-                val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex()
-                when {
-                    current.email.isBlank() -> "Email cannot be empty"
-                    !emailRegex.matches(current.email) -> "Invalid email format"
-                    else -> ""
-                }
+    private fun validateUsername(): Boolean {
+        val ok = _uiState.value.username.isNotBlank()
+        _uiState.update { it.copy(usernameError = if (ok) "" else "Username cannot be empty") }
+        return ok
+    }
+
+    private fun validateEmail(): Boolean {
+        if (isGoogleAccount) {
+            _uiState.update { it.copy(emailError = "") }
+            return true
+        }
+        val email = _uiState.value.email
+        val msg =
+            when {
+                email.isBlank() -> "Email cannot be empty"
+                !emailRegex.matches(email) -> "Invalid email format"
+                else -> ""
             }
+        _uiState.update { it.copy(emailError = msg) }
+        return msg.isEmpty()
+    }
 
-        // --- Password ---
-        val passwordError =
-            if (isGoogleAccount) ""
-            else
-                when {
-                    current.password.isBlank() -> "Password cannot be empty"
-                    current.password.length < 8 -> "Password must be at least 8 characters long"
-                    !current.password.any { it.isUpperCase() } ->
-                        "Password must contain at least one uppercase letter"
-                    else -> ""
-                }
-
-        // --- Confirm Password ---
-        val confirmPasswordError =
-            if (isGoogleAccount) ""
-            else
-                when {
-                    current.confirmPassword.isBlank() -> "Please confirm your password"
-                    current.confirmPassword != current.password -> "Passwords do not match"
-                    else -> ""
-                }
-
-        // --- Skills ---
-        val skillsError =
-            if (current.skills.isEmpty()) "At least one skill must be selected" else ""
-
-        // --- Result ---
-        val hasErrors =
-            listOf(usernameError, emailError, passwordError, confirmPasswordError, skillsError)
-                .any { it.isNotEmpty() }
-
-        _uiState.update {
-            it.copy(
-                usernameError = usernameError,
-                emailError = emailError,
-                passwordError = passwordError,
-                confirmPasswordError = confirmPasswordError,
-                skillsError = skillsError
-            )
+    private fun validatePasswords(): Boolean {
+        if (isGoogleAccount) {
+            _uiState.update { it.copy(passwordError = "", confirmPasswordError = "") }
+            return true
         }
 
-        return !hasErrors
+        val pwd = _uiState.value.password
+        val confirm = _uiState.value.confirmPassword
+
+        val passwordError =
+            when {
+                pwd.isBlank() -> "Password cannot be empty"
+                pwd.length < 8 -> "Password must be at least 8 characters long"
+                !pwd.any { it.isUpperCase() } ->
+                    "Password must contain at least one uppercase letter"
+                else -> ""
+            }
+
+        val confirmError =
+            when {
+                confirm.isBlank() -> "Please confirm your password"
+                confirm != pwd -> "Passwords do not match"
+                else -> ""
+            }
+
+        _uiState.update {
+            it.copy(passwordError = passwordError, confirmPasswordError = confirmError)
+        }
+
+        return passwordError.isEmpty() && confirmError.isEmpty()
+    }
+
+    private fun validateSkills(): Boolean {
+        val ok = _uiState.value.skills.isNotEmpty()
+        _uiState.update {
+            it.copy(skillsError = if (ok) "" else "At least one skill must be selected")
+        }
+        return ok
+    }
+
+    // ---------- Aggregate validator ----------
+    fun validateInputs(): Boolean {
+        val results =
+            listOf(validateUsername(), validateEmail(), validatePasswords(), validateSkills())
+        return results.all { it }
+    }
+
+    fun validateByRoute(route: String): Boolean {
+        return when (route) {
+            CreateAccountRoutes.USERNAME -> validateUsername()
+            CreateAccountRoutes.EMAIL -> validateEmail()
+            CreateAccountRoutes.PASSWORD -> validatePasswords()
+            CreateAccountRoutes.SKILLS -> validateSkills()
+            else -> false // Unknown route
+        }
     }
 
     fun done() =
