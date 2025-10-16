@@ -103,12 +103,14 @@ class NewRequestViewModel(private val postRepository: PostRepository) : ViewMode
                 val uid = postRepository.getNewUid(PostType.REQUEST)
 
                 // Create Request with current UI state + dummy values
+                // TODO: Properly fill in with valid values, see
+                // https://github.com/SkillSwap-Swent/SkillSwap/issues/135
                 val request =
                     Request(
                         uid = uid,
                         title = _uiState.value.title,
                         description = _uiState.value.description,
-                        ownerId = "DUMMY_USER_ID", // TODO: Get from Firebase Auth current user
+                        ownerId = "DUMMY_USER_ID",
                         tags = _uiState.value.tags,
                         paymentMethods = _uiState.value.paymentMethods.toList(),
                         expiry =
