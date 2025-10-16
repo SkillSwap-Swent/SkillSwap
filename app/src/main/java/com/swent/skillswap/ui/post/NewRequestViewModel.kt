@@ -39,6 +39,10 @@ class NewRequestViewModel(private val postRepository: PostRepository) : ViewMode
     private val _uiState = MutableStateFlow(NewRequestUIState())
     val uiState: StateFlow<NewRequestUIState> = _uiState
 
+    companion object {
+        const val REQUEST_LIFESPAN_DAYS = 30L * 24 * 60 * 60 * 1000
+    }
+
     fun setTitle(newTitle: String) {
         _uiState.update {
             it.copy(
@@ -109,7 +113,7 @@ class NewRequestViewModel(private val postRepository: PostRepository) : ViewMode
                         paymentMethods = _uiState.value.paymentMethods.toList(),
                         expiry =
                             Timestamp(
-                                Date(System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000)
+                                Date(System.currentTimeMillis() + REQUEST_LIFESPAN_DAYS)
                             ), // DUMMY
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,

@@ -296,6 +296,7 @@ fun NewRequestScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 GradientButton(
                     onClick = { newRequestViewModel.createRequest() },
+                    enabled = !uiState.isLoading,
                     modifier =
                         Modifier.fillMaxWidth()
                             .padding(vertical = 16.dp)
