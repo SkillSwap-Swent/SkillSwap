@@ -141,6 +141,10 @@ jobs:
         run: |
           ./gradlew jacocoTestCoverageVerification --parallel --build-cache
 
+      - name: Print line coverage
+        if: ${{ always() }}  # print even if previous step failed
+        run: ./gradlew jacocoPrintLineCoverage
+
       # Upload the various reports to sonar
       - name: Upload report to SonarCloud
         env:

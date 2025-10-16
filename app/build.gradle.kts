@@ -110,10 +110,8 @@ sonar {
         property("sonar.junit.reportPaths", "${project.layout.buildDirectory.get()}/test-results/testDebugunitTest/")
         // Paths to xml files with Android Lint issues. If the main flavor is changed, this file will have to be changed too.
         property("sonar.androidLint.reportPaths", "${project.layout.buildDirectory.get()}/reports/lint-results-debug.xml")
-
-        // REPLACED WITH JACOCO CODE GATE
         // Paths to JaCoCo XML coverage report files.
-        // property("sonar.coverage.jacoco.xmlReportPaths", "${project.layout.buildDirectory.get()}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+         property("sonar.coverage.jacoco.xmlReportPaths", "${project.layout.buildDirectory.get()}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
     }
 }
 
@@ -239,6 +237,43 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
                 minimum = BigDecimal("0.80")
             }
         }
+    }
+}
+
+tasks.register("jacocoPrintLineCoverage") {
+    dependsOn("jacocoTestReport")
+    doLast {
+        // Matches your sonar.coverage.jacoco.xmlReportPaths
+        val xmlFile = layout.buildDirectory
+            .file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+            .get().asFile
+
+        require(xmlFile.exists()) { "JaCoCo XML not found at: ${xmlFile.absolutePath}" }
+
+        val doc = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+            .newDocumentBuilder().parse(xmlFile)
+
+        val counters = doc.getElementsByTagName("counter")
+        var bestCovered = 0L
+        var bestMissed = 0L
+
+        for (i in 0 until counters.length) {
+            val e = counters.item(i) as org.w3c.dom.Element
+            if (e.getAttribute("type") == "LINE") {
+                val covered = e.getAttribute("covered").toLong()
+                val missed  = e.getAttribute("missed").toLong()
+                // pick the largest total (the report-level counter)
+                if (covered + missed > bestCovered + bestMissed) {
+                    bestCovered = covered
+                    bestMissed = missed
+                }
+            }
+        }
+
+        val total = bestCovered + bestMissed
+        val pct = if (total == 0L) 0.0 else bestCovered.toDouble() / total * 100.0
+        println("JaCoCo LINE coverage: %,.2f%% (%d/%d lines covered)"
+            .format(pct, bestCovered, total))
     }
 }
 
