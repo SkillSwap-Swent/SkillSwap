@@ -30,8 +30,13 @@ class NewRequestScreenTest {
     private lateinit var mockRepository: PostRepository
     private lateinit var viewModel: NewRequestViewModel
 
+    private var useDefaultSetup = true
+
     @Before
     fun setUp() {
+        // Reset flag for each test
+        useDefaultSetup = true
+
         // Fake repository
         mockRepository =
             object : PostRepository {
@@ -59,14 +64,19 @@ class NewRequestScreenTest {
             }
 
         viewModel = NewRequestViewModel(mockRepository)
+    }
 
-        composeTestRule.setContent {
-            NewRequestScreen(newRequestViewModel = viewModel, onGoBack = {}, onPostCreated = {})
+    private fun setDefaultContent() {
+        if (useDefaultSetup) {
+            composeTestRule.setContent {
+                NewRequestScreen(newRequestViewModel = viewModel, onGoBack = {}, onPostCreated = {})
+            }
         }
     }
 
     @Test
     fun testAllComponentsAreDisplayed() {
+        setDefaultContent()
         composeTestRule.onNodeWithTag(NewRequestScreenTestTags.BACK_BUTTON).assertIsDisplayed()
 
         composeTestRule.onNodeWithTag(NewRequestScreenTestTags.TITLE_INPUT).assertIsDisplayed()
@@ -90,6 +100,7 @@ class NewRequestScreenTest {
 
     @Test
     fun title_showsError_whenEmpty() {
+        setDefaultContent()
         composeTestRule.onNodeWithTag(NewRequestScreenTestTags.TITLE_INPUT).performTextInput("Test")
 
         composeTestRule.onNodeWithTag(NewRequestScreenTestTags.TITLE_INPUT).performTextClearance()
@@ -101,6 +112,7 @@ class NewRequestScreenTest {
 
     @Test
     fun description_showsError_whenEmpty() {
+        setDefaultContent()
         composeTestRule
             .onNodeWithTag(NewRequestScreenTestTags.DESCRIPTION_INPUT)
             .performScrollTo()
@@ -117,6 +129,7 @@ class NewRequestScreenTest {
 
     @Test
     fun tags_canAddTag_bySearchingAndSelecting() {
+        setDefaultContent()
         composeTestRule
             .onNodeWithTag(NewRequestScreenTestTags.TAGS_INPUT)
             .performScrollTo()
@@ -143,6 +156,7 @@ class NewRequestScreenTest {
 
     @Test
     fun tags_canRemoveTag_byClickingChip() {
+        setDefaultContent()
         viewModel.addTag(SkillTag.DIGITAL_LOGIC)
 
         composeTestRule.waitForIdle()
@@ -163,6 +177,7 @@ class NewRequestScreenTest {
 
     @Test
     fun paymentMethod_canToggle_byClickingChip() {
+        setDefaultContent()
         composeTestRule
             .onNodeWithTag("${NewRequestScreenTestTags.PAYMENT_METHOD_CHIP}_CASH")
             .performScrollTo()
@@ -182,6 +197,7 @@ class NewRequestScreenTest {
 
     @Test
     fun paymentMethod_canSelectMultiple() {
+        setDefaultContent()
         composeTestRule
             .onNodeWithTag("${NewRequestScreenTestTags.PAYMENT_METHOD_CHIP}_CASH")
             .performScrollTo()
@@ -197,23 +213,102 @@ class NewRequestScreenTest {
         assert(viewModel.uiState.value.paymentMethods.contains(PaymentMethod.SKILLS))
     }
 
-    /*
     @Test
-    fun backButton_triggersOnGoBack_callback() {
-        var backPressed = false
+    fun createButton_whenValidInput_createsRequestAndTriggersCallback() {
+        // Skip default setup for this test
+        useDefaultSetup = false
+
+        var postCreated = false
+        var capturedPost: Post? = null
+
+        // Create custom mock repository for this test
+        mockRepository =
+            object : PostRepository {
+                override fun getNewUid(type: PostType): String = "test-uid-123"
+
+                override suspend fun getMultiplePosts(
+                    numberOfPosts: Long,
+                    type: PostType,
+                    titleContains: String,
+                    ownerId: String,
+                    paymentMethods: List<PaymentMethod>,
+                    tags: List<EveryTag>,
+                    status: com.swent.skillswap.model.post.PostStatus?
+                ): List<Post> = emptyList()
+
+                override suspend fun getPost(type: PostType, postId: String): Post {
+                    throw NotImplementedError()
+                }
+
+                override suspend fun addPost(post: Post) {
+                    capturedPost = post
+                }
+
+                override suspend fun editPost(postId: String, newPost: Post) {}
+
+                override suspend fun deletePost(type: PostType, postId: String) {}
+            }
+
+        viewModel = NewRequestViewModel(mockRepository)
 
         composeTestRule.setContent {
             NewRequestScreen(
-                onGoBack = { backPressed = true },
-                onPostCreated = {}
+                newRequestViewModel = viewModel,
+                onGoBack = {},
+                onPostCreated = { postCreated = true }
             )
         }
 
+        // Fill in valid form data
+        composeTestRule
+            .onNodeWithTag(NewRequestScreenTestTags.TITLE_INPUT)
+            .performTextInput("Learn monetary theory")
+
+        composeTestRule
+            .onNodeWithTag(NewRequestScreenTestTags.DESCRIPTION_INPUT)
+            .performScrollTo()
+            .performTextInput("I need to learn why the ECB is the devil")
+
+        composeTestRule
+            .onNodeWithTag(NewRequestScreenTestTags.TAGS_INPUT)
+            .performScrollTo()
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag(NewRequestScreenTestTags.TAGS_INPUT)
+            .performTextInput("DIGITAL_LOGIC")
+
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(NewRequestScreenTestTags.BACK_BUTTON).performClick()
+        composeTestRule
+            .onNodeWithTag("${NewRequestScreenTestTags.TAG_SUGGESTION}_DIGITAL_LOGIC")
+            .performClick()
 
-        assert(backPressed)
+        composeTestRule
+            .onNodeWithTag("${NewRequestScreenTestTags.PAYMENT_METHOD_CHIP}_SKILLS")
+            .performScrollTo()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        // Click create button
+        composeTestRule
+            .onNodeWithTag(NewRequestScreenTestTags.CREATE_BUTTON)
+            .performScrollTo()
+            .performClick()
+
+        // Wait for async operation to complete
+        composeTestRule.waitForIdle()
+
+        // Verify onPostCreated callback was triggered
+        assert(postCreated) { "onPostCreated callback should be called on success" }
+
+        // Verify the post was created with correct data
+        assert(capturedPost != null) { "Post should be added to repository" }
+        assert(capturedPost?.title == "Learn monetary theory")
+        assert(capturedPost?.description == "I need to learn why the ECB is the devil")
+        assert(capturedPost?.tags?.contains(SkillTag.DIGITAL_LOGIC) == true)
+        assert(capturedPost?.paymentMethods?.contains(PaymentMethod.SKILLS) == true)
+        assert(capturedPost?.uid == "test-uid-123")
     }
-     */
 }
