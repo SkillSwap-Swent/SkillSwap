@@ -17,6 +17,7 @@ import com.swent.skillswap.ui.theme.getLinearBrush
 fun GradientButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     gradient: List<Color> = DefaultGradient,
     contentColor: Color = Color.White,
     disableContentColor: Color = Color.Gray,
@@ -25,6 +26,7 @@ fun GradientButton(
 ) {
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         colors =
             ButtonColors(Color.Transparent, contentColor, Color.Transparent, disableContentColor),
         border = null,
