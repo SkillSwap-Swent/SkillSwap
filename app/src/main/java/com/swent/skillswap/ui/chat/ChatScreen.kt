@@ -156,7 +156,7 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
                 Text(
                     text =
                         post.tags.take(2).joinToString(", ") {
-                            it.name.replace("_", " ").lowercase().replaceFirstChar { char ->
+                            it.toString().replace("_", " ").lowercase().replaceFirstChar { char ->
                                 if (char.isLowerCase()) char.titlecase() else char.toString()
                             }
                         },

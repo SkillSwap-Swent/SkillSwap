@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.SkillTag
@@ -28,7 +29,7 @@ class PostConversationItemTest {
         title: String,
         ownerId: String,
         tags: List<SkillTag> = listOf(SkillTag.COMPUTER_PROGRAMMING)
-    ): Request {
+    ): Post {
         val now = Timestamp.now()
         val future = Timestamp(now.seconds + 86400, 0)
 

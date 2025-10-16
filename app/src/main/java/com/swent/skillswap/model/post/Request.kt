@@ -15,9 +15,8 @@ data class Request(
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
+    override val type: PostType = PostType.REQUEST
 ) : Post {
-    override val type: PostType
-        get() = PostType.REQUEST
 
     // TODO: implement proper validation logic
     // https://github.com/orgs/SkillSwap-Swent/projects/1/views/2?filterQuery=&pane=issue&itemId=132697400

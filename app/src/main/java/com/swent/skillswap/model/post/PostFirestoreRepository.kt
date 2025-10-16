@@ -12,6 +12,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
+import com.swent.skillswap.model.offer.Offer
 import com.swent.skillswap.model.tags.EveryTag
 import kotlinx.coroutines.tasks.await
 
@@ -155,8 +156,24 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         status,
                         media
                     )
-                // TODO("Replace with Offer when it's implemented")
-                PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
+                PostType.OFFER ->
+                    Offer(
+                        give = title, // Use title as give for legacy compatibility
+                        receive = "", // Empty for now
+                        authorID = ownerId, // Use ownerId as authorID for legacy compatibility
+                        thumbnail = "", // Empty for now
+                        uid = uid,
+                        title = title,
+                        description = description,
+                        ownerId = ownerId,
+                        tags = tags,
+                        paymentMethods = paymentMethods,
+                        expiry = expiry,
+                        creation = creation,
+                        status = status,
+                        media = media,
+                        type = PostType.OFFER
+                    )
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
@@ -164,7 +181,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
     private fun getCollectionPath(type: PostType): CollectionReference {
         return when (type) {
-            PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
+            PostType.OFFER -> offersCollection
             PostType.REQUEST -> requestsCollection
         }
     }

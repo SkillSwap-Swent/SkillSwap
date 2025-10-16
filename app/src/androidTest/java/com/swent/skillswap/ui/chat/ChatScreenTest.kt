@@ -10,7 +10,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.offer.Offer
 import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
@@ -31,22 +33,38 @@ class ChatScreenTest {
         ownerId: String,
         type: PostType,
         tags: List<SkillTag> = listOf(SkillTag.COMPUTER_PROGRAMMING)
-    ): Request {
+    ): Post {
         val now = Timestamp.now()
         val future = Timestamp(now.seconds + 86400, 0)
 
-        return Request(
-            uid = uid,
-            title = title,
-            description = "Test description",
-            ownerId = ownerId,
-            tags = tags,
-            paymentMethods = listOf(PaymentMethod.SKILLS),
-            expiry = future,
-            creation = now,
-            status = PostStatus.POSTED,
-            media = emptyList()
-        )
+        return when (type) {
+            PostType.OFFER ->
+                Offer(
+                    uid = uid,
+                    title = title,
+                    description = "Test description",
+                    ownerId = ownerId,
+                    tags = tags,
+                    paymentMethods = listOf(PaymentMethod.SKILLS),
+                    expiry = future,
+                    creation = now,
+                    status = PostStatus.POSTED,
+                    media = emptyList()
+                )
+            PostType.REQUEST ->
+                Request(
+                    uid = uid,
+                    title = title,
+                    description = "Test description",
+                    ownerId = ownerId,
+                    tags = tags,
+                    paymentMethods = listOf(PaymentMethod.SKILLS),
+                    expiry = future,
+                    creation = now,
+                    status = PostStatus.POSTED,
+                    media = emptyList()
+                )
+        }
     }
 
     private fun createSampleUser(uid: String, username: String): User {

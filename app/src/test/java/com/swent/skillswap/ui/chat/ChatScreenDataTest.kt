@@ -58,6 +58,9 @@ class ChatScreenDataTest {
     @Test
     fun getSamplePosts_containsOfferPosts() {
         val posts = ChatScreenData.getSamplePosts()
+        posts.forEach { post ->
+            println("Post ${post.uid}: type = ${post.type}, class = ${post::class.simpleName}")
+        }
         val offerPosts = posts.filter { it.type == PostType.OFFER }
 
         assertEquals(3, offerPosts.size)
