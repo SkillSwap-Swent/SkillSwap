@@ -58,7 +58,7 @@ object BottomBarTestTag {
  * @author Joey Gugler Made Using Ai (chatGPT)
  */
 @Composable
-fun BottomBar(vm: BottomBarViewModel) {
+fun BottomBar(vm: BottomBarViewModel = BottomBarViewModel()) {
     val state by vm.uiState
     Row(
         modifier =
