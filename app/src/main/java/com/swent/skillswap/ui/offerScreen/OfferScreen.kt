@@ -1,7 +1,10 @@
 package com.swent.skillswap.ui.offerScreen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -10,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 /**
  * Displays the main Offer screen.
@@ -47,7 +52,17 @@ fun OfferScreen(
                                 x > swipeThreshold -> vm.accept(offer) // swipe right
                             }
                         }
-                    },
+                    }
+                    .border(
+                        width = 1.34.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(percent = 15)
+                    ),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+            shape = RoundedCornerShape(percent = 15),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
@@ -55,26 +70,69 @@ fun OfferScreen(
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    modifier = Modifier.testTag(OfferScreenTestTags.OFFER_GIVE),
-                    text = offer.give.ifEmpty { "No offer available" },
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center
-                )
+                Box(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .border(
+                                width = 1.34.dp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                shape = RoundedCornerShape(percent = 50)
+                            )
+                            .background(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = RoundedCornerShape(percent = 50)
+                            )
+                            .padding(12.dp)
+                            .testTag(OfferScreenTestTags.OFFER_GIVE),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = offer.give.ifEmpty { "No offer available" },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        textAlign = TextAlign.Center
+                    )
+                }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
                     thickness = DividerDefaults.Thickness,
-                    color = DividerDefaults.color
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
-                Text(
-                    modifier = Modifier.testTag(OfferScreenTestTags.OFFER_RECEIVE),
-                    text = offer.receive.ifEmpty { "—" },
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
+                Box(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .border(
+                                width = 1.34.dp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                shape = RoundedCornerShape(percent = 50)
+                            )
+                            .background(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = RoundedCornerShape(percent = 50)
+                            )
+                            .padding(12.dp)
+                            .testTag(OfferScreenTestTags.OFFER_RECEIVE),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = offer.receive.ifEmpty { "—" },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BottomBarPreview() {
+    SkillSwapAppTheme(dynamicColor = false) {
+        val vm = remember { OfferScreenViewModel() }
+        OfferScreen(vm)
     }
 }
