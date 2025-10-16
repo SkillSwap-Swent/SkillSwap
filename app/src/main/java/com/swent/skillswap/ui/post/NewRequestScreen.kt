@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.utils.GradientButton
@@ -167,7 +168,7 @@ fun NewRequestScreen(
                                     tagsQuery.value.isNotBlank() &&
                                         it.name.contains(tagsQuery.value, ignoreCase = true)
                                 }
-                                .take(5)
+                                .take(MAX_SEARCH_KEYS)
                         }
 
                     // Could be using SkillSwapTextField for consistency
