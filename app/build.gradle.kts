@@ -222,6 +222,46 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
     })
 }
 
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    // reuse the same inputs as your report task
+    val report = tasks.named<JacocoReport>("jacocoTestReport")
+    classDirectories.setFrom(report.get().classDirectories)
+    sourceDirectories.setFrom(report.get().sourceDirectories)
+    executionData.setFrom(report.get().executionData)
+
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal("0.80")
+            }
+        }
+    }
+}
+
+tasks.register("printLineCoverage") {
+    dependsOn("jacocoTestReport")
+    doLast {
+        val xml = tasks.named<JacocoReport>("jacocoTestReport")
+            .get().reports.xml.outputLocation.get().asFile
+        val doc = javax.xml.parsers.DocumentBuilderFactory
+            .newInstance().newDocumentBuilder().parse(xml)
+        val counters = doc.getElementsByTagName("counter")
+        var covered = 0L; var missed = 0L
+        for (i in 0 until counters.length) {
+            val e = counters.item(i) as org.w3c.dom.Element
+            if (e.getAttribute("type") == "LINE") {
+                covered += e.getAttribute("covered").toLong()
+                missed  += e.getAttribute("missed").toLong()
+            }
+        }
+        val total = covered + missed
+        val pct = if (total == 0L) 0.0 else covered.toDouble() / total * 100.0
+        println("JaCoCo LINE coverage: ${"%.2f".format(pct)}% ($covered/$total)")
+    }
+}
+
 configurations.forEach { configuration ->
     // Exclude protobuf-lite from all configurations
     // This fixes a fatal exception for tests interacting with Cloud Firestore

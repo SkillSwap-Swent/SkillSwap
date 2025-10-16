@@ -132,12 +132,18 @@ jobs:
             export RUNNING_ON_CI=true
             ./gradlew connectedCheck --parallel --build-cache -PRUNNING_ON_CI=$RUNNING_ON_CI
 
-
-
       # This step generates the coverage report which will be uploaded to sonar
       - name: Generate Coverage Report
         run: |
           ./gradlew jacocoTestReport
+
+      - name: Verify line coverage (JaCoCo)
+        run: |
+          ./gradlew jacocoTestCoverageVerification --parallel --build-cache
+
+      - name: Print line coverage
+        if: ${{ always() }}  # print even if previous step failed
+        run: ./gradlew printLineCoverage
 
       # Upload the various reports to sonar
       - name: Upload report to SonarCloud
