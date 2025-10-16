@@ -1,0 +1,131 @@
+// AI-Generated: Sample data for chat screen demonstration
+// This file provides mock data for testing and demonstrating the chat screen functionality.
+// It includes sample users and posts with realistic data that matches the Post and User models,
+// enabling comprehensive testing of the chat interface without requiring Firebase integration.
+package com.swent.skillswap.ui.chat
+
+import com.google.firebase.Timestamp
+import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.post.PostStatus
+import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.User
+
+/** Sample data provider for chat screen demonstration */
+object ChatScreenData {
+
+    fun getSampleUsers(): Map<String, User> {
+        return mapOf(
+            "user1" to
+                User(
+                    uid = "user1",
+                    username = "Alex Johnson",
+                    email = "alex@example.com",
+                    profilePicture = "",
+                    skillSet = setOf(),
+                    rating = 4.5f,
+                    availability = listOf()
+                ),
+            "user2" to
+                User(
+                    uid = "user2",
+                    username = "Sarah Chen",
+                    email = "sarah@example.com",
+                    profilePicture = "",
+                    skillSet = setOf(),
+                    rating = 4.8f,
+                    availability = listOf()
+                ),
+            "user3" to
+                User(
+                    uid = "user3",
+                    username = "Mike Rodriguez",
+                    email = "mike@example.com",
+                    profilePicture = "",
+                    skillSet = setOf(),
+                    rating = 4.2f,
+                    availability = listOf()
+                ),
+            "user4" to
+                User(
+                    uid = "user4",
+                    username = "Emma Wilson",
+                    email = "emma@example.com",
+                    profilePicture = "",
+                    skillSet = setOf(),
+                    rating = 4.9f,
+                    availability = listOf()
+                )
+        )
+    }
+
+    fun getSamplePosts(): List<Request> {
+        val now = Timestamp.now()
+        val future = Timestamp(now.seconds + 86400, 0) // 1 day from now
+
+        return listOf(
+            // Offer posts
+            Request(
+                uid = "post1",
+                title = "Spanish Tutoring",
+                description = "Native Spanish speaker offering conversational practice",
+                ownerId = "user1",
+                tags = listOf(SkillTag.LINEAR_ALGEBRA, SkillTag.CALCULUS),
+                paymentMethods = listOf(PaymentMethod.SKILLS),
+                expiry = future,
+                creation = now,
+                status = PostStatus.POSTED,
+                media = emptyList()
+            ),
+            Request(
+                uid = "post2",
+                title = "Graphic Design Help",
+                description = "Professional designer offering logo and branding assistance",
+                ownerId = "user2",
+                tags = listOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES),
+                paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH),
+                expiry = future,
+                creation = now,
+                status = PostStatus.POSTED,
+                media = emptyList()
+            ),
+            Request(
+                uid = "post3",
+                title = "Bike Repair Service",
+                description = "Experienced mechanic offering bike maintenance and repair",
+                ownerId = "user3",
+                tags = listOf(SkillTag.PHYSICS_MECHANICS, SkillTag.MATERIALS_ENGINEERING),
+                paymentMethods = listOf(PaymentMethod.SKILLS),
+                expiry = future,
+                creation = now,
+                status = PostStatus.POSTED,
+                media = emptyList()
+            ),
+            // Request posts
+            Request(
+                uid = "post4",
+                title = "Need Math Tutor",
+                description = "Looking for help with calculus and linear algebra",
+                ownerId = "user4",
+                tags = listOf(SkillTag.CALCULUS, SkillTag.LINEAR_ALGEBRA),
+                paymentMethods = listOf(PaymentMethod.SKILLS),
+                expiry = future,
+                creation = now,
+                status = PostStatus.POSTED,
+                media = emptyList()
+            ),
+            Request(
+                uid = "post5",
+                title = "Web Development Help",
+                description = "Need assistance with React and JavaScript projects",
+                ownerId = "user1",
+                tags = listOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.ALGORITHMS),
+                paymentMethods = listOf(PaymentMethod.SKILLS),
+                expiry = future,
+                creation = now,
+                status = PostStatus.POSTED,
+                media = emptyList()
+            )
+        )
+    }
+}
