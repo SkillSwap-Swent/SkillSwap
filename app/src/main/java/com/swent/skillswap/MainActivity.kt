@@ -86,7 +86,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             }
             composable(Screen.SignInCreateAccount.route) {
                 SignInCreateAccountScreen(
-                    goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                    goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
                 )
             }
 
