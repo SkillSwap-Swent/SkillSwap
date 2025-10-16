@@ -56,7 +56,10 @@ class BottomBarTest {
 
     @Test
     fun bottomBar_containerIsDisplayed() {
-        composeTestRule.setContent { BottomBar(BottomBarViewModel()) }
+        val fakeNav = FakeNavigationBottomBar()
+        composeTestRule.setContent { BottomBar(BottomBarViewModel(
+            navigation = fakeNav
+        )) }
         composeTestRule.onNodeWithTag(BottomBarTestTag.BOTTOM_BAR).assertIsDisplayed()
     }
 }

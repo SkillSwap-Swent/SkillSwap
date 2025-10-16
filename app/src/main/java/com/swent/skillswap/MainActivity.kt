@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -50,8 +51,8 @@ class MainActivity : ComponentActivity() {
 
 // Enabling navController to be passed as an argument to facilitate testing
 @Composable
-fun SkillSwapApp() {
-    val navController = rememberNavController()
+fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
+
     val navigationActions = NavigationActions(navController)
     val startDestination = Screen.SignInMain.route
     val navBackStackEntry = navController.currentBackStackEntryAsState()
