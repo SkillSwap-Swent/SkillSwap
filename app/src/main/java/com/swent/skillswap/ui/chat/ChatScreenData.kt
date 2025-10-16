@@ -1,4 +1,7 @@
 // AI-Generated: Sample data for chat screen demonstration
+// This file provides mock data for testing and demonstrating the chat screen functionality.
+// It includes sample users and posts with realistic data that matches the Post and User models,
+// enabling comprehensive testing of the chat interface without requiring Firebase integration.
 package com.swent.skillswap.ui.chat
 
 import com.google.firebase.Timestamp

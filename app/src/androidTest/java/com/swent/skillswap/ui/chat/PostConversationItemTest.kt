@@ -1,4 +1,7 @@
 // AI-Generated: Comprehensive test suite for PostConversationItem component
+// This file contains 9 test cases for the PostConversationItem component, covering data display,
+// user interactions, skill formatting, edge cases, and null handling. Tests ensure proper rendering
+// of post conversation cards and validate all display scenarios.
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.ui.test.junit4.createComposeRule

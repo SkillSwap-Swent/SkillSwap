@@ -179,6 +179,10 @@ fun ChatScreen() {
     Text("Placeholder Chat Screen")
 =======
 // AI-Generated: Chat screen with post-based conversations and filtering
+// This file implements a chat interface that displays conversations with posts instead of users.
+// Features include filtering by Offer/Request post types, stable UI with proper component
+// architecture,
+// and integration with existing Post and User models from the codebase.
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.foundation.clickable

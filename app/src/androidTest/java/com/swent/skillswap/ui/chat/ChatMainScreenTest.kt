@@ -1,4 +1,7 @@
 // AI-Generated: Comprehensive test suite for ChatMainScreen component
+// This file contains 6 test cases for the ChatMainScreen component, covering screen integration,
+// sample data display, and overall functionality. Tests ensure proper integration between
+// ChatMainScreen and ChatScreenData, validating the main chat screen behavior.
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.ui.test.junit4.createComposeRule

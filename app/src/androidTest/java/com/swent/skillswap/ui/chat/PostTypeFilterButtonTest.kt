@@ -1,4 +1,7 @@
 // AI-Generated: Comprehensive test suite for PostTypeFilterButton component
+// This file contains 6 test cases for the PostTypeFilterButton component, covering button display,
+// click interactions, state management, and stability. Tests ensure proper filtering functionality
+// and validate the reusable button component behavior.
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.ui.test.junit4.createComposeRule

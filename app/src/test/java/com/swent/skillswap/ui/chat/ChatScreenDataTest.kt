@@ -1,4 +1,7 @@
 // AI-Generated: Comprehensive test suite for ChatScreenData
+// This file contains 12 test cases for the ChatScreenData object, covering data validation,
+// integrity checks, and relationship validation. Tests ensure sample data is properly structured
+// and maintains consistency with the Post and User models used throughout the application.
 package com.swent.skillswap.ui.chat
 
 import com.swent.skillswap.model.post.PostStatus
