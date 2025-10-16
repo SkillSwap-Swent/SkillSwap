@@ -60,4 +60,10 @@ class BottomBarTest {
         composeTestRule.setContent { BottomBar(BottomBarViewModel(navigation = fakeNav)) }
         composeTestRule.onNodeWithTag(BottomBarTestTag.BOTTOM_BAR).assertIsDisplayed()
     }
+
+    @Test
+    fun bottomBarPreview_isDisplayed() {
+        composeTestRule.setContent { BottomBarPreview() }
+        composeTestRule.onNodeWithTag(BottomBarTestTag.BOTTOM_BAR).assertIsDisplayed()
+    }
 }
