@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
-    val navigationActions = NavigationActions(navController)
+    val navigationActions = remember(navController) { NavigationActions(navController) }
     val startDestination = Screen.SignInMain.route
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
