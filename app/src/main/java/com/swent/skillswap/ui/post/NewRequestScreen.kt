@@ -7,7 +7,6 @@
 package com.swent.skillswap.ui.post
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -92,23 +90,27 @@ fun NewRequestScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                  Text("New Request")
-                },
+                title = { Text("New Request") },
                 navigationIcon = {
-                  IconButton(
-                      onClick = { onGoBack() },
-                      modifier = Modifier.testTag(NewRequestScreenTestTags.BACK_BUTTON)) {
+                    IconButton(
+                        onClick = { onGoBack() },
+                        modifier = Modifier.testTag(NewRequestScreenTestTags.BACK_BUTTON)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back")
-                      }
+                            contentDescription = "Back"
+                        )
+                    }
                 }
             )
         },
         content = { paddingValues ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+                modifier =
+                    Modifier.fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp)
+                        .padding(paddingValues),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Title Input
@@ -144,107 +146,107 @@ fun NewRequestScreen(
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().testTag(NewRequestScreenTestTags.DESCRIPTION_INPUT)
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(NewRequestScreenTestTags.DESCRIPTION_INPUT)
                 )
 
                 /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
-                  var tagsExpanded by remember { mutableStateOf(false) }
-                  val tagsQuery = remember { mutableStateOf("") }
-                  var tagsHasFocus by remember { mutableStateOf(false) }
+                var tagsExpanded by remember { mutableStateOf(false) }
+                val tagsQuery = remember { mutableStateOf("") }
+                var tagsHasFocus by remember { mutableStateOf(false) }
 
-                  ExposedDropdownMenuBox(
-                      expanded = tagsExpanded,
-                      onExpandedChange = { tagsExpanded = it },
-                      modifier = Modifier.fillMaxWidth()
-                  ) {
-                      val tagSuggestions = remember(tagsQuery.value) {
-                          SkillTag.entries
-                              .filter {
-                                  tagsQuery.value.isNotBlank() &&
-                                  it.name.contains(tagsQuery.value, ignoreCase = true)
-                              }
-                              .take(5)
-                      }
+                ExposedDropdownMenuBox(
+                    expanded = tagsExpanded,
+                    onExpandedChange = { tagsExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val tagSuggestions =
+                        remember(tagsQuery.value) {
+                            SkillTag.entries
+                                .filter {
+                                    tagsQuery.value.isNotBlank() &&
+                                        it.name.contains(tagsQuery.value, ignoreCase = true)
+                                }
+                                .take(5)
+                        }
 
-                      // Could be using SkillSwapTextField for consistency
-                      OutlinedTextField(
-                          value = tagsQuery.value,
-                          onValueChange = { tagsQuery.value = it },
-                          label = { Text("Tags") },
-                          placeholder = { Text("Search and add skill tags") },
-                          isError = uiState.tagsError.isNotEmpty(),
-                          supportingText = {
-                              if (uiState.tagsError.isNotEmpty()) {
-                                  Text(
-                                      uiState.tagsError,
-                                      color = MaterialTheme.colorScheme.error
-                                  )
-                              }
-                          },
-                          modifier = Modifier
-                              .fillMaxWidth()
-                              .menuAnchor()
-                              .onFocusChanged { tagsHasFocus = it.isFocused }
-                              .testTag(NewRequestScreenTestTags.TAGS_INPUT)
-                      )
+                    // Could be using SkillSwapTextField for consistency
+                    OutlinedTextField(
+                        value = tagsQuery.value,
+                        onValueChange = { tagsQuery.value = it },
+                        label = { Text("Tags") },
+                        placeholder = { Text("Search and add skill tags") },
+                        isError = uiState.tagsError.isNotEmpty(),
+                        supportingText = {
+                            if (uiState.tagsError.isNotEmpty()) {
+                                Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .menuAnchor()
+                                .onFocusChanged { tagsHasFocus = it.isFocused }
+                                .testTag(NewRequestScreenTestTags.TAGS_INPUT)
+                    )
 
-                      DropdownMenu(
-                          expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
-                          onDismissRequest = { tagsExpanded = false },
-                          properties = PopupProperties(focusable = false),
-                          modifier = Modifier.fillMaxWidth().focusable(false)
-                      ) {
-                          tagSuggestions.forEach { tag ->
-                              DropdownMenuItem(
-                                  text = {
-                                      Text(
-                                          tag.name.replace("_", " "),
-                                          maxLines = 1,
-                                          overflow = TextOverflow.Ellipsis
-                                      )
-                                  },
-                                  onClick = {
-                                      newRequestViewModel.addTag(tag)
-                                      tagsQuery.value = ""
-                                  },
-                                  modifier = Modifier.testTag("${NewRequestScreenTestTags.TAG_SUGGESTION}_${tag.name}")
-                              )
-                          }
-                      }
-                  }
+                    DropdownMenu(
+                        expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
+                        onDismissRequest = { tagsExpanded = false },
+                        properties = PopupProperties(focusable = false),
+                        modifier = Modifier.fillMaxWidth().focusable(false)
+                    ) {
+                        tagSuggestions.forEach { tag ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        tag.name.replace("_", " "),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                onClick = {
+                                    newRequestViewModel.addTag(tag)
+                                    tagsQuery.value = ""
+                                },
+                                modifier =
+                                    Modifier.testTag(
+                                        "${NewRequestScreenTestTags.TAG_SUGGESTION}_${tag.name}"
+                                    )
+                            )
+                        }
+                    }
+                }
 
-                  // Display selected tags as chips
-                  Box(
-                      modifier = Modifier
-                          .height(100.dp)
-                          .fillMaxWidth()
-                  ) {
-                      val flowScroll = rememberScrollState()
-                      FlowRow(
-                          horizontalArrangement = Arrangement.spacedBy(4.dp),
-                          verticalArrangement = Arrangement.spacedBy(4.dp),
-                          modifier = Modifier.verticalScroll(flowScroll)
-                      ) {
-                          uiState.tags.forEach { tag ->
-                              Box(
-                                  modifier = Modifier
-                                      .background(
-                                          color = MaterialTheme.colorScheme.primaryContainer,
-                                          shape = RoundedCornerShape(16.dp)
-                                      )
-                                      .clickable { newRequestViewModel.removeTag(tag) }
-                                      .padding(horizontal = 12.dp, vertical = 6.dp)
-                                      .testTag("${NewRequestScreenTestTags.TAG_CHIP}_${tag}")
-                              ) {
-                                  Text(
-                                      text = (tag as? SkillTag)?.name?.replace("_", " ") ?: tag.toString(),
-                                      fontSize = 12.sp,
-                                      color = MaterialTheme.colorScheme.onPrimaryContainer
-                                  )
-                              }
-                          }
-                      }
-                  }
+                // Display selected tags as chips
+                Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
+                    val flowScroll = rememberScrollState()
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.verticalScroll(flowScroll)
+                    ) {
+                        uiState.tags.forEach { tag ->
+                            Box(
+                                modifier =
+                                    Modifier.background(
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .clickable { newRequestViewModel.removeTag(tag) }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .testTag("${NewRequestScreenTestTags.TAG_CHIP}_${tag}")
+                            ) {
+                                Text(
+                                    text =
+                                        (tag as? SkillTag)?.name?.replace("_", " ")
+                                            ?: tag.toString(),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // Payment method input
                 Text(
@@ -252,7 +254,7 @@ fun NewRequestScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 8.dp)
                 )
-        
+
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -260,25 +262,25 @@ fun NewRequestScreen(
                 ) {
                     PaymentMethod.entries.forEach { method ->
                         val isSelected = uiState.paymentMethods.contains(method)
-                        val backgroundColor = if (isSelected)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.surfaceVariant
+                        val backgroundColor =
+                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant
 
-                        val textColor = if (isSelected)
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                        val textColor =
+                            if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant
 
                         Box(
-                            modifier = Modifier
-                                .background(
-                                    color = backgroundColor,
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .clickable { newRequestViewModel.togglePaymentMethod(method) }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .testTag("${NewRequestScreenTestTags.PAYMENT_METHOD_CHIP}_${method.name}")
+                            modifier =
+                                Modifier.background(
+                                        color = backgroundColor,
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                    .clickable { newRequestViewModel.togglePaymentMethod(method) }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .testTag(
+                                        "${NewRequestScreenTestTags.PAYMENT_METHOD_CHIP}_${method.name}"
+                                    )
                         ) {
                             Text(
                                 text = method.name,
@@ -289,27 +291,24 @@ fun NewRequestScreen(
                     }
                 }
 
-                // Payment method input
-                Spacer(modifier = Modifier.weight(1f))
+                // Submit button at bottom
+                Spacer(modifier = Modifier.height(16.dp))
                 GradientButton(
                     onClick = { newRequestViewModel.createRequest() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .testTag(NewRequestScreenTestTags.CREATE_BUTTON)
-                    ) {
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(vertical = 16.dp)
+                            .testTag(NewRequestScreenTestTags.CREATE_BUTTON)
+                ) {
                     if (uiState.isLoading) {
-                      CircularProgressIndicator(
-                          modifier = Modifier
-                              .size(24.dp)
-                              .testTag(NewRequestScreenTestTags.LOADING_INDICATOR),
-                          color = Color.White
-                      )
-                    } else {
-                        Text(
-                            text = "Create Request",
-                            fontSize = 18.sp
+                        CircularProgressIndicator(
+                            modifier =
+                                Modifier.size(24.dp)
+                                    .testTag(NewRequestScreenTestTags.LOADING_INDICATOR),
+                            color = Color.White
                         )
+                    } else {
+                        Text(text = "Create Request", fontSize = 18.sp)
                     }
                 }
                 // Show error if submission failed
@@ -318,12 +317,11 @@ fun NewRequestScreen(
                         text = uiState.submitError!!,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .testTag(NewRequestScreenTestTags.ERROR_MESSAGE)
+                        modifier =
+                            Modifier.padding(top = 8.dp)
+                                .testTag(NewRequestScreenTestTags.ERROR_MESSAGE)
                     )
                 }
-
             }
         }
     )
@@ -333,43 +331,50 @@ fun NewRequestScreen(
 @Composable
 fun NewRequestScreenPreview() {
     // Create a fake repository for preview
-    val fakeRepository = object : com.swent.skillswap.model.post.PostRepository {
-        override fun getNewUid(type: com.swent.skillswap.model.post.PostType): String = "preview-uid"
+    val fakeRepository =
+        object : com.swent.skillswap.model.post.PostRepository {
+            override fun getNewUid(type: com.swent.skillswap.model.post.PostType): String =
+                "preview-uid"
 
-        override suspend fun getMultiplePosts(
-            numberOfPosts: Long,
-            type: com.swent.skillswap.model.post.PostType,
-            titleContains: String,
-            ownerId: String,
-            paymentMethods: List<com.swent.skillswap.model.post.PaymentMethod>,
-            tags: List<com.swent.skillswap.model.tags.EveryTag>,
-            status: com.swent.skillswap.model.post.PostStatus?
-        ): List<com.swent.skillswap.model.post.Post> = emptyList()
+            override suspend fun getMultiplePosts(
+                numberOfPosts: Long,
+                type: com.swent.skillswap.model.post.PostType,
+                titleContains: String,
+                ownerId: String,
+                paymentMethods: List<com.swent.skillswap.model.post.PaymentMethod>,
+                tags: List<com.swent.skillswap.model.tags.EveryTag>,
+                status: com.swent.skillswap.model.post.PostStatus?
+            ): List<com.swent.skillswap.model.post.Post> = emptyList()
 
-        override suspend fun getPost(type: com.swent.skillswap.model.post.PostType, postId: String): com.swent.skillswap.model.post.Post {
-            throw NotImplementedError()
+            override suspend fun getPost(
+                type: com.swent.skillswap.model.post.PostType,
+                postId: String
+            ): com.swent.skillswap.model.post.Post {
+                throw NotImplementedError()
+            }
+
+            override suspend fun addPost(post: com.swent.skillswap.model.post.Post) {
+                // Do nothing in preview
+            }
+
+            override suspend fun editPost(
+                postId: String,
+                newPost: com.swent.skillswap.model.post.Post
+            ) {
+                // Do nothing in preview
+            }
+
+            override suspend fun deletePost(
+                type: com.swent.skillswap.model.post.PostType,
+                postId: String
+            ) {
+                // Do nothing in preview
+            }
         }
-
-        override suspend fun addPost(post: com.swent.skillswap.model.post.Post) {
-            // Do nothing in preview
-        }
-
-        override suspend fun editPost(postId: String, newPost: com.swent.skillswap.model.post.Post) {
-            // Do nothing in preview
-        }
-
-        override suspend fun deletePost(type: com.swent.skillswap.model.post.PostType, postId: String) {
-            // Do nothing in preview
-        }
-    }
 
     val viewModel = NewRequestViewModel(fakeRepository)
 
     com.swent.skillswap.ui.theme.SkillSwapAppTheme {
-        NewRequestScreen(
-            newRequestViewModel = viewModel,
-            onGoBack = {},
-            onPostCreated = {}
-        )
+        NewRequestScreen(newRequestViewModel = viewModel, onGoBack = {}, onPostCreated = {})
     }
 }
