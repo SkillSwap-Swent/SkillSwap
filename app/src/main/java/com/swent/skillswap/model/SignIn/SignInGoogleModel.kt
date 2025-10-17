@@ -3,13 +3,6 @@ package com.swent.skillswap.model.SignIn
 
 import android.app.Activity
 import androidx.credentials.CredentialManager
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.exceptions.GetCredentialException
-import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
-import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.tasks.await
 
 /**
  * Handles authentication with Google Sign-In using the Android Credential Manager and Firebase
@@ -36,6 +29,7 @@ class SignInGoogleModel : SignInAbstractClass() {
         credentialManager: CredentialManager,
         activity: Activity
     ): String? {
+        /*TODO remove when refactor backend
         val googleIdOption =
             GetSignInWithGoogleOption.Builder(
                     "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com"
@@ -54,22 +48,24 @@ class SignInGoogleModel : SignInAbstractClass() {
             google.idToken
         } catch (e: GetCredentialException) {
             null
-        }
+        }*/
+        return ""
     }
 
     override suspend fun signIn(params: SignInParams) {
+        /* TODO remove when refactor backend
         val googleParams: SignInGoogleParams = params as SignInGoogleParams
-        val credentialManager = googleParams.credentialManager
-        val activity = googleParams.activity
-        val idToken = requestGoogleIdToken(credentialManager, activity) ?: return
+         val credentialManager = googleParams.credentialManager
+         val activity = googleParams.activity
+         val idToken = requestGoogleIdToken(credentialManager, activity) ?: return
 
-        val auth = FirebaseAuth.getInstance()
-        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+         val auth = FirebaseAuth.getInstance()
+         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
 
-        auth
-            .signInWithCredential(firebaseCredential)
-            .addOnFailureListener { throw Exception("failed connection") }
-            .await()
+         auth
+             .signInWithCredential(firebaseCredential)
+             .addOnFailureListener { throw Exception("failed connection") }
+             .await()*/
     }
 
     /**
@@ -88,10 +84,11 @@ class SignInGoogleModel : SignInAbstractClass() {
     }
 
     override suspend fun createAccount(params: CreateAccountParams) {
+        /*TODO remove when refactor backend
         val googleParams: CreateAccountGoogleParams = params as CreateAccountGoogleParams
         val username = params.username
         val skills = params.skills
-        require(username.isNotBlank() && skills.isNotEmpty())
+        require(username.isNotBlank() && skills.isNotEmpty())*/
         /*TODO Wait for UserUtils*/
     }
 }

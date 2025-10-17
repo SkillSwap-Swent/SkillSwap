@@ -12,7 +12,7 @@ val SkillSwapLightThemeTertiary = Color(0xFF9E380D)
 val SkillSwapDarkThemePrimary = Color(0xFF021D33)
 val SkillSwapDarkThemeSecondary = Color(0xFF503C00)
 val SkillSwapDarkThemeTertiary = Color(0xFF501800)
-
+val EndOfDefaultGradient = Color(0xFF1E7ECC)
 val SkillSwapHalfTransparent = Color(0x5F000000)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)

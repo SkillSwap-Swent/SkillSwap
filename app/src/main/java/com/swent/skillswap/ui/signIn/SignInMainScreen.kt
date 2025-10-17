@@ -3,13 +3,14 @@ package com.swent.skillswap.ui.signIn
 
 import android.app.Activity
 import android.content.Context
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,9 +30,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
+import com.swent.skillswap.ui.theme.BrushDirection
+import com.swent.skillswap.ui.theme.DefaultGradient
+import com.swent.skillswap.ui.theme.getLinearBrush
+import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.viewModel.SignInViewModel
 import com.swent.skillswap.viewModel.SignInVmFactory
 
@@ -43,6 +48,9 @@ object SignInTags {
     const val OR_TEXT = "SIGN_IN_OR_TEXT"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
 }
+
+val signInButtonColor = ButtonColors(Color.Transparent, Color.White, Color.White, Color.Black)
+val signInButtonStroke = BorderStroke(1.dp, Color.White)
 
 @Preview(showBackground = true)
 @Composable
@@ -59,7 +67,7 @@ fun SignInMainScreen(
         Column(
             modifier =
                 Modifier.padding(padding)
-                    .background(color = MaterialTheme.colorScheme.primary)
+                    .background(getLinearBrush(DefaultGradient, BrushDirection.DOWN_TOP))
                     .fillMaxSize(1f)
                     .verticalScroll(scroll)
         ) {
@@ -72,9 +80,12 @@ fun SignInMainScreen(
             Spacer(modifier = Modifier.height(50.dp))
             OutlinedButton(
                 onClick = { vm.googleSignIn(credentialManager, context as Activity) },
-                colors = ButtonColors(Color.White, Color.Black, Color.White, Color.Black),
+                colors = signInButtonColor,
+                border = signInButtonStroke,
                 modifier =
-                    Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.GOOGLE_BUTTON)
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .testTag(SignInTags.GOOGLE_BUTTON)
             ) {
                 Row(modifier = Modifier.height(21.dp)) {
                     Image(
@@ -84,33 +95,35 @@ fun SignInMainScreen(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "Sign in with Google",
+                        text = "SIGN IN WITH GOOGLE",
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(20.dp))
             OutlinedButton(
                 onClick = { vm.classicSignIn() },
-                colors = ButtonColors(Color.White, Color.Black, Color.White, Color.Black),
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.SIGN_IN_BUTTON)
-            ) {
-                Text(text = "Sign in")
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "or",
-                color = Color.White,
-                modifier = Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.OR_TEXT)
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "Create an account",
-                color = MaterialTheme.colorScheme.secondary,
+                colors = signInButtonColor,
+                border = signInButtonStroke,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .clickable(enabled = true, onClick = { vm.createAccount() })
+                        .fillMaxWidth(0.8f)
+                        .testTag(SignInTags.SIGN_IN_BUTTON)
+            ) {
+                Text(text = "SIGN IN")
+            }
+            Spacer(modifier = Modifier.height(40.dp))
+            GradientButton(
+                onClick = { vm.createAccount() },
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
                         .testTag(SignInTags.CREATE_ACCOUNT_TEXT)
-            )
+                        .fillMaxWidth(0.4f)
+            ) {
+                Text(
+                    text = "Next",
+                    fontSize = 24.sp,
+                )
+            }
         }
     }
 }
