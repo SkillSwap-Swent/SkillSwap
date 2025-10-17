@@ -9,8 +9,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.swent.skillswap.ui.user.ProfileMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.ui.user.ProfileMainScreen
 
 class TestProfileActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

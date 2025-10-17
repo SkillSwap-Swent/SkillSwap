@@ -18,11 +18,7 @@ class GradientButtonTest {
 
     @Test
     fun gradientButton_displaysText() {
-        composeTestRule.setContent { 
-            GradientButton(onClick = {}) {
-                Text("Test Button")
-            }
-        }
+        composeTestRule.setContent { GradientButton(onClick = {}) { Text("Test Button") } }
 
         composeTestRule.onNodeWithText("Test Button").assertExists()
     }
@@ -32,9 +28,7 @@ class GradientButtonTest {
         var clicked = false
 
         composeTestRule.setContent {
-            GradientButton(onClick = { clicked = true }) {
-                Text("Click Me")
-            }
+            GradientButton(onClick = { clicked = true }) { Text("Click Me") }
         }
 
         composeTestRule.onNodeWithText("Click Me").performClick()
@@ -43,22 +37,14 @@ class GradientButtonTest {
 
     @Test
     fun gradientButton_rendersWithContent() {
-        composeTestRule.setContent {
-            GradientButton(onClick = {}) {
-                Text("Primary")
-            }
-        }
+        composeTestRule.setContent { GradientButton(onClick = {}) { Text("Primary") } }
 
         composeTestRule.onNodeWithText("Primary").assertExists()
     }
 
     @Test
     fun gradientButton_rendersWithCustomContent() {
-        composeTestRule.setContent {
-            GradientButton(onClick = {}) {
-                Text("Secondary")
-            }
-        }
+        composeTestRule.setContent { GradientButton(onClick = {}) { Text("Secondary") } }
 
         composeTestRule.onNodeWithText("Secondary").assertExists()
     }

@@ -116,7 +116,10 @@ class ProfileMainScreenTest {
     @Test
     fun profileMainScreen_emailEditClickable() {
         composeTestRule.setContent {
-            ProfileMainScreen(userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING), onSkillsUpdated = {})
+            ProfileMainScreen(
+                userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING),
+                onSkillsUpdated = {}
+            )
         }
 
         // Open email accordion and click Edit
@@ -130,15 +133,16 @@ class ProfileMainScreenTest {
     @Test
     fun profileMainScreen_preferencesToggle() {
         composeTestRule.setContent {
-            ProfileMainScreen(userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING), onSkillsUpdated = {})
+            ProfileMainScreen(
+                userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING),
+                onSkillsUpdated = {}
+            )
         }
 
         // Open preferences and toggle selections
         composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
         composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performClick()
 
-
         composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performClick()
-
     }
 }

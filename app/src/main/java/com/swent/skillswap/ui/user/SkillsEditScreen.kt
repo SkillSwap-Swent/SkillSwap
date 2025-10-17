@@ -28,10 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.ui.theme.ProfileGradientEnd
 import com.swent.skillswap.ui.theme.ProfileGradientStart
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
+import com.swent.skillswap.ui.utils.GradientButton
 
 object SkillsEditTestTags {
     const val SCREEN_CONTAINER = "skills_edit_screen_container"
@@ -48,7 +48,6 @@ object SkillsEditTestTags {
 
     const val CANCEL_BUTTON = "skills_cancel_button"
     const val SAVE_BUTTON = "skills_save_button"
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -64,7 +63,8 @@ fun SkillsEditScreen(
     var hasFocus by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).testTag(SkillsEditTestTags.SCREEN_CONTAINER),
+        modifier =
+            Modifier.fillMaxSize().padding(16.dp).testTag(SkillsEditTestTags.SCREEN_CONTAINER),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Title
@@ -109,8 +109,8 @@ fun SkillsEditScreen(
                             SkillTag.entries
                                 .filter { skill ->
                                     query.isNotBlank() &&
-                                            skill.name.contains(query, ignoreCase = true) &&
-                                            skill !in selectedSkills
+                                        skill.name.contains(query, ignoreCase = true) &&
+                                        skill !in selectedSkills
                                 }
                                 .take(5)
                         }
@@ -142,7 +142,8 @@ fun SkillsEditScreen(
                         expanded = expanded && hasFocus && suggestions.isNotEmpty(),
                         onDismissRequest = { expanded = false },
                         properties = PopupProperties(focusable = false),
-                        modifier = Modifier.fillMaxWidth(0.8f).testTag(SkillsEditTestTags.SUGGESTIONS_LIST)
+                        modifier =
+                            Modifier.fillMaxWidth(0.8f).testTag(SkillsEditTestTags.SUGGESTIONS_LIST)
                     ) {
                         suggestions.forEachIndexed { index, skill ->
                             DropdownMenuItem(
@@ -159,7 +160,10 @@ fun SkillsEditScreen(
                                     query = ""
                                     expanded = false
                                 },
-                                modifier = Modifier.testTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_$index")
+                                modifier =
+                                    Modifier.testTag(
+                                        "${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_$index"
+                                    )
                             )
                         }
                     }
@@ -172,7 +176,8 @@ fun SkillsEditScreen(
                     text = "Selected Skills (${selectedSkills.size}):",
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.padding(bottom = 8.dp).testTag(SkillsEditTestTags.SELECTED_COUNT)
+                    modifier =
+                        Modifier.padding(bottom = 8.dp).testTag(SkillsEditTestTags.SELECTED_COUNT)
                 )
 
                 Box(modifier = Modifier.height(120.dp).fillMaxWidth()) {
@@ -180,16 +185,18 @@ fun SkillsEditScreen(
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.verticalScroll(flowScroll).testTag(SkillsEditTestTags.SELECTED_LIST)
+                        modifier =
+                            Modifier.verticalScroll(flowScroll)
+                                .testTag(SkillsEditTestTags.SELECTED_LIST)
                     ) {
                         selectedSkills.forEach { skill ->
                             val tag = "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${skill.name}"
                             Box(
                                 modifier =
                                     Modifier.background(
-                                        color = Color.White.copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(16.dp)
-                                    )
+                                            color = Color.White.copy(alpha = 0.2f),
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
                                         .clickable { selectedSkills = selectedSkills - skill }
                                         .padding(horizontal = 12.dp, vertical = 6.dp)
                                         .testTag(tag)

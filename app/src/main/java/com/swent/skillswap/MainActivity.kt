@@ -26,11 +26,10 @@ import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
 import com.swent.skillswap.ui.offerScreen.OfferScreen
-import com.swent.skillswap.ui.user.ProfileMainScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.user.UserScreen
+import com.swent.skillswap.ui.user.ProfileMainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

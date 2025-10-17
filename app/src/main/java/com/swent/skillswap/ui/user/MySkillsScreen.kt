@@ -12,8 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.utils.*
 
-
-
 @Composable
 fun MySkillsScreen(onBackClick: () -> Unit) {
     Column(
@@ -30,12 +28,6 @@ fun MySkillsScreen(onBackClick: () -> Unit) {
         )
 
         // Back button
-        GradientButton(
-            onClick = onBackClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Back")
-        }
+        GradientButton(onClick = onBackClick, modifier = Modifier.fillMaxWidth()) { Text("Back") }
     }
 }
-

@@ -38,8 +38,16 @@ class SkillsEditScreenTest {
 
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_COUNT).assertExists()
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_LIST).assertExists()
-        composeTestRule.onNodeWithTag("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.COMPUTER_PROGRAMMING.name}").assertExists()
-        composeTestRule.onNodeWithTag("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATA_STRUCTURES.name}").assertExists()
+        composeTestRule
+            .onNodeWithTag(
+                "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.COMPUTER_PROGRAMMING.name}"
+            )
+            .assertExists()
+        composeTestRule
+            .onNodeWithTag(
+                "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATA_STRUCTURES.name}"
+            )
+            .assertExists()
     }
 
     @Test

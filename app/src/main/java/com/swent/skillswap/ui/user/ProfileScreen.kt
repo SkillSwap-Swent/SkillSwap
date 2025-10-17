@@ -1,6 +1,5 @@
 package com.swent.skillswap.ui.user
 
-
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,12 +19,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.utils.AccordionSection
-import com.swent.skillswap.ui.utils.ProfileDivider
 import com.swent.skillswap.ui.theme.ProfileGradientEnd
 import com.swent.skillswap.ui.theme.ProfileGradientStart
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
 import com.swent.skillswap.ui.theme.ProfileTextSecondary
+import com.swent.skillswap.ui.utils.AccordionSection
+import com.swent.skillswap.ui.utils.ProfileDivider
 
 object ProfileTestTags {
     const val PROFILE_TITLE = "profile_title"
@@ -67,9 +66,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .padding(bottom = 24.dp)
-                .testTag(ProfileTestTags.PROFILE_TITLE)
+            modifier = Modifier.padding(bottom = 24.dp).testTag(ProfileTestTags.PROFILE_TITLE)
         )
 
         // Single gradient rectangle with accordion sections
@@ -101,7 +98,8 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                     text = "user@example.com",
                                     fontSize = 14.sp,
                                     color = ProfileTextSecondary,
-                                    modifier = Modifier.weight(1f).testTag(ProfileTestTags.EMAIL_VALUE)
+                                    modifier =
+                                        Modifier.weight(1f).testTag(ProfileTestTags.EMAIL_VALUE)
                                 )
                                 Text(
                                     text = "Edit",
@@ -109,8 +107,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                     color = ProfileTextPrimary,
                                     fontWeight = FontWeight.Medium,
                                     modifier =
-                                        Modifier
-                                            .testTag(ProfileTestTags.EMAIL_EDIT)
+                                        Modifier.testTag(ProfileTestTags.EMAIL_EDIT)
                                             .clickable {
                                                 // TODO: Handle edit email
                                                 println("Edit email clicked")
@@ -140,7 +137,8 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                     text = "john_doe",
                                     fontSize = 14.sp,
                                     color = Color.White.copy(alpha = 0.8f),
-                                    modifier = Modifier.weight(1f).testTag(ProfileTestTags.USERNAME_VALUE)
+                                    modifier =
+                                        Modifier.weight(1f).testTag(ProfileTestTags.USERNAME_VALUE)
                                 )
                                 Text(
                                     text = "Edit",
@@ -148,8 +146,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                     color = Color.White,
                                     fontWeight = FontWeight.Medium,
                                     modifier =
-                                        Modifier
-                                            .testTag(ProfileTestTags.USERNAME_EDIT)
+                                        Modifier.testTag(ProfileTestTags.USERNAME_EDIT)
                                             .clickable {
                                                 // TODO: Handle edit username
                                                 println("Edit username clicked")
@@ -177,7 +174,9 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                     text = "Current skills (${userSkills.size}):",
                                     fontSize = 12.sp,
                                     color = Color.White.copy(alpha = 0.6f),
-                                    modifier = Modifier.padding(bottom = 4.dp).testTag(ProfileTestTags.SKILLS_COUNT)
+                                    modifier =
+                                        Modifier.padding(bottom = 4.dp)
+                                            .testTag(ProfileTestTags.SKILLS_COUNT)
                                 )
 
                                 // Display skills as a comma-separated list
@@ -195,14 +194,18 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                             },
                                         fontSize = 14.sp,
                                         color = Color.White.copy(alpha = 0.8f),
-                                        modifier = Modifier.padding(bottom = 8.dp).testTag(ProfileTestTags.SKILLS_LIST)
+                                        modifier =
+                                            Modifier.padding(bottom = 8.dp)
+                                                .testTag(ProfileTestTags.SKILLS_LIST)
                                     )
                                 } else {
                                     Text(
                                         text = "No skills selected",
                                         fontSize = 14.sp,
                                         color = Color.White.copy(alpha = 0.5f),
-                                        modifier = Modifier.padding(bottom = 8.dp).testTag(ProfileTestTags.SKILLS_EMPTY)
+                                        modifier =
+                                            Modifier.padding(bottom = 8.dp)
+                                                .testTag(ProfileTestTags.SKILLS_EMPTY)
                                     )
                                 }
 
@@ -213,8 +216,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                     color = Color.White,
                                     fontWeight = FontWeight.Medium,
                                     modifier =
-                                        Modifier
-                                            .fillMaxWidth()
+                                        Modifier.fillMaxWidth()
                                             .testTag(ProfileTestTags.SKILLS_EDIT)
                                             .clickable { onSkillsClick() }
                                             .padding(vertical = 8.dp, horizontal = 4.dp)
@@ -228,7 +230,9 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                 ProfileDivider()
 
                 // My Preferences Section
-                Box(modifier = Modifier.fillMaxWidth().testTag(ProfileTestTags.PREFERENCES_SECTION)) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().testTag(ProfileTestTags.PREFERENCES_SECTION)
+                ) {
                     AccordionSection(
                         title = "My preferences",
                         isExpanded = expandedPreferences,
@@ -321,12 +325,8 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun ProfileScreenPreview(){
-    ProfileScreen(
-        userSkills = emptySet(),
-        onSkillsClick = {}
-    )
+fun ProfileScreenPreview() {
+    ProfileScreen(userSkills = emptySet(), onSkillsClick = {})
 }
