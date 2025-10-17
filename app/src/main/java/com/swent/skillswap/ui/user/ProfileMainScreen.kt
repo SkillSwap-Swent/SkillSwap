@@ -2,6 +2,7 @@
 package com.swent.skillswap.ui.user
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.tooling.preview.Preview
 import com.swent.skillswap.model.tags.SkillTag
 
 enum class ProfileScreenType {

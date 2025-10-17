@@ -1,4 +1,3 @@
-// AI-Generated: Skills editing screen with search and selection functionality
 package com.swent.skillswap.ui.user
 
 import androidx.compose.foundation.background
@@ -22,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +32,24 @@ import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.ui.theme.ProfileGradientEnd
 import com.swent.skillswap.ui.theme.ProfileGradientStart
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
+
+object SkillsEditTestTags {
+    const val SCREEN_CONTAINER = "skills_edit_screen_container"
+    const val TITLE = "skills_edit_title"
+
+    const val SEARCH_FIELD = "skills_search_field"
+    const val DROPDOWN = "skills_dropdown"
+    const val SUGGESTIONS_LIST = "skills_suggestions_list"
+    const val SUGGESTION_ITEM_PREFIX = "skills_suggestion"
+
+    const val SELECTED_COUNT = "skills_selected_count"
+    const val SELECTED_LIST = "skills_selected_list"
+    const val SKILL_CHIP_PREFIX = "skills_chip"
+
+    const val CANCEL_BUTTON = "skills_cancel_button"
+    const val SAVE_BUTTON = "skills_save_button"
+
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -46,7 +64,7 @@ fun SkillsEditScreen(
     var hasFocus by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp).testTag(SkillsEditTestTags.SCREEN_CONTAINER),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Title
@@ -55,7 +73,7 @@ fun SkillsEditScreen(
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 24.dp).testTag(SkillsEditTestTags.TITLE)
         )
 
         // Skills selection section
@@ -84,15 +102,15 @@ fun SkillsEditScreen(
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = it },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().testTag(SkillsEditTestTags.DROPDOWN)
                 ) {
                     val suggestions =
                         remember(query) {
                             SkillTag.entries
                                 .filter { skill ->
                                     query.isNotBlank() &&
-                                        skill.name.contains(query, ignoreCase = true) &&
-                                        skill !in selectedSkills
+                                            skill.name.contains(query, ignoreCase = true) &&
+                                            skill !in selectedSkills
                                 }
                                 .take(5)
                         }
@@ -107,7 +125,8 @@ fun SkillsEditScreen(
                         modifier =
                             Modifier.menuAnchor()
                                 .onFocusChanged { hasFocus = it.isFocused }
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .testTag(SkillsEditTestTags.SEARCH_FIELD),
                         colors =
                             TextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
@@ -123,9 +142,9 @@ fun SkillsEditScreen(
                         expanded = expanded && hasFocus && suggestions.isNotEmpty(),
                         onDismissRequest = { expanded = false },
                         properties = PopupProperties(focusable = false),
-                        modifier = Modifier.fillMaxWidth(0.8f)
+                        modifier = Modifier.fillMaxWidth(0.8f).testTag(SkillsEditTestTags.SUGGESTIONS_LIST)
                     ) {
-                        suggestions.forEach { skill ->
+                        suggestions.forEachIndexed { index, skill ->
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -139,7 +158,8 @@ fun SkillsEditScreen(
                                     selectedSkills = selectedSkills + skill
                                     query = ""
                                     expanded = false
-                                }
+                                },
+                                modifier = Modifier.testTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_$index")
                             )
                         }
                     }
@@ -152,7 +172,7 @@ fun SkillsEditScreen(
                     text = "Selected Skills (${selectedSkills.size}):",
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp).testTag(SkillsEditTestTags.SELECTED_COUNT)
                 )
 
                 Box(modifier = Modifier.height(120.dp).fillMaxWidth()) {
@@ -160,17 +180,19 @@ fun SkillsEditScreen(
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.verticalScroll(flowScroll)
+                        modifier = Modifier.verticalScroll(flowScroll).testTag(SkillsEditTestTags.SELECTED_LIST)
                     ) {
                         selectedSkills.forEach { skill ->
+                            val tag = "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${skill.name}"
                             Box(
                                 modifier =
                                     Modifier.background(
-                                            color = Color.White.copy(alpha = 0.2f),
-                                            shape = RoundedCornerShape(16.dp)
-                                        )
+                                        color = Color.White.copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
                                         .clickable { selectedSkills = selectedSkills - skill }
                                         .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .testTag(tag)
                             ) {
                                 Text(
                                     text =
@@ -197,7 +219,7 @@ fun SkillsEditScreen(
             // Cancel button
             GradientButton(
                 onClick = onBackClick,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.CANCEL_BUTTON)
             ) {
                 Text("Cancel")
             }
@@ -208,7 +230,7 @@ fun SkillsEditScreen(
                     onSkillsUpdated(selectedSkills)
                     onBackClick()
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.SAVE_BUTTON)
             ) {
                 Text("Save")
             }

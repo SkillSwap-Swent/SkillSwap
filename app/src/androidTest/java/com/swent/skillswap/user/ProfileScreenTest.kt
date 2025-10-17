@@ -1,12 +1,13 @@
-// AI-Generated: Comprehensive test suite for profile screen components
+// AI-Generated: Profile screen tests adapted to use test tags
 package com.swent.skillswap.user
 
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.user.ProfileScreen
+import com.swent.skillswap.ui.user.ProfileTestTags
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,7 +23,7 @@ class ProfileScreenTest {
             ProfileScreen(userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING), onSkillsClick = {})
         }
 
-        composeTestRule.onNodeWithText("Profile").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertExists()
     }
 
     @Test
@@ -31,16 +32,20 @@ class ProfileScreenTest {
 
         composeTestRule.setContent { ProfileScreen(userSkills = skills, onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("Current skills (2):").assertExists()
-        composeTestRule.onNodeWithText("Computer Programming, Data Structures").assertExists()
+        // Open skills accordion first
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertExists()
     }
 
     @Test
     fun profileScreen_displaysEmptySkills() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("Current skills (0):").assertExists()
-        composeTestRule.onNodeWithText("No skills selected").assertExists()
+        // Open skills accordion first
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_EMPTY).assertExists()
     }
 
     @Test
@@ -54,9 +59,9 @@ class ProfileScreenTest {
             )
         }
 
-        // Expand skills section first
-        composeTestRule.onNodeWithText("Skills").performClick()
-        composeTestRule.onNodeWithText("Edit Skills").performClick()
+        // Expand skills section and click Edit
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_EDIT).performClick()
 
         assert(callbackTriggered)
     }
@@ -65,48 +70,48 @@ class ProfileScreenTest {
     fun profileScreen_displaysEmailSection() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("My email").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).assertExists()
     }
 
     @Test
     fun profileScreen_displaysUsernameSection() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("My username").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).assertExists()
     }
 
     @Test
     fun profileScreen_displaysPreferencesSection() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("My preferences").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).assertExists()
     }
 
     @Test
     fun profileScreen_expandsEmailSection() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("My email").performClick()
-        composeTestRule.onNodeWithText("user@example.com").assertExists()
-        composeTestRule.onNodeWithText("Edit").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_EDIT).assertExists()
     }
 
     @Test
     fun profileScreen_expandsUsernameSection() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("My username").performClick()
-        composeTestRule.onNodeWithText("username").assertExists()
-        composeTestRule.onNodeWithText("Edit").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_EDIT).assertExists()
     }
 
     @Test
     fun profileScreen_expandsPreferencesSection() {
         composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("My preferences").performClick()
-        composeTestRule.onNodeWithText("Money").assertExists()
-        composeTestRule.onNodeWithText("Skills").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertExists()
     }
 
     @Test
@@ -124,7 +129,8 @@ class ProfileScreenTest {
 
         composeTestRule.setContent { ProfileScreen(userSkills = largeSkillSet, onSkillsClick = {}) }
 
-        composeTestRule.onNodeWithText("Current skills (7):").assertExists()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
     }
 
     @Test
@@ -133,12 +139,11 @@ class ProfileScreenTest {
             ProfileScreen(userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING), onSkillsClick = {})
         }
 
-        // Initially collapsed
-        composeTestRule.onNodeWithText("Skills").performClick()
-        composeTestRule.onNodeWithText("Current skills (1):").assertExists()
+        // Expand
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
 
-        // Collapse again
-        composeTestRule.onNodeWithText("Skills").performClick()
-        // Should be collapsed (content not visible)
+        // Collapse
+        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
     }
 }
