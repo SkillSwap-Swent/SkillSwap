@@ -240,44 +240,6 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     }
 }
 
-tasks.register("jacocoPrintLineCoverage") {
-    dependsOn("jacocoTestReport")
-    doLast {
-        // Matches your sonar.coverage.jacoco.xmlReportPaths
-        val xmlFile = project.layout.buildDirectory
-            .file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
-            .get()
-            .asFile
-
-        require(xmlFile.exists()) { "JaCoCo XML not found at: ${xmlFile.absolutePath}" }
-
-        val doc = javax.xml.parsers.DocumentBuilderFactory.newInstance()
-            .newDocumentBuilder().parse(xmlFile)
-
-        val counters = doc.getElementsByTagName("counter")
-        var bestCovered = 0L
-        var bestMissed = 0L
-
-        for (i in 0 until counters.length) {
-            val e = counters.item(i) as org.w3c.dom.Element
-            if (e.getAttribute("type") == "LINE") {
-                val covered = e.getAttribute("covered").toLong()
-                val missed  = e.getAttribute("missed").toLong()
-                // pick the largest total (the report-level counter)
-                if (covered + missed > bestCovered + bestMissed) {
-                    bestCovered = covered
-                    bestMissed = missed
-                }
-            }
-        }
-
-        val total = bestCovered + bestMissed
-        val pct = if (total == 0L) 0.0 else bestCovered.toDouble() / total * 100.0
-        println("JaCoCo LINE coverage: %,.2f%% (%d/%d lines covered)"
-            .format(pct, bestCovered, total))
-    }
-}
-
 configurations.forEach { configuration ->
     // Exclude protobuf-lite from all configurations
     // This fixes a fatal exception for tests interacting with Cloud Firestore
