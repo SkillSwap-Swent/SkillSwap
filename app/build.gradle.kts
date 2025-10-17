@@ -244,9 +244,10 @@ tasks.register("jacocoPrintLineCoverage") {
     dependsOn("jacocoTestReport")
     doLast {
         // Matches your sonar.coverage.jacoco.xmlReportPaths
-        val xmlFile = layout.buildDirectory
+        val xmlFile = project.layout.buildDirectory
             .file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
-            .get().asFile
+            .get()
+            .asFile
 
         require(xmlFile.exists()) { "JaCoCo XML not found at: ${xmlFile.absolutePath}" }
 
