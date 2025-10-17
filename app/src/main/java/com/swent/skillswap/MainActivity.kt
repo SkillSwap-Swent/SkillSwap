@@ -26,6 +26,7 @@ import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
 import com.swent.skillswap.ui.offerScreen.OfferScreen
+import com.swent.skillswap.ui.user.ProfileMainScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
@@ -92,7 +93,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
             composable(Screen.Offers.route) { OfferScreen() }
             composable(Screen.Chat.route) { ChatScreen() }
-            composable(Screen.Profile.route) { UserScreen() }
+            composable(Screen.Profile.route) { ProfileMainScreen() }
         }
     }
 }

@@ -1,5 +1,5 @@
 // AI-Generated: Simple skills display screen with back navigation
-package com.swent.skillswap.ui.profile
+package com.swent.skillswap.ui.user
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -10,7 +10,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.swent.skillswap.ui.components.GradientButton
+import com.swent.skillswap.ui.utils.*
+
+
 
 @Composable
 fun MySkillsScreen(onBackClick: () -> Unit) {
@@ -29,10 +31,11 @@ fun MySkillsScreen(onBackClick: () -> Unit) {
 
         // Back button
         GradientButton(
-            text = "Back",
             onClick = onBackClick,
-            modifier = Modifier.fillMaxWidth(),
-            isPrimary = true
-        )
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Back")
+        }
     }
 }
+

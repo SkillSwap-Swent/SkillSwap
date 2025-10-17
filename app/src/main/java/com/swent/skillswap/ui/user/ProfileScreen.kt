@@ -1,5 +1,5 @@
 // AI-Generated: Profile screen with accordion-style layout and skills management
-package com.swent.skillswap.ui.profile
+package com.swent.skillswap.ui.user
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -25,8 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.components.AccordionSection
-import com.swent.skillswap.ui.components.ProfileDivider
+import com.swent.skillswap.ui.utils.AccordionSection
+import com.swent.skillswap.ui.utils.ProfileDivider
 import com.swent.skillswap.ui.theme.ProfileGradientEnd
 import com.swent.skillswap.ui.theme.ProfileGradientStart
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
@@ -282,48 +282,6 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                     }
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun AccordionSection(
-    title: String,
-    isExpanded: Boolean,
-    onToggle: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        // Clickable header row
-        Row(
-            modifier = Modifier.fillMaxWidth().clickable { onToggle() }.padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f)
-            )
-
-            Icon(
-                imageVector =
-                    if (isExpanded) Icons.Default.KeyboardArrowUp
-                    else Icons.Default.KeyboardArrowDown,
-                contentDescription = if (isExpanded) "Collapse" else "Expand",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        // Expandable content
-        AnimatedVisibility(
-            visible = isExpanded,
-            enter = expandVertically(animationSpec = tween(300)),
-            exit = shrinkVertically(animationSpec = tween(300))
-        ) {
-            content()
         }
     }
 }

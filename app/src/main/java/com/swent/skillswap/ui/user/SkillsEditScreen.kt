@@ -1,5 +1,5 @@
 // AI-Generated: Skills editing screen with search and selection functionality
-package com.swent.skillswap.ui.profile
+package com.swent.skillswap.ui.user
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.components.GradientButton
+import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.ui.theme.ProfileGradientEnd
 import com.swent.skillswap.ui.theme.ProfileGradientStart
 import com.swent.skillswap.ui.theme.ProfileTextPrimary
@@ -196,22 +196,22 @@ fun SkillsEditScreen(
         ) {
             // Cancel button
             GradientButton(
-                text = "Cancel",
                 onClick = onBackClick,
-                modifier = Modifier.weight(1f),
-                isPrimary = false
-            )
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Cancel")
+            }
 
             // Save button
             GradientButton(
-                text = "Save",
                 onClick = {
                     onSkillsUpdated(selectedSkills)
                     onBackClick()
                 },
-                modifier = Modifier.weight(1f),
-                isPrimary = true
-            )
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Save")
+            }
         }
     }
 }

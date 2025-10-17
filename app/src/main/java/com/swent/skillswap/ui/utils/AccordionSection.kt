@@ -1,5 +1,5 @@
 // AI-Generated: Reusable accordion section component with expand/collapse functionality
-package com.swent.skillswap.ui.components
+package com.swent.skillswap.ui.utils
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween

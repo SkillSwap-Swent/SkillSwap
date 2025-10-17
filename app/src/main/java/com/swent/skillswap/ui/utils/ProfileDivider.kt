@@ -1,5 +1,5 @@
 // AI-Generated: Reusable horizontal divider component for profile screens
-package com.swent.skillswap.ui.components
+package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth

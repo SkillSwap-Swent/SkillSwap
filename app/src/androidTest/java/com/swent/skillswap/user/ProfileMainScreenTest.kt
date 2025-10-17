@@ -1,11 +1,12 @@
 // AI-Generated: Comprehensive test suite for profile screen components
-package com.swent.skillswap.ui.profile
+package com.swent.skillswap.user
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.user.ProfileMainScreen
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
