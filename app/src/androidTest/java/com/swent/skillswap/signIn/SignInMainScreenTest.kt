@@ -1,4 +1,3 @@
-// AI-Generated: Comprehensive test suite for profile screen components
 /** @author Topaze17(Eliott) */
 package com.swent.skillswap.signIn
 
