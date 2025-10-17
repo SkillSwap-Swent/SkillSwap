@@ -1,3 +1,4 @@
+// AI-Generated: Extended color definitions for profile screen components
 package com.swent.skillswap.ui.theme
 
 import androidx.compose.ui.graphics.Color
@@ -16,3 +17,18 @@ val SkillSwapHalfTransparent = Color(0x5F000000)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+// Profile Screen Colors
+val ProfileGradientStart = Color.Black
+val ProfileGradientEnd = Color(0xFF2B5080)
+val ProfileTextPrimary = Color.White
+val ProfileTextSecondary = Color.White.copy(alpha = 0.8f)
+val ProfileTextTertiary = Color.White.copy(alpha = 0.6f)
+val ProfileTextDisabled = Color.White.copy(alpha = 0.5f)
+val ProfileDivider = Color.White.copy(alpha = 0.3f)
+
+// Button Colors
+val ButtonGradientStart = Color(0xFF0F3F66)
+val ButtonGradientEnd = Color(0xFF1E7ECC)
+val ButtonCancelStart = Color.Gray.copy(alpha = 0.3f)
+val ButtonCancelEnd = Color.Gray.copy(alpha = 0.5f)

@@ -29,7 +29,7 @@ import com.swent.skillswap.ui.offerScreen.OfferScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.user.UserScreen
+import com.swent.skillswap.ui.user.ProfileMainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,7 +92,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
             composable(Screen.Offers.route) { OfferScreen() }
             composable(Screen.Chat.route) { ChatScreen() }
-            composable(Screen.Profile.route) { UserScreen() }
+            composable(Screen.Profile.route) { ProfileMainScreen() }
         }
     }
 }
