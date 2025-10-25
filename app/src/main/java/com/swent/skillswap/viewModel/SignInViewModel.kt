@@ -1,8 +1,4 @@
-/**
- * @author Topaze17 (Eliott)
- * Used ChatGPT commenting,
- * but all comments were checked manually.
- */
+/** @author Topaze17 (Eliott) Used ChatGPT commenting, but all comments were checked manually. */
 package com.swent.skillswap.viewModel
 
 import android.app.Activity
@@ -17,9 +13,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
 /**
- * Represents one-time navigation events for the Sign-In flow.
- * These are emitted from the ViewModel and collected by the UI layer
- * to perform navigation or show transient UI states.
+ * Represents one-time navigation events for the Sign-In flow. These are emitted from the ViewModel
+ * and collected by the UI layer to perform navigation or show transient UI states.
  */
 sealed class SignInEvent {
     /** Navigate to the app's main screen (user already has account info). */
@@ -80,17 +75,13 @@ class SignInViewModel() : ViewModel() {
         }
 
     /**
-     * Handles navigation to the Classic Sign-In screen.
-     * Triggered when user chooses to log in with email/password instead of Google.
+     * Handles navigation to the Classic Sign-In screen. Triggered when user chooses to log in with
+     * email/password instead of Google.
      */
-    fun classicSignIn() = viewModelScope.launch {
-        _eventFlow.emit(SignInEvent.NavigateToClassicSignIn)
-    }
+    fun classicSignIn() =
+        viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToClassicSignIn) }
 
-    /**
-     * Handles navigation to the Create Account screen directly (manual registration path).
-     */
-    fun createAccount() = viewModelScope.launch {
-        _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
-    }
+    /** Handles navigation to the Create Account screen directly (manual registration path). */
+    fun createAccount() =
+        viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen) }
 }

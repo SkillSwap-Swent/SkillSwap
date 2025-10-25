@@ -1,9 +1,7 @@
 /**
- * @author Topaze17 (Eliott)
- * Used ChatGPT for tagging the composables and commenting,
- * but all tags and comments were checked manually.
+ * @author Topaze17 (Eliott) Used ChatGPT for tagging the composables and commenting, but all tags
+ *   and comments were checked manually.
  */
-
 package com.swent.skillswap.ui.signIn
 
 // ----- Imports -----
@@ -53,8 +51,8 @@ val signInButtonStroke = BorderStroke(1.dp, Color.White)
  * - Classic email/password Sign-In button
  * - “Create Account” button for new users
  *
- * The ViewModel emits navigation events via a SharedFlow (SignInEvent),
- * which are collected here using LaunchedEffect.
+ * The ViewModel emits navigation events via a SharedFlow (SignInEvent), which are collected here
+ * using LaunchedEffect.
  */
 @Preview(showBackground = true)
 @Composable
@@ -71,7 +69,8 @@ fun SignInMainScreen(
             when (event) {
                 is SignInEvent.NavigateToMainScreen -> goToMainScreen()
                 is SignInEvent.NavigateToCreateAccountScreen -> goToCreateAccountScreen()
-                is SignInEvent.NavigateToClassicSignIn -> goToMainScreen() // TODO: Update when classic sign-in screen exists
+                is SignInEvent.NavigateToClassicSignIn ->
+                    goToMainScreen() // TODO: Update when classic sign-in screen exists
             }
         }
     }
@@ -81,22 +80,22 @@ fun SignInMainScreen(
     // Scaffold gives a top-level layout structure (with padding, backgrounds, etc.)
     Scaffold { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding)
-                // Background gradient (from theme)
-                .background(getLinearBrush(DefaultGradient, BrushDirection.DOWN_TOP))
-                .fillMaxSize()
-                .verticalScroll(scroll) // Enable scroll for smaller devices
+            modifier =
+                Modifier.padding(padding)
+                    // Background gradient (from theme)
+                    .background(getLinearBrush(DefaultGradient, BrushDirection.DOWN_TOP))
+                    .fillMaxSize()
+                    .verticalScroll(scroll) // Enable scroll for smaller devices
         ) {
             // ----- App logo -----
             Spacer(modifier = Modifier.height(200.dp))
             Image(
                 painter = painterResource(R.drawable.logo),
                 contentDescription = "SkillSwap logo",
-                modifier = Modifier
-                    .size(280.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .testTag(SignInTags.LOGO)
+                modifier =
+                    Modifier.size(280.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .testTag(SignInTags.LOGO)
             )
 
             // ----- Google Sign-In button -----
@@ -105,10 +104,10 @@ fun SignInMainScreen(
                 onClick = { vm.googleSignIn(credentialManager, context as Activity) },
                 colors = signInButtonColor,
                 border = signInButtonStroke,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f)
-                    .testTag(SignInTags.GOOGLE_BUTTON)
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .testTag(SignInTags.GOOGLE_BUTTON)
             ) {
                 Row(modifier = Modifier.height(21.dp)) {
                     Image(
@@ -127,10 +126,10 @@ fun SignInMainScreen(
                 onClick = { vm.classicSignIn() },
                 colors = signInButtonColor,
                 border = signInButtonStroke,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .fillMaxWidth(0.8f)
-                    .testTag(SignInTags.SIGN_IN_BUTTON)
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.8f)
+                        .testTag(SignInTags.SIGN_IN_BUTTON)
             ) {
                 Text(text = "SIGN IN")
             }
@@ -139,10 +138,10 @@ fun SignInMainScreen(
             Spacer(modifier = Modifier.height(40.dp))
             GradientButton(
                 onClick = { vm.createAccount() },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .testTag(SignInTags.CREATE_ACCOUNT_TEXT)
-                    .fillMaxWidth(0.4f)
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .testTag(SignInTags.CREATE_ACCOUNT_TEXT)
+                        .fillMaxWidth(0.4f)
             ) {
                 Text(
                     text = "Next",

@@ -1,8 +1,4 @@
-/**
- * @author Topaze17 (Eliott)
- * Used ChatGPT commenting,
- * but all comments were checked manually.
- */
+/** @author Topaze17 (Eliott) Used ChatGPT commenting, but all comments were checked manually. */
 package com.swent.skillswap.viewModel
 
 import androidx.lifecycle.ViewModel
@@ -23,20 +19,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * Represents one-time events (usually navigation or UI triggers)
- * that occur during the Create Account flow.
+ * Represents one-time events (usually navigation or UI triggers) that occur during the Create
+ * Account flow.
  */
 sealed class CreateAccountEvent {
 
     /**
-     * Event indicating that the user has successfully completed
-     * account creation and should be navigated to the main screen.
+     * Event indicating that the user has successfully completed account creation and should be
+     * navigated to the main screen.
      */
     object NavigateToMainScreen : CreateAccountEvent()
 }
 /**
- * Represents all UI state fields for the Create Account screen.
- * This includes both user-entered data and validation errors.
+ * Represents all UI state fields for the Create Account screen. This includes both user-entered
+ * data and validation errors.
  */
 data class CreateAccountUIState(
     val email: String = "",
@@ -52,12 +48,10 @@ data class CreateAccountUIState(
 )
 
 /**
- * ViewModel responsible for handling all logic and state updates
- * for the Create Account flow (both Google and Classic sign-in types).
+ * ViewModel responsible for handling all logic and state updates for the Create Account flow (both
+ * Google and Classic sign-in types).
  */
-class CreateAccountViewModel(
-    private val isGoogleAccount: Boolean
-) : ViewModel() {
+class CreateAccountViewModel(private val isGoogleAccount: Boolean) : ViewModel() {
 
     private val model: SignInInterface =
         if (isGoogleAccount) SignInGoogleModel() else SignInClassicModel()
@@ -100,8 +94,8 @@ class CreateAccountViewModel(
     }
 
     /**
-     * Toggles a skill selection — if already selected, remove it;
-     * otherwise, add it to the skill set.
+     * Toggles a skill selection — if already selected, remove it; otherwise, add it to the skill
+     * set.
      */
     fun clickSkill(skill: SkillTag) {
         if (_uiState.value.skills.contains(skill)) removeSkill(skill) else addSkill(skill)
@@ -181,8 +175,8 @@ class CreateAccountViewModel(
     // ---------- Aggregate Validators ----------
 
     /**
-     * Runs all validation functions (username, email, password, skills)
-     * and returns true only if all are valid.
+     * Runs all validation functions (username, email, password, skills) and returns true only if
+     * all are valid.
      */
     fun validateInputs(): Boolean {
         val results =
@@ -190,9 +184,7 @@ class CreateAccountViewModel(
         return results.all { it }
     }
 
-    /**
-     * Validates only the inputs relevant to a specific route (screen step).
-     */
+    /** Validates only the inputs relevant to a specific route (screen step). */
     fun validateByRoute(route: String): Boolean {
         return when (route) {
             CreateAccountRoutes.USERNAME -> validateUsername()
@@ -204,9 +196,8 @@ class CreateAccountViewModel(
     }
 
     /**
-     * Called when the user finishes the account creation process.
-     * Performs full validation and, if successful, triggers the model
-     * to create the account and navigates to the main screen.
+     * Called when the user finishes the account creation process. Performs full validation and, if
+     * successful, triggers the model to create the account and navigates to the main screen.
      */
     fun done() =
         viewModelScope.launch {
@@ -229,11 +220,11 @@ class CreateAccountViewModel(
 }
 
 /**
- * Factory class for constructing CreateAccountViewModel instances.
- * Needed when a ViewModel has non-default constructor parameters.
+ * Factory class for constructing CreateAccountViewModel instances. Needed when a ViewModel has
+ * non-default constructor parameters.
  */
 class CreateAccountVmFactory(
-    private val isGoogleAccount: Boolean         // Whether user is creating Google or classic account
+    private val isGoogleAccount: Boolean // Whether user is creating Google or classic account
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")

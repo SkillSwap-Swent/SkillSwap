@@ -1,9 +1,7 @@
 /**
- * @author Topaze17 (Eliott)
- * Used ChatGPT for tagging the composables and commenting,
- * but all tags and comments were checked manually.
+ * @author Topaze17 (Eliott) Used ChatGPT for tagging the composables and commenting, but all tags
+ *   and comments were checked manually.
  */
-
 package com.swent.skillswap.ui.signIn
 
 import androidx.compose.foundation.background
@@ -59,8 +57,8 @@ object CreateAccountRoutes {
     const val SKILLS = "create"
 
     /**
-     * Determines the next route to navigate to, depending on the current step
-     * and whether the user is creating a Google-based account.
+     * Determines the next route to navigate to, depending on the current step and whether the user
+     * is creating a Google-based account.
      */
     fun next(route: String?, isGoogleAccount: Boolean): String {
         return when (route) {
@@ -72,8 +70,8 @@ object CreateAccountRoutes {
     }
 
     /**
-     * Returns a progress percentage (0–1f) based on which route we’re on.
-     * Used by the top progress bar.
+     * Returns a progress percentage (0–1f) based on which route we’re on. Used by the top progress
+     * bar.
      */
     fun percentageFill(route: String?): Float {
         return when (route) {
@@ -120,12 +118,7 @@ fun SignInCreateAccountScreen(
         bottomBar = { CreateAccountBottomBar(route, navController, googleAccount, vm) },
         topBar = { CreateAccountTopBar(route) }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .verticalScroll(scroll)
-        ) {
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize().verticalScroll(scroll)) {
             // Navigation between form steps
             NavHost(
                 navController = navController,
@@ -141,8 +134,8 @@ fun SignInCreateAccountScreen(
 }
 
 /**
- * Bottom bar that contains the “Next” button for navigation between steps,
- * or triggers account creation when the user reaches the final screen.
+ * Bottom bar that contains the “Next” button for navigation between steps, or triggers account
+ * creation when the user reaches the final screen.
  */
 @Composable
 fun CreateAccountBottomBar(
@@ -154,7 +147,9 @@ fun CreateAccountBottomBar(
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.12f)) {
         GradientButton(
             onClick = {
-                if (currRoute != CreateAccountRoutes.SKILLS && vm.validateByRoute(currRoute ?: "")) {
+                if (
+                    currRoute != CreateAccountRoutes.SKILLS && vm.validateByRoute(currRoute ?: "")
+                ) {
                     // Go to next step if validation passes
                     navController.navigate(
                         CreateAccountRoutes.next(currRoute ?: "", isGoogleAccount)
@@ -164,10 +159,10 @@ fun CreateAccountBottomBar(
                     vm.done()
                 }
             },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .testTag(CreateAccountTags.NEXT_BUTTON)
-                .fillMaxWidth(0.4f)
+            modifier =
+                Modifier.align(Alignment.TopCenter)
+                    .testTag(CreateAccountTags.NEXT_BUTTON)
+                    .fillMaxWidth(0.4f)
         ) {
             Text(text = "Next", fontSize = 24.sp)
         }
@@ -175,25 +170,23 @@ fun CreateAccountBottomBar(
 }
 
 /**
- * Displays the progress bar at the top, showing how far through the account
- * creation process the user is.
+ * Displays the progress bar at the top, showing how far through the account creation process the
+ * user is.
  */
 @Composable
 fun CreateAccountTopBar(currRoute: String?) {
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.1f)) {
         Box(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .background(MaterialTheme.colorScheme.primary)
-                .height(12.dp)
-                .fillMaxWidth(CreateAccountRoutes.percentageFill(currRoute))
+            modifier =
+                Modifier.align(Alignment.BottomStart)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .height(12.dp)
+                    .fillMaxWidth(CreateAccountRoutes.percentageFill(currRoute))
         )
     }
 }
 
-/**
- * Step 1 — Choose a username.
- */
+/** Step 1 — Choose a username. */
 @Composable
 fun UsernameScreen(vm: CreateAccountViewModel) {
     val uiState by vm.uiState.collectAsState()
@@ -203,8 +196,7 @@ fun UsernameScreen(vm: CreateAccountViewModel) {
             text = "My Username \n\nis ",
             fontSize = 44.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.TITLE)
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(100.dp))
         SkillSwapTextField(
@@ -213,16 +205,14 @@ fun UsernameScreen(vm: CreateAccountViewModel) {
             onValueChange = { vm.onUsernameChange(it) },
             label = "Username",
             placeholder = "username",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.USERNAME_FIELD)
+            modifier =
+                Modifier.align(Alignment.CenterHorizontally)
+                    .testTag(CreateAccountTags.USERNAME_FIELD)
         )
     }
 }
 
-/**
- * Step 2 — Enter email address (skipped for Google sign-ins).
- */
+/** Step 2 — Enter email address (skipped for Google sign-ins). */
 @Composable
 fun EmailScreen(vm: CreateAccountViewModel) {
     val uiState by vm.uiState.collectAsState()
@@ -232,8 +222,7 @@ fun EmailScreen(vm: CreateAccountViewModel) {
             text = "My Email is ",
             fontSize = 44.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.TITLE)
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(150.dp))
         SkillSwapTextField(
@@ -242,21 +231,19 @@ fun EmailScreen(vm: CreateAccountViewModel) {
             onValueChange = { vm.onEmailChange(it) },
             label = "Email",
             placeholder = "your.email@gmail.com",
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                capitalization = KeyboardCapitalization.None,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.EMAIL_FIELD)
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    capitalization = KeyboardCapitalization.None,
+                    imeAction = ImeAction.Next
+                ),
+            modifier =
+                Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.EMAIL_FIELD)
         )
     }
 }
 
-/**
- * Step 3 — Choose and confirm a password (skipped for Google sign-ins).
- */
+/** Step 3 — Choose and confirm a password (skipped for Google sign-ins). */
 @Composable
 fun PasswordScreen(vm: CreateAccountViewModel) {
     val uiState by vm.uiState.collectAsState()
@@ -266,8 +253,7 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
             text = "My password is ",
             fontSize = 44.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.TITLE)
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(100.dp))
         SkillSwapPasswordTextField(
@@ -276,9 +262,9 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
             label = "Password",
             placeholder = "enter password",
             onValueChange = { vm.onPasswordChange(it) },
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.PASSWORD_FIELD)
+            modifier =
+                Modifier.align(Alignment.CenterHorizontally)
+                    .testTag(CreateAccountTags.PASSWORD_FIELD)
         )
         SkillSwapPasswordTextField(
             value = uiState.confirmPassword,
@@ -286,16 +272,14 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
             onValueChange = { vm.onConfirmPasswordChange(it) },
             label = "Confirm Password",
             placeholder = "enter password",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+            modifier =
+                Modifier.align(Alignment.CenterHorizontally)
+                    .testTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
         )
     }
 }
 
-/**
- * Step 4 — Select main skills (final step before account creation).
- */
+/** Step 4 — Select main skills (final step before account creation). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SkillScreen(vm: CreateAccountViewModel) {
@@ -306,8 +290,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
             text = "Pick your \n\nmain skills !",
             fontSize = 44.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.TITLE)
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(40.dp))
         Text(
@@ -318,24 +301,24 @@ fun SkillScreen(vm: CreateAccountViewModel) {
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier
-                .fillMaxWidth(0.7f)
-                .align(Alignment.CenterHorizontally)
-                .testTag(CreateAccountTags.SKILLS_FLOW)
+            modifier =
+                Modifier.fillMaxWidth(0.7f)
+                    .align(Alignment.CenterHorizontally)
+                    .testTag(CreateAccountTags.SKILLS_FLOW)
         ) {
             // Loop through all skill tags and render as selectable chips
             for (skill in SkillTag.entries) {
                 val skillColor = if (uiState.skills.contains(skill)) Color.Red else Color.Black
                 Box(
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = skillColor,
-                            shape = RoundedCornerShape(50)
-                        )
-                        .clickable { vm.clickSkill(skill) }
-                        .padding(horizontal = 10.dp, vertical = 3.dp)
-                        .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
+                    modifier =
+                        Modifier.border(
+                                width = 1.dp,
+                                color = skillColor,
+                                shape = RoundedCornerShape(50)
+                            )
+                            .clickable { vm.clickSkill(skill) }
+                            .padding(horizontal = 10.dp, vertical = 3.dp)
+                            .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
                 ) {
                     Text(
                         text = skill.name, // TODO: make enum names user-friendly
