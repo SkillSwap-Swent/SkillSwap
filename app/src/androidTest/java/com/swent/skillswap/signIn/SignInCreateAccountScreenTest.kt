@@ -32,7 +32,7 @@ var SemanticsPropertyReceiver.textColorArgb by TextColorArgbKey
 class SignInCreateAccountScreenTest : TestCase() {
 
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-    val vm: CreateAccountViewModel = CreateAccountViewModel({}, false)
+    val vm: CreateAccountViewModel = CreateAccountViewModel(false)
 
     @Before
     fun setUp() {
