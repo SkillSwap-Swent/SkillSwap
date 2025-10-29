@@ -53,9 +53,11 @@ class BrushTest {
         // Convert to Android Bitmap to read pixels
         val bitmap = image.asAndroidBitmap()
 
-        // Get pixel colors from the bitmap
-        val leftPixelColor = Color(bitmap.getPixel(0, 50))
-        val rightPixelColor = Color(bitmap.getPixel(100, 50))
+        val width = bitmap.width
+        val height = bitmap.height
+
+        val leftPixelColor = Color(bitmap.getPixel((width * 0.05f).toInt(), height / 2))
+        val rightPixelColor = Color(bitmap.getPixel((width * 0.95f).toInt(), height / 2))
 
         fun isColorClose(a: Color, b: Color): Boolean {
             val threshold = 5f
