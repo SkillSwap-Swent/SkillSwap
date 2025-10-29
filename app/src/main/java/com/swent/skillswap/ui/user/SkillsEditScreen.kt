@@ -28,9 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.theme.ProfileGradientEnd
-import com.swent.skillswap.ui.theme.ProfileGradientStart
-import com.swent.skillswap.ui.theme.ProfileTextPrimary
 import com.swent.skillswap.ui.utils.GradientButton
 
 object SkillsEditTestTags {
@@ -84,7 +81,10 @@ fun SkillsEditScreen(
                     .background(
                         brush =
                             Brush.verticalGradient(
-                                colors = listOf(ProfileGradientStart, ProfileGradientEnd)
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primaryContainer
+                                )
                             )
                     )
                     .padding(16.dp)
@@ -94,7 +94,7 @@ fun SkillsEditScreen(
                 Text(
                     text = "Add Skills",
                     fontSize = 16.sp,
-                    color = ProfileTextPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )

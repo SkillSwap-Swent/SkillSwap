@@ -4,20 +4,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.DefaultGradient
 import com.swent.skillswap.ui.theme.getLinearBrush
 
 @Composable
 fun GradientButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    gradient: List<Color> = DefaultGradient,
+    gradient: List<Color> = listOf(
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.primaryContainer
+    ),
     contentColor: Color = Color.White,
     disableContentColor: Color = Color.Gray,
     gradientDirection: BrushDirection = BrushDirection.LEFT_RIGHT,
@@ -31,7 +34,7 @@ fun GradientButton(
         modifier =
             modifier
                 .clip(ButtonDefaults.outlinedShape)
-                .background(getLinearBrush(gradient, gradientDirection))
+                .background(getLinearBrush(brushDirection = gradientDirection, gradient = gradient))
     ) {
         content()
     }

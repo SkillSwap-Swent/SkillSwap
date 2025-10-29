@@ -19,10 +19,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.theme.ProfileGradientEnd
-import com.swent.skillswap.ui.theme.ProfileGradientStart
-import com.swent.skillswap.ui.theme.ProfileTextPrimary
-import com.swent.skillswap.ui.theme.ProfileTextSecondary
 import com.swent.skillswap.ui.utils.AccordionSection
 import com.swent.skillswap.ui.utils.ProfileDivider
 
@@ -77,7 +73,10 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                     .background(
                         brush =
                             Brush.verticalGradient(
-                                colors = listOf(ProfileGradientStart, ProfileGradientEnd)
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primaryContainer
+                                )
                             )
                     )
                     .padding(16.dp)
@@ -97,14 +96,14 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                 Text(
                                     text = "user@example.com",
                                     fontSize = 14.sp,
-                                    color = ProfileTextSecondary,
+                                    color =  MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier =
                                         Modifier.weight(1f).testTag(ProfileTestTags.EMAIL_VALUE)
                                 )
                                 Text(
                                     text = "Edit",
                                     fontSize = 14.sp,
-                                    color = ProfileTextPrimary,
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Medium,
                                     modifier =
                                         Modifier.testTag(ProfileTestTags.EMAIL_EDIT)

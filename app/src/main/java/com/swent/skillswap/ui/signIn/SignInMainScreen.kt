@@ -35,7 +35,6 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.DefaultGradient
 import com.swent.skillswap.ui.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.viewModel.SignInViewModel
@@ -67,7 +66,7 @@ fun SignInMainScreen(
         Column(
             modifier =
                 Modifier.padding(padding)
-                    .background(getLinearBrush(DefaultGradient, BrushDirection.DOWN_TOP))
+                    .background(getLinearBrush(BrushDirection.DOWN_TOP))
                     .fillMaxSize(1f)
                     .verticalScroll(scroll)
         ) {

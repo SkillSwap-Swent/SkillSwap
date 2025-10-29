@@ -1,9 +1,10 @@
-/** @author Topaze17(Eliott) */
 package com.swent.skillswap.ui.theme
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
 
 /** an enum class to represent brush direction */
 enum class BrushDirection {
@@ -16,11 +17,18 @@ enum class BrushDirection {
 /**
  * a function to make directional brush for linear gradient
  *
- * @param gradient the list of color making the gradient
+ * @param gradient the list of color making the gradient (optional, defaults to DEFAULT_GRADIENT)
  * @param brushDirection the direction wanted for the brush
  * @return a ready to use brush
  */
-fun getLinearBrush(gradient: List<Color>, brushDirection: BrushDirection): Brush {
+@Composable
+fun getLinearBrush(
+    brushDirection: BrushDirection,
+    gradient: List<Color> = listOf(
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.primaryContainer
+    ) // default gradient
+): Brush {
     return when (brushDirection) {
         BrushDirection.TOP_DOWN ->
             Brush.linearGradient(
@@ -49,4 +57,3 @@ fun getLinearBrush(gradient: List<Color>, brushDirection: BrushDirection): Brush
     }
 }
 
-val DefaultGradient = listOf(SkillSwapLightThemePrimary, EndOfDefaultGradient)

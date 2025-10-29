@@ -101,7 +101,7 @@ object CreateAccountRoutes {
 @Preview(showBackground = true)
 @Composable
 fun CreateAccountPreview() {
-    SkillSwapAppTheme(dynamicColor = false, content = { SignInCreateAccountScreen() })
+    SkillSwapAppTheme(content = { SignInCreateAccountScreen() })
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
