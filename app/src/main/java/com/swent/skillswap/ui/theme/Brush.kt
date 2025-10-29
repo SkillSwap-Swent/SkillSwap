@@ -30,10 +30,7 @@ fun DefaultGradient(endColor: Color = MaterialTheme.colorScheme.primaryContainer
 fun getLinearBrush(
     brushDirection: BrushDirection,
     gradient: List<Color> =
-        listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.primaryContainer
-        ) // default gradient
+        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
 ): Brush {
     return when (brushDirection) {
         BrushDirection.TOP_DOWN ->
