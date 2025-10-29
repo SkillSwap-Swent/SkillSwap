@@ -114,6 +114,7 @@ class NavigationTest {
             }
         }
     }
+
     @Test
     fun testNavigateToTopLevelDestinationExecutesPopUpTo() {
         val navigationActions = setupNavigation()
@@ -132,7 +133,4 @@ class NavigationTest {
             }
         }
     }
-
-
-
 }
