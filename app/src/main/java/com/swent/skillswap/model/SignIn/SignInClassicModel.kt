@@ -3,6 +3,10 @@ package com.swent.skillswap.model.SignIn
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepoFirestore
+import kotlinx.coroutines.tasks.await
 
 /**
  * Handles classic (email and password) authentication using Firebase Authentication.
@@ -16,31 +20,47 @@ class SignInClassicModel(
 ) : SignInAbstractClass(auth, firestore) {
 
     override suspend fun signIn(params: SignInParams) {
-        /* TODO remove when refactor backend
+
         val classicParams: SignInClassicParams = params as SignInClassicParams
         val email = classicParams.email
         val password = classicParams.password
-        require(email.isNotBlank() && password.isNotBlank()) { "Email and password required." }
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password).await()*/
+        require(email.isNotBlank() && password.isNotBlank())
+        auth.signInWithEmailAndPassword(email, password).await()
     }
 
     override suspend fun createAccount(params: CreateAccountParams) {
-        /*TODO remove when refactor backend
         val classicParams: CreateAccountClassicParams = params as CreateAccountClassicParams
         val email = classicParams.email
         val password = classicParams.password
         val skills = classicParams.skills
         val username = classicParams.username
+        val repo = UserRepoFirestore(firestore)
         require(
             email.isNotBlank() &&
                 password.isNotBlank() &&
                 skills.isNotEmpty() &&
                 username.isNotBlank()
-        )*/
-        /*TODO Wait for UserUtils
-        val auth = FirebaseAuth.getInstance()
+        )
         val result = auth.createUserWithEmailAndPassword(email, password).await()
-        val user = result.user ?: error("User not created")
-        */
+        val user = result.user
+        val skillSet = mutableSetOf<Skill>()
+        for (skill in skills) {
+            skillSet.add(Skill(skill, 0f, "")) // TODO change handling of description at some point
+        }
+        if (user == null) {
+            throw Exception("failed creation of user")
+        } else {
+            repo.addUser(
+                User(
+                    uid = user.uid,
+                    username = username,
+                    email = email,
+                    profilePicture = "",
+                    skillSet = skillSet,
+                    rating = 0f,
+                    availability = listOf()
+                )
+            )
+        }
     }
 }

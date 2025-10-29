@@ -2,14 +2,21 @@
 package com.swent.skillswap.viewModel
 
 import android.app.Activity
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.swent.skillswap.model.SignIn.SignInClassicModel
+import com.swent.skillswap.model.SignIn.SignInClassicParams
 import com.swent.skillswap.model.SignIn.SignInGoogleModel
 import com.swent.skillswap.model.SignIn.SignInGoogleParams
 import com.swent.skillswap.model.SignIn.SignInInterface
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -22,10 +29,14 @@ sealed class SignInEvent {
 
     /** Navigate to the Create Account screen (first-time Google sign-in). */
     object NavigateToCreateAccountScreen : SignInEvent()
-
-    /** Navigate to the Classic (email/password) sign-in screen. */
-    object NavigateToClassicSignIn : SignInEvent()
 }
+
+data class SignInUIState(
+    val email: String = "",
+    val password: String = "",
+    val emailError: String = "",
+    val passwordError: String = "",
+)
 
 /**
  * ViewModel responsible for managing Sign-In logic and emitting navigation events.
@@ -35,15 +46,24 @@ sealed class SignInEvent {
  * - Triggering navigation events based on authentication results
  * - Directing the UI to appropriate next steps (main screen or account creation)
  */
-class SignInViewModel() : ViewModel() {
+class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance()) : ViewModel() {
 
+    private val _uiState: MutableStateFlow<SignInUIState> =
+        MutableStateFlow<SignInUIState>(SignInUIState())
+    val uiState: StateFlow<SignInUIState> = _uiState
     // The sign-in model abstraction. We use the Google-specific implementation here.
-    private val googleModel: SignInInterface = SignInGoogleModel()
-
+    private val googleModel: SignInInterface = SignInGoogleModel(auth)
+    private val classicModel: SignInInterface = SignInClassicModel(auth)
     // SharedFlow used for one-time UI events (navigation actions).
     // Unlike StateFlow, SharedFlow won't re-emit old events when the UI recomposes.
     private val _eventFlow = MutableSharedFlow<SignInEvent>()
     val eventFlow: SharedFlow<SignInEvent> = _eventFlow // Public read-only access
+    /** check if the user is meant to be there */
+    fun check() {
+        if (auth.currentUser != null) {
+            viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToMainScreen) }
+        }
+    }
 
     /**
      * Initiates Google Sign-In flow using the CredentialManager.
@@ -60,28 +80,85 @@ class SignInViewModel() : ViewModel() {
             try {
                 // Perform Google sign-in using provided credentials.
                 googleModel.signIn(SignInGoogleParams(activity, credentialManager))
-
-                // Check if user’s Google account info already exists in Firestore.
-                if ((googleModel as SignInGoogleModel).googleAccountInfoAreSavedInFirestore()) {
-                    // User exists → go to main app.
-                    _eventFlow.emit(SignInEvent.NavigateToMainScreen)
-                } else {
-                    // New Google user → go to account creation.
-                    _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
+                try {
+                    // Check if user’s Google account info already exists in Firestore.
+                    if ((googleModel as SignInGoogleModel).googleAccountInfoAreSavedInFirestore()) {
+                        // User exists → go to main app.
+                        _eventFlow.emit(SignInEvent.NavigateToMainScreen)
+                    } else {
+                        // New Google user → go to account creation.
+                        _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
+                    }
+                } catch (e: Exception) {
+                    Log.w("Info Check", "Firestore Error", e)
                 }
             } catch (e: Exception) {
-                // Exception is caught but ignored; consider logging or showing error feedback.
+                Log.w("SignIn", "Credential Error", e)
             }
         }
-
+    /** Updates the email without affecting any error fields. */
+    fun onEmailChange(newEmail: String) {
+        _uiState.update { current -> current.copy(email = newEmail) }
+    }
+    /** Updates the password without affecting any error fields. */
+    fun onPasswordChange(newPassword: String) {
+        _uiState.update { current -> current.copy(password = newPassword) }
+    }
     /**
-     * Handles navigation to the Classic Sign-In screen. Triggered when user chooses to log in with
-     * email/password instead of Google.
+     * Handle classical Login. Triggered when user chooses to log in with email/password instead of
+     * Google.
      */
     fun classicSignIn() =
-        viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToClassicSignIn) }
+        viewModelScope.launch {
+            if (validateInputs()) {
+                try {
+                    classicModel.signIn(
+                        SignInClassicParams(uiState.value.email, uiState.value.password)
+                    )
+                    _eventFlow.emit(SignInEvent.NavigateToMainScreen)
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(passwordError = "Email or password incorrect") }
+                }
+            }
+        }
 
     /** Handles navigation to the Create Account screen directly (manual registration path). */
     fun createAccount() =
         viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen) }
+    // Regular expression for validating email formats (simple pattern) can be change easily
+    private val emailRegex by lazy { "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex() }
+
+    private fun validateEmail(): Boolean {
+        val email = _uiState.value.email
+        val msg =
+            when {
+                email.isBlank() -> "Email cannot be empty"
+                !emailRegex.matches(email) -> "Invalid email format"
+                else -> ""
+            }
+        _uiState.update { it.copy(emailError = msg) }
+        return msg.isEmpty()
+    }
+
+    private fun validatePasswords(): Boolean {
+        val pwd = _uiState.value.password
+
+        val passwordError =
+            when {
+                pwd.isBlank() -> "Password cannot be empty"
+                pwd.length < 8 -> "Password must be at least 8 characters long"
+                !pwd.any { it.isUpperCase() } ->
+                    "Password must contain at least one uppercase letter"
+                else -> ""
+            }
+
+        _uiState.update { it.copy(passwordError = passwordError) }
+
+        return passwordError.isEmpty()
+    }
+
+    fun validateInputs(): Boolean {
+        val results = listOf(validateEmail(), validatePasswords())
+        return results.all { it }
+    }
 }

@@ -15,7 +15,8 @@ import com.google.firebase.firestore.FirebaseFirestore
  */
 abstract class SignInAbstractClass(
     protected val auth: FirebaseAuth,
-    protected val firestore: FirebaseFirestore) : SignInInterface {
+    protected val firestore: FirebaseFirestore
+) : SignInInterface {
     override suspend fun logOut() {
         auth.signOut()
     }

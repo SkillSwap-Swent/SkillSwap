@@ -2,7 +2,6 @@
 package com.swent.skillswap.model.SignIn
 
 import android.app.Activity
-import androidx.compose.ui.layout.FirstBaseline
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
@@ -11,12 +10,11 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.swent.skillswap.model.user.Availability
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import kotlinx.coroutines.tasks.await
 import kotlin.String
+import kotlinx.coroutines.tasks.await
 
 /**
  * Handles authentication with Google Sign-In using the Android Credential Manager and Firebase
@@ -49,7 +47,7 @@ class SignInGoogleModel(
 
         val googleIdOption =
             GetSignInWithGoogleOption.Builder(
-                    "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com"//TODO add to XML at some point
+                    "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com" // TODO add to XML at some point
                 )
                 .build()
 
@@ -70,17 +68,17 @@ class SignInGoogleModel(
 
     override suspend fun signIn(params: SignInParams) {
         val googleParams: SignInGoogleParams = params as SignInGoogleParams
-         val credentialManager = googleParams.credentialManager
-         val activity = googleParams.activity
-         val idToken = requestGoogleIdToken(credentialManager, activity) ?: return
+        val credentialManager = googleParams.credentialManager
+        val activity = googleParams.activity
+        val idToken = requestGoogleIdToken(credentialManager, activity) ?: return
 
-         val auth = this.auth
-         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+        val auth = this.auth
+        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
 
-         auth
-             .signInWithCredential(firebaseCredential)
-             .addOnFailureListener { throw Exception("failed connection") }
-             .await()
+        auth
+            .signInWithCredential(firebaseCredential)
+            .addOnFailureListener { throw Exception("failed connection") }
+            .await()
     }
 
     /**
@@ -94,30 +92,15 @@ class SignInGoogleModel(
      *   `false`.
      */
     suspend fun googleAccountInfoAreSavedInFirestore(): Boolean {
+        val user = auth.currentUser ?: return false
         val repo = UserRepoFirestore(firestore)
-        val user = auth.currentUser
-        if(user == null) {
-            return false
-        }
-        else {
-            return when (user.providerId) {
-                "google.com" -> { try {
-                    repo.getUser(user.uid) //TODO ask change to that function to get boolean if user exist or make a function for it
-                    true
-                }
-                catch (e: Exception) {
-                    if(e.message == "No data found for user with ID: ${user.uid}") {
-                        false
-                    }
-                    else {
-                        throw e
-                    }
-                }
-                }
-                "password" -> false
-                else -> false
-            }
-        }
+
+        // Check if Google provider is linked
+        val isGoogleUser = user.providerData.any { it.providerId == "google.com" }
+        if (!isGoogleUser) return false
+
+        // Check if user exists in Firestore
+        return repo.userExists(user.uid)
     }
 
     override suspend fun createAccount(params: CreateAccountParams) {
@@ -126,20 +109,26 @@ class SignInGoogleModel(
         val username = googleParams.username
         val skills = googleParams.skills
         val userLogged = auth.currentUser
-        require(username.isNotBlank() && skills.isNotEmpty() && userLogged != null && userLogged.email != null)
+        require(
+            username.isNotBlank() &&
+                skills.isNotEmpty() &&
+                userLogged != null &&
+                userLogged.email != null
+        )
         val skillSet = mutableSetOf<Skill>()
         for (skill in skills) {
-            skillSet.add(Skill(skill, 0f, ""))//TODO change handling of description at some point
+            skillSet.add(Skill(skill, 0f, "")) // TODO change handling of description at some point
         }
-        val user = User(
-            uid = userLogged.uid,
-            username = username,
-            email = userLogged.email ?: "",
-            profilePicture = "",
-            skillSet = skillSet,
-            rating = 0f,
-            availability = listOf(),
-        )
+        val user =
+            User(
+                uid = userLogged.uid,
+                username = username,
+                email = userLogged.email ?: "",
+                profilePicture = "",
+                skillSet = skillSet,
+                rating = 0f,
+                availability = listOf(),
+            )
         repo.addUser(user)
     }
 }
