@@ -1,7 +1,9 @@
 package com.swent.skillswap
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,6 +13,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.navigation.NavHostController
@@ -30,6 +33,7 @@ import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileMainScreen
+import kotlin.collections.contains
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,22 +56,36 @@ class MainActivity : ComponentActivity() {
 // Enabling navController to be passed as an argument to facilitate testing
 @Composable
 fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    val screens =
+        listOf(
+            Screen.SignInMain,
+            Screen.SignInCreateAccount,
+            Screen.Offers,
+            Screen.Profile,
+            Screen.Chat
+        )
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
-    val startDestination = Screen.SignInMain.route
+    val startDestination = Screen.Profile.route
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
-
-    val showBottomBar =
-        currentRoute in listOf(Screen.Offers.route, Screen.Chat.route, Screen.Profile.route)
 
     val bottomBarViewModel = remember {
         BottomBarViewModel(NavigationBottomBarModel(navigationActions))
     }
 
+    val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
+
+    if (isTopLevel) {
+        BackHandler { activity?.finish() }
+    }
+
     Scaffold(
         bottomBar = {
-            if (showBottomBar) {
+            if (isTopLevel) {
                 BottomBar(vm = bottomBarViewModel)
             }
         }
