@@ -1,27 +1,16 @@
-/** @author Topaze17(Eliott) used chatGPT for tagging the composable but they were checked */
+/**
+ * @author Topaze17 (Eliott) Used ChatGPT for tagging the composables and commenting, but all tags
+ *   and comments were checked manually.
+ */
 package com.swent.skillswap.ui.signIn
 
+// ----- Imports -----
 import android.app.Activity
 import android.content.Context
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,9 +26,10 @@ import com.swent.skillswap.R
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.GradientButton
+import com.swent.skillswap.viewModel.SignInEvent
 import com.swent.skillswap.viewModel.SignInViewModel
-import com.swent.skillswap.viewModel.SignInVmFactory
 
+// ----- UI Test Tags -----
 object SignInTags {
     const val LOGO = "SIGN_IN_LOGO"
     const val GOOGLE_BUTTON = "SIGN_IN_GOOGLE_BUTTON"
@@ -48,34 +38,65 @@ object SignInTags {
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
 }
 
+// ----- Default styles for Sign-In buttons -----
 val signInButtonColor = ButtonColors(Color.Transparent, Color.White, Color.White, Color.Black)
 val signInButtonStroke = BorderStroke(1.dp, Color.White)
 
+/**
+ * Main Sign-In screen of the app.
+ *
+ * Provides:
+ * - Google Sign-In using CredentialManager
+ * - Classic email/password Sign-In button
+ * - “Create Account” button for new users
+ *
+ * The ViewModel emits navigation events via a SharedFlow (SignInEvent), which are collected here
+ * using LaunchedEffect.
+ */
 @Preview(showBackground = true)
 @Composable
 fun SignInMainScreen(
     goToMainScreen: () -> Unit = {},
     goToCreateAccountScreen: () -> Unit = {},
     context: Context = LocalContext.current,
-    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current)
+    credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
+    vm: SignInViewModel = viewModel()
 ) {
-    val vm: SignInViewModel =
-        viewModel(factory = SignInVmFactory(goToMainScreen, goToCreateAccountScreen))
+    // Listen for one-time events from the ViewModel
+    LaunchedEffect(Unit) {
+        vm.eventFlow.collect { event ->
+            when (event) {
+                is SignInEvent.NavigateToMainScreen -> goToMainScreen()
+                is SignInEvent.NavigateToCreateAccountScreen -> goToCreateAccountScreen()
+                is SignInEvent.NavigateToClassicSignIn ->
+                    goToMainScreen() // TODO: Update when classic sign-in screen exists
+            }
+        }
+    }
+
     val scroll = rememberScrollState()
-    Scaffold() { padding ->
+
+    // Scaffold gives a top-level layout structure (with padding, backgrounds, etc.)
+    Scaffold { padding ->
         Column(
             modifier =
                 Modifier.padding(padding)
                     .background(getLinearBrush(BrushDirection.DOWN_TOP))
-                    .fillMaxSize(1f)
+                    .fillMaxSize()
                     .verticalScroll(scroll)
         ) {
+            // ----- App logo -----
             Spacer(modifier = Modifier.height(200.dp))
             Image(
                 painter = painterResource(R.drawable.logo),
                 contentDescription = "SkillSwap logo",
-                Modifier.size(280.dp).align(Alignment.CenterHorizontally).testTag(SignInTags.LOGO)
+                modifier =
+                    Modifier.size(280.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .testTag(SignInTags.LOGO)
             )
+
+            // ----- Google Sign-In button -----
             Spacer(modifier = Modifier.height(50.dp))
             OutlinedButton(
                 onClick = { vm.googleSignIn(credentialManager, context as Activity) },
@@ -93,11 +114,11 @@ fun SignInMainScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "SIGN IN WITH GOOGLE",
-                    )
+                    Text(text = "SIGN IN WITH GOOGLE")
                 }
             }
+
+            // ----- Classic Sign-In button -----
             Spacer(modifier = Modifier.height(20.dp))
             OutlinedButton(
                 onClick = { vm.classicSignIn() },
@@ -110,6 +131,8 @@ fun SignInMainScreen(
             ) {
                 Text(text = "SIGN IN")
             }
+
+            // ----- Create Account button -----
             Spacer(modifier = Modifier.height(40.dp))
             GradientButton(
                 onClick = { vm.createAccount() },
