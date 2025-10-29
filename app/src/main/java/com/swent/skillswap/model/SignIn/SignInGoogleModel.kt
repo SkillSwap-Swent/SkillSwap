@@ -2,7 +2,21 @@
 package com.swent.skillswap.model.SignIn
 
 import android.app.Activity
+import androidx.compose.ui.layout.FirstBaseline
 import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
+import com.swent.skillswap.model.user.Availability
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepoFirestore
+import kotlinx.coroutines.tasks.await
+import kotlin.String
 
 /**
  * Handles authentication with Google Sign-In using the Android Credential Manager and Firebase
@@ -11,7 +25,10 @@ import androidx.credentials.CredentialManager
  * This class provides methods for requesting an ID token from Google, signing in with Firebase, and
  * later verifying whether a user's account information has been stored in Firestore.
  */
-class SignInGoogleModel : SignInAbstractClass() {
+class SignInGoogleModel(
+    auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+) : SignInAbstractClass(auth, firestore) {
     /**
      * Requests a Google ID token using the Android Credential Manager API.
      *
@@ -29,10 +46,10 @@ class SignInGoogleModel : SignInAbstractClass() {
         credentialManager: CredentialManager,
         activity: Activity
     ): String? {
-        /*TODO remove when refactor backend
+
         val googleIdOption =
             GetSignInWithGoogleOption.Builder(
-                    "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com"
+                    "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com"//TODO add to XML at some point
                 )
                 .build()
 
@@ -48,24 +65,22 @@ class SignInGoogleModel : SignInAbstractClass() {
             google.idToken
         } catch (e: GetCredentialException) {
             null
-        }*/
-        return ""
+        }
     }
 
     override suspend fun signIn(params: SignInParams) {
-        /* TODO remove when refactor backend
         val googleParams: SignInGoogleParams = params as SignInGoogleParams
          val credentialManager = googleParams.credentialManager
          val activity = googleParams.activity
          val idToken = requestGoogleIdToken(credentialManager, activity) ?: return
 
-         val auth = FirebaseAuth.getInstance()
+         val auth = this.auth
          val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
 
          auth
              .signInWithCredential(firebaseCredential)
              .addOnFailureListener { throw Exception("failed connection") }
-             .await()*/
+             .await()
     }
 
     /**
@@ -79,16 +94,52 @@ class SignInGoogleModel : SignInAbstractClass() {
      *   `false`.
      */
     suspend fun googleAccountInfoAreSavedInFirestore(): Boolean {
-        /*TODO Wait for search utils in firestore*/
-        return false
+        val repo = UserRepoFirestore(firestore)
+        val user = auth.currentUser
+        if(user == null) {
+            return false
+        }
+        else {
+            return when (user.providerId) {
+                "google.com" -> { try {
+                    repo.getUser(user.uid) //TODO ask change to that function to get boolean if user exist or make a function for it
+                    true
+                }
+                catch (e: Exception) {
+                    if(e.message == "No data found for user with ID: ${user.uid}") {
+                        false
+                    }
+                    else {
+                        throw e
+                    }
+                }
+                }
+                "password" -> false
+                else -> false
+            }
+        }
     }
 
     override suspend fun createAccount(params: CreateAccountParams) {
-        /*TODO remove when refactor backend
         val googleParams: CreateAccountGoogleParams = params as CreateAccountGoogleParams
-        val username = params.username
-        val skills = params.skills
-        require(username.isNotBlank() && skills.isNotEmpty())*/
-        /*TODO Wait for UserUtils*/
+        val repo = UserRepoFirestore(firestore)
+        val username = googleParams.username
+        val skills = googleParams.skills
+        val userLogged = auth.currentUser
+        require(username.isNotBlank() && skills.isNotEmpty() && userLogged != null && userLogged.email != null)
+        val skillSet = mutableSetOf<Skill>()
+        for (skill in skills) {
+            skillSet.add(Skill(skill, 0f, ""))//TODO change handling of description at some point
+        }
+        val user = User(
+            uid = userLogged.uid,
+            username = username,
+            email = userLogged.email ?: "",
+            profilePicture = "",
+            skillSet = skillSet,
+            rating = 0f,
+            availability = listOf(),
+        )
+        repo.addUser(user)
     }
 }

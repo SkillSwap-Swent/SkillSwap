@@ -1,13 +1,19 @@
 /** @author Topaze17 used ChatGPT for comment. */
 package com.swent.skillswap.model.SignIn
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+
 /**
  * Handles classic (email and password) authentication using Firebase Authentication.
  *
  * This class implements the sign-in and account creation logic for users who register or log in via
  * email/password instead of third-party providers like Google.
  */
-class SignInClassicModel : SignInAbstractClass() {
+class SignInClassicModel(
+    auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+) : SignInAbstractClass(auth, firestore) {
 
     override suspend fun signIn(params: SignInParams) {
         /* TODO remove when refactor backend
