@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.signIn.CreateAccountTags
+
 @Composable
 fun SkillSwapPasswordTextField(
     modifier: Modifier = Modifier,
@@ -49,7 +50,9 @@ fun SkillSwapPasswordTextField(
                 fontSize = 18.sp
             )
         },
-        placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp) },
+        placeholder = {
+            Text(placeholder, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp)
+        },
         supportingText = {
             Text(
                 text = supportText,

@@ -17,10 +17,8 @@ import com.swent.skillswap.ui.theme.getLinearBrush
 fun GradientButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    gradient: List<Color> = listOf(
-        MaterialTheme.colorScheme.primary,
-        MaterialTheme.colorScheme.primaryContainer
-    ),
+    gradient: List<Color> =
+        listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer),
     contentColor: Color = Color.White,
     disableContentColor: Color = Color.Gray,
     gradientDirection: BrushDirection = BrushDirection.LEFT_RIGHT,

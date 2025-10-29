@@ -81,10 +81,11 @@ fun SkillsEditScreen(
                     .background(
                         brush =
                             Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primaryContainer
-                                )
+                                colors =
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    )
                             )
                     )
                     .padding(16.dp)

@@ -73,10 +73,11 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                     .background(
                         brush =
                             Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primaryContainer
-                                )
+                                colors =
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    )
                             )
                     )
                     .padding(16.dp)
@@ -96,7 +97,7 @@ fun ProfileScreen(userSkills: Set<SkillTag> = emptySet(), onSkillsClick: () -> U
                                 Text(
                                     text = "user@example.com",
                                     fontSize = 14.sp,
-                                    color =  MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier =
                                         Modifier.weight(1f).testTag(ProfileTestTags.EMAIL_VALUE)
                                 )

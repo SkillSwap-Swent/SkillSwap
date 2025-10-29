@@ -11,25 +11,23 @@ import androidx.compose.ui.res.colorResource
 import androidx.core.view.WindowCompat
 import com.swent.skillswap.R
 
-
 @Composable
-fun SkillSwapAppTheme(
-    content: @Composable () -> Unit
-) {
-    val appColorScheme = lightColorScheme(
-        primary = colorResource(id = R.color.md_theme_primary),
-        onPrimary = colorResource(id = R.color.md_theme_onPrimary),
-        primaryContainer = colorResource(id = R.color.md_theme_primaryContainer),
-        onPrimaryContainer = colorResource(id = R.color.md_theme_onPrimaryContainer),
-        secondary = colorResource(id = R.color.md_theme_secondary),
-        onSecondary = colorResource(id = R.color.md_theme_onSecondary),
-        tertiary = colorResource(id = R.color.md_theme_tertiary),
-        onTertiary = colorResource(id = R.color.md_theme_onTertiary),
-        background = colorResource(id = R.color.md_theme_background),
-        onBackground = colorResource(id = R.color.md_theme_onBackground),
-        surface = colorResource(id = R.color.md_theme_surface),
-        onSurface = colorResource(id = R.color.md_theme_onSurface)
-    )
+fun SkillSwapAppTheme(content: @Composable () -> Unit) {
+    val appColorScheme =
+        lightColorScheme(
+            primary = colorResource(id = R.color.md_theme_primary),
+            onPrimary = colorResource(id = R.color.md_theme_onPrimary),
+            primaryContainer = colorResource(id = R.color.md_theme_primaryContainer),
+            onPrimaryContainer = colorResource(id = R.color.md_theme_onPrimaryContainer),
+            secondary = colorResource(id = R.color.md_theme_secondary),
+            onSecondary = colorResource(id = R.color.md_theme_onSecondary),
+            tertiary = colorResource(id = R.color.md_theme_tertiary),
+            onTertiary = colorResource(id = R.color.md_theme_onTertiary),
+            background = colorResource(id = R.color.md_theme_background),
+            onBackground = colorResource(id = R.color.md_theme_onBackground),
+            surface = colorResource(id = R.color.md_theme_surface),
+            onSurface = colorResource(id = R.color.md_theme_onSurface)
+        )
     val view = LocalView.current
     SideEffect {
         val window = (view.context as Activity).window
@@ -37,10 +35,5 @@ fun SkillSwapAppTheme(
         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
     }
 
-    MaterialTheme(
-        colorScheme = appColorScheme,
-        typography = Typography,
-        content = content
-    )
+    MaterialTheme(colorScheme = appColorScheme, typography = Typography, content = content)
 }
-

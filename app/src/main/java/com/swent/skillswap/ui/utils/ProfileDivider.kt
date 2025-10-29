@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
+
 /**
  * A reusable horizontal divider component with consistent styling for profile screens. Uses the
  * ProfileDivider color from the theme.
