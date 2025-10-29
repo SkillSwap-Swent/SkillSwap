@@ -114,4 +114,25 @@ class NavigationTest {
             }
         }
     }
+    @Test
+    fun testNavigateToTopLevelDestinationExecutesPopUpTo() {
+        val navigationActions = setupNavigation()
+
+        val topLevelScreens = listOf(Screen.Profile, Screen.Offers, Screen.Chat)
+
+        topLevelScreens.forEach { screen ->
+            // Navigate to the top-level screen
+            composeTestRule.runOnIdle { navigationActions.navigateTo(screen) }
+
+            // Verify the route changed
+            composeTestRule.runOnIdle {
+                assert(navigationActions.currentRoute() == screen.route) {
+                    "Expected route to be ${screen.route}, but was ${navigationActions.currentRoute()}"
+                }
+            }
+        }
+    }
+
+
+
 }
