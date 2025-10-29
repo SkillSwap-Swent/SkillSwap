@@ -1,22 +1,24 @@
 /* Adapted from B3-Solution */
 package com.swent.skillswap.ui.navigation
 
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
 
 sealed class Screen(
     val route: String,
     val name: String,
-    val isTopLevelDestination: Boolean = false
+    val isTopLevelDestination: Boolean = false,
 ) {
-    object SignInMain : Screen(route = "signIn", name = "signIn")
+    object SignInMain : Screen(route = "signIn", name = "signIn", isTopLevelDestination = false)
 
     object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
 
-    object Offers : Screen(route = "offers", name = "offers")
+    object Offers : Screen(route = "offers", name = "offers", isTopLevelDestination = true)
 
-    object Profile : Screen(route = "profile", name = "profile")
+    object Profile : Screen(route = "profile", name = "profile", isTopLevelDestination = true)
 
-    object Chat : Screen(route = "chat", name = "chat")
+    object Chat : Screen(route = "chat", name = "chat", isTopLevelDestination = true)
 }
 
 open class NavigationActions(
@@ -28,17 +30,17 @@ open class NavigationActions(
      * @param screen The screen to navigate to
      */
     open fun navigateTo(screen: Screen) {
-        /*
-        if (screen.isTopLevelDestination && currentRoute() == screen.route) {
-            // If the user is already on the top-level destination, do nothing
-            return
-        } */
-        navController.navigate(screen.route) {
-            if (screen !is Screen.SignInMain) {
-                // Restore state when reselecting a previously selected item
-                restoreState = true
-            }
+
+        val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true).setRestoreState(true)
+
+        if (screen.isTopLevelDestination) {
+            navOptionsBuilder.setPopUpTo(
+                navController.graph.findStartDestination().id,
+                inclusive = false,
+                saveState = true
+            )
         }
+        navController.navigate(screen.route, navOptionsBuilder.build())
     }
 
     /** Navigate back to the previous screen. */
