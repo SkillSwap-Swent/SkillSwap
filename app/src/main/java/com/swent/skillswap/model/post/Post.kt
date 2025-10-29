@@ -3,10 +3,10 @@
  *
  * Comments: Gemini
  *
- * This file defines the data structures for posts within the SkillSwap application. It includes the
- * central `Post` interface, which outlines the common properties for all post types, and several
- * enums to represent different states and attributes of a post, such as its type, payment method,
- * and status.
+ * This file defines the data structures for posts within SkillSwap. It includes the central `Post`
+ * interface, which outlines the common properties for all post types, and several enums to
+ * represent different states and attributes of a post, such as its type, payment method, and
+ * status.
  */
 package com.swent.skillswap.model.post
 
