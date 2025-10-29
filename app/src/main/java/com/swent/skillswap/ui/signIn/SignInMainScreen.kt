@@ -24,7 +24,6 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.DefaultGradient
 import com.swent.skillswap.ui.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.viewModel.SignInEvent
@@ -82,10 +81,9 @@ fun SignInMainScreen(
         Column(
             modifier =
                 Modifier.padding(padding)
-                    // Background gradient (from theme)
-                    .background(getLinearBrush(DefaultGradient, BrushDirection.DOWN_TOP))
+                    .background(getLinearBrush(BrushDirection.DOWN_TOP))
                     .fillMaxSize()
-                    .verticalScroll(scroll) // Enable scroll for smaller devices
+                    .verticalScroll(scroll)
         ) {
             // ----- App logo -----
             Spacer(modifier = Modifier.height(200.dp))
