@@ -56,12 +56,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "21"
+        jvmTarget = "17"
     }
 
     packaging {
@@ -127,7 +127,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlin.reflect)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
 
@@ -218,6 +220,24 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
         include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
         include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
     })
+}
+
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    // reuse the same inputs as your report task
+    val report = tasks.named<JacocoReport>("jacocoTestReport")
+    classDirectories.setFrom(report.get().classDirectories)
+    sourceDirectories.setFrom(report.get().sourceDirectories)
+    executionData.setFrom(report.get().executionData)
+
+    violationRules {
+        rule {
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal("0.80")
+            }
+        }
+    }
 }
 
 configurations.forEach { configuration ->

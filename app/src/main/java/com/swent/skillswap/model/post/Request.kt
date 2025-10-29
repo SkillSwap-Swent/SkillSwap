@@ -1,4 +1,4 @@
-/** Credits: Code: Alexander Magnus */
+/** Credits: Alexander Magnus */
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
