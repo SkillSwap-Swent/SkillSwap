@@ -15,6 +15,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
+import com.swent.skillswap.model.navigation.NavigationBottomBarModel
+import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 /**
@@ -138,8 +141,12 @@ fun BottomBarButton(
 @Preview(showBackground = true)
 @Composable
 fun BottomBarPreview() {
-    SkillSwapAppTheme(dynamicColor = false) {
-        val vm = remember { BottomBarViewModel() } // keep VM across recompositions
+    SkillSwapAppTheme() {
+        val navController = rememberNavController()
+        val navigationActions = NavigationActions(navController)
+        val vm = remember {
+            BottomBarViewModel(navigation = NavigationBottomBarModel(navigationActions))
+        } // keep VM across recompositions
         BottomBar(vm)
     }
 }
