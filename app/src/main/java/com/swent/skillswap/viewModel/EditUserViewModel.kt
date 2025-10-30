@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 data class EditUserUiState(
     /** The user being edited */
     val editedUser: User? =
-        null, // TODO: unable toutes les fonctionalités dès qu'il est non null sinon tout desactiver
+        null,
 
     /** Status */
     val isLoading: Boolean = false,
@@ -83,7 +83,7 @@ class EditUserViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        generalError = "Failed to load current user: ${e.message}"
+                        generalError = "Failed to load current user"
                     )
                 }
             }
@@ -122,7 +122,7 @@ class EditUserViewModel(
     fun setUsername(name: String) {
         setField(
             input = name,
-            precondition = { it.isNotEmpty() },
+            precondition = { it.isNotBlank() },
             applyToUser = { user, value -> user.copy(username = value) },
             applyToError = {
                 _uiState.update { it.copy(usernameError = "Username cannot be empty") }
