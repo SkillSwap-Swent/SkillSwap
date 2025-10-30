@@ -1,3 +1,7 @@
+/**
+ * @author Topaze17(ELiott)
+ * huge help from chatGPT to make it work correctly
+ */
 package com.swent.skillswap.signIn
 
 import androidx.activity.ComponentActivity
@@ -178,6 +182,12 @@ class AuthGoogleTest : TestCase() {
             .performClick()
 
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
     }
 
