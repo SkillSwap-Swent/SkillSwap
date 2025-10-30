@@ -52,10 +52,11 @@ class EditUserScreenTest : TestCase() {
             uid = "test-user-123",
             username = "Chef",
             email = "test@example.com",
-            profilePicture = "",
+            profilePicture = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/She-goat_J1.jpg/500px-She-goat_J1.jpg",
             skillSet = setOf(
                 Skill(name = com.swent.skillswap.model.tags.SkillTag.DATABASES, rank = 4F,""),
-                Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F,"")
+                Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F,""),
+                Skill(name = SkillTag.PHYSICS_MECHANICS, rank = 5F,"")
             ),
             rating = 4.5f,
             availability = emptyList()
@@ -132,7 +133,10 @@ class EditUserScreenTest : TestCase() {
             composeTestRule.onNodeWithTag(EditUserTags.SKILLSET_SECTION).assertIsDisplayed()
             composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).assertIsDisplayed()
             composeTestRule.onNodeWithTag(EditUserTags.SKILLSET_SECTION).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE).assertIsDisplayed()
         }
+
+        Thread.sleep(7000)
     }
 
     @Test
