@@ -22,6 +22,7 @@ robolectric = "4.11.1"
 sonar = "4.4.1.3373"
 coil = "2.5.0"
 
+mockk = "1.13.12"
 # Firebase
 firebaseAuth = "23.0.0"
 firebaseAuthKtx = "23.0.0"
@@ -50,6 +51,8 @@ kotlinx-serialization-json-v160 = { module = "org.jetbrains.kotlinx:kotlinx-seri
 kotlinx-serialization-json-v163 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "jetbrainsKotlinxSerializationJson" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }

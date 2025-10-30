@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.swent.skillswap.ui.theme.ProfileTextPrimary
 
 /**
  * A reusable accordion section component that can expand and collapse.
@@ -49,7 +49,7 @@ fun AccordionSection(
             Text(
                 text = title,
                 fontSize = 14.sp,
-                color = ProfileTextPrimary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium
             )
 
@@ -58,7 +58,7 @@ fun AccordionSection(
                     if (isExpanded) Icons.Default.KeyboardArrowUp
                     else Icons.Default.KeyboardArrowDown,
                 contentDescription = if (isExpanded) "Collapse" else "Expand",
-                tint = ProfileTextPrimary
+                tint = MaterialTheme.colorScheme.primary
             )
         }
 

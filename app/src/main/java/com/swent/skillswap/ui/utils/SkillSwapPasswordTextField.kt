@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -26,7 +27,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.theme.SkillSwapLightThemePrimary
 
 @Composable
 fun SkillSwapPasswordTextField(
@@ -45,12 +45,14 @@ fun SkillSwapPasswordTextField(
         label = {
             Text(
                 label,
-                color = SkillSwapLightThemePrimary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
         },
-        placeholder = { Text(placeholder, color = SkillSwapLightThemePrimary, fontSize = 18.sp) },
+        placeholder = {
+            Text(placeholder, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp)
+        },
         supportingText = {
             Text(
                 text = supportText,
@@ -72,9 +74,9 @@ fun SkillSwapPasswordTextField(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 disabledTextColor = Color.Transparent,
-                unfocusedIndicatorColor = SkillSwapLightThemePrimary,
-                focusedIndicatorColor = SkillSwapLightThemePrimary,
-                disabledIndicatorColor = SkillSwapLightThemePrimary
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                disabledIndicatorColor = MaterialTheme.colorScheme.primary
             ),
         visualTransformation =
             if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),

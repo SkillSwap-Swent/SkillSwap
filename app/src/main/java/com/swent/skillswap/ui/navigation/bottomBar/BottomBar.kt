@@ -141,7 +141,7 @@ fun BottomBarButton(
 @Preview(showBackground = true)
 @Composable
 fun BottomBarPreview() {
-    SkillSwapAppTheme(dynamicColor = false) {
+    SkillSwapAppTheme() {
         val navController = rememberNavController()
         val navigationActions = NavigationActions(navController)
         val vm = remember {
