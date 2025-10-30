@@ -5,10 +5,9 @@
 package com.swent.skillswap.ui.chat
 
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
-import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.SkillTag
