@@ -7,6 +7,7 @@
 
 package com.swent.skillswap.model.user
 
+import android.annotation.SuppressLint
 import com.swent.skillswap.model.tags.SkillTag
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -17,6 +18,7 @@ import kotlinx.serialization.json.*
 /*
  * Serializable version of Skill class to convert to/from JSON automatically with kotlinx.serialization
  */
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class SerializableSkill(
     val name: String = "",
@@ -27,6 +29,7 @@ data class SerializableSkill(
 /*
  * Serializable version of Availability class to convert to/from JSON automatically with kotlinx.serialization
  */
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class SerializableAvailability(
     val day: String = "",
@@ -86,4 +89,10 @@ fun deserializeSingleAvailability(availability: String): Availability {
         LocalTime.parse(deserialized.startTime),
         LocalTime.parse(deserialized.endTime)
     )
+}
+
+fun serializePreference(pref: Preference): String = pref.name
+
+fun deserializePreference(preference: String): Preference {
+    return Preference.valueOf(preference)
 }

@@ -32,8 +32,9 @@ import com.swent.skillswap.ui.offerScreen.OfferScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.user.ProfileMainScreen
-import kotlin.collections.contains
+import com.swent.skillswap.ui.user.ProfileScreen
+import com.swent.skillswap.ui.user.SkillsEditScreen
+import com.swent.skillswap.viewModel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,6 +69,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             Screen.SignInCreateAccount,
             Screen.Offers,
             Screen.Profile,
+            Screen.EditSkills,
             Screen.Chat
         )
 
@@ -79,6 +81,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val bottomBarViewModel = remember {
         BottomBarViewModel(NavigationBottomBarModel(navigationActions))
     }
+    val profileViewModel = remember { ProfileViewModel() }
 
     val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
 
@@ -114,7 +117,18 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
             composable(Screen.Offers.route) { OfferScreen() }
             composable(Screen.Chat.route) { ChatScreen() }
-            composable(Screen.Profile.route) { ProfileMainScreen() }
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    vm = profileViewModel,
+                    onSkillsClick = { navigationActions.navigateTo(Screen.EditSkills) }
+                )
+            }
+            composable(Screen.EditSkills.route) {
+                SkillsEditScreen(
+                    vm = profileViewModel,
+                    onBackClick = { navigationActions.goBack() }
+                )
+            }
         }
     }
 }
