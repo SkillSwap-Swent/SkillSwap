@@ -84,4 +84,9 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
             throw Exception("Error while deleting user in deleteUser")
         }
     }
+
+    override suspend fun userExists(userId: String): Boolean {
+        val doc = db.collection(USERS_COLLECTION_PATH).document(userId).get().await()
+        return doc.exists()
+    }
 }

@@ -9,6 +9,7 @@ import android.app.Activity
 import android.content.Context
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +30,8 @@ import com.swent.skillswap.R
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.GradientButton
+import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
+import com.swent.skillswap.ui.utils.SkillSwapTextField
 import com.swent.skillswap.viewModel.SignInEvent
 import com.swent.skillswap.viewModel.SignInViewModel
 
@@ -34,7 +40,8 @@ object SignInTags {
     const val LOGO = "SIGN_IN_LOGO"
     const val GOOGLE_BUTTON = "SIGN_IN_GOOGLE_BUTTON"
     const val SIGN_IN_BUTTON = "SIGN_IN_BUTTON"
-    const val OR_TEXT = "SIGN_IN_OR_TEXT"
+    const val EMAIL_FIELD = "EMAIL_FIELD"
+    const val PASSWORD_FIELD = "PASSWORD_FIELD"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
 }
 
@@ -68,14 +75,12 @@ fun SignInMainScreen(
             when (event) {
                 is SignInEvent.NavigateToMainScreen -> goToMainScreen()
                 is SignInEvent.NavigateToCreateAccountScreen -> goToCreateAccountScreen()
-                is SignInEvent.NavigateToClassicSignIn ->
-                    goToMainScreen() // TODO: Update when classic sign-in screen exists
             }
         }
     }
-
+    LaunchedEffect(Unit) { vm.check() }
     val scroll = rememberScrollState()
-
+    val uiState by vm.uiState.collectAsState()
     // Scaffold gives a top-level layout structure (with padding, backgrounds, etc.)
     Scaffold { padding ->
         Column(
@@ -95,7 +100,30 @@ fun SignInMainScreen(
                         .align(Alignment.CenterHorizontally)
                         .testTag(SignInTags.LOGO)
             )
-
+            SkillSwapTextField(
+                value = uiState.email,
+                supportText = uiState.emailError,
+                onValueChange = { vm.onEmailChange(it) },
+                label = "Email",
+                placeholder = "your.email@gmail.com",
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        capitalization = KeyboardCapitalization.None,
+                        imeAction = ImeAction.Next
+                    ),
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.EMAIL_FIELD)
+            )
+            SkillSwapPasswordTextField(
+                value = uiState.password,
+                supportText = uiState.passwordError,
+                label = "Password",
+                placeholder = "enter password",
+                onValueChange = { vm.onPasswordChange(it) },
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.PASSWORD_FIELD)
+            )
             // ----- Google Sign-In button -----
             Spacer(modifier = Modifier.height(50.dp))
             OutlinedButton(

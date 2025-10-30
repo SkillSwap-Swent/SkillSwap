@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
@@ -96,7 +97,7 @@ object CreateAccountRoutes {
 @Composable
 fun SignInCreateAccountScreen(
     goToMainScreen: () -> Unit = {},
-    googleAccount: Boolean = false,
+    googleAccount: Boolean = FirebaseAuth.getInstance().currentUser != null,
     vm: CreateAccountViewModel = viewModel(factory = CreateAccountVmFactory(googleAccount))
 ) {
     // Collect one-time events emitted from the ViewModel
@@ -107,6 +108,7 @@ fun SignInCreateAccountScreen(
             }
         }
     }
+    LaunchedEffect(Unit) { vm.check() }
 
     val scroll = rememberScrollState()
     val navController = rememberNavController()
