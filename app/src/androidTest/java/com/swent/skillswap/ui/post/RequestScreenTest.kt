@@ -376,7 +376,14 @@ class RequestScreenTest {
 
         // Submit
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
-        composeTestRule.waitForIdle()
+
+        // Wait for error message to appear (async operation)
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule
+                .onAllNodesWithTag(RequestScreenTags.ERROR_MESSAGE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
 
         // Error message should appear
         composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
