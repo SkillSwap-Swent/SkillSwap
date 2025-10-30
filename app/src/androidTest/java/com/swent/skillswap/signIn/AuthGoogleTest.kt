@@ -1,7 +1,4 @@
-/**
- * @author Topaze17(ELiott)
- * huge help from chatGPT to make it work correctly
- */
+/** @author Topaze17(ELiott) huge help from chatGPT to make it work correctly */
 package com.swent.skillswap.signIn
 
 import androidx.activity.ComponentActivity
