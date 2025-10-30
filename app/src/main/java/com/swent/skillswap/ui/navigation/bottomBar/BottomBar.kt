@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.swent.skillswap.model.navigation.NavigationBottomBarModel
 import com.swent.skillswap.ui.navigation.NavigationActions
@@ -58,7 +59,7 @@ object BottomBarTestTag {
  * @author Joey Gugler Made Using Ai (chatGPT)
  */
 @Composable
-fun BottomBar(vm: BottomBarViewModel = BottomBarViewModel()) {
+fun BottomBar(vm: BottomBarViewModel = viewModel()) {
     val state by vm.uiState
     Row(
         modifier =
@@ -146,7 +147,7 @@ fun BottomBarPreview() {
         val navigationActions = NavigationActions(navController)
         val vm = remember {
             BottomBarViewModel(navigation = NavigationBottomBarModel(navigationActions))
-        } // keep VM across recompositions
+        }
         BottomBar(vm)
     }
 }

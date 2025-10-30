@@ -1,9 +1,11 @@
 package com.swent.skillswap.ui.navigation.bottomBar
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import com.swent.skillswap.model.navigation.FakeNavigationBottomBar
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.swent.skillswap.model.navigation.NavigationBottomBar
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 /**
  * Enum representing the screens managed by the BottomBar.
@@ -31,36 +33,42 @@ enum class BottomBarScreen {
  */
 data class BottomBarUiState(val selectedScreen: BottomBarScreen = BottomBarScreen.PROFILE)
 
+/** Events emitted by [BottomBarViewModel] for one-time actions like navigation. */
+sealed class BottomBarEvent {
+    object NavigateToProfile : BottomBarEvent()
+
+    object NavigateToOffer : BottomBarEvent()
+
+    object NavigateToChat : BottomBarEvent()
+}
+
 /**
  * ViewModel for the [BottomBar] composable.
  *
- * Handles the current UI state of the bottom bar and triggers navigation actions via a
- * [NavigationBottomBar] implementation.
+ * Handles UI state and emits navigation events when a screen is selected.
  *
- * @property navigation The navigation handler used to navigate to screens. Defaults to
- *   [FakeNavigationBottomBar] for testing purposes.
- * @property uiState The observable UI state of the bottom bar.
- * @author Joey Gugler Made Using Ai (chatGPT)
+ * @property navigation Optional navigation handler, used mainly for previews or tests.
+ * @author Joey Gugler
  */
-class BottomBarViewModel(val navigation: NavigationBottomBar = FakeNavigationBottomBar()) {
+class BottomBarViewModel(val navigation: NavigationBottomBar) : ViewModel() {
+
     /** UI state observed by the BottomBar composable. */
-    var uiState: MutableState<BottomBarUiState> = mutableStateOf(BottomBarUiState())
+    var uiState = androidx.compose.runtime.mutableStateOf(BottomBarUiState())
         private set
 
-    /**
-     * Called when a bottom bar button is selected.
-     *
-     * Updates the [uiState.selectedScreen] and triggers the corresponding navigation action in
-     * [navigation].
-     *
-     * @param screen The [BottomBarScreen] that was selected.
-     */
+    /** Event flow for one-time navigation events. */
+    private val _eventFlow = MutableSharedFlow<BottomBarEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    /** Called when a bottom bar button is selected. */
     fun onScreenSelected(screen: BottomBarScreen) {
         uiState.value = uiState.value.copy(selectedScreen = screen)
-        when (screen) {
-            BottomBarScreen.PROFILE -> navigation.goToProfile()
-            BottomBarScreen.OFFER -> navigation.goToOfferScreen()
-            BottomBarScreen.CHAT -> navigation.goToChat()
+        viewModelScope.launch {
+            when (screen) {
+                BottomBarScreen.PROFILE -> _eventFlow.emit(BottomBarEvent.NavigateToProfile)
+                BottomBarScreen.OFFER -> _eventFlow.emit(BottomBarEvent.NavigateToOffer)
+                BottomBarScreen.CHAT -> _eventFlow.emit(BottomBarEvent.NavigateToChat)
+            }
         }
     }
 }
