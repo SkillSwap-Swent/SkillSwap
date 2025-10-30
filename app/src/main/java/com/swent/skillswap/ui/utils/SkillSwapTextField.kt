@@ -2,6 +2,7 @@ package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -13,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.theme.SkillSwapLightThemePrimary
 
 @Preview
 @Composable
@@ -32,14 +32,14 @@ fun SkillSwapTextField(
         label = {
             Text(
                 text = label,
-                color = SkillSwapLightThemePrimary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
         },
         singleLine = true,
         placeholder = {
-            Text(text = placeholder, color = SkillSwapLightThemePrimary, fontSize = 18.sp)
+            Text(text = placeholder, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp)
         },
         supportingText = {
             Text(
@@ -56,9 +56,9 @@ fun SkillSwapTextField(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 disabledTextColor = Color.Transparent,
-                unfocusedIndicatorColor = SkillSwapLightThemePrimary,
-                focusedIndicatorColor = SkillSwapLightThemePrimary,
-                disabledIndicatorColor = SkillSwapLightThemePrimary
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                disabledIndicatorColor = MaterialTheme.colorScheme.primary
             ),
         modifier = modifier.fillMaxWidth(0.8f)
     )
