@@ -2,7 +2,7 @@ package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
 
-data class PostReply (
+data class PostReply(
     /** A unique identifier for the post reply. */
     val uid: String,
     /** The ID of the post that the reply is associated with. */
@@ -17,12 +17,13 @@ data class PostReply (
     val postType: PostType
 ) {
     // Needed only for Firestore's deserializer
-    constructor() : this(
-        uid = "",
-        postId = "",
-        ownerId = "",
-        creation = Timestamp.now(),
-        message = "",
-        postType = PostType.REQUEST
-    )
+    constructor() :
+        this(
+            uid = "",
+            postId = "",
+            ownerId = "",
+            creation = Timestamp.now(),
+            message = "",
+            postType = PostType.REQUEST
+        )
 }

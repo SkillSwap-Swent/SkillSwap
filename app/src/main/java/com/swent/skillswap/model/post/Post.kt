@@ -58,7 +58,6 @@ interface Post {
     val searchKeys: List<String>
         get() = buildSearchKeys()
 
-
     val postReplies: List<PostReply>
 
     /**
