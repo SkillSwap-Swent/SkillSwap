@@ -1,6 +1,7 @@
 package com.swent.skillswap.model.post
 
 import com.swent.skillswap.model.tags.EveryTag
+import kotlinx.coroutines.delay
 
 // In-memory PostRepository implementation for testing. Provides deterministic behavior
 // and allows testing success/failure cases without actual database interactions.
@@ -11,6 +12,7 @@ class FakePostRepository : PostRepository {
     private var shouldFailOnAdd = false
     private var shouldFailOnEdit = false
     private var shouldFailOnGet = false
+    private var delayMillis = 0L
 
     // Preload posts for deterministic testing
     fun preloadPosts(vararg postsToPreload: Post) {
@@ -29,6 +31,18 @@ class FakePostRepository : PostRepository {
 
     fun setShouldFailOnGet(fail: Boolean) {
         shouldFailOnGet = fail
+    }
+
+    // Convenience method for setting all failure flags
+    fun setShouldFail(fail: Boolean) {
+        shouldFailOnAdd = fail
+        shouldFailOnEdit = fail
+        shouldFailOnGet = fail
+    }
+
+    // Set delay for async operations (to test loading states)
+    fun setDelay(delayMs: Long) {
+        delayMillis = delayMs
     }
 
     override fun getNewUid(type: PostType): String {
@@ -54,6 +68,9 @@ class FakePostRepository : PostRepository {
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {
+        if (delayMillis > 0) {
+            delay(delayMillis)
+        }
         if (shouldFailOnGet) {
             throw Exception("Simulated get failure")
         }
@@ -61,6 +78,9 @@ class FakePostRepository : PostRepository {
     }
 
     override suspend fun addPost(post: Post) {
+        if (delayMillis > 0) {
+            delay(delayMillis)
+        }
         if (shouldFailOnAdd) {
             throw Exception("Simulated add failure")
         }
@@ -68,6 +88,9 @@ class FakePostRepository : PostRepository {
     }
 
     override suspend fun editPost(postId: String, newPost: Post) {
+        if (delayMillis > 0) {
+            delay(delayMillis)
+        }
         if (shouldFailOnEdit) {
             throw Exception("Simulated edit failure")
         }

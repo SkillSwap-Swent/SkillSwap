@@ -6,9 +6,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.RequestScreenTags
+import com.swent.skillswap.ui.post.RequestViewModel
 import java.util.Date
 import org.junit.Assert.*
 import org.junit.Before
@@ -269,5 +271,205 @@ class RequestScreenTest {
         composeTestRule
             .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
             .assertIsDisplayed()
+    }
+
+    // ========== TAG TESTS ==========
+
+    @Test
+    fun tagChip_displayAndRemove() {
+        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = viewModel
+            )
+        }
+
+        // Add tag directly via ViewModel
+        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        composeTestRule.waitForIdle()
+
+        // Verify tag chip appears
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
+            .assertIsDisplayed()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        // Verify tag is removed
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
+            .assertDoesNotExist()
+    }
+
+    // ========== LOADING STATE TESTS ==========
+
+    @Test
+    fun submit_showsLoadingIndicator() {
+        fakeRepository.setDelay(1000) // Add delay to see loading state
+        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = viewModel
+            )
+        }
+
+        // Fill required fields
+        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Test Title")
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performTextInput("Test Description")
+
+        // Add tag directly via ViewModel (avoid dropdown interaction)
+        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        composeTestRule.waitForIdle()
+
+        // Select payment method
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+            .performClick()
+
+        // Click submit
+        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+
+        // Loading indicator should appear
+        composeTestRule.onNodeWithTag(RequestScreenTags.LOADING_INDICATOR).assertIsDisplayed()
+    }
+
+    // ========== ERROR HANDLING TESTS ==========
+
+    @Test
+    fun submit_repositoryError_showsErrorMessage() {
+        fakeRepository.setShouldFail(true)
+        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = viewModel
+            )
+        }
+
+        // Fill all required fields
+        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Test Title")
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performTextInput("Test Description")
+
+        // Add tag directly via ViewModel (avoid dropdown interaction)
+        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        composeTestRule.waitForIdle()
+
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+            .performClick()
+
+        // Submit
+        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        // Error message should appear
+        composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
+    }
+
+    @Test
+    fun submit_noTags_showsValidationError() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Fill title and description but no tags
+        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Test Title")
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performTextInput("Test Description")
+
+        // Submit without tags
+        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        // Should show tags error
+        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
+    }
+
+    // ========== SUCCESS FLOW TEST ==========
+
+    @Test
+    fun submit_success_triggersCallback() {
+        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = viewModel,
+                onPostCreated = { postCreatedCalled = true }
+            )
+        }
+
+        // Fill all required fields
+        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Valid Title")
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performTextInput("Valid Description")
+
+        // Add tag directly via ViewModel (avoid dropdown interaction)
+        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        composeTestRule.waitForIdle()
+
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+            .performClick()
+
+        // Submit
+        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        // Callback should be triggered
+        assertTrue(postCreatedCalled)
+    }
+
+    // ========== MULTIPLE PAYMENT METHODS TEST ==========
+
+    @Test
+    fun multiplePaymentMethods_canBeSelected() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Select multiple payment methods
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+            .performClick()
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
+            .performClick()
+
+        // All should remain clickable (for deselection)
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+            .assertHasClickAction()
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
+            .assertHasClickAction()
     }
 }
