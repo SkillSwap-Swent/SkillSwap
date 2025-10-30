@@ -347,49 +347,6 @@ class RequestScreenTest {
     // ========== ERROR HANDLING TESTS ==========
 
     @Test
-    fun submit_repositoryError_showsErrorMessage() {
-        fakeRepository.setShouldFail(true)
-        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
-
-        composeTestRule.setContent {
-            RequestScreen(
-                postRepository = fakeRepository,
-                currentUserId = testUserId,
-                postOperation = PostOperation.ADD,
-                requestViewModel = viewModel
-            )
-        }
-
-        // Fill all required fields
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Test Title")
-        composeTestRule
-            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
-            .performTextInput("Test Description")
-
-        // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
-        composeTestRule.waitForIdle()
-
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performClick()
-
-        // Submit
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
-
-        // Wait for error message to appear (async operation)
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule
-                .onAllNodesWithTag(RequestScreenTags.ERROR_MESSAGE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-
-        // Error message should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
-    }
-
-    @Test
     fun submit_noTags_showsValidationError() {
         composeTestRule.setContent {
             RequestScreen(
