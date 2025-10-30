@@ -1,17 +1,13 @@
 /**
- * @author Léonard MARTI 394185
- * /!\ Written with help of Copilot /!\
- * > Helped me finding the right compose functions complete all the repetitive code (construction of
+ * @author Léonard MARTI 394185 /!\ Written with help of Copilot /!\
+ * > Helped me finding the right compose functions, complete all the repetitive code (construction of
  * > instances for example)
  */
-
 package com.swent.skillswap.ui.editUser
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,28 +27,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.swent.skillswap.model.user.User
-import com.swent.skillswap.model.user.UserRepositery
 import coil.compose.AsyncImage
-import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
-import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.theme.*
 import com.swent.skillswap.ui.utils.*
 import com.swent.skillswap.viewModel.EditUserViewModel
-
 
 object EditUserTags {
     const val GO_BACK_BUTTON = "edit_user_go_back_button"
@@ -69,15 +53,14 @@ object EditUserTags {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun EditUserScreen(
-     vm: EditUserViewModel = viewModel(),
-     onGoBack: () -> Unit = {},
+    vm: EditUserViewModel = viewModel(),
+    onGoBack: () -> Unit = {},
 ) {
-     val uiState by vm.uiState.collectAsState()
-     val user = uiState.editedUser
+    val uiState by vm.uiState.collectAsState()
+    val user = uiState.editedUser
 
-    var username by remember { mutableStateOf(user?.username ?:  "") }
-    var email by remember { mutableStateOf(user?.email ?:  "") }
-
+    var username by remember { mutableStateOf(user?.username ?: "") }
+    var email by remember { mutableStateOf(user?.email ?: "") }
 
     Scaffold(
         topBar = {
@@ -90,12 +73,13 @@ fun EditUserScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
                 navigationIcon = {
                     IconButton(
-                        onClick = {onGoBack()},
+                        onClick = { onGoBack() },
                         modifier = Modifier.testTag(EditUserTags.GO_BACK_BUTTON)
                     ) {
                         Icon(
@@ -109,42 +93,38 @@ fun EditUserScreen(
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(paddingValues)
+            modifier =
+                Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingValues)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(24.dp),
+                modifier =
+                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 /** Profile picture */
                 Box(
-                    modifier = Modifier
-                        .testTag(EditUserTags.PROFILE_PICTURE)
-                        .clickable { /* TODO Next Sprint: Open image picker to change profile picture */ }
+                    modifier =
+                        Modifier.testTag(EditUserTags.PROFILE_PICTURE)
+                            .clickable { /* TODO Next Sprint: Open image picker to change profile picture */}
                 ) {
                     if (user?.profilePicture != null && user.profilePicture.isNotEmpty()) {
                         AsyncImage(
                             model = user.profilePicture,
                             contentDescription = "Profil picture",
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape),
+                            modifier = Modifier.size(120.dp).clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                     } else {
                         /* No valid url for profile picture */
                         Box(
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            modifier =
+                                Modifier.size(120.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -156,11 +136,11 @@ fun EditUserScreen(
                         }
                     }
                     Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .align(Alignment.BottomEnd)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
+                        modifier =
+                            Modifier.size(36.dp)
+                                .align(Alignment.BottomEnd)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -172,7 +152,6 @@ fun EditUserScreen(
                     }
                 }
 
-
                 Spacer(modifier = Modifier.height(32.dp))
 
                 /** Username Field */
@@ -181,7 +160,7 @@ fun EditUserScreen(
                     onValueChange = {
                         username = it
                         vm.setUsername(username)
-                        },
+                    },
                     label = { Text("Username") },
                     placeholder = { Text("type your new username") },
                     isError = uiState.usernameError != null,
@@ -193,27 +172,25 @@ fun EditUserScreen(
                             )
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(EditUserTags.USERNAME_TEXTFIELD)
+                    modifier = Modifier.fillMaxWidth().testTag(EditUserTags.USERNAME_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 /** Email Field */
-                /** REMARK
-                 * Is it really a good idea ? The User login with a certain email and get some credentials
-                 * from Firebase Auth. If he changes his email here, it will desynchronize the Auth
-                 * system and the Firestore database. Maybe it's better to not allow email changing from
-                 * here, but rather from a dedicated "Change Email" screen that would also update the
-                 * Firebase Auth email.
+                /**
+                 * REMARK Is it really a good idea ? The User login with a certain email and get
+                 * some credentials from Firebase Auth. If he changes his email here, it will
+                 * desynchronize the Auth system and the Firestore database. Maybe it's better to
+                 * not allow email changing from here, but rather from a dedicated "Change Email"
+                 * screen that would also update the Firebase Auth email.
                  */
                 OutlinedTextField(
                     value = email,
                     onValueChange = {
                         email = it
                         vm.setEmail(it)
-                        },
+                    },
                     label = { Text("E-mail") },
                     placeholder = { Text("type your new email") },
                     isError = uiState.emailError != null,
@@ -225,39 +202,30 @@ fun EditUserScreen(
                             )
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(EditUserTags.EMAIL_TEXTFIELD)
+                    modifier = Modifier.fillMaxWidth().testTag(EditUserTags.EMAIL_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 /** Skill Set Field */
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-
-                ) {
+                Box(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                     Box(
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { /* TODO Next Sprint: Open skill selection screen */ }
-                            .testTag(EditUserTags.SKILLSET_SECTION)
+                        modifier =
+                            Modifier.padding(4.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { /* TODO Next Sprint: Open skill selection screen */}
+                                .testTag(EditUserTags.SKILLSET_SECTION)
                     ) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(10.dp)
+                            modifier = Modifier.fillMaxSize().padding(10.dp)
                         ) {
                             for (skill in uiState.editedUser?.skillSet ?: emptySet()) {
                                 Box(
                                     modifier =
-                                        Modifier
-                                            .border(
+                                        Modifier.border(
                                                 width = 1.dp,
                                                 color = MaterialTheme.colorScheme.primary,
                                                 shape = RoundedCornerShape(50)
@@ -277,11 +245,11 @@ fun EditUserScreen(
                         }
                     }
                     Box(
-                        modifier = Modifier
-                            .size(30.dp)
-                            .align(Alignment.BottomEnd)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
+                        modifier =
+                            Modifier.size(30.dp)
+                                .align(Alignment.BottomEnd)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -293,16 +261,14 @@ fun EditUserScreen(
                     }
                 }
 
-
                 /** General Error Message */
                 if (uiState.generalError != null) {
                     Text(
                         text = uiState.generalError!!,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 14.sp,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .testTag(EditUserTags.GENERAL_ERROR)
+                        modifier =
+                            Modifier.padding(vertical = 8.dp).testTag(EditUserTags.GENERAL_ERROR)
                     )
                 }
 
@@ -313,9 +279,8 @@ fun EditUserScreen(
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .testTag(EditUserTags.SUCCESS_MESSAGE)
+                        modifier =
+                            Modifier.padding(vertical = 8.dp).testTag(EditUserTags.SUCCESS_MESSAGE)
                     )
                 }
 
@@ -323,11 +288,16 @@ fun EditUserScreen(
 
                 /** Validate Button */
                 GradientButton(
-                    onClick = {  if(!uiState.isLoading)vm.validate() else {/*do nothing, validation already pending*/} },
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(56.dp)
-                        .testTag(EditUserTags.VALIDATE_BUTTON),
+                    onClick = {
+                        if (!uiState.isLoading) vm.validate()
+                        else {
+                            /*do nothing, validation already pending*/
+                        }
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(0.8f)
+                            .height(56.dp)
+                            .testTag(EditUserTags.VALIDATE_BUTTON),
                     gradientDirection = BrushDirection.LEFT_RIGHT
                 ) {
                     Text(
@@ -342,7 +312,6 @@ fun EditUserScreen(
         }
     }
 }
-
 
 /** Fake repository for preview purposes. */
 /*

@@ -1,6 +1,6 @@
 /**
  * @author Léonard MARTI 394185 /!\ Written with help of Copilot /!\
- * > helped me with coroutine process and syntax complete all the repetitive code
+ * > helped me with coroutine process and syntax, complete all the repetitive code
  */
 package com.swent.skillswap.viewModel
 
@@ -27,8 +27,7 @@ import kotlinx.coroutines.launch
  */
 data class EditUserUiState(
     /** The user being edited */
-    val editedUser: User? =
-        null,
+    val editedUser: User? = null,
 
     /** Status */
     val isLoading: Boolean = false,
@@ -81,10 +80,7 @@ class EditUserViewModel(
             } catch (e: Exception) {
                 /** Operation failed, cannot fetch current user */
                 _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        generalError = "Failed to load current user"
-                    )
+                    it.copy(isLoading = false, generalError = "Failed to load current user")
                 }
             }
         }
