@@ -1,7 +1,7 @@
 /**
  * @author Léonard MARTI 394185 /!\ Written with help of Copilot /!\
- * > Helped me finding the right compose functions, complete all the repetitive code (construction of
- * > instances for example)
+ * > Helped me finding the right compose functions, complete all the repetitive code (construction
+ * > of instances for example)
  */
 package com.swent.skillswap.ui.editUser
 
