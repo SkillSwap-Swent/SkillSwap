@@ -1,4 +1,3 @@
-// AI-Generated: Updated MainActivity to display ChatMainScreen for testing
 package com.swent.skillswap
 
 import android.app.Activity

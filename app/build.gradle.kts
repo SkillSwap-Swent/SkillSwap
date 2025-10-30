@@ -264,43 +264,6 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     }
 }
 
-tasks.register("jacocoPrintLineCoverage") {
-    dependsOn("jacocoTestReport")
-    doLast {
-        val xmlFile = layout.buildDirectory
-            .file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
-            .get().asFile
-        require(xmlFile.exists()) { "JaCoCo XML not found at: ${xmlFile.absolutePath}" }
-
-        val content = xmlFile.readText()
-        val lineCounterRegex = """type="LINE" missed="(\d+)" covered="(\d+)""".toRegex()
-        val matches = lineCounterRegex.findAll(content)
-
-        var bestCovered = 0L
-        var bestMissed = 0L
-        for (match in matches) {
-            val missed = match.groupValues[1].toLong()
-            val covered = match.groupValues[2].toLong()
-            if (covered + missed > bestCovered + bestMissed) {
-                bestCovered = covered
-                bestMissed = missed
-            }
-        }
-
-        val total = bestCovered + bestMissed
-        val pct = if (total == 0L) 0.0 else bestCovered.toDouble() / total * 100.0
-        println("JaCoCo LINE coverage: %,.2f%% (%d/%d lines covered)"
-            .format(pct, bestCovered, total))
-
-        if (pct < 80.0) {
-            println("\u26A0\uFE0F  WARNING: Line coverage is below 80% (required for SonarCloud)")
-            println("   Current coverage: ${String.format("%.2f", pct)}%")
-            println("   Required coverage: 80.00%")
-            println("   Missing coverage: ${String.format("%.2f", 80.0 - pct)}%")
-        }
-    }
-}
-
 configurations.forEach { configuration ->
     // Exclude protobuf-lite from all configurations
     // This fixes a fatal exception for tests interacting with Cloud Firestore
