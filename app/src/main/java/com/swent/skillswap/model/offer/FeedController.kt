@@ -9,15 +9,16 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
 
-class FeedController
-internal constructor(
+interface FeedController
+
+internal class FeedControllerImpl(
     private val recommendationEngine: RecommendationEngine,
     private val thumbnailRepository: ThumbnailRepository,
     private val postRepository: PostRepository,
     private val chatRepository: ChatRepository,
     val userIdPerformingActions: String,
     val feedType: PostType,
-) {
+) : FeedController {
 
     // Keep a couple of posts preloaded in advance
     private val preloadThreshold = 3

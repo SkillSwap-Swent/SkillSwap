@@ -1,7 +1,5 @@
 package com.swent.skillswap.model.offer
 
-import com.google.firebase.firestore.FirebaseFirestore
-import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import javax.inject.Inject
@@ -27,7 +25,7 @@ constructor(
      */
     suspend fun create(userIdPerformingAction: String, feedType: PostType): FeedController {
         val fc =
-            FeedController(
+            FeedControllerImpl(
                 recommendationEngine = recommendationEngine,
                 thumbnailRepository = thumbnailRepository,
                 postRepository = postRepository,
