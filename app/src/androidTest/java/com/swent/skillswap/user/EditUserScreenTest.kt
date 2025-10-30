@@ -14,6 +14,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.ui.editUser.EditUserScreen
@@ -51,7 +53,10 @@ class EditUserScreenTest : TestCase() {
             username = "Chef",
             email = "test@example.com",
             profilePicture = "",
-            skillSet = emptySet(),
+            skillSet = setOf(
+                Skill(name = com.swent.skillswap.model.tags.SkillTag.DATABASES, rank = 4F,""),
+                Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F,"")
+            ),
             rating = 4.5f,
             availability = emptyList()
         )
@@ -126,6 +131,7 @@ class EditUserScreenTest : TestCase() {
             composeTestRule.onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD).assertIsDisplayed()
             composeTestRule.onNodeWithTag(EditUserTags.SKILLSET_SECTION).assertIsDisplayed()
             composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(EditUserTags.SKILLSET_SECTION).assertIsDisplayed()
         }
     }
 
