@@ -6,6 +6,9 @@ package com.swent.skillswap.ui.chat
 
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.post.Post
+import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.SkillTag
@@ -59,13 +62,13 @@ object ChatScreenData {
         )
     }
 
-    fun getSamplePosts(): List<Request> {
+    fun getSamplePosts(): List<Post> {
         val now = Timestamp.now()
         val future = Timestamp(now.seconds + 86400, 0) // 1 day from now
 
         return listOf(
-            // Offer posts
-            Request(
+            // Offer posts (3)
+            Offer(
                 uid = "post1",
                 title = "Spanish Tutoring",
                 description = "Native Spanish speaker offering conversational practice",
@@ -77,7 +80,7 @@ object ChatScreenData {
                 status = PostStatus.POSTED,
                 media = emptyList()
             ),
-            Request(
+            Offer(
                 uid = "post2",
                 title = "Graphic Design Help",
                 description = "Professional designer offering logo and branding assistance",
@@ -89,7 +92,7 @@ object ChatScreenData {
                 status = PostStatus.POSTED,
                 media = emptyList()
             ),
-            Request(
+            Offer(
                 uid = "post3",
                 title = "Bike Repair Service",
                 description = "Experienced mechanic offering bike maintenance and repair",
@@ -101,7 +104,7 @@ object ChatScreenData {
                 status = PostStatus.POSTED,
                 media = emptyList()
             ),
-            // Request posts
+            // Request posts (2)
             Request(
                 uid = "post4",
                 title = "Need Math Tutor",
