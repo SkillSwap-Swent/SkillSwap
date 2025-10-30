@@ -47,7 +47,6 @@ internal constructor(
 
         val postReply =
             PostReply(
-                uid = "",
                 postId = post.uid,
                 ownerId = userIdPerformingActions,
                 creation = Timestamp.now(),
