@@ -21,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.navigation.NavigationBottomBarModel
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
@@ -41,7 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         /*For testing purposes on sign in*/
-        //FirebaseAuth.getInstance().signOut()
+        // FirebaseAuth.getInstance().signOut()
         setContent {
             SkillSwapAppTheme() {
                 // A surface container using the 'background' color from the theme

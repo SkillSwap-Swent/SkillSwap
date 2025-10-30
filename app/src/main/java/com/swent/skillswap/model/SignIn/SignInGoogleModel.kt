@@ -70,7 +70,9 @@ class SignInGoogleModel(
         val googleParams: SignInGoogleParams = params as SignInGoogleParams
         val credentialManager = googleParams.credentialManager
         val activity = googleParams.activity
-        val idToken = requestGoogleIdToken(credentialManager, activity) ?: throw Exception("failed connection")
+        val idToken =
+            requestGoogleIdToken(credentialManager, activity)
+                ?: throw Exception("failed connection")
 
         val auth = this.auth
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
