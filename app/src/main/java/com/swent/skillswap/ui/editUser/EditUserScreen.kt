@@ -53,6 +53,18 @@ import com.swent.skillswap.ui.theme.*
 import com.swent.skillswap.ui.utils.*
 import com.swent.skillswap.viewModel.EditUserViewModel
 
+
+object EditUserTags {
+    const val GO_BACK_BUTTON = "edit_user_go_back_button"
+    const val USERNAME_TEXTFIELD = "edit_user_username_textfield"
+    const val EMAIL_TEXTFIELD = "edit_user_email_textfield"
+    const val VALIDATE_BUTTON = "edit_user_validate_button"
+    const val PROFILE_PICTURE = "edit_user_profile_picture"
+    const val SKILLSET_SECTION = "edit_user_skillset_section"
+    const val GENERAL_ERROR = "edit_user_general_error"
+    const val SUCCESS_MESSAGE = "edit_user_success_message"
+}
+
 /** Displays the edit user screen. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -62,10 +74,10 @@ fun EditUserScreen(
 ) {
      val uiState by vm.uiState.collectAsState()
      val user = uiState.editedUser
-/*
+
     var username by remember { mutableStateOf(user?.username ?:  "") }
     var email by remember { mutableStateOf(user?.email ?:  "") }
-   */
+
 
     Scaffold(
         topBar = {
@@ -84,6 +96,7 @@ fun EditUserScreen(
                 navigationIcon = {
                     IconButton(
                         onClick = {onGoBack()},
+                        modifier = Modifier.testTag(EditUserTags.GO_BACK_BUTTON)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -111,7 +124,11 @@ fun EditUserScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 /** Profile picture */
-                Box() {
+                Box(
+                    modifier = Modifier
+                        .testTag(EditUserTags.PROFILE_PICTURE)
+                        .clickable { /* TODO Next Sprint: Open image picker to change profile picture */ }
+                ) {
                     if (user?.profilePicture != null && user.profilePicture.isNotEmpty()) {
                         AsyncImage(
                             model = user.profilePicture,
@@ -160,8 +177,11 @@ fun EditUserScreen(
 
                 /** Username Field */
                 OutlinedTextField(
-                    value = user?.username ?: "Username",
-                    onValueChange = {vm.setUsername(it)},
+                    value = username,
+                    onValueChange = {
+                        username = it
+                        vm.setUsername(username)
+                        },
                     label = { Text("Username") },
                     placeholder = { Text("type your new username") },
                     isError = uiState.usernameError != null,
@@ -169,11 +189,13 @@ fun EditUserScreen(
                         if (uiState.usernameError != null) {
                             Text(
                                 uiState.usernameError!!,
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(EditUserTags.USERNAME_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -187,8 +209,11 @@ fun EditUserScreen(
                  * Firebase Auth email.
                  */
                 OutlinedTextField(
-                    value = user?.email ?: "example@email.com",
-                    onValueChange = {vm.setEmail(it)},
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        vm.setEmail(it)
+                        },
                     label = { Text("E-mail") },
                     placeholder = { Text("type your new email") },
                     isError = uiState.emailError != null,
@@ -196,11 +221,13 @@ fun EditUserScreen(
                         if (uiState.emailError != null) {
                             Text(
                                 uiState.emailError!!,
-                                color = MaterialTheme.colorScheme.error
+                                color = MaterialTheme.colorScheme.error,
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(EditUserTags.EMAIL_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -217,16 +244,14 @@ fun EditUserScreen(
                             .clip(RoundedCornerShape(8.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { /* TODO Next Sprint: Open skill selection screen */ }
+                            .testTag(EditUserTags.SKILLSET_SECTION)
                     ) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                             modifier = Modifier
-                                .testTag(CreateAccountTags.SKILLS_FLOW)
                                 .fillMaxSize()
                                 .padding(10.dp)
-
-
                         ) {
                             for (skill in uiState.editedUser?.skillSet ?: emptySet()) {
                                 Box(
@@ -275,18 +300,22 @@ fun EditUserScreen(
                         text = uiState.generalError!!,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 14.sp,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .testTag(EditUserTags.GENERAL_ERROR)
                     )
                 }
 
                 /** Success Message */
-                if (uiState.isSaved) { //TODO: voir quand ce truc disparait
+                if (uiState.isSaved) {
                     Text(
                         text = "Profile updated successfully",
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .testTag(EditUserTags.SUCCESS_MESSAGE)
                     )
                 }
 
@@ -297,7 +326,8 @@ fun EditUserScreen(
                     onClick = {  if(!uiState.isLoading)vm.validate() else {/*do nothing, validation already pending*/} },
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                        .height(56.dp),
+                        .height(56.dp)
+                        .testTag(EditUserTags.VALIDATE_BUTTON),
                     gradientDirection = BrushDirection.LEFT_RIGHT
                 ) {
                     Text(
@@ -315,6 +345,7 @@ fun EditUserScreen(
 
 
 /** Fake repository for preview purposes. */
+/*
 private class FakeUserRepository : UserRepositery {
     override fun getNewUid(): String = "fake-uid-123"
 
@@ -352,3 +383,4 @@ fun EditUserScreenPreview() {
         )
     }
 }
+*/
