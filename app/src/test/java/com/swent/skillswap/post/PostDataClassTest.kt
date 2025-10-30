@@ -8,7 +8,6 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
-import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
