@@ -9,36 +9,36 @@ import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.RequestScreenTags
+import java.util.Date
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
 class RequestScreenTest {
 
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
 
     private lateinit var fakeRepository: FakePostRepository
     private val testUserId = "test-user-123"
     private var backButtonClicked = false
     private var postCreatedCalled = false
 
-    private val sampleRequest = Request(
-        uid = "existing-request-1",
-        title = "Need Kotlin Help",
-        description = "Looking for someone to teach Kotlin basics",
-        ownerId = testUserId,
-        tags = listOf(PostTag.REOCCURRING),
-        paymentMethods = listOf(PaymentMethod.SKILLS),
-        expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-        creation = Timestamp.now(),
-        status = PostStatus.POSTED,
-        media = emptyList()
-    )
+    private val sampleRequest =
+        Request(
+            uid = "existing-request-1",
+            title = "Need Kotlin Help",
+            description = "Looking for someone to teach Kotlin basics",
+            ownerId = testUserId,
+            tags = listOf(PostTag.REOCCURRING),
+            paymentMethods = listOf(PaymentMethod.SKILLS),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = emptyList()
+        )
 
     @Before
     fun setUp() {
@@ -158,8 +158,7 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Error message should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT)
-            .assertIsDisplayed()
+        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
     }
 
     @Test
@@ -173,14 +172,12 @@ class RequestScreenTest {
         }
 
         // Fill title but not description
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT)
-            .performTextInput("Valid Title")
+        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Valid Title")
 
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
-            .assertIsDisplayed()
+        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
     }
 
     // ========== PAYMENT METHOD TESTS ==========
@@ -261,13 +258,16 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Verify existing data is loaded
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT)
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TITLE_INPUT)
             .assert(hasText(sampleRequest.title))
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
             .assert(hasText(sampleRequest.description))
 
-        composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
             .assertIsDisplayed()
     }
 }

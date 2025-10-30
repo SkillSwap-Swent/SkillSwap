@@ -19,9 +19,17 @@ class FakePostRepository : PostRepository {
     }
 
     // Simulate failures for error testing
-    fun setShouldFailOnAdd(fail: Boolean) { shouldFailOnAdd = fail }
-    fun setShouldFailOnEdit(fail: Boolean) { shouldFailOnEdit = fail }
-    fun setShouldFailOnGet(fail: Boolean) { shouldFailOnGet = fail }
+    fun setShouldFailOnAdd(fail: Boolean) {
+        shouldFailOnAdd = fail
+    }
+
+    fun setShouldFailOnEdit(fail: Boolean) {
+        shouldFailOnEdit = fail
+    }
+
+    fun setShouldFailOnGet(fail: Boolean) {
+        shouldFailOnGet = fail
+    }
 
     override fun getNewUid(type: PostType): String {
         return "test-${type.name.lowercase()}-${uidCounter++}"
@@ -38,7 +46,9 @@ class FakePostRepository : PostRepository {
     ): List<Post> {
         return posts.values
             .filter { it.type == type }
-            .filter { titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true) }
+            .filter {
+                titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true)
+            }
             .filter { ownerId.isEmpty() || it.ownerId == ownerId }
             .take(numberOfPosts.toInt())
     }
@@ -73,7 +83,9 @@ class FakePostRepository : PostRepository {
 
     // Test helpers
     fun getAddedPosts(): List<Post> = posts.values.toList()
+
     fun getPostById(id: String): Post? = posts[id]
+
     fun clear() {
         posts.clear()
         uidCounter = 0

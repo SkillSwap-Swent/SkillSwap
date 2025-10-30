@@ -100,13 +100,15 @@ fun RequestScreen(
     postRepository: PostRepository,
     currentUserId: String,
     uid: String? = null,
-    requestViewModel: RequestViewModel = viewModel(
-        factory = RequestViewModelFactory(
-            postRepository = postRepository,
-            currentUserId = currentUserId,
-            postId = uid
-        )
-    ),
+    requestViewModel: RequestViewModel =
+        viewModel(
+            factory =
+                RequestViewModelFactory(
+                    postRepository = postRepository,
+                    currentUserId = currentUserId,
+                    postId = uid
+                )
+        ),
     onGoBack: () -> Unit = {},
     onPostCreated: () -> Unit = {},
     postOperation: PostOperation,
@@ -154,10 +156,7 @@ fun RequestScreen(
                     isError = uiState.titleError.isNotEmpty(),
                     supportingText = {
                         if (uiState.titleError.isNotEmpty()) {
-                            Text(
-                                uiState.titleError,
-                                color = MaterialTheme.colorScheme.error
-                            )
+                            Text(uiState.titleError, color = MaterialTheme.colorScheme.error)
                         }
                     },
                     modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
@@ -172,14 +171,10 @@ fun RequestScreen(
                     isError = uiState.descriptionError.isNotEmpty(),
                     supportingText = {
                         if (uiState.descriptionError.isNotEmpty()) {
-                            Text(
-                                uiState.descriptionError,
-                                color = MaterialTheme.colorScheme.error
-                            )
+                            Text(uiState.descriptionError, color = MaterialTheme.colorScheme.error)
                         }
                     },
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
+                    modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
                 )
 
                 /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
@@ -332,7 +327,7 @@ fun RequestScreen(
                         Modifier.fillMaxWidth()
                             .padding(vertical = 16.dp)
                             .testTag(
-                                when(postOperation) {
+                                when (postOperation) {
                                     PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
                                     PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
                                 }
@@ -341,8 +336,7 @@ fun RequestScreen(
                     if (uiState.isLoading) {
                         CircularProgressIndicator(
                             modifier =
-                                Modifier.size(24.dp)
-                                    .testTag(RequestScreenTags.LOADING_INDICATOR),
+                                Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
                             color = Color.White
                         )
                     } else {
@@ -356,8 +350,7 @@ fun RequestScreen(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier =
-                            Modifier.padding(top = 8.dp)
-                                .testTag(RequestScreenTags.ERROR_MESSAGE)
+                            Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
                     )
                 }
             }
@@ -412,13 +405,12 @@ fun NewRequestScreenPreview() {
 
     val viewModel = RequestViewModel(fakeRepository, currentUserId = "preview-user", postId = null)
 
-  SkillSwapAppTheme {
-      RequestScreen(
-          postRepository = fakeRepository,
-          currentUserId = "preview-user",
-          requestViewModel = viewModel,
-          postOperation = PostOperation.ADD
-      )
-  }
-
+    SkillSwapAppTheme {
+        RequestScreen(
+            postRepository = fakeRepository,
+            currentUserId = "preview-user",
+            requestViewModel = viewModel,
+            postOperation = PostOperation.ADD
+        )
+    }
 }

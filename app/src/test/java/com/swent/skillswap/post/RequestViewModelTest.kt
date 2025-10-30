@@ -7,6 +7,7 @@ import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestViewModel
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -16,31 +17,30 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RequestViewModelTest {
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    @get:Rule val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var fakeRepository: FakePostRepository
     private lateinit var viewModel: RequestViewModel
     private val testUserId = "test-user-123"
 
     // Test fixture
-    private val sampleRequest = Request(
-        uid = "existing-request-1",
-        title = "Need Kotlin Help",
-        description = "Looking for someone to teach Kotlin basics",
-        ownerId = testUserId,
-        tags = listOf(PostTag.REOCCURRING),
-        paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH),
-        expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-        creation = Timestamp.now(),
-        status = PostStatus.POSTED,
-        media = emptyList()
-    )
+    private val sampleRequest =
+        Request(
+            uid = "existing-request-1",
+            title = "Need Kotlin Help",
+            description = "Looking for someone to teach Kotlin basics",
+            ownerId = testUserId,
+            tags = listOf(PostTag.REOCCURRING),
+            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = emptyList()
+        )
 
     @Before
     fun setUp() {
@@ -326,9 +326,8 @@ class RequestViewModelTest {
 }
 
 // Test rule to set Main dispatcher for coroutines in unit tests
-class MainDispatcherRule(
-    private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()
-) : TestWatcher() {
+class MainDispatcherRule(private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()) :
+    TestWatcher() {
     override fun starting(description: Description) {
         Dispatchers.setMain(testDispatcher)
     }

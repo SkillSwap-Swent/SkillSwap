@@ -9,23 +9,24 @@ import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.EveryTag
+import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Date
 
 enum class PostOperation {
     ADD,
     EDIT;
 
-    fun toTitle() = when (this) {
-        ADD -> "New"
-        EDIT -> "Edit"
-    }
+    fun toTitle() =
+        when (this) {
+            ADD -> "New"
+            EDIT -> "Edit"
+        }
 }
 
-data class RequestUIState (
+data class RequestUIState(
     val uid: String = "",
     val title: String = "",
     val description: String = "",
@@ -66,31 +67,27 @@ class RequestViewModel(
     }
 
     private fun loadPost(id: String) {
-      viewModelScope.launch {
-          _uiState.update { it.copy(isLoading = true) }
-          try {
-              val post = postRepository.getPost(PostType.REQUEST, id)
-              _uiState.update {
-                  it.copy(
-                      uid = post.uid,
-                      title = post.title,
-                      description = post.description,
-                      tags = post.tags,
-                      paymentMethods = post.paymentMethods.toSet(),
-                      isLoading = false
-                  )
-              }
-          } catch (e: Exception) {
-              _uiState.update {
-                  it.copy(
-                      isLoading = false,
-                      submitError = "Failed to load post: ${e.message}"
-                  )
-              }
-          }
-      }
-  }
-
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val post = postRepository.getPost(PostType.REQUEST, id)
+                _uiState.update {
+                    it.copy(
+                        uid = post.uid,
+                        title = post.title,
+                        description = post.description,
+                        tags = post.tags,
+                        paymentMethods = post.paymentMethods.toSet(),
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, submitError = "Failed to load post: ${e.message}")
+                }
+            }
+        }
+    }
 
     fun setTitle(newTitle: String) {
         _uiState.update {
@@ -148,10 +145,11 @@ class RequestViewModel(
             _uiState.update { it.copy(isLoading = true, submitError = null) }
 
             try {
-                val uid = when(postOperation) {
-                    PostOperation.ADD -> postRepository.getNewUid(PostType.REQUEST)
-                    PostOperation.EDIT -> postId!!
-                }
+                val uid =
+                    when (postOperation) {
+                        PostOperation.ADD -> postRepository.getNewUid(PostType.REQUEST)
+                        PostOperation.EDIT -> postId!!
+                    }
                 val request =
                     Request(
                         uid = uid,
@@ -161,9 +159,7 @@ class RequestViewModel(
                         tags = _uiState.value.tags,
                         paymentMethods = _uiState.value.paymentMethods.toList(),
                         expiry =
-                            Timestamp(
-                                Date(System.currentTimeMillis() + REQUEST_LIFESPAN_DAYS)
-                            ),
+                            Timestamp(Date(System.currentTimeMillis() + REQUEST_LIFESPAN_DAYS)),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
                         media = emptyList()
@@ -185,5 +181,4 @@ class RequestViewModel(
             }
         }
     }
-
 }
