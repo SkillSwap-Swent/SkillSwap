@@ -41,7 +41,8 @@ object SignInTags {
     const val LOGO = "SIGN_IN_LOGO"
     const val GOOGLE_BUTTON = "SIGN_IN_GOOGLE_BUTTON"
     const val SIGN_IN_BUTTON = "SIGN_IN_BUTTON"
-    const val OR_TEXT = "SIGN_IN_OR_TEXT"
+    const val EMAIL_FIELD = "EMAIL_FIELD"
+    const val PASSWORD_FIELD = "PASSWORD_FIELD"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
 }
 
@@ -78,7 +79,7 @@ fun SignInMainScreen(
             }
         }
     }
-    LaunchedEffect(vm) { vm.check() }
+    LaunchedEffect(Unit) { vm.check() }
     val scroll = rememberScrollState()
     val uiState by vm.uiState.collectAsState()
     // Scaffold gives a top-level layout structure (with padding, backgrounds, etc.)
@@ -114,8 +115,7 @@ fun SignInMainScreen(
                         imeAction = ImeAction.Next
                     ),
                 modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .testTag(CreateAccountTags.EMAIL_FIELD)
+                    Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.EMAIL_FIELD)
             )
             SkillSwapPasswordTextField(
                 value = uiState.password,
@@ -124,8 +124,7 @@ fun SignInMainScreen(
                 placeholder = "enter password",
                 onValueChange = { vm.onPasswordChange(it) },
                 modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .testTag(CreateAccountTags.PASSWORD_FIELD)
+                    Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.PASSWORD_FIELD)
             )
             // ----- Google Sign-In button -----
             Spacer(modifier = Modifier.height(50.dp))

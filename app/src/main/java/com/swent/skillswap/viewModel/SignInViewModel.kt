@@ -11,7 +11,6 @@ import com.swent.skillswap.model.SignIn.SignInClassicModel
 import com.swent.skillswap.model.SignIn.SignInClassicParams
 import com.swent.skillswap.model.SignIn.SignInGoogleModel
 import com.swent.skillswap.model.SignIn.SignInGoogleParams
-import com.swent.skillswap.model.SignIn.SignInInterface
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -52,8 +51,8 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
         MutableStateFlow<SignInUIState>(SignInUIState())
     val uiState: StateFlow<SignInUIState> = _uiState
     // The sign-in model abstraction. We use the Google-specific implementation here.
-    private val googleModel: SignInInterface = SignInGoogleModel(auth)
-    private val classicModel: SignInInterface = SignInClassicModel(auth)
+    private val googleModel: SignInGoogleModel = SignInGoogleModel(auth)
+    private val classicModel: SignInClassicModel = SignInClassicModel(auth)
     // SharedFlow used for one-time UI events (navigation actions).
     // Unlike StateFlow, SharedFlow won't re-emit old events when the UI recomposes.
     private val _eventFlow = MutableSharedFlow<SignInEvent>()
@@ -61,7 +60,18 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
     /** check if the user is meant to be there */
     fun check() {
         if (auth.currentUser != null) {
-            viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToMainScreen) }
+            val isGoogleUser = auth.currentUser?.providerData?.any { it.providerId == "google.com" }
+            if (isGoogleUser == true) {
+                viewModelScope.launch {
+                    if (googleModel.googleAccountInfoAreSavedInFirestore()) {
+                        _eventFlow.emit(SignInEvent.NavigateToMainScreen)
+                    } else {
+                        _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
+                    }
+                }
+            } else {
+                viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToMainScreen) }
+            }
         }
     }
 

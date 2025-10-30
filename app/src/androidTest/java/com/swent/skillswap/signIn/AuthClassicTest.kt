@@ -1,0 +1,221 @@
+package com.swent.skillswap.signIn
+
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.chat.ChatScreen
+import com.swent.skillswap.ui.navigation.NavigationActions
+import com.swent.skillswap.ui.navigation.Screen
+import com.swent.skillswap.ui.offerScreen.OfferScreen
+import com.swent.skillswap.ui.offerScreen.OfferScreenTestTags
+import com.swent.skillswap.ui.signIn.CreateAccountTags
+import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
+import com.swent.skillswap.ui.signIn.SignInMainScreen
+import com.swent.skillswap.ui.signIn.SignInTags
+import com.swent.skillswap.ui.user.ProfileMainScreen
+import com.swent.skillswap.utils.FirebaseEmulator
+import com.swent.skillswap.viewModel.CreateAccountViewModel
+import com.swent.skillswap.viewModel.SignInViewModel
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.*
+import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
+
+@RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+class AuthClassicTest : TestCase() {
+
+    @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+    // Built after emulator is configured
+    private lateinit var vmCreateAccount: CreateAccountViewModel
+    private lateinit var vmSignIn: SignInViewModel
+
+    // Use the same classic user identity across tests
+    private val email = "classic.user@example.com"
+    private val password = "PasswordA1" // >= 8, contains uppercase
+    private val username = "classicUser"
+
+    companion object {
+        @JvmStatic lateinit var auth: com.google.firebase.auth.FirebaseAuth
+        @JvmStatic lateinit var firestore: com.google.firebase.firestore.FirebaseFirestore
+
+        @BeforeClass
+        @JvmStatic
+        fun globalSetUp() {
+            // Start emulator once and bind SDKs
+            FirebaseEmulator.startEmulator()
+            auth = FirebaseEmulator.auth
+            firestore = FirebaseEmulator.firestore
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun globalTearDown() {
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        }
+    }
+
+    @Before
+    fun setUp() {
+        // Build VMs after emulator is ready
+        vmCreateAccount =
+            CreateAccountViewModel(isGoogleAccount = false, auth = auth, firestore = firestore)
+        vmSignIn = SignInViewModel(auth)
+
+        // Compose app content
+        composeTestRule.setContent {
+            val navController: NavHostController = rememberNavController()
+            val navigationActions = NavigationActions(navController)
+
+            NavHost(
+                navController = navController,
+                startDestination = Screen.SignInMain.route,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                composable(Screen.SignInMain.route) {
+                    SignInMainScreen(
+                        goToCreateAccountScreen = {
+                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                        },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                        vm = vmSignIn
+                    )
+                }
+                composable(Screen.SignInCreateAccount.route) {
+                    // Classic flow (isGoogleAccount = false)
+                    SignInCreateAccountScreen(
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                        googleAccount = false,
+                        vm = vmCreateAccount
+                    )
+                }
+                composable(Screen.Offers.route) { OfferScreen() }
+                composable(Screen.Chat.route) { ChatScreen() }
+                composable(Screen.Profile.route) { ProfileMainScreen() }
+            }
+        }
+    }
+
+    @After
+    fun tearDown() {
+        auth.signOut()
+        FirebaseEmulator.clearAuthEmulator()
+        FirebaseEmulator.clearFirestoreEmulator()
+    }
+
+    /**
+     * Classic NEW user:
+     * - Tap "Create Account"
+     * - Fill username, email, password + confirm, select one skill
+     * - Next -> navigates to Offers
+     */
+    @Test
+    fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
+        // Go to Create Account screen
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
+
+        // USERNAME
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performScrollTo()
+        composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput(username)
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
+        // EMAIL
+        composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).performScrollTo()
+        composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).performTextInput(email)
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
+        // PASSWORD + CONFIRM
+        composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).performScrollTo()
+        composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).performTextInput(password)
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+            .performTextInput(password)
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
+        // SKILLS
+        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).performScrollTo()
+        composeTestRule
+            .onNodeWithTag(
+                CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.MACHINE_DESIGN.name,
+                useUnmergedTree = true
+            )
+            .performClick()
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        // Arrive at Offers
+        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+    }
+
+    /**
+     * Classic RETURNING user:
+     * - Pre-seed Auth user + Firestore profile
+     * - Fill email & password and tap "SIGN IN"
+     * - Should land directly on Offers (no Create Account flow)
+     */
+    @Test
+    fun t2_classicUser_can_log_on() {
+        // Seed returning user (Auth + Firestore) on emulator
+        runBlocking {
+            // Create / ensure Auth account exists
+            try {
+                auth.createUserWithEmailAndPassword(email, password).await()
+            } catch (_: Exception) {
+                // If it already exists, ignore
+            }
+            // Get UID (sign in temporarily to obtain it)
+            val signIn = auth.signInWithEmailAndPassword(email, password).await()
+            val uid = requireNotNull(signIn.user?.uid)
+            // Ensure Firestore profile exists (what your app checks to skip Create Account)
+            val userDoc =
+                mapOf(
+                    "username" to username,
+                    "email" to email,
+                    "skills" to listOf(SkillTag.MACHINE_DESIGN.toString())
+                )
+            firestore.collection("users").document(uid).set(userDoc).await()
+            auth.signOut()
+        }
+
+        // Fill email/password on SignInMainScreen and sign in
+        composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).performScrollTo()
+        composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).performTextInput(email)
+        composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).performTextInput(password)
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performScrollTo()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performClick()
+
+        // Arrive at Offers
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        auth.signOut()
+    }
+}

@@ -108,7 +108,7 @@ fun SignInCreateAccountScreen(
             }
         }
     }
-    LaunchedEffect(vm) { vm.check() }
+    LaunchedEffect(Unit) { vm.check() }
 
     val scroll = rememberScrollState()
     val navController = rememberNavController()
