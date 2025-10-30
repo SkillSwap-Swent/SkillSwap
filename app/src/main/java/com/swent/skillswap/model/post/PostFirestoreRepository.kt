@@ -140,6 +140,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
+        val postReplies = document.toObject(Request::class.java)?.postReplies ?: emptyList()
+
         val post =
             when (postType) {
                 PostType.REQUEST ->
@@ -153,7 +155,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         expiry,
                         creation,
                         status,
-                        media
+                        media,
+                        postReplies
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")

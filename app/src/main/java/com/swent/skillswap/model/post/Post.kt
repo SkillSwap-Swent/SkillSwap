@@ -58,6 +58,9 @@ interface Post {
     val searchKeys: List<String>
         get() = buildSearchKeys()
 
+
+    val postReplies: List<PostReply>
+
     /**
      * In the current implementation the keywords aren't separated by category. This means that when
      * searching for a title keyword we can also return a keyword from the tags. I see this as a
