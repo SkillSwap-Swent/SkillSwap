@@ -24,16 +24,19 @@ class ProfileViewModel(
         loadCurrentUser()
     }
 
-    private fun loadCurrentUser() {
-        val uid =
-            FirebaseAuth.getInstance().currentUser?.uid ?: throw Exception("No user with this uid")
+    fun loadCurrentUser() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            Log.w("ProfileViewModel", "No user logged in yet")
+            return
+        }
+
         viewModelScope.launch {
             try {
                 val user = repo.getUser(uid)
                 _userState.value = user
             } catch (e: Exception) {
-                Log.e("UserRepoFirestore", "Error while getting user in getUser", e)
-                throw Exception("Error while getting user in getUser")
+                Log.e("ProfileViewModel", "Error while getting user", e)
             }
         }
     }

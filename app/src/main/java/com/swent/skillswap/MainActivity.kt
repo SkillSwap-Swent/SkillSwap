@@ -21,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
@@ -73,7 +74,12 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         )
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
-    val startDestination = Screen.SignInMain.route
+
+    val startDestination =
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            Screen.Profile.route
+        } else Screen.SignInMain.route
+
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
@@ -120,6 +126,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             composable(Screen.Offers.route) { OfferScreen() }
             composable(Screen.Chat.route) { ChatScreen() }
             composable(Screen.Profile.route) {
+                profileViewModel.loadCurrentUser()
                 ProfileScreen(
                     vm = profileViewModel,
                     onSkillsClick = { navigationActions.navigateTo(Screen.EditSkills) }
