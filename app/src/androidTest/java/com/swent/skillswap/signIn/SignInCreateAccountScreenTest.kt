@@ -36,7 +36,7 @@ class SignInCreateAccountScreenTest : TestCase() {
 
     @Before
     fun setUp() {
-        composeTestRule.setContent { SignInCreateAccountScreen(vm = vm) }
+        composeTestRule.setContent { SignInCreateAccountScreen(vm = vm, googleAccount = false) }
     }
 
     // --- Helpers ---

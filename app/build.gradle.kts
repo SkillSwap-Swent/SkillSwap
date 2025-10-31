@@ -25,6 +25,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunnerArguments["mockk.agent"] = "android"
     }
 
     buildTypes {
@@ -41,7 +43,23 @@ android {
             enableAndroidTestCoverage = true
         }
     }
-
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "META-INF/DEPENDENCIES",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/LICENSE.txt",
+                "META-INF/LICENSE"
+            )
+        }
+        jniLibs {
+            // Keeps/places the agent .so where the runtime can dlopen it
+            useLegacyPackaging = true
+        }
+    }
     testCoverage {
         jacocoVersion = "0.8.13"
     }
@@ -137,6 +155,12 @@ dependencies {
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     globalTestImplementation(composeBom)
+    // Local JVM unit tests
+    testImplementation(libs.mockk)
+    // Instrumented tests
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.mockk.android)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
