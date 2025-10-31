@@ -70,8 +70,9 @@ class PostConversationItemTest {
         composeRule.setContent {
             MaterialTheme { PostConversationItem(post = noTagOffer, user = null, onClick = {}) }
         }
-        // Should still render without crashing; label exists, but no specific tags enforced
+        // Should still render without crashing; label exists, and shows "No skills listed"
         composeRule.onNodeWithText("Skills:").assertExists()
+        composeRule.onNodeWithText("No skills listed").assertExists()
     }
 
     @Test

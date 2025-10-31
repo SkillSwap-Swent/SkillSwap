@@ -5,7 +5,6 @@
 // and integration with existing Post and User models from the codebase.
 package com.swent.skillswap.ui.chat
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -67,7 +66,8 @@ fun ChatScreen(
         }
 
         // Posts List
-        val filteredPosts = posts.filter { it.type == selectedPostType }
+        val filteredPosts =
+            remember(posts, selectedPostType) { posts.filter { it.type == selectedPostType } }
 
         if (filteredPosts.isEmpty()) {
             // Empty state
@@ -123,7 +123,8 @@ fun PostTypeFilterButton(
 @Composable
 fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF0F3F66)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -154,9 +155,14 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
                 Text(text = "Skills:", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                 Text(
                     text =
-                        post.tags.take(2).joinToString(", ") {
-                            it.toString().replace("_", " ").lowercase().replaceFirstChar { char ->
-                                if (char.isLowerCase()) char.titlecase() else char.toString()
+                        if (post.tags.isEmpty()) {
+                            "No skills listed"
+                        } else {
+                            post.tags.take(2).joinToString(", ") {
+                                it.toString().replace("_", " ").lowercase().replaceFirstChar { char
+                                    ->
+                                    if (char.isLowerCase()) char.titlecase() else char.toString()
+                                }
                             }
                         },
                     fontSize = 14.sp,
