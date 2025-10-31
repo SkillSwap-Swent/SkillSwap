@@ -5,8 +5,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,22 +14,20 @@ import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.ui.user.SkillsEditTestTags
 import com.swent.skillswap.utils.FakeJwtGenerator
 import com.swent.skillswap.utils.FirebaseEmulator
 import com.swent.skillswap.viewModel.ProfileViewModel
+import kotlin.text.get
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.text.get
 
 @RunWith(AndroidJUnit4::class)
 class ProfileScreenTest {
@@ -157,7 +153,6 @@ class ProfileScreenTest {
         composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertExists()
     }
 
-
     @Test
     fun profileScreen_skillsSectionCanExpandAndCollapse() {
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
@@ -238,13 +233,11 @@ class ProfileScreenTest {
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_EDIT).performClick()
 
-
         composeTestRule
             .onNodeWithTag(
                 "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.MACHINE_DESIGN.name}"
             )
             .performClick()
-
 
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
 
@@ -270,7 +263,9 @@ class ProfileScreenTest {
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performTextInput("calculus")
 
         // Click on the first suggestion (Calculus)
-        composeTestRule.onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0").performClick()
+        composeTestRule
+            .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
+            .performClick()
 
         // Click save button
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
@@ -287,6 +282,7 @@ class ProfileScreenTest {
             assert(skillNames.contains(SkillTag.ALGORITHMS))
         }
     }
+
     @Test
     fun skillsEditScreen_cancelButtonTriggersCallback() {
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
@@ -303,22 +299,10 @@ class ProfileScreenTest {
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_EDIT).performClick()
 
-
-
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performClick()
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performTextInput("prog")
 
         // Verify suggestions appear
         composeTestRule.onNodeWithTag(SkillsEditTestTags.SUGGESTIONS_LIST).assertExists()
     }
-
-
-
-
-
-
-
-
-
-
 }

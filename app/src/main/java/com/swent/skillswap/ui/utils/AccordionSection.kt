@@ -39,7 +39,6 @@ fun AccordionSection(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
-
 ) {
     Column(modifier = modifier) {
         // Header
