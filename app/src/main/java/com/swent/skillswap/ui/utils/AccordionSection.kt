@@ -37,9 +37,11 @@ fun AccordionSection(
     title: String,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    content: @Composable () -> Unit
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+
 ) {
-    Column {
+    Column(modifier = modifier) {
         // Header
         Row(
             modifier = Modifier.fillMaxWidth().clickable { onToggle() }.padding(vertical = 12.dp),

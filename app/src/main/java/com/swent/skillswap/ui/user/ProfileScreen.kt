@@ -92,6 +92,7 @@ fun ProfileScreen(
                     title = "My email",
                     isExpanded = expandedEmail,
                     onToggle = { expandedEmail = !expandedEmail },
+                    modifier = Modifier.testTag(ProfileTestTags.EMAIL_SECTION),
                     content = {
                         EditableField(
                             value = uiState.email,
@@ -107,6 +108,7 @@ fun ProfileScreen(
                     title = "My username",
                     isExpanded = expandedUsername,
                     onToggle = { expandedUsername = !expandedUsername },
+                    modifier = Modifier.testTag(ProfileTestTags.USERNAME_SECTION),
                     content = {
                         EditableField(
                             value = uiState.username,
@@ -122,6 +124,7 @@ fun ProfileScreen(
                     title = "Skills",
                     isExpanded = expandedSkills,
                     onToggle = { expandedSkills = !expandedSkills },
+                    modifier = Modifier.testTag(ProfileTestTags.SKILLS_SECTION),
                     content = {
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             Text(
@@ -177,6 +180,7 @@ fun ProfileScreen(
                     title = "My preferences",
                     isExpanded = expandedPreferences,
                     onToggle = { expandedPreferences = !expandedPreferences },
+                    modifier = Modifier.testTag(ProfileTestTags.PREFERENCES_SECTION),
                     content = {
                         Column(modifier = Modifier.padding(vertical = 8.dp)) {
                             PreferenceOption(
