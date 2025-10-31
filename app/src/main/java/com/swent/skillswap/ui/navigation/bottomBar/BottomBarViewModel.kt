@@ -2,9 +2,11 @@ package com.swent.skillswap.ui.navigation.bottomBar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.swent.skillswap.model.navigation.NavigationBottomBar
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -50,11 +52,10 @@ sealed class BottomBarEvent {
  * @property navigation Optional navigation handler, used mainly for previews or tests.
  * @author Joey Gugler
  */
-class BottomBarViewModel(val navigation: NavigationBottomBar) : ViewModel() {
+class BottomBarViewModel() : ViewModel() {
 
-    /** UI state observed by the BottomBar composable. */
-    var uiState = androidx.compose.runtime.mutableStateOf(BottomBarUiState())
-        private set
+    private val _uiState = MutableStateFlow(BottomBarUiState())
+    val uiState: StateFlow<BottomBarUiState> = _uiState
 
     /** Event flow for one-time navigation events. */
     private val _eventFlow = MutableSharedFlow<BottomBarEvent>()
@@ -62,7 +63,7 @@ class BottomBarViewModel(val navigation: NavigationBottomBar) : ViewModel() {
 
     /** Called when a bottom bar button is selected. */
     fun onScreenSelected(screen: BottomBarScreen) {
-        uiState.value = uiState.value.copy(selectedScreen = screen)
+        _uiState.update { it.copy(selectedScreen = screen) }
         viewModelScope.launch {
             when (screen) {
                 BottomBarScreen.PROFILE -> _eventFlow.emit(BottomBarEvent.NavigateToProfile)

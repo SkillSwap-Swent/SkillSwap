@@ -7,7 +7,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.swent.skillswap.model.navigation.FakeNavigationBottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.*
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import org.junit.Assert.assertEquals
@@ -31,9 +30,8 @@ class BottomBarConfigurationChangeTest {
     @Test
     fun bottomBar_retainsSelectedScreen_afterActivityRecreation() {
         // Arrange
-        val fakeNav = FakeNavigationBottomBar()
         // ViewModel is instantiated outside Compose, allowing us to check its state directly.
-        val vm = BottomBarViewModel(fakeNav)
+        val vm = BottomBarViewModel()
 
         // 1. Initial Setup
         // Uses the ComposeTestRule's setContent for the first activity instance

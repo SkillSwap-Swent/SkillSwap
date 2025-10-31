@@ -53,7 +53,7 @@ class BottomBarViewModelEventTest {
     @Test
     fun selectingProfile_emitsNavigateToProfileEvent() =
         runTest(mainCoroutineRule.testDispatcher) {
-            val vm = BottomBarViewModel(fakeNav)
+            val vm = BottomBarViewModel()
             var event: BottomBarEvent? = null
 
             // 1. Launch a collector.
@@ -74,7 +74,7 @@ class BottomBarViewModelEventTest {
     @Test
     fun selectingOffer_emitsNavigateToOfferEvent() =
         runTest(mainCoroutineRule.testDispatcher) {
-            val vm = BottomBarViewModel(fakeNav)
+            val vm = BottomBarViewModel()
             var event: BottomBarEvent? = null
 
             val job = launch { event = vm.eventFlow.first() }
@@ -88,7 +88,7 @@ class BottomBarViewModelEventTest {
     @Test
     fun selectingChat_emitsNavigateToChatEvent() =
         runTest(mainCoroutineRule.testDispatcher) {
-            val vm = BottomBarViewModel(fakeNav)
+            val vm = BottomBarViewModel()
             var event: BottomBarEvent? = null
 
             val job = launch { event = vm.eventFlow.first() }

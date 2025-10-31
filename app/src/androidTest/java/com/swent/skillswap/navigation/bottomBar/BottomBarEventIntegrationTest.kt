@@ -23,8 +23,7 @@ class BottomBarEventIntegrationTest {
 
     @Test
     fun clickingButtons_updatesSelectedState() {
-        val fakeNav = FakeNavigationBottomBar()
-        val vm = BottomBarViewModel(fakeNav)
+        val vm = BottomBarViewModel()
 
         composeTestRule.setContent { BottomBar(vm = vm) }
 
@@ -64,7 +63,7 @@ class BottomBarEventIntegrationTest {
     @Test
     fun bottomBar_buttonsAreDisplayed() {
         val fakeNav = FakeNavigationBottomBar()
-        composeTestRule.setContent { BottomBar(BottomBarViewModel(fakeNav)) }
+        composeTestRule.setContent { BottomBar(BottomBarViewModel()) }
 
         composeTestRule.onNodeWithTag(BottomBarTestTag.PROFILE_BUTTON).assertIsDisplayed()
         composeTestRule.onNodeWithTag(BottomBarTestTag.OFFER_SCREEN_BUTTON).assertIsDisplayed()

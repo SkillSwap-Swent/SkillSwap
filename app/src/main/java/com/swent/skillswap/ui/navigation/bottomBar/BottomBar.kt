@@ -2,12 +2,19 @@ package com.swent.skillswap.ui.navigation.bottomBar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -16,9 +23,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import com.swent.skillswap.model.navigation.NavigationBottomBarModel
-import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 
 /**
@@ -59,8 +63,25 @@ object BottomBarTestTag {
  * @author Joey Gugler Made Using Ai (chatGPT)
  */
 @Composable
-fun BottomBar(vm: BottomBarViewModel = viewModel()) {
-    val state by vm.uiState
+fun BottomBar(
+    vm: BottomBarViewModel = viewModel(),
+    onProfileClick: () -> Unit = {},
+    onOfferClick: () -> Unit = {},
+    onChatClick: () -> Unit = {},
+) {
+    val state by vm.uiState.collectAsState(initial = BottomBarUiState())
+
+    // Collect one-time navigation events and delegate to the appropriate lambda
+    LaunchedEffect(Unit) {
+        vm.eventFlow.collect { event ->
+            when (event) {
+                is BottomBarEvent.NavigateToProfile -> onProfileClick()
+                is BottomBarEvent.NavigateToOffer -> onOfferClick()
+                is BottomBarEvent.NavigateToChat -> onChatClick()
+            }
+        }
+    }
+
     Row(
         modifier =
             Modifier.fillMaxWidth()
@@ -142,12 +163,16 @@ fun BottomBarButton(
 @Preview(showBackground = true)
 @Composable
 fun BottomBarPreview() {
-    SkillSwapAppTheme() {
-        val navController = rememberNavController()
-        val navigationActions = NavigationActions(navController)
+    SkillSwapAppTheme {
+        // Create a fake ViewModel for preview
         val vm = remember {
-            BottomBarViewModel(navigation = NavigationBottomBarModel(navigationActions))
+            BottomBarViewModel().apply {
+                // Optionally set initial state for preview
+                onScreenSelected(BottomBarScreen.PROFILE)
+            }
         }
-        BottomBar(vm)
+
+        // BottomBar with empty lambdas for navigation
+        BottomBar(vm = vm, onProfileClick = {}, onOfferClick = {}, onChatClick = {})
     }
 }
