@@ -90,9 +90,21 @@ fun deserializeSingleAvailability(availability: String): Availability {
         LocalTime.parse(deserialized.endTime)
     )
 }
-
+/**
+ * Serialize a [Preference] to its string representation.
+ *
+ * @param pref Preference to serialize.
+ * @return String name of the preference enum.
+ */
 fun serializePreference(pref: Preference): String = pref.name
 
+/**
+ * Deserialize a [Preference] from its string representation.
+ *
+ * @param preference String name of the preference enum.
+ * @return Corresponding [Preference] enum.
+ * @throws IllegalArgumentException if the provided string does not match any Preference.
+ */
 fun deserializePreference(preference: String): Preference {
     return Preference.valueOf(preference)
 }
