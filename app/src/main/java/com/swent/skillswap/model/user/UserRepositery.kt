@@ -29,4 +29,10 @@ interface UserRepositery {
      * @throws Exception if the User item is not found.
      */
     suspend fun deleteUser(userID: String)
+
+    /**
+     * @param userId user ID to verify his existence
+     * @return if the user exist or not in firestore
+     */
+    suspend fun userExists(userId: String): Boolean
 }

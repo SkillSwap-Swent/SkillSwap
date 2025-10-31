@@ -72,7 +72,6 @@ data class CreateAccountGoogleParams(val username: String, val skills: Set<Skill
  * By using [SignInParams] and [CreateAccountParams], the interface remains type-safe and flexible.
  */
 interface SignInInterface {
-
     /**
      * Signs a user into the app using the provided [params].
      *
