@@ -86,7 +86,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     }
 
     override suspend fun userExists(userId: String): Boolean {
-        val doc = db.collection(USERS_COLLECTION_PATH).document(userId).get().await()
+        val doc = db.collection(USERS_COLLECTION).document(userId).get().await()
         return doc.exists()
     }
 }
