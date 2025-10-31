@@ -21,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.swent.skillswap.model.navigation.NavigationBottomBarModel
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
@@ -78,10 +77,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
-    val bottomBarViewModel = remember {
-        BottomBarViewModel(NavigationBottomBarModel(navigationActions))
-    }
     val profileViewModel = remember { ProfileViewModel() }
+    val bottomBarViewModel = remember { BottomBarViewModel() }
 
     val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
 
@@ -92,7 +89,12 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     Scaffold(
         bottomBar = {
             if (isTopLevel) {
-                BottomBar(vm = bottomBarViewModel)
+                BottomBar(
+                    vm = bottomBarViewModel,
+                    onProfileClick = { navController.navigate(Screen.Profile.route) },
+                    onOfferClick = { navController.navigate(Screen.Offers.route) },
+                    onChatClick = { navController.navigate(Screen.Chat.route) }
+                )
             }
         }
     ) { paddingValues ->
