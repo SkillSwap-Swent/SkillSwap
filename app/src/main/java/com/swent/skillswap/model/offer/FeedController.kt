@@ -8,10 +8,11 @@ import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
+import javax.inject.Inject
 
 interface FeedController
 
-internal class FeedControllerImpl(
+private class FeedControllerImpl(
     private val recommendationEngine: RecommendationEngine,
     private val thumbnailRepository: ThumbnailRepository,
     private val postRepository: PostRepository,
@@ -81,9 +82,6 @@ internal class FeedControllerImpl(
     /**
      * Retrieves the next post from the queue.
      *
-     * @param onPreloadNeeded A lambda function that will be invoked if the queue needs refilling.
-     *   This allows the caller (e.g., a ViewModel) to decide when and how to launch the background
-     *   fetch operation.
      * @return The next [Post] or null if the queue is empty and cannot be refilled.
      */
     private suspend fun getNextPost(): Post? {
@@ -98,6 +96,38 @@ internal class FeedControllerImpl(
         }
 
         return postQueue.removeAt(0)
+    }
+}
+
+/**
+ * A factory responsible for creating instances of [FeedController]. This is useful for dependency
+ * injection and separating creation logic from the ViewModel.
+ */
+class FeedControllerFactory(
+    private val recommendationEngine: RecommendationEngine,
+    private val thumbnailRepository: ThumbnailRepository,
+    private val postRepository: PostRepository,
+    private val chatRepository: ChatRepository,
+) {
+    /**
+     * Creates a new instance of [FeedController].
+     *
+     * @param userIdPerformingActions The ID of the user interacting with the feed.
+     * @param feedType The type of posts to be displayed in the feed.
+     * @return A configured instance of [FeedController].
+     */
+    suspend fun create(userIdPerformingActions: String, feedType: PostType): FeedController {
+        val fc =
+            FeedControllerImpl(
+                recommendationEngine = recommendationEngine,
+                thumbnailRepository = thumbnailRepository,
+                postRepository = postRepository,
+                chatRepository = chatRepository,
+                userIdPerformingActions = userIdPerformingActions,
+                feedType = feedType
+            )
+        fc.initialLoad()
+        return fc
     }
 }
 
