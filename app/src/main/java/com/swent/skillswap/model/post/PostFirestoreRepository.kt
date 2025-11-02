@@ -122,8 +122,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val tags = (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }!!
 
         @Suppress("UNCHECKED_CAST")
-        val paymentMethod =
-            (document.get("paymentMethod") as? List<String>)?.map { PaymentMethod.valueOf(it) }!!
+        val paymentMethod = PaymentMethod.valueOf(document.getString("paymentMethod")!!)
 
         val expiry = document.getTimestamp("expiry")!!
         val creation = document.getTimestamp("creation")!!
