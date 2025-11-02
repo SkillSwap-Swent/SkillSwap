@@ -46,7 +46,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         titleContains: String,
         paymentMethods: List<PaymentMethod>,
         tags: List<EveryTag>,
-        numberOfPosts: Long
+        numberOfPosts: Int
     ): Query {
         var query: Query = getCollectionPath(type)
 
@@ -65,7 +65,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
         }
 
-        return query.limit(numberOfPosts)
+        return query.limit(numberOfPosts.toLong())
     }
 
     /**
@@ -140,7 +140,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
-        val postReplies = document.toObject(Request::class.java)?.postReplies ?: emptyList()
+        val postReplies = document.toObject(Request::class.java)?.postReplies ?: emptySet()
 
         val post =
             when (postType) {
