@@ -29,9 +29,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.utils.GradientButton
-import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
-import com.swent.skillswap.ui.utils.SkillSwapTextField
+import com.swent.skillswap.ui.utils.SkillSwapButtonV1
+import com.swent.skillswap.ui.utils.SkillSwapPasswordTextFieldV2
+import com.swent.skillswap.ui.utils.SkillSwapTextFieldV2
 import com.swent.skillswap.viewModel.CreateAccountEvent
 import com.swent.skillswap.viewModel.CreateAccountViewModel
 import com.swent.skillswap.viewModel.CreateAccountVmFactory
@@ -147,7 +147,7 @@ fun CreateAccountBottomBar(
     vm: CreateAccountViewModel
 ) {
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.12f)) {
-        GradientButton(
+        SkillSwapButtonV1(
             onClick = {
                 if (
                     currRoute != CreateAccountRoutes.SKILLS && vm.validateByRoute(currRoute ?: "")
@@ -201,7 +201,7 @@ fun UsernameScreen(vm: CreateAccountViewModel) {
             modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(100.dp))
-        SkillSwapTextField(
+        SkillSwapTextFieldV2(
             value = uiState.username,
             supportText = uiState.usernameError,
             onValueChange = { vm.onUsernameChange(it) },
@@ -227,7 +227,7 @@ fun EmailScreen(vm: CreateAccountViewModel) {
             modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(150.dp))
-        SkillSwapTextField(
+        SkillSwapTextFieldV2(
             value = uiState.email,
             supportText = uiState.emailError,
             onValueChange = { vm.onEmailChange(it) },
@@ -258,7 +258,7 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
             modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
         Spacer(modifier = Modifier.height(100.dp))
-        SkillSwapPasswordTextField(
+        SkillSwapPasswordTextFieldV2(
             value = uiState.password,
             supportText = uiState.passwordError,
             label = "Password",
@@ -268,7 +268,7 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
                 Modifier.align(Alignment.CenterHorizontally)
                     .testTag(CreateAccountTags.PASSWORD_FIELD)
         )
-        SkillSwapPasswordTextField(
+        SkillSwapPasswordTextFieldV2(
             value = uiState.confirmPassword,
             supportText = uiState.confirmPasswordError,
             onValueChange = { vm.onConfirmPasswordChange(it) },
