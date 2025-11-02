@@ -29,9 +29,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
-import com.swent.skillswap.ui.utils.GradientButton
-import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
-import com.swent.skillswap.ui.utils.SkillSwapTextField
+import com.swent.skillswap.ui.utils.SkillSwapButtonV1
+import com.swent.skillswap.ui.utils.SkillSwapPasswordTextFieldV1
+import com.swent.skillswap.ui.utils.SkillSwapTextFieldV1
 import com.swent.skillswap.viewModel.SignInEvent
 import com.swent.skillswap.viewModel.SignInViewModel
 
@@ -100,7 +100,7 @@ fun SignInMainScreen(
                         .align(Alignment.CenterHorizontally)
                         .testTag(SignInTags.LOGO)
             )
-            SkillSwapTextField(
+            SkillSwapTextFieldV1(
                 value = uiState.email,
                 supportText = uiState.emailError,
                 onValueChange = { vm.onEmailChange(it) },
@@ -115,7 +115,7 @@ fun SignInMainScreen(
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.EMAIL_FIELD)
             )
-            SkillSwapPasswordTextField(
+            SkillSwapPasswordTextFieldV1(
                 value = uiState.password,
                 supportText = uiState.passwordError,
                 label = "Password",
@@ -162,7 +162,7 @@ fun SignInMainScreen(
 
             // ----- Create Account button -----
             Spacer(modifier = Modifier.height(40.dp))
-            GradientButton(
+            SkillSwapButtonV1(
                 onClick = { vm.createAccount() },
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
