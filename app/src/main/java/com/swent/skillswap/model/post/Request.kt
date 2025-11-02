@@ -15,7 +15,7 @@ data class Request(
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
-    override val postReplies: List<PostReply>
+    override val postReplies: Set<PostReply> = emptySet()
 ) : Post {
     override val type: PostType
         get() = PostType.REQUEST
