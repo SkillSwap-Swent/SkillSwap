@@ -25,7 +25,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     }
 
     override suspend fun getMultiplePosts(
-        numberOfPosts: Long,
+        numberOfPosts: Int,
         type: PostType,
         titleContains: String,
         ownerId: String,
