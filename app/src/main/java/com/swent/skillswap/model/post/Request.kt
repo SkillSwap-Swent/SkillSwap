@@ -9,7 +9,7 @@ data class Request(
     override val title: String,
     override val description: String,
     override val ownerId: String,
-    override val tags: List<EveryTag>,
+    override val tags: Set<EveryTag>,
     override val paymentMethod: PaymentMethod,
     override val expiry: Timestamp,
     override val creation: Timestamp,
