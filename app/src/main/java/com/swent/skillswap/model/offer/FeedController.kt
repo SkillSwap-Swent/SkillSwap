@@ -8,9 +8,12 @@ import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
-import javax.inject.Inject
 
 interface FeedController
+
+const val NUMB_POSTS_TO_FETCH = 10
+const val PRELOAD_THRESHOLD = 3
+
 
 private class FeedControllerImpl(
     private val recommendationEngine: RecommendationEngine,
@@ -20,9 +23,6 @@ private class FeedControllerImpl(
     val userIdPerformingActions: String,
     val feedType: PostType,
 ) : FeedController {
-
-    // Keep a couple of posts preloaded in advance
-    private val preloadThreshold = 3
     private val postQueue: MutableList<Post> = mutableListOf()
 
     // The current post being displayed in the UI
@@ -75,7 +75,7 @@ private class FeedControllerImpl(
 
     private suspend fun fetchPosts() {
         // Fetch posts and add them to the queue
-        val newPosts = postRepository.getMultiplePosts(10, feedType)
+        val newPosts = postRepository.getMultiplePosts(NUMB_POSTS_TO_FETCH, feedType)
         postQueue.addAll(newPosts)
     }
 
@@ -91,7 +91,7 @@ private class FeedControllerImpl(
         if (postQueue.isEmpty()) {
             return null
         }
-        if (postQueue.size <= preloadThreshold) {
+        if (postQueue.size <= PRELOAD_THRESHOLD) {
             fetchPosts()
         }
 
