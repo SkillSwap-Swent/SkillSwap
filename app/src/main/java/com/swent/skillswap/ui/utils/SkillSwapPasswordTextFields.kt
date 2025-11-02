@@ -1,3 +1,23 @@
+/**
+ * Password TextField variants for SkillSwap.
+ *
+ * Provides two Material 3 implementations:
+ * - [SkillSwapPasswordTextFieldV1]: Filled TextField with translucent container and asymmetric
+ *   corners.
+ * - [SkillSwapPasswordTextFieldV2]: OutlinedTextField with rounded corners from resources.
+ *
+ * Both variants:
+ * - Support error/success/empty trailing icon states when not focused.
+ * - Show a toggle (search/close icons) while focused to simulate show/hide password behavior.
+ * - Expose label, placeholder, supporting (error) text and enable/disable.
+ *
+ * Notes:
+ * - Error state is driven by a non-blank [supportText].
+ * - Success state is when [value] is non-blank and there is no error.
+ * - Focus is tracked via [onFocusChanged] to switch trailing icon behavior.
+ *
+ * Comments drafted with ChatGPT, reviewed and validated manually. Author: Topaze17 (Eliott)
+ */
 package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +55,35 @@ import androidx.compose.ui.text.input.VisualTransformation
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.signIn.CreateAccountTags
 
+/**
+ * SkillSwap password field — **filled** variant.
+ *
+ * Visuals:
+ * - Translucent container using `surfaceContainerHighest` (same alpha for all states).
+ * - Asymmetric corners driven by dimension resources (top rounded / bottom configurable).
+ *
+ * Behavior:
+ * - Error state is active when [supportText] is not blank; label and trailing icon reflect error
+ *   color.
+ * - When not focused:
+ *     * Error → `Info` icon
+ *     * Non-empty & no error → `Done` icon
+ *     * Empty → `Cancel` icon
+ * - When focused:
+ *     * Trailing icon switches between `Search` (hidden) and `Close` (visible) to simulate
+ *       show/hide password toggling; actual masking is controlled via [showPassword].
+ *
+ * Accessibility:
+ * - Content descriptions change to match the current trailing icon state.
+ *
+ * @param modifier Optional [Modifier] for layout/styling.
+ * @param value Current text value.
+ * @param supportText Supporting text shown under the field (use for validation messages).
+ * @param label Floating label displayed above the field.
+ * @param placeholder Placeholder text shown when [value] is empty.
+ * @param onValueChange Callback when the input changes.
+ * @param enabled Enables or disables the field.
+ */
 @Composable
 fun SkillSwapPasswordTextFieldV1(
     modifier: Modifier = Modifier,
@@ -49,6 +98,7 @@ fun SkillSwapPasswordTextFieldV1(
     var isFocused by remember { mutableStateOf(false) }
     val isFill = value.isNotBlank()
     val isError = supportText.isNotBlank()
+
     TextField(
         value = value,
         onValueChange = { it -> onValueChange(it) },
@@ -98,26 +148,17 @@ fun SkillSwapPasswordTextFieldV1(
         visualTransformation =
             if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            val image =
-                if (isError && !isFocused) {
-                    Icons.Filled.Info
-                } else if (isFill && !isFocused) {
-                    Icons.Outlined.Done
-                } else if (!isFocused) {
-                    Icons.Outlined.Cancel
+            // Determine trailing icon and its description from the current state:
+            val (image, description) =
+                if (!isFocused) {
+                    when {
+                        isError -> Icons.Filled.Info to "Error"
+                        isFill -> Icons.Outlined.Done to "Filled"
+                        else -> Icons.Outlined.Cancel to "Empty"
+                    }
                 } else {
-                    if (showPassword) Icons.Filled.Close else Icons.Filled.Search
-                }
-
-            val description =
-                if (isError && !isFocused) {
-                    "Error"
-                } else if (isFill && !isFocused) {
-                    "Filled"
-                } else if (!isFocused) {
-                    "Empty"
-                } else {
-                    if (showPassword) "Hide password" else "Show password"
+                    if (showPassword) Icons.Filled.Close to "Hide password"
+                    else Icons.Filled.Search to "Show password"
                 }
 
             IconButton(onClick = { showPassword = !showPassword }, enabled = isFocused) {
@@ -137,6 +178,25 @@ fun SkillSwapPasswordTextFieldV1(
     )
 }
 
+/**
+ * SkillSwap password field — **outlined** variant.
+ *
+ * Visuals:
+ * - Standard M3 [OutlinedTextField] using theme defaults for colors.
+ * - Uniform rounded corners read from dimension resources.
+ *
+ * Behavior mirrors [SkillSwapPasswordTextFieldV1]:
+ * - Error state derives from non-blank [supportText].
+ * - Trailing icon conveys error/success/empty when not focused, and toggles show/hide when focused.
+ *
+ * @param modifier Optional [Modifier] for layout/styling.
+ * @param value Current text value.
+ * @param supportText Supporting text shown under the field (use for validation messages).
+ * @param label Floating label displayed above the field.
+ * @param placeholder Placeholder text shown when [value] is empty.
+ * @param onValueChange Callback when the input changes.
+ * @param enabled Enables or disables the field.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SkillSwapPasswordTextFieldV2(
@@ -152,6 +212,7 @@ fun SkillSwapPasswordTextFieldV2(
     var isFocused by remember { mutableStateOf(false) }
     val isFill = value.isNotBlank()
     val isError = supportText.isNotBlank()
+
     OutlinedTextField(
         value = value,
         onValueChange = { it -> onValueChange(it) },
@@ -187,26 +248,16 @@ fun SkillSwapPasswordTextFieldV2(
         visualTransformation =
             if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            val image =
-                if (isError && !isFocused) {
-                    Icons.Filled.Info
-                } else if (isFill && !isFocused) {
-                    Icons.Outlined.Done
-                } else if (!isFocused) {
-                    Icons.Outlined.Cancel
+            val (image, description) =
+                if (!isFocused) {
+                    when {
+                        isError -> Icons.Filled.Info to "Error"
+                        isFill -> Icons.Outlined.Done to "Filled"
+                        else -> Icons.Outlined.Cancel to "Empty"
+                    }
                 } else {
-                    if (showPassword) Icons.Filled.Close else Icons.Filled.Search
-                }
-
-            val description =
-                if (isError && !isFocused) {
-                    "Error"
-                } else if (isFill && !isFocused) {
-                    "Filled"
-                } else if (!isFocused) {
-                    "Empty"
-                } else {
-                    if (showPassword) "Hide password" else "Show password"
+                    if (showPassword) Icons.Filled.Close to "Hide password"
+                    else Icons.Filled.Search to "Show password"
                 }
 
             IconButton(onClick = { showPassword = !showPassword }, enabled = isFocused) {
