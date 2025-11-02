@@ -28,7 +28,7 @@ class PostDataClassTest {
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+            paymentMethod = PaymentMethod.SKILLSANDCASH
         )
 
     @Test
@@ -47,7 +47,7 @@ class PostDataClassTest {
                 creation = creationDate,
                 status = PostStatus.POSTED,
                 media = listOf("media_url_1", "media_url_2"),
-                paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+                paymentMethod = PaymentMethod.SKILLSANDCASH
             )
 
         assertEquals("request123", request.uid)
@@ -59,7 +59,7 @@ class PostDataClassTest {
         assertEquals(creationDate, request.creation)
         assertEquals(PostStatus.POSTED, request.status)
         assertEquals(listOf("media_url_1", "media_url_2"), request.media)
-        assertEquals(listOf(PaymentMethod.SKILLS, PaymentMethod.CASH), request.paymentMethods)
+        assertEquals(PaymentMethod.SKILLSANDCASH, request.paymentMethod)
         assertEquals(PostType.REQUEST, request.type)
     }
 

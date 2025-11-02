@@ -10,7 +10,7 @@ data class Request(
     override val description: String,
     override val ownerId: String,
     override val tags: List<EveryTag>,
-    override val paymentMethods: List<PaymentMethod>,
+    override val paymentMethod: PaymentMethod,
     override val expiry: Timestamp,
     override val creation: Timestamp,
     override val status: PostStatus,

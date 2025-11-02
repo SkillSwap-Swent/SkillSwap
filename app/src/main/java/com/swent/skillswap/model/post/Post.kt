@@ -29,7 +29,7 @@ interface Post {
     /** A list of tags that categorize the post, making it easier to search for. */
     val tags: List<EveryTag>
     /** A list of accepted/offered payment methods for the skill exchange. */
-    val paymentMethods: List<PaymentMethod>
+    val paymentMethod: PaymentMethod
     /** The expiration timestamp of the post, after which it may become inactive. */
     val expiry: Timestamp
     /** The timestamp of when the post was created. */
@@ -44,7 +44,7 @@ interface Post {
      * A list of normalized search keywords used to support Firestore queries with
      * `whereArrayContainsAny`.
      *
-     * This list is built from the [title], [paymentMethods], and [tags] fields by:
+     * This list is built from the [title], and [tags] fields by:
      * - Splitting the title into lowercase words.
      * - Converting each payment method to a lowercase string.
      * - Converting each tag to a lowercase string.
@@ -68,7 +68,6 @@ interface Post {
         val searchKeysTemp = mutableListOf<String>()
 
         searchKeysTemp.addAll(title.split(" ").map { it.lowercase() })
-        searchKeysTemp.addAll(paymentMethods.map { it.toString().lowercase() })
         searchKeysTemp.addAll(tags.map { it.toString().lowercase() })
 
         return searchKeysTemp
@@ -85,7 +84,6 @@ interface Post {
             title.isNotBlank() &&
             description.isNotBlank() &&
             tags.isNotEmpty() &&
-            paymentMethods.isNotEmpty() &&
             expiry.toDate().after(Timestamp.now().toDate()) &&
             creation.toDate().before(Timestamp.now().toDate())
     }
@@ -104,7 +102,9 @@ enum class PaymentMethod {
     /** The exchange is for another skill or service (bartering). */
     SKILLS,
     /** The exchange involves a monetary transaction. */
-    CASH
+    CASH,
+    /** Both methods */
+    SKILLSANDCASH
 }
 
 /** Enum representing the lifecycle status of a post. */

@@ -29,12 +29,12 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         type: PostType,
         titleContains: String,
         ownerId: String,
-        paymentMethods: List<PaymentMethod>,
+        paymentMethod: PaymentMethod,
         tags: List<EveryTag>,
         status: PostStatus?,
     ): List<Post> {
         val query: Query =
-            buildQuery(type, ownerId, status, titleContains, paymentMethods, tags, numberOfPosts)
+            buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
 
         return query.get().await().map { documentToPost(it) }.sortedByDescending { it.creation }
     }
@@ -44,7 +44,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         ownerId: String,
         status: PostStatus?,
         titleContains: String,
-        paymentMethods: List<PaymentMethod>,
+        paymentMethod: PaymentMethod,
         tags: List<EveryTag>,
         numberOfPosts: Long
     ): Query {
@@ -57,10 +57,11 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         if (status != null) {
             query = query.whereEqualTo("status", status)
         }
+        query = query.whereEqualTo("paymentMethod", paymentMethod)
 
         // perform complex seachKeys filter to bypass limit of single whereArrayContainsAny per
         // query
-        val searchKeys = buildSearchKeys(titleContains, paymentMethods, tags)
+        val searchKeys = buildSearchKeys(titleContains, tags)
         if (searchKeys.isNotEmpty()) {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
         }
@@ -73,22 +74,15 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
      * are used to perform a complex search in Firestore.
      *
      * @param titleContains The title to search for.
-     * @param paymentMethods The payment methods to filter by.
      * @param tags The tags to filter by.
      * @return A list of search keys. Note: Firestore's 'array-contains-any' is limited to a maximum
      *   of 10 elements in the comparison array, so this function returns at most 10 distinct search
      *   keys.
      */
-    private fun buildSearchKeys(
-        titleContains: String,
-        paymentMethods: List<PaymentMethod>,
-        tags: List<EveryTag>
-    ): List<String> {
+    private fun buildSearchKeys(titleContains: String, tags: List<EveryTag>): List<String> {
         val searchKeys = mutableListOf<String>()
         if (titleContains.isNotBlank())
             searchKeys.addAll(titleContains.split(" ").map { it.lowercase() })
-        if (paymentMethods.isNotEmpty())
-            searchKeys.addAll(paymentMethods.map { it.toString().lowercase() })
         if (tags.isNotEmpty()) searchKeys.addAll(tags.map { it.toString().lowercase() })
         return searchKeys.distinct().take(FirestoreSettings.MAX_SEARCH_KEYS)
     }
@@ -128,8 +122,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val tags = (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }!!
 
         @Suppress("UNCHECKED_CAST")
-        val paymentMethods =
-            (document.get("paymentMethods") as? List<String>)?.map { PaymentMethod.valueOf(it) }!!
+        val paymentMethod =
+            (document.get("paymentMethod") as? List<String>)?.map { PaymentMethod.valueOf(it) }!!
 
         val expiry = document.getTimestamp("expiry")!!
         val creation = document.getTimestamp("creation")!!
@@ -149,7 +143,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         description,
                         ownerId,
                         tags,
-                        paymentMethods,
+                        paymentMethod,
                         expiry,
                         creation,
                         status,
