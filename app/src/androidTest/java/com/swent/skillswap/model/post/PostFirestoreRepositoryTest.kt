@@ -2,8 +2,9 @@ package com.swent.skillswap.model.post
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
+import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
-import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -25,20 +26,31 @@ class PostRepositoryInstrumentedTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = setOf(PostTag.REOCCURRING),
+            tags = setOf(EveryTag.of(PostTag.REOCCURRING)),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            postReplies =
+                setOf(
+                    PostReply(
+                        postId = "123",
+                        ownerId = "replier456",
+                        creation = Timestamp.now(),
+                        message = "I'm interested!",
+                        postType = PostType.REQUEST
+                    )
+                )
         )
 
     @Before
     fun setUp() {
-        FirebaseEmulator.startEmulator()
-        assertTrue("Firestore emulator must be running", FirebaseEmulator.isRunning)
-        FirebaseEmulator.clearFirestoreEmulator()
-        repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+        //        FirebaseEmulator.startEmulator()
+        //        assertTrue("Firestore emulator must be running", FirebaseEmulator.isRunning)
+        //        FirebaseEmulator.clearFirestoreEmulator()
+        //        repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+        repo = PostFirestoreRepository(FirebaseFirestore.getInstance())
     }
 
     @Test
@@ -178,7 +190,7 @@ class PostRepositoryInstrumentedTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     titleContains = "help Kotlin",
-                    tags = setOf(PostTag.REOCCURRING)
+                    tags = setOf(EveryTag.of(PostTag.REOCCURRING))
                 )
 
             assertTrue(results.any { (it as Request).uid == id })

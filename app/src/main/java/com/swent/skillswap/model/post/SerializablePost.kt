@@ -17,4 +17,21 @@ data class SerializablePost(
     override val media: List<String>,
     override val type: PostType,
     override val postReplies: List<PostReply>
-) : Post, Serializable
+) : Post, Serializable {
+    // Need this for Firestore deserializer
+    constructor() :
+        this(
+            uid = "",
+            title = "",
+            description = "",
+            ownerId = "",
+            tags = emptyList(),
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            expiry = Timestamp.now(),
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = emptyList(),
+            type = PostType.REQUEST,
+            postReplies = emptyList()
+        )
+}
