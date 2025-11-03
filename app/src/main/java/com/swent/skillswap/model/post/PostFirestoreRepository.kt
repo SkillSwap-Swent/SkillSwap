@@ -180,7 +180,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             creation = post.creation,
             status = post.status,
             media = post.media,
-            type = post.type
+            type = post.type,
+            postReplies = post.postReplies.toList()
         )
     }
 }

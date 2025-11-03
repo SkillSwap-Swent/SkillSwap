@@ -15,5 +15,6 @@ data class SerializablePost(
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
-    override val type: PostType
+    override val type: PostType,
+    override val postReplies: List<PostReply>
 ) : Post, Serializable

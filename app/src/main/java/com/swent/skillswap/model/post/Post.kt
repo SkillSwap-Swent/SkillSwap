@@ -58,7 +58,7 @@ interface Post {
     val searchKeys: List<String>
         get() = buildSearchKeys()
 
-    val postReplies: Set<PostReply>
+    val postReplies: Collection<PostReply>
 
     /**
      * In the current implementation the keywords aren't separated by category. This means that when
