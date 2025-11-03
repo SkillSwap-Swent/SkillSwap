@@ -159,7 +159,12 @@ class RequestViewModel(
                         tags = _uiState.value.tags,
                         paymentMethods = _uiState.value.paymentMethods.toList(),
                         expiry =
-                            Timestamp(Date(System.currentTimeMillis() + REQUEST_LIFESPAN_DAYS * 24 * 60 * 60 * 1000)),
+                            Timestamp(
+                                Date(
+                                    System.currentTimeMillis() +
+                                        REQUEST_LIFESPAN_DAYS * 24 * 60 * 60 * 1000
+                                )
+                            ),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
                         media = emptyList()
