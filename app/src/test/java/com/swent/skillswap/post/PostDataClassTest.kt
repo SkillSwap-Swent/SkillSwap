@@ -8,6 +8,7 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
+import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -22,18 +23,18 @@ class PostDataClassTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = listOf(PostTag.REOCCURRING),
-            expiry = Timestamp(Timestamp.now().seconds + 86400, 0),
-            creation = Timestamp(Timestamp.now().seconds - 10, 0),
+            tags = setOf(PostTag.REOCCURRING),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
+            creation = Timestamp(Date(System.currentTimeMillis() - 10)),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+            paymentMethod = PaymentMethod.SKILLSANDCASH
         )
 
     @Test
     fun testRequestDataClass() {
-        val creationDate = Timestamp(Timestamp.now().seconds - 10, 0)
-        val expiryDate = Timestamp(Timestamp.now().seconds + 86400, 0) // 1 day later
+        val creationDate = Timestamp(Date(System.currentTimeMillis() - 10))
+        val expiryDate = Timestamp(Date(System.currentTimeMillis() + 86400000)) // 1 day later
 
         val request =
             Request(
@@ -41,24 +42,24 @@ class PostDataClassTest {
                 title = "Need help with Kotlin",
                 description = "Looking for an expert to teach me Kotlin.",
                 ownerId = "user456",
-                tags = listOf(PostTag.REOCCURRING),
+                tags = setOf(PostTag.REOCCURRING),
                 expiry = expiryDate,
                 creation = creationDate,
                 status = PostStatus.POSTED,
                 media = listOf("media_url_1", "media_url_2"),
-                paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+                paymentMethod = PaymentMethod.SKILLSANDCASH
             )
 
         assertEquals("request123", request.uid)
         assertEquals("Need help with Kotlin", request.title)
         assertEquals("Looking for an expert to teach me Kotlin.", request.description)
         assertEquals("user456", request.ownerId)
-        assertEquals(listOf(PostTag.REOCCURRING), request.tags)
+        assertEquals(setOf(PostTag.REOCCURRING), request.tags)
         assertEquals(expiryDate, request.expiry)
         assertEquals(creationDate, request.creation)
         assertEquals(PostStatus.POSTED, request.status)
         assertEquals(listOf("media_url_1", "media_url_2"), request.media)
-        assertEquals(listOf(PaymentMethod.SKILLS, PaymentMethod.CASH), request.paymentMethods)
+        assertEquals(PaymentMethod.SKILLSANDCASH, request.paymentMethod)
         assertEquals(PostType.REQUEST, request.type)
     }
 
@@ -81,7 +82,7 @@ class PostDataClassTest {
         assertFalse(baseRequest.copy(description = "").validate())
 
         // Test invalid Tags
-        assertFalse(baseRequest.copy(tags = emptyList()).validate())
+        assertFalse(baseRequest.copy(tags = emptySet()).validate())
     }
 
     @Test
