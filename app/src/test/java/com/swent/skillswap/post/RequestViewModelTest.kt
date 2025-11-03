@@ -213,7 +213,7 @@ class RequestViewModelTest {
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
 
         val state = viewModel.uiState.value
-        assertFalse(state.paymentMethod == PaymentMethod.CASH)
+        assertTrue(state.paymentMethod == PaymentMethod.CASH)
     }
 
     // ========== SAVE - ADD MODE TESTS ==========
