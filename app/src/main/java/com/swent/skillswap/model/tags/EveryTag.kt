@@ -1,7 +1,12 @@
 package com.swent.skillswap.model.tags
 
-sealed interface EveryTag {
+data class EveryTag(
+    var postTag: PostTag? = null,
+    var skillTag: SkillTag? = null
+) {
     companion object {
-        fun valueOf(value: String): EveryTag = TagRegistry.fromValue(value)
+        fun of(tag: PostTag) = EveryTag(postTag = tag)
+        fun of(tag: SkillTag) = EveryTag(skillTag = tag)
     }
 }
+

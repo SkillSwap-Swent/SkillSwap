@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.post.Offer
+import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.tags.SkillTag
@@ -25,7 +26,7 @@ class PostConversationItemTest {
             title = "Graphic Design Help",
             description = "desc",
             ownerId = "u1",
-            tags = setOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES),
+            tags = setOf(EveryTag.of(SkillTag.COMPUTER_PROGRAMMING), EveryTag.of(SkillTag.DATA_STRUCTURES)),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Timestamp.now().seconds + 86400, 0),
             creation = Timestamp(Timestamp.now().seconds - 10, 0),
@@ -82,9 +83,9 @@ class PostConversationItemTest {
                 .copy(
                     tags =
                         setOf(
-                            SkillTag.COMPUTER_PROGRAMMING,
-                            SkillTag.DATA_STRUCTURES,
-                            SkillTag.ALGORITHMS
+                            EveryTag.of(SkillTag.COMPUTER_PROGRAMMING),
+                            EveryTag.of(SkillTag.DATA_STRUCTURES),
+                            EveryTag.of(SkillTag.ALGORITHMS)
                         )
                 )
         composeRule.setContent {

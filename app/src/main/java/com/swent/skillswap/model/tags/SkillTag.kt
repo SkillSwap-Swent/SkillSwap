@@ -1,6 +1,6 @@
 package com.swent.skillswap.model.tags
 
-enum class SkillTag : EveryTag {
+enum class SkillTag {
     CALCULUS,
     LINEAR_ALGEBRA,
     DIFFERENTIAL_EQUATIONS,
@@ -25,16 +25,4 @@ enum class SkillTag : EveryTag {
     MACHINE_DESIGN,
     PROJECT_MANAGEMENT,
     ENGINEERING_ETHICS;
-
-    companion object {
-        init {
-            TagRegistry.register { value ->
-                try {
-                    valueOf(value)
-                } catch (_: IllegalArgumentException) {
-                    null
-                }
-            }
-        }
-    }
 }
