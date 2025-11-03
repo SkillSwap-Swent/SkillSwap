@@ -27,7 +27,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -213,11 +212,9 @@ fun RequestScreen(
                                 .testTag(RequestScreenTags.TAGS_INPUT)
                     )
 
-                    DropdownMenu(
+                    ExposedDropdownMenu(
                         expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
-                        onDismissRequest = { tagsExpanded = false },
-                        properties = PopupProperties(focusable = false),
-                        modifier = Modifier.fillMaxWidth().focusable(false)
+                        onDismissRequest = { tagsExpanded = false }
                     ) {
                         tagSuggestions.forEach { tag ->
                             DropdownMenuItem(
@@ -406,7 +403,7 @@ fun NewRequestScreenPreview() {
             postRepository = fakeRepository,
             currentUserId = "preview-user",
             requestViewModel = viewModel,
-            postOperation = PostOperation.ADD
+            postOperation = PostOperation.EDIT
         )
     }
 }
