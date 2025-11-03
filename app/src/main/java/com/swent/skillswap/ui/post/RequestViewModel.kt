@@ -56,7 +56,7 @@ class RequestViewModel(
     val uiState: StateFlow<RequestUIState> = _uiState
 
     companion object {
-        const val REQUEST_LIFESPAN_DAYS = 30L * 24 * 60 * 60 * 1000
+        const val REQUEST_LIFESPAN_DAYS = 30L
     }
 
     // Load existing post data if editing
@@ -159,7 +159,7 @@ class RequestViewModel(
                         tags = _uiState.value.tags,
                         paymentMethods = _uiState.value.paymentMethods.toList(),
                         expiry =
-                            Timestamp(Date(System.currentTimeMillis() + REQUEST_LIFESPAN_DAYS)),
+                            Timestamp(Date(System.currentTimeMillis() + REQUEST_LIFESPAN_DAYS * 24 * 60 * 60 * 1000)),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
                         media = emptyList()
