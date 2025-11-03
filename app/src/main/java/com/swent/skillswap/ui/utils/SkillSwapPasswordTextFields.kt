@@ -55,13 +55,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.signIn.CreateAccountTags
+
 // Shared keyboard options for all password fields
-val PasswordKeyboardOptions = KeyboardOptions(
-    keyboardType = KeyboardType.Password,
-    autoCorrect = false,
-    capitalization = KeyboardCapitalization.None,
-    imeAction = ImeAction.Done
-)
+val PasswordKeyboardOptions =
+    KeyboardOptions(
+        keyboardType = KeyboardType.Password,
+        autoCorrect = false,
+        capitalization = KeyboardCapitalization.None,
+        imeAction = ImeAction.Done
+    )
 
 // Shared leading icon for password fields
 val PasswordLeadingIcon: @Composable (() -> Unit) = {
@@ -71,9 +73,14 @@ val PasswordLeadingIcon: @Composable (() -> Unit) = {
 // Shared visual transformation toggle helper
 fun passwordVisualTransformation(showPassword: Boolean): VisualTransformation =
     if (showPassword) VisualTransformation.None else PasswordVisualTransformation()
-//The trailing Icon logic for password field
+// The trailing Icon logic for password field
 @Composable
-fun TrailingIconLogic(showPassword: MutableState<Boolean>, isFocused: Boolean, isError: Boolean, isFilled: Boolean) {// Determine trailing icon and its description from the current state:
+fun TrailingIconLogic(
+    showPassword: MutableState<Boolean>,
+    isFocused: Boolean,
+    isError: Boolean,
+    isFilled: Boolean
+) { // Determine trailing icon and its description from the current state:
     val (image, description) =
         if (!isFocused) {
             when {
@@ -85,7 +92,7 @@ fun TrailingIconLogic(showPassword: MutableState<Boolean>, isFocused: Boolean, i
             if (showPassword.value) Icons.Filled.Close to "Hide password"
             else Icons.Filled.Search to "Show password"
         }
-        IconButton(onClick = { showPassword.value = !showPassword.value }, enabled = isFocused) {
+    IconButton(onClick = { showPassword.value = !showPassword.value }, enabled = isFocused) {
         Icon(
             imageVector = image,
             contentDescription = description,
@@ -93,7 +100,7 @@ fun TrailingIconLogic(showPassword: MutableState<Boolean>, isFocused: Boolean, i
                 if (isError) MaterialTheme.colorScheme.error
                 else MaterialTheme.colorScheme.onSurfaceVariant
         )
-        }
+    }
 }
 /**
  * SkillSwap password field — **filled** variant.
@@ -176,14 +183,11 @@ fun SkillSwapPasswordTextFieldV1(
                 bottomEnd = dimensionResource(id = R.dimen.corner_radius_bottom)
             ),
         singleLine = true,
-        keyboardOptions =
-            PasswordKeyboardOptions,
+        keyboardOptions = PasswordKeyboardOptions,
         enabled = enabled,
         leadingIcon = PasswordLeadingIcon,
-        visualTransformation =
-            passwordVisualTransformation(showPassword.value),
-        trailingIcon = {TrailingIconLogic(showPassword, isFocused, isError, isFilled)
-        },
+        visualTransformation = passwordVisualTransformation(showPassword.value),
+        trailingIcon = { TrailingIconLogic(showPassword, isFocused, isError, isFilled) },
         modifier =
             modifier.fillMaxWidth(0.8f).onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
@@ -249,14 +253,11 @@ fun SkillSwapPasswordTextFieldV2(
         colors = TextFieldDefaults.outlinedTextFieldColors(),
         shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius_outlined_text)),
         singleLine = true,
-        keyboardOptions =
-            PasswordKeyboardOptions,
+        keyboardOptions = PasswordKeyboardOptions,
         enabled = enabled,
         leadingIcon = PasswordLeadingIcon,
-        visualTransformation =
-            passwordVisualTransformation(showPassword.value),
-        trailingIcon = {TrailingIconLogic(showPassword, isFocused, isError, isFilled)
-        },
+        visualTransformation = passwordVisualTransformation(showPassword.value),
+        trailingIcon = { TrailingIconLogic(showPassword, isFocused, isError, isFilled) },
         modifier =
             modifier.fillMaxWidth(0.8f).onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
