@@ -36,7 +36,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import com.swent.skillswap.R
@@ -82,23 +81,12 @@ fun SkillSwapTextFieldV1(
     TextField(
         value = value,
         onValueChange = { it -> onValueChange(it) },
-        label = {
-            Text(
-                text = label,
-                color =
-                    if (!isError) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.error
-            )
-        },
+        label = { Text(text = label) },
         singleLine = true,
         placeholder = { Text(text = placeholder) },
         isError = isError,
         supportingText = {
-            Text(
-                text = supportText,
-                color = Color.Red,
-                modifier = Modifier.testTag(CreateAccountTags.ERROR)
-            )
+            Text(text = supportText, modifier = Modifier.testTag(CreateAccountTags.ERROR))
         },
         shape =
             RoundedCornerShape(
@@ -112,11 +100,11 @@ fun SkillSwapTextFieldV1(
         colors =
             TextFieldDefaults.colors(
                 focusedContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
                 unfocusedContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
                 disabledContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
             ),
         trailingIcon = {
             val image =
@@ -188,25 +176,17 @@ fun SkillSwapTextFieldV2(
         label = {
             Text(
                 text = label,
-                color =
-                    if (!isError) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.error
             )
         },
         singleLine = true,
         placeholder = { Text(text = placeholder) },
         supportingText = {
-            Text(
-                text = supportText,
-                color = Color.Red,
-                modifier = Modifier.testTag(CreateAccountTags.ERROR)
-            )
+            Text(text = supportText, modifier = Modifier.testTag(CreateAccountTags.ERROR))
         },
-        shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius_outlined_text)),
+        shape = MaterialTheme.shapes.extraSmall,
         keyboardOptions = keyboardOptions,
         enabled = enabled,
         isError = isError,
-        colors = TextFieldDefaults.outlinedTextFieldColors(),
         trailingIcon = {
             val image =
                 when {
