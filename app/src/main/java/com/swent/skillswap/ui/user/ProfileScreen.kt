@@ -32,6 +32,9 @@ import com.swent.skillswap.viewModel.ProfileViewModel
 object ProfileTestTags {
     const val PROFILE_TITLE = "profile_title"
 
+    const val EDIT_PROFILE = "edit_profile"
+    const val PROFILE_PICTURE = "profile_picture"
+
     const val EMAIL_SECTION = "email_section"
     const val EMAIL_VALUE = "email_value"
     const val USERNAME_SECTION = "username_section"
@@ -71,7 +74,13 @@ fun ProfileScreen(
         )
 
         // Profile picture Section
-        Box(modifier = Modifier.align(Alignment.CenterHorizontally).size(140.dp).padding(8.dp)) {
+        Box(
+            modifier =
+                Modifier.align(Alignment.CenterHorizontally)
+                    .size(140.dp)
+                    .padding(8.dp)
+                    .testTag(ProfileTestTags.PROFILE_PICTURE)
+        ) {
             if (uiState.profilePicture.isNotEmpty()) {
                 AsyncImage(
                     model = uiState.profilePicture,
@@ -100,7 +109,8 @@ fun ProfileScreen(
                     Modifier.align(Alignment.BottomEnd)
                         .size(40.dp)
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .clickable { onEditProfileClick() },
+                        .clickable { onEditProfileClick() }
+                        .testTag(ProfileTestTags.EDIT_PROFILE),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
