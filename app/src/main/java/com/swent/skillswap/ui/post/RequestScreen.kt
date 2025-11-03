@@ -121,32 +121,29 @@ fun RequestScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(postOperation.toTitle() + " Request") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { onGoBack() },
-                        modifier = Modifier.testTag(RequestScreenTags.BACK_BUTTON)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text(postOperation.toTitle() + " Request") },
+            navigationIcon = {
+                IconButton(
+                    onClick = { onGoBack() },
+                    modifier = Modifier.testTag(RequestScreenTags.BACK_BUTTON)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Back"
+                    )
                 }
-            )
-        },
-        content = { paddingValues ->
-            Column(
-                modifier =
-                    Modifier.fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp)
-                        .padding(paddingValues),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            }
+        )
+
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
                 // Title Input
                 OutlinedTextField(
                     value = uiState.title,
@@ -355,8 +352,7 @@ fun RequestScreen(
                 }
             }
         }
-    )
-}
+    }
 
 @Preview(showBackground = true)
 @Composable
