@@ -30,7 +30,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         titleContains: String,
         ownerId: String,
         paymentMethod: PaymentMethod,
-        tags: List<EveryTag>,
+        tags: Set<EveryTag>,
         status: PostStatus?,
     ): List<Post> {
         val query: Query =
@@ -45,7 +45,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         status: PostStatus?,
         titleContains: String,
         paymentMethod: PaymentMethod,
-        tags: List<EveryTag>,
+        tags: Set<EveryTag>,
         numberOfPosts: Long
     ): Query {
         var query: Query = getCollectionPath(type)
@@ -79,7 +79,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
      *   of 10 elements in the comparison array, so this function returns at most 10 distinct search
      *   keys.
      */
-    private fun buildSearchKeys(titleContains: String, tags: List<EveryTag>): List<String> {
+    private fun buildSearchKeys(titleContains: String, tags: Set<EveryTag>): List<String> {
         val searchKeys = mutableListOf<String>()
         if (titleContains.isNotBlank())
             searchKeys.addAll(titleContains.split(" ").map { it.lowercase() })

@@ -44,7 +44,7 @@ interface PostRepository {
         titleContains: String = "",
         ownerId: String = "",
         paymentMethod: PaymentMethod = PaymentMethod.SKILLSANDCASH,
-        tags: List<EveryTag> = emptyList(),
+        tags: Set<EveryTag> = emptySet(),
         status: PostStatus? = null
     ): List<Post>
 

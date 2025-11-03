@@ -25,7 +25,7 @@ class PostRepositoryInstrumentedTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = listOf(PostTag.REOCCURRING),
+            tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
@@ -177,7 +177,7 @@ class PostRepositoryInstrumentedTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     titleContains = "help Kotlin",
-                    tags = listOf(PostTag.REOCCURRING)
+                    tags = setOf(PostTag.REOCCURRING)
                 )
 
             assertTrue(results.any { (it as Request).uid == id })
