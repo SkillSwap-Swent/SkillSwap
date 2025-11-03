@@ -8,7 +8,6 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
-import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -24,8 +23,8 @@ open class PostDataClassTest {
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
             tags = listOf(PostTag.REOCCURRING),
-            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
-            creation = Timestamp.now(),
+            expiry = Timestamp(Timestamp.now().seconds + 86400, 0),
+            creation = Timestamp(Timestamp.now().seconds - 10, 0),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
             paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
@@ -33,8 +32,8 @@ open class PostDataClassTest {
 
     @Test
     fun testRequestDataClass() {
-        val creationDate = Timestamp(Date())
-        val expiryDate = Timestamp(Date(System.currentTimeMillis() + 86400000)) // 1 day later
+        val creationDate = Timestamp(Timestamp.now().seconds - 10, 0)
+        val expiryDate = Timestamp(Timestamp.now().seconds + 86400, 0) // 1 day later
 
         val request =
             Request(
