@@ -27,7 +27,7 @@ interface Post {
     /** The ID of the user who created the post. */
     val ownerId: String
     /** A list of tags that categorize the post, making it easier to search for. */
-    val tags: Set<EveryTag>
+    val tags: Collection<EveryTag>
     /** A list of accepted/offered payment methods for the skill exchange. */
     val paymentMethod: PaymentMethod
     /** The expiration timestamp of the post, after which it may become inactive. */

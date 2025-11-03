@@ -99,13 +99,16 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val snapshot = docRef.get().await()
 
         require(!snapshot.exists()) { "Post with UID ${post.uid} already exists" }
-        docRef.set(post).await()
+        docRef.set(serializePost(post)).await()
     }
 
     override suspend fun editPost(postId: String, newPost: Post) {
         require(newPost.validate()) { "Post fields are invalid" }
 
-        getCollectionPath(newPost.type).document(postId).set(newPost, SetOptions.merge()).await()
+        getCollectionPath(newPost.type)
+            .document(postId)
+            .set(serializePost(newPost), SetOptions.merge())
+            .await()
     }
 
     override suspend fun deletePost(type: PostType, postId: String) {
@@ -160,5 +163,21 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
             PostType.REQUEST -> requestsCollection
         }
+    }
+
+    private fun serializePost(post: Post): SerializablePost {
+        return SerializablePost(
+            uid = post.uid,
+            title = post.title,
+            description = post.description,
+            ownerId = post.ownerId,
+            tags = post.tags.toList(),
+            paymentMethod = post.paymentMethod,
+            expiry = post.expiry,
+            creation = post.creation,
+            status = post.status,
+            media = post.media,
+            type = post.type
+        )
     }
 }
