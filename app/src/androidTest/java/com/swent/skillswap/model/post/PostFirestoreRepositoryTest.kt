@@ -66,6 +66,7 @@ class PostRepositoryInstrumentedTest {
             assertEquals(req.status, fetched.status)
             assertEquals(req.media, fetched.media)
             assertEquals(PostType.REQUEST, fetched.type)
+            assertEquals(req.postReplies, fetched.postReplies)
         }
     }
 
