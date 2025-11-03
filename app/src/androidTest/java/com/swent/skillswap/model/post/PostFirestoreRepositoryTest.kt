@@ -25,12 +25,12 @@ class PostRepositoryInstrumentedTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = listOf(PostTag.REOCCURRING),
+            tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH)
+            paymentMethod = PaymentMethod.SKILLSANDCASH
         )
 
     @Before
@@ -62,7 +62,7 @@ class PostRepositoryInstrumentedTest {
             assertEquals(req.description, fetched.description)
             assertEquals(req.ownerId, fetched.ownerId)
             assertEquals(req.tags, fetched.tags)
-            assertEquals(req.paymentMethods, fetched.paymentMethods)
+            assertEquals(req.paymentMethod, fetched.paymentMethod)
             assertEquals(req.status, fetched.status)
             assertEquals(req.media, fetched.media)
             assertEquals(PostType.REQUEST, fetched.type)
@@ -178,8 +178,7 @@ class PostRepositoryInstrumentedTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     titleContains = "help Kotlin",
-                    tags = listOf(PostTag.REOCCURRING),
-                    paymentMethods = listOf(PaymentMethod.SKILLS)
+                    tags = setOf(PostTag.REOCCURRING)
                 )
 
             assertTrue(results.any { (it as Request).uid == id })

@@ -31,8 +31,7 @@ interface PostRepository {
      * @param type The type of the posts to retrieve (e.g., OFFER, REQUEST). filters:
      * @param titleContains: The title of the post to filter by.
      * @param ownerId: The ID of the owner of the post to filter by.
-     * @param paymentMethods The list of accepted payment methods to filter by. Applies OR logic
-     *   (any of). [SKILLS, CASH] will return all posts.
+     * @param paymentMethod The accepted payment methods to filter by.
      * @param tags The list of tags to filter by. Applies OR logic (any of).
      * @param status The status of the posts to retrieve. Applies OR logic (any of).
      * @return A list of posts matching the criteria.
@@ -44,8 +43,8 @@ interface PostRepository {
         // optional filters
         titleContains: String = "",
         ownerId: String = "",
-        paymentMethods: List<PaymentMethod> = emptyList(),
-        tags: List<EveryTag> = emptyList(),
+        paymentMethod: PaymentMethod = PaymentMethod.SKILLSANDCASH,
+        tags: Set<EveryTag> = emptySet(),
         status: PostStatus? = null
     ): List<Post>
 
