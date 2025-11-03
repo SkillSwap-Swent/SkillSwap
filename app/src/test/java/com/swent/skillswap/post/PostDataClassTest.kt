@@ -23,7 +23,7 @@ class PostDataClassTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = listOf(PostTag.REOCCURRING),
+            tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
@@ -42,7 +42,7 @@ class PostDataClassTest {
                 title = "Need help with Kotlin",
                 description = "Looking for an expert to teach me Kotlin.",
                 ownerId = "user456",
-                tags = listOf(PostTag.REOCCURRING),
+                tags = setOf(PostTag.REOCCURRING),
                 expiry = expiryDate,
                 creation = creationDate,
                 status = PostStatus.POSTED,
@@ -54,7 +54,7 @@ class PostDataClassTest {
         assertEquals("Need help with Kotlin", request.title)
         assertEquals("Looking for an expert to teach me Kotlin.", request.description)
         assertEquals("user456", request.ownerId)
-        assertEquals(listOf(PostTag.REOCCURRING), request.tags)
+        assertEquals(setOf(PostTag.REOCCURRING), request.tags)
         assertEquals(expiryDate, request.expiry)
         assertEquals(creationDate, request.creation)
         assertEquals(PostStatus.POSTED, request.status)
@@ -82,7 +82,7 @@ class PostDataClassTest {
         assertFalse(baseRequest.copy(description = "").validate())
 
         // Test invalid Tags
-        assertFalse(baseRequest.copy(tags = emptyList()).validate())
+        assertFalse(baseRequest.copy(tags = emptySet()).validate())
     }
 
     @Test
