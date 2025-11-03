@@ -2,8 +2,8 @@
  * TextField variants used throughout SkillSwap.
  *
  * Provides two Material 3–based composables:
- * - [SkillSwapTextFieldV1]: A filled TextField with translucent container and asymmetric corners.
- * - [SkillSwapTextFieldV2]: An OutlinedTextField with rounded corners defined by dimension
+ * - [SkillSwapTextField]: A filled TextField with translucent container and asymmetric corners.
+ * - [SkillSwapOutlinedTextField]: An OutlinedTextField with rounded corners defined by dimension
  *   resources.
  *
  * Both variants:
@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Done
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -64,7 +63,7 @@ import com.swent.skillswap.ui.signIn.CreateAccountTags
  * @param enabled Whether the field is enabled for input.
  */
 @Composable
-fun SkillSwapTextFieldV1(
+fun SkillSwapTextField(
     modifier: Modifier = Modifier,
     value: String = "",
     supportText: String = "",
@@ -139,7 +138,7 @@ fun SkillSwapTextFieldV1(
  * - Standard [OutlinedTextField] using Material 3 outline colors.
  * - Corner radius defined by `corner_radius_outlined_text` dimension resource.
  *
- * Behavior mirrors [SkillSwapTextFieldV1]:
+ * Behavior mirrors [SkillSwapTextField]:
  * - Error state determined by [supportText].
  * - Trailing icon reflects input status (Error, Filled, Empty).
  * - Label and icon colors respond to error state.
@@ -154,9 +153,8 @@ fun SkillSwapTextFieldV1(
  * @param keyboardOptions Keyboard configuration for input type, capitalization, etc.
  * @param enabled Whether the field is enabled for input.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SkillSwapTextFieldV2(
+fun SkillSwapOutlinedTextField(
     modifier: Modifier = Modifier,
     value: String = "",
     supportText: String = "",
