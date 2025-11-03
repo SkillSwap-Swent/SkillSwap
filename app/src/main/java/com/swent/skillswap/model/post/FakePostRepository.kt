@@ -56,8 +56,8 @@ class FakePostRepository : PostRepository {
         type: PostType,
         titleContains: String,
         ownerId: String,
-        paymentMethods: List<PaymentMethod>,
-        tags: List<EveryTag>,
+        paymentMethod: PaymentMethod,
+        tags: Set<EveryTag>,
         status: PostStatus?
     ): List<Post> {
         getMultiplePostsCalls++
