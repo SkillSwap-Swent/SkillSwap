@@ -140,6 +140,7 @@ fun SkillSwapPasswordTextFieldV1(
     placeholder: String = "",
     onValueChange: (String) -> Unit = {},
     enabled: Boolean = true,
+    maxSizeFilled: Float = 0.8f
 ) {
     val showPassword = remember { mutableStateOf(false) }
     var isFocused by remember { mutableStateOf(false) }
@@ -149,31 +150,20 @@ fun SkillSwapPasswordTextFieldV1(
     TextField(
         value = value,
         onValueChange = { it -> onValueChange(it) },
-        label = {
-            Text(
-                label,
-                color =
-                    if (!isError) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.error,
-            )
-        },
+        label = { Text(label) },
         isError = isError,
         placeholder = { Text(placeholder) },
         supportingText = {
-            Text(
-                text = supportText,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.testTag(CreateAccountTags.ERROR)
-            )
+            Text(text = supportText, modifier = Modifier.testTag(CreateAccountTags.ERROR))
         },
         colors =
             TextFieldDefaults.colors(
                 focusedContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
                 unfocusedContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
                 disabledContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
             ),
         shape =
             RoundedCornerShape(
@@ -189,7 +179,7 @@ fun SkillSwapPasswordTextFieldV1(
         visualTransformation = passwordVisualTransformation(showPassword.value),
         trailingIcon = { TrailingIconLogic(showPassword, isFocused, isError, isFilled) },
         modifier =
-            modifier.fillMaxWidth(0.8f).onFocusChanged { focusState ->
+            modifier.fillMaxWidth(maxSizeFilled).onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }
     )
@@ -224,6 +214,7 @@ fun SkillSwapPasswordTextFieldV2(
     placeholder: String = "",
     onValueChange: (String) -> Unit = {},
     enabled: Boolean = true,
+    maxSizeFilled: Float = 0.8f
 ) {
     val showPassword = remember { mutableStateOf(false) }
     var isFocused by remember { mutableStateOf(false) }
@@ -232,26 +223,14 @@ fun SkillSwapPasswordTextFieldV2(
 
     OutlinedTextField(
         value = value,
-        onValueChange = { it -> onValueChange(it) },
-        label = {
-            Text(
-                label,
-                color =
-                    if (!isError) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.error,
-            )
-        },
+        onValueChange = { onValueChange(it) },
+        label = { Text(label) },
         isError = isError,
         placeholder = { Text(placeholder) },
         supportingText = {
-            Text(
-                text = supportText,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.testTag(CreateAccountTags.ERROR)
-            )
+            Text(text = supportText, modifier = Modifier.testTag(CreateAccountTags.ERROR))
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(),
-        shape = RoundedCornerShape(dimensionResource(id = R.dimen.corner_radius_outlined_text)),
+        shape = MaterialTheme.shapes.extraSmall,
         singleLine = true,
         keyboardOptions = PasswordKeyboardOptions,
         enabled = enabled,
@@ -259,7 +238,7 @@ fun SkillSwapPasswordTextFieldV2(
         visualTransformation = passwordVisualTransformation(showPassword.value),
         trailingIcon = { TrailingIconLogic(showPassword, isFocused, isError, isFilled) },
         modifier =
-            modifier.fillMaxWidth(0.8f).onFocusChanged { focusState ->
+            modifier.fillMaxWidth(maxSizeFilled).onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }
     )

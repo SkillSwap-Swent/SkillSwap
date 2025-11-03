@@ -11,9 +11,9 @@ package com.swent.skillswap.ui.utils
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -53,8 +53,8 @@ fun GradientButton(
     modifier: Modifier = Modifier,
     gradient: List<Color> =
         listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer),
-    contentColor: Color = Color.White,
-    disableContentColor: Color = Color.Gray,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    disableContentColor: Color = MaterialTheme.colorScheme.onSurface,
     gradientDirection: BrushDirection = BrushDirection.LEFT_RIGHT,
     content: @Composable (RowScope.() -> Unit)
 ) {
@@ -96,26 +96,32 @@ fun SkillSwapButtonV1(
     onClick: () -> Unit = {},
     enable: Boolean = true,
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(50),
+    shape: Shape = pill_shape,
     contentColor: Color = MaterialTheme.colorScheme.primary,
-    disableContentColor: Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f),
+    disableContentColor: Color =
+        MaterialTheme.colorScheme.onSurface.copy(text_disable_button_alpha),
     content: @Composable (RowScope.() -> Unit) = { Text(text = "test         test") },
 ) {
-    OutlinedButton(
+    ElevatedButton(
         enabled = enable,
         onClick = onClick,
         colors =
             ButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                containerColor = MaterialTheme.colorScheme.surface.copy(container_field_alpha),
                 contentColor = contentColor,
-                disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                disabledContainerColor =
+                    MaterialTheme.colorScheme.onSurface.copy(container_disable_button_alpha),
                 disabledContentColor = disableContentColor
             ),
         border =
-            if (!enable) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            if (!enable)
+                BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline.copy(stroke_disable_button_alpha)
+                )
             else null,
         shape = shape,
-        modifier = modifier.outerShadow(shape)
+        modifier = modifier /*.outerShadow(shape)*/
     ) {
         content()
     }
@@ -155,14 +161,13 @@ fun Modifier.outerShadow(
             val frameworkPaint =
                 Paint().asFrameworkPaint().apply {
                     isAntiAlias = true
-                    alpha = 120 // shadow opacity
+                    alpha = shadow_opacity // shadow opacity
                     maskFilter =
                         android.graphics.BlurMaskFilter(
                             blur.toPx(),
                             android.graphics.BlurMaskFilter.Blur.NORMAL
                         )
                 }
-
             // Clip outside of the shape so the shadow is drawn only externally
             drawIntoCanvas { canvas ->
                 canvas.save()
