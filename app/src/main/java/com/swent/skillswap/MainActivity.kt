@@ -125,7 +125,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.Offers.route) { OfferScreen() }
-            
+
             composable(Screen.Profile.route) {
                 profileViewModel.loadCurrentUser()
                 ProfileScreen(
@@ -149,7 +149,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     }
                 )
             }
-            
         }
     }
 }
