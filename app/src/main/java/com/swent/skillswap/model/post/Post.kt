@@ -98,13 +98,13 @@ enum class PostType {
 }
 
 /** Enum representing the possible payment methods for a skill exchange. */
-enum class PaymentMethod {
+enum class PaymentMethod(val displayName: String) {
     /** The exchange is for another skill or service (bartering). */
-    SKILLS,
+    SKILLS("Skills"),
     /** The exchange involves a monetary transaction. */
-    CASH,
+    CASH("Cash"),
     /** Both methods */
-    SKILLSANDCASH
+    SKILLSANDCASH("Skills and Cash")
 }
 
 /** Enum representing the lifecycle status of a post. */
