@@ -30,8 +30,8 @@ data class RequestUIState(
     val uid: String = "",
     val title: String = "",
     val description: String = "",
-    val tags: List<EveryTag> = emptyList(),
-    val paymentMethods: Set<PaymentMethod> = emptySet(),
+    val tags: Set<EveryTag> = emptySet(),
+    val paymentMethod: PaymentMethod = PaymentMethod.SKILLS,
     val expiry: Timestamp = Timestamp.now(),
 
     // Error fields
@@ -76,8 +76,8 @@ class RequestViewModel(
                         uid = post.uid,
                         title = post.title,
                         description = post.description,
-                        tags = post.tags,
-                        paymentMethods = post.paymentMethods.toSet(),
+                        tags = post.tags.toSet(),
+                        paymentMethod = post.paymentMethod,
                         isLoading = false
                     )
                 }
@@ -128,16 +128,8 @@ class RequestViewModel(
         }
     }
 
-    fun togglePaymentMethod(method: PaymentMethod) {
-        _uiState.update { current ->
-            val newMethods =
-                if (method in current.paymentMethods) {
-                    current.paymentMethods - method
-                } else {
-                    current.paymentMethods + method
-                }
-            current.copy(paymentMethods = newMethods)
-        }
+    fun togglePaymentMethod(methodClicked: PaymentMethod) {
+        _uiState.update { current -> current.copy(paymentMethod = methodClicked) }
     }
 
     fun save(postOperation: PostOperation) {
@@ -157,7 +149,7 @@ class RequestViewModel(
                         description = _uiState.value.description,
                         ownerId = currentUserId,
                         tags = _uiState.value.tags,
-                        paymentMethods = _uiState.value.paymentMethods.toList(),
+                        paymentMethod = _uiState.value.paymentMethod,
                         expiry =
                             Timestamp(
                                 Date(

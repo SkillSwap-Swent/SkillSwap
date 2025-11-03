@@ -34,8 +34,8 @@ class RequestViewModelTest {
             title = "Need Kotlin Help",
             description = "Looking for someone to teach Kotlin basics",
             ownerId = testUserId,
-            tags = listOf(PostTag.REOCCURRING),
-            paymentMethods = listOf(PaymentMethod.SKILLS, PaymentMethod.CASH),
+            tags = setOf(PostTag.REOCCURRING),
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
@@ -58,7 +58,7 @@ class RequestViewModelTest {
         assertEquals("", state.title)
         assertEquals("", state.description)
         assertTrue(state.tags.isEmpty())
-        assertTrue(state.paymentMethods.isEmpty())
+        assertTrue(state.paymentMethod == PaymentMethod.SKILLS)
         assertFalse(state.isLoading)
         assertFalse(state.isSubmitSuccessful)
     }
@@ -76,7 +76,7 @@ class RequestViewModelTest {
         assertEquals(sampleRequest.title, state.title)
         assertEquals(sampleRequest.description, state.description)
         assertEquals(sampleRequest.tags, state.tags)
-        assertEquals(sampleRequest.paymentMethods.toSet(), state.paymentMethods)
+        assertEquals(sampleRequest.paymentMethod, state.paymentMethod)
     }
 
     @Test
@@ -202,18 +202,18 @@ class RequestViewModelTest {
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
 
         val state = viewModel.uiState.value
-        assertTrue(state.paymentMethods.contains(PaymentMethod.CASH))
+        assertTrue(state.paymentMethod == PaymentMethod.CASH)
     }
 
     @Test
-    fun togglePaymentMethod_present_removes() = runTest {
+    fun togglePaymentMethod_present_doesNotAlter() = runTest {
         viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
 
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
 
         val state = viewModel.uiState.value
-        assertFalse(state.paymentMethods.contains(PaymentMethod.CASH))
+        assertFalse(state.paymentMethod == PaymentMethod.CASH)
     }
 
     // ========== SAVE - ADD MODE TESTS ==========
@@ -237,7 +237,7 @@ class RequestViewModelTest {
         assertEquals("Test Description", addedPost.description)
         assertEquals(testUserId, addedPost.ownerId)
         assertTrue(addedPost.tags.contains(PostTag.REOCCURRING))
-        assertTrue(addedPost.paymentMethods.contains(PaymentMethod.CASH))
+        assertTrue(addedPost.paymentMethod == PaymentMethod.CASH)
     }
 
     @Test

@@ -273,7 +273,7 @@ fun RequestScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 PaymentMethod.entries.forEach { method ->
-                    val isSelected = uiState.paymentMethods.contains(method)
+                    val isSelected = uiState.paymentMethod == method
                     val backgroundColor =
                         if (isSelected) MaterialTheme.colorScheme.primaryContainer
                         else MaterialTheme.colorScheme.surfaceVariant
@@ -293,7 +293,7 @@ fun RequestScreen(
                                 .testTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
                     ) {
                         Text(
-                            text = method.name,
+                            text = method.displayName,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = textColor
                         )
@@ -353,8 +353,8 @@ fun NewRequestScreenPreview() {
                 type: com.swent.skillswap.model.post.PostType,
                 titleContains: String,
                 ownerId: String,
-                paymentMethods: List<PaymentMethod>,
-                tags: List<com.swent.skillswap.model.tags.EveryTag>,
+                paymentMethod: PaymentMethod,
+                tags: Set<com.swent.skillswap.model.tags.EveryTag>,
                 status: com.swent.skillswap.model.post.PostStatus?
             ): List<com.swent.skillswap.model.post.Post> = emptyList()
 
