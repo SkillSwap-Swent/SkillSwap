@@ -25,7 +25,7 @@ class PostDataClassTest {
             ownerId = "user456",
             tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
-            creation = Timestamp.now(),
+            creation = Timestamp(Date(System.currentTimeMillis() -10)),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
             paymentMethod = PaymentMethod.SKILLSANDCASH
@@ -33,7 +33,7 @@ class PostDataClassTest {
 
     @Test
     fun testRequestDataClass() {
-        val creationDate = Timestamp(Date())
+        val creationDate = Timestamp(Date(System.currentTimeMillis() - 10))
         val expiryDate = Timestamp(Date(System.currentTimeMillis() + 86400000)) // 1 day later
 
         val request =
