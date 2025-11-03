@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.user.Availability
 import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
@@ -45,14 +47,16 @@ class ProfileViewModel(
      * authenticated and errors if the database operation fails.
      */
     fun loadCurrentUser() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid == null) {
+
+        val currentFirestoreUser = Firebase.auth.currentUser
+        if (currentFirestoreUser == null) {
             Log.w("ProfileViewModel", "No user logged in yet")
             return
         }
 
         viewModelScope.launch {
             try {
+                val uid = currentFirestoreUser.uid
                 val user = repo.getUser(uid)
                 _userState.value = user
             } catch (e: Exception) {
