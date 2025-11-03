@@ -15,7 +15,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PostDataClassTest {
+open class PostDataClassTest {
 
     val request1 =
         Request(
