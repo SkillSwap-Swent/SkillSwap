@@ -4,7 +4,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,12 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.ui.utils.AccordionSection
 import com.swent.skillswap.ui.utils.ProfileDivider
@@ -28,18 +34,12 @@ object ProfileTestTags {
 
     const val EMAIL_SECTION = "email_section"
     const val EMAIL_VALUE = "email_value"
-    const val EMAIL_EDIT = "email_edit"
-
     const val USERNAME_SECTION = "username_section"
     const val USERNAME_VALUE = "username_value"
-    const val USERNAME_EDIT = "username_edit"
-
     const val SKILLS_SECTION = "skills_section"
     const val SKILLS_COUNT = "skills_count"
     const val SKILLS_LIST = "skills_list"
     const val SKILLS_EMPTY = "skills_empty"
-    const val SKILLS_EDIT = "skills_edit"
-
     const val PREFERENCES_SECTION = "preferences_section"
     const val PREF_OPTION_MONEY = "pref_option_money"
     const val PREF_OPTION_SKILLS = "pref_option_skills"
@@ -47,9 +47,8 @@ object ProfileTestTags {
 
 @Composable
 fun ProfileScreen(
-    onSkillsClick: () -> Unit = {},
-    onUsernameEditClick: () -> Unit = {},
-    onEmailEditClick: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
+    onLogoutClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
     var expandedEmail by remember { mutableStateOf(false) }
@@ -70,6 +69,48 @@ fun ProfileScreen(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 24.dp).testTag(ProfileTestTags.PROFILE_TITLE)
         )
+
+        // Profile picture Section
+        Box(modifier = Modifier.align(Alignment.CenterHorizontally).size(140.dp).padding(8.dp)) {
+            if (uiState.profilePicture.isNotEmpty()) {
+                AsyncImage(
+                    model = uiState.profilePicture,
+                    contentDescription = "Profile picture",
+                    modifier = Modifier.size(140.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier =
+                        Modifier.size(120.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Profile picture placeholder",
+                        modifier = Modifier.size(60.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            // Edit button overlay
+            Box(
+                modifier =
+                    Modifier.align(Alignment.BottomEnd)
+                        .size(40.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        .clickable { onEditProfileClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit profile picture",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
 
         Box(
             modifier =
@@ -96,9 +137,7 @@ fun ProfileScreen(
                     content = {
                         EditableField(
                             value = uiState.email,
-                            onEditClick = { onEmailEditClick() },
                             valueTestTag = ProfileTestTags.EMAIL_VALUE,
-                            editTestTag = ProfileTestTags.EMAIL_EDIT
                         )
                     }
                 )
@@ -112,9 +151,7 @@ fun ProfileScreen(
                     content = {
                         EditableField(
                             value = uiState.username,
-                            onEditClick = { onUsernameEditClick() },
                             valueTestTag = ProfileTestTags.USERNAME_VALUE,
-                            editTestTag = ProfileTestTags.USERNAME_EDIT
                         )
                     }
                 )
@@ -160,17 +197,6 @@ fun ProfileScreen(
                                             .testTag(ProfileTestTags.SKILLS_EMPTY)
                                 )
                             }
-                            Text(
-                                text = "Edit Skills",
-                                fontSize = 14.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium,
-                                modifier =
-                                    Modifier.fillMaxWidth()
-                                        .testTag(ProfileTestTags.SKILLS_EDIT)
-                                        .clickable { onSkillsClick() }
-                                        .padding(vertical = 8.dp, horizontal = 4.dp)
-                            )
                         }
                     }
                 )
@@ -204,15 +230,28 @@ fun ProfileScreen(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = { onLogoutClick() },
+            modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text(
+                text = "Logout",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onError
+            )
+        }
     }
 }
 
 @Composable
 fun EditableField(
     value: String,
-    onEditClick: () -> Unit,
     valueTestTag: String,
-    editTestTag: String
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -223,16 +262,6 @@ fun EditableField(
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f).testTag(valueTestTag)
-        )
-        Text(
-            text = "Edit",
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Medium,
-            modifier =
-                Modifier.testTag(editTestTag)
-                    .clickable { onEditClick() }
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
 }

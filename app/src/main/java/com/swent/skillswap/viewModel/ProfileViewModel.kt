@@ -10,6 +10,7 @@ import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,7 +24,7 @@ import kotlinx.coroutines.launch
  * @param repo The UserRepoFirestore instance for database operations
  */
 class ProfileViewModel(
-    private val repo: UserRepoFirestore = UserRepoFirestore(FirebaseFirestore.getInstance())
+    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
 ) : ViewModel() {
 
     /** Mutable state flow for internal user state updates */
@@ -56,31 +57,6 @@ class ProfileViewModel(
                 _userState.value = user
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error while getting user", e)
-            }
-        }
-    }
-
-    /**
-     * Updates the entire user profile in Firestore.
-     *
-     * Persists the provided user object to the database and updates the local state. Uses the
-     * user's UID if available, otherwise falls back to the current authenticated user's UID.
-     *
-     * @param user The user object containing all updated profile information
-     */
-    fun updateUser(user: User) {
-        val uid = user.uid.ifEmpty { FirebaseAuth.getInstance().currentUser?.uid }
-        if (uid == null) {
-            Log.e("ProfileViewModel", "No UID available to update user")
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                repo.editUser(uid, user.copy(uid = uid))
-                _userState.value = user.copy(uid = uid)
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Failed to update user", e)
             }
         }
     }

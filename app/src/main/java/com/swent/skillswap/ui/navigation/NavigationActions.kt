@@ -18,6 +18,8 @@ sealed class Screen(
 
     object Profile : Screen(route = "profile", name = "profile", isTopLevelDestination = true)
 
+    object EditProfile : Screen(route = "edit_profile", name = "Edit profile")
+
     object EditSkills : Screen(route = "edit_skills", name = "Edit Skills")
 
     object Chat : Screen(route = "chat", name = "chat", isTopLevelDestination = true)

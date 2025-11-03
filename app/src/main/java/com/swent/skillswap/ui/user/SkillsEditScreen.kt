@@ -31,7 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.ui.utils.GradientButton
-import com.swent.skillswap.viewModel.ProfileViewModel
+import com.swent.skillswap.viewModel.EditUserViewModel
 
 object SkillsEditTestTags {
     const val SCREEN_CONTAINER = "skills_edit_screen_container"
@@ -52,14 +52,16 @@ object SkillsEditTestTags {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun SkillsEditScreen(vm: ProfileViewModel = viewModel(), onBackClick: () -> Unit = {}) {
-    val userState by vm.userState.collectAsState()
-    var selectedSkills by remember { mutableStateOf(userState.skillSet.map { it.name }.toSet()) }
+fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Unit = {}) {
+    val userState by vm.uiState.collectAsState()
+    var selectedSkills by remember { mutableStateOf<Set<SkillTag>>(emptySet()) }
     var expanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var hasFocus by remember { mutableStateOf(false) }
 
-    LaunchedEffect(userState) { selectedSkills = userState.skillSet.map { it.name }.toSet() }
+    LaunchedEffect(userState) {
+        selectedSkills = (userState.editedUser?.skillSet?.map { it.name }?.toSet() ?: emptySet())
+    }
 
     Column(
         modifier =
@@ -238,7 +240,7 @@ fun SkillsEditScreen(vm: ProfileViewModel = viewModel(), onBackClick: () -> Unit
             GradientButton(
                 onClick = {
                     val updatedSkills = selectedSkills.map { Skill(it, 0f, "") }.toSet()
-                    vm.updateUserAttributes(skillSet = updatedSkills)
+                    vm.setSkills(updatedSkills)
                     onBackClick()
                 },
                 modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.SAVE_BUTTON)
