@@ -28,7 +28,7 @@ fun MySkillsScreen(onBackClick: () -> Unit) {
         )
 
         // Back button
-        SkillSwapButtonV1(onClick = onBackClick, modifier = Modifier.fillMaxWidth()) {
+        SkillSwapShadowButton(onClick = onBackClick, modifier = Modifier.fillMaxWidth()) {
             Text("Back")
         }
     }

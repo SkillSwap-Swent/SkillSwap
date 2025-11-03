@@ -92,7 +92,7 @@ fun GradientButton(
  * @param content composable lambda defining the button’s inner content.
  */
 @Composable
-fun SkillSwapButtonV1(
+fun SkillSwapShadowButton(
     onClick: () -> Unit = {},
     enable: Boolean = true,
     modifier: Modifier = Modifier,

@@ -2,9 +2,9 @@
  * Password TextField variants for SkillSwap.
  *
  * Provides two Material 3 implementations:
- * - [SkillSwapPasswordTextFieldV1]: Filled TextField with translucent container and asymmetric
+ * - [SkillSwapPasswordTextField]: Filled TextField with translucent container and asymmetric
  *   corners.
- * - [SkillSwapPasswordTextFieldV2]: OutlinedTextField with rounded corners from resources.
+ * - [SkillSwapPasswordOutlinedTextField]: OutlinedTextField with rounded corners from resources.
  *
  * Both variants:
  * - Support error/success/empty trailing icon states when not focused.
@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -132,7 +131,7 @@ fun TrailingIconLogic(
  * @param enabled Enables or disables the field.
  */
 @Composable
-fun SkillSwapPasswordTextFieldV1(
+fun SkillSwapPasswordTextField(
     modifier: Modifier = Modifier,
     value: String = "",
     supportText: String = "",
@@ -192,7 +191,7 @@ fun SkillSwapPasswordTextFieldV1(
  * - Standard M3 [OutlinedTextField] using theme defaults for colors.
  * - Uniform rounded corners read from dimension resources.
  *
- * Behavior mirrors [SkillSwapPasswordTextFieldV1]:
+ * Behavior mirrors [SkillSwapPasswordTextField]:
  * - Error state derives from non-blank [supportText].
  * - Trailing icon conveys error/success/empty when not focused, and toggles show/hide when focused.
  *
@@ -204,9 +203,8 @@ fun SkillSwapPasswordTextFieldV1(
  * @param onValueChange Callback when the input changes.
  * @param enabled Enables or disables the field.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SkillSwapPasswordTextFieldV2(
+fun SkillSwapPasswordOutlinedTextField(
     modifier: Modifier = Modifier,
     value: String = "",
     supportText: String = "",
