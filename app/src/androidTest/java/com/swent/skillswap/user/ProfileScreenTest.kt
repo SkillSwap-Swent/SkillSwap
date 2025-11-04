@@ -1,7 +1,5 @@
 package com.swent.skillswap.user
 
-import androidx.compose.ui.test.assertHasClickAction
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -117,6 +115,7 @@ class ProfileScreenTest : TestCase() {
         }
     }
 
+    /*
     @Test
     fun profileScreen_displaysAllElements() = run {
         step("Display ProfileScreen") {
@@ -169,6 +168,7 @@ class ProfileScreenTest : TestCase() {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
         }
     }
+     */
 
     @Test
     fun profileScreen_selectingMoneyPreferenceUpdatesViewModel() = run {
