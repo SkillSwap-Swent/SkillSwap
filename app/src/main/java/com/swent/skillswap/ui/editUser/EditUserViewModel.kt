@@ -2,8 +2,9 @@
  * @author Léonard MARTI 394185 /!\ Written with help of Copilot /!\
  * > helped me with coroutine process and syntax, complete all the repetitive code
  */
-package com.swent.skillswap.viewModel
+package com.swent.skillswap.ui.editUser
 
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
@@ -130,7 +131,7 @@ class EditUserViewModel(
     fun setEmail(email: String) {
         setField(
             input = email,
-            precondition = { android.util.Patterns.EMAIL_ADDRESS.matcher(it).matches() },
+            precondition = { Patterns.EMAIL_ADDRESS.matcher(it).matches() },
             applyToUser = { user, value -> user.copy(email = value) },
             applyToError = { _uiState.update { it.copy(emailError = "Invalid email format") } },
             clearError = { it.copy(emailError = null) }
@@ -177,8 +178,24 @@ class EditUserViewModel(
 
     /** Updates the edited user in the state with new values. */
     fun validate() {
+        /** PRECONDITIONS */
+        if(
+            uiState.value.usernameError != null ||
+            uiState.value.emailError != null ||
+            uiState.value.profilePictureError != null ||
+            uiState.value.skillSetError != null ||
+            uiState.value.ratingError != null ||
+            uiState.value.availabilityError != null ||
+            uiState.value.isLoading
+        ){
+            /** There is still some error in the form, do not proceed */
+            return
+        }
         /** Fetch the edited user from the state and do nothing if the user is not fetched */
         val editedUser = _uiState.value.editedUser ?: return
+
+
+        /** The preconditions are fulfilled, proceed to validate */
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
 
