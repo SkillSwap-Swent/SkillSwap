@@ -104,9 +104,9 @@ open class PostDataClassTest {
     @Test
     fun testEveryTagCasting() {
         val postTag = EveryTag.of(PostTag.REOCCURRING)
-        assertEquals(PostTag.REOCCURRING.toString(), postTag.toString())
+        assertEquals(PostTag.REOCCURRING.toString(), postTag.value.toString())
 
         val skillTag = EveryTag.of(SkillTag.ALGORITHMS)
-        assertEquals(SkillTag.ALGORITHMS.toString(), skillTag.toString())
+        assertEquals(SkillTag.ALGORITHMS.toString(), skillTag.value.toString())
     }
 }
