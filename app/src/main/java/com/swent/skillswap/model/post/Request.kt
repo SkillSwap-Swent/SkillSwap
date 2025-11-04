@@ -22,4 +22,20 @@ data class Request(
 
     // TODO: implement proper validation logic
     // https://github.com/orgs/SkillSwap-Swent/projects/1/views/2?filterQuery=&pane=issue&itemId=132697400
+
+    // Need this for Firestore deserializer
+    constructor() :
+        this(
+            uid = "",
+            title = "",
+            description = "",
+            ownerId = "",
+            tags = emptySet(),
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            expiry = Timestamp.now(),
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = emptyList(),
+            postReplies = emptySet()
+        )
 }

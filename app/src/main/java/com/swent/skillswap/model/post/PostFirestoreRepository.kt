@@ -116,27 +116,46 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     }
 
     private fun documentToPost(document: DocumentSnapshot): Post {
-        val postSerializable = document.toObject(SerializablePost::class.java)
+        val uid = document.id
+        val title: String = document.getString("title")!!
+        val description: String = document.getString("description")!!
+        val ownerId: String = document.getString("ownerId")!!
+
+        @Suppress("UNCHECKED_CAST")
+        val tags = (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }!!.toSet()
+
+        @Suppress("UNCHECKED_CAST")
+        val paymentMethod = PaymentMethod.valueOf(document.getString("paymentMethod")!!)
+
+        val expiry = document.getTimestamp("expiry")!!
+        val creation = document.getTimestamp("creation")!!
+
+        val status = document.getString("status")?.let { PostStatus.valueOf(it) }!!
+
+        @Suppress("UNCHECKED_CAST") val media = (document.get("media") as? List<String>)!!
+
+        val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
+
+        val postReplies = document.toObject(Request::class.java)?.postReplies ?: emptySet()
 
         val post =
-            when (postSerializable?.type) {
+            when (postType) {
                 PostType.REQUEST ->
                     Request(
-                        postSerializable.uid,
-                        postSerializable.title,
-                        postSerializable.description,
-                        postSerializable.ownerId,
-                        postSerializable.tags.toSet(),
-                        postSerializable.paymentMethod,
-                        postSerializable.expiry,
-                        postSerializable.creation,
-                        postSerializable.status,
-                        postSerializable.media,
-                        postSerializable.postReplies.toSet()
+                        uid,
+                        title,
+                        description,
+                        ownerId,
+                        tags,
+                        paymentMethod,
+                        expiry,
+                        creation,
+                        status,
+                        media,
+                        postReplies
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
-                null -> throw IllegalStateException("Post type is null")
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
