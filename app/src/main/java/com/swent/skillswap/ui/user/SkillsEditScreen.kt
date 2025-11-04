@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.utils.GradientButton
+import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object SkillsEditTestTags {
     const val SCREEN_CONTAINER = "skills_edit_screen_container"
@@ -225,7 +225,7 @@ fun SkillsEditScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Cancel button
-            GradientButton(
+            SkillSwapShadowButton(
                 onClick = onBackClick,
                 modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.CANCEL_BUTTON)
             ) {
@@ -233,7 +233,7 @@ fun SkillsEditScreen(
             }
 
             // Save button
-            GradientButton(
+            SkillSwapShadowButton(
                 onClick = {
                     onSkillsUpdated(selectedSkills)
                     onBackClick()

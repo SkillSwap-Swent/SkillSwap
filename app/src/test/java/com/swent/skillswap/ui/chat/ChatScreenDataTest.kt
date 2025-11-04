@@ -108,7 +108,7 @@ class ChatScreenDataTest {
         val posts = ChatScreenData.getSamplePosts()
         val post = posts.first()
 
-        assertTrue(post.paymentMethods.isNotEmpty())
+        assertTrue(post.paymentMethod.name.isNotEmpty())
     }
 
     @Test

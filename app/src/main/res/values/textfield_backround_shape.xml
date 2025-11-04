@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Reusable corner radius values -->
+    <dimen name="corner_radius_top">4dp</dimen>
+    <dimen name="corner_radius_bottom">0dp</dimen>
+    <dimen name="corner_radius_outlined_text">5dp</dimen>
+</resources>

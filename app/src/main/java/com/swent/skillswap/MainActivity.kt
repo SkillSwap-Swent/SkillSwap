@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -13,7 +14,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.navigation.NavHostController
@@ -61,7 +64,7 @@ class MainActivity : ComponentActivity() {
 fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val context = LocalContext.current
     val activity = context as? Activity
-
+    val focusManager = LocalFocusManager.current
     val screens =
         listOf(
             Screen.SignInMain,
@@ -99,7 +102,10 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.padding(paddingValues)
+            modifier =
+                Modifier.fillMaxSize()
+                    .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
+                    .padding(paddingValues)
         ) {
             composable(Screen.SignInMain.route) {
                 SignInMainScreen(

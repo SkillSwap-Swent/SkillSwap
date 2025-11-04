@@ -28,6 +28,8 @@ fun MySkillsScreen(onBackClick: () -> Unit) {
         )
 
         // Back button
-        GradientButton(onClick = onBackClick, modifier = Modifier.fillMaxWidth()) { Text("Back") }
+        SkillSwapShadowButton(onClick = onBackClick, modifier = Modifier.fillMaxWidth()) {
+            Text("Back")
+        }
     }
 }
