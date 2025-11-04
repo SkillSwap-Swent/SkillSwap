@@ -2,7 +2,6 @@ package com.swent.skillswap.model.post
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
