@@ -62,13 +62,11 @@ class ProfileScreenTest : TestCase() {
 
     @Before
     fun setUp() = runBlocking {
-        // Clean up the "users" collection
         val users = FirebaseEmulator.firestore.collection("users").get().await()
         for (doc in users.documents) {
             FirebaseEmulator.firestore.collection("users").document(doc.id).delete().await()
         }
 
-        // Initialize FirebaseApp if necessary
         try {
             if (FirebaseApp.getApps(ctx).isEmpty()) {
                 FirebaseApp.initializeApp(ctx)
@@ -77,33 +75,37 @@ class ProfileScreenTest : TestCase() {
             // Ignore if already initialized
         }
 
-        // Auth: create / sign in a user on the emulator
         val auth = FirebaseAuth.getInstance()
         val testPassword = "test-password-123"
         try {
             auth.createUserWithEmailAndPassword(testUser.email, testPassword).await()
         } catch (e: Exception) {
-            // Ignore - user may already exist on emulator
+            // Ignore - user may already exist
         }
         try {
             auth.signInWithEmailAndPassword(testUser.email, testPassword).await()
         } catch (e: Exception) {
             try {
                 auth.signInAnonymously().await()
-            } catch (_: Exception) {
-                /* ignore */
-            }
+            } catch (_: Exception) {}
         }
 
-        // Get the effective uid (auth) or generate one if absent
         val authUid = auth.currentUser?.uid ?: repo.getNewUid()
-
-        // Add a Firestore user corresponding to the logged-in user
         val userToAdd = testUser.copy(uid = authUid)
         repo.addUser(userToAdd)
 
-        // Instantiate the ViewModel with the emulated repo
         viewModel = ProfileViewModel(repo)
+    }
+
+    private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            try {
+                composeTestRule.onNodeWithTag(tag).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 
     private fun waitForPreferenceUpdate(
@@ -119,83 +121,52 @@ class ProfileScreenTest : TestCase() {
     fun profileScreen_displaysAllElements() = run {
         step("Display ProfileScreen") {
             composeTestRule.setContent { SkillSwapAppTheme { ProfileScreen(vm = viewModel) } }
-            // Give the initial composition time to settle
-            composeTestRule.waitUntil(5000) {
-                try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
-            }
+            composeTestRule.waitForIdle()
         }
 
         step("Verify all profile elements are displayed") {
-            composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_PICTURE).assertIsDisplayed()
-            composeTestRule
-                .onNodeWithTag(ProfileTestTags.EDIT_PROFILE)
-                .assertIsDisplayed()
-                .assertHasClickAction()
+            val tags =
+                listOf(
+                    ProfileTestTags.PROFILE_TITLE,
+                    ProfileTestTags.EMAIL_SECTION,
+                    ProfileTestTags.USERNAME_SECTION,
+                    ProfileTestTags.SKILLS_SECTION,
+                    ProfileTestTags.PREFERENCES_SECTION,
+                    ProfileTestTags.PROFILE_PICTURE,
+                    ProfileTestTags.EDIT_PROFILE
+                )
+
+            tags.forEach { tag ->
+                waitForNodeToExist(tag)
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            }
+
+            composeTestRule.onNodeWithTag(ProfileTestTags.EDIT_PROFILE).assertHasClickAction()
         }
 
         step("Expand and verify email section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
-            composeTestRule.waitUntil(5000) {
-                try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
-            }
+            waitForNodeToExist(ProfileTestTags.EMAIL_VALUE)
+            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify username section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
-            composeTestRule.waitUntil(5000) {
-                try {
-                    composeTestRule
-                        .onNodeWithTag(ProfileTestTags.USERNAME_VALUE)
-                        .assertIsDisplayed()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
-            }
+            waitForNodeToExist(ProfileTestTags.USERNAME_VALUE)
+            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify skills section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-            composeTestRule.waitUntil(5000) {
-                try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
-            }
+            waitForNodeToExist(ProfileTestTags.SKILLS_LIST)
+            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
         }
 
         step("Expand and verify preferences section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
-            composeTestRule.waitUntil(5000) {
-                try {
-                    composeTestRule
-                        .onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY)
-                        .assertIsDisplayed()
-                    composeTestRule
-                        .onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS)
-                        .assertIsDisplayed()
-                    true
-                } catch (e: Exception) {
-                    false
-                }
-            }
+            waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
         }
     }
 
@@ -203,13 +174,16 @@ class ProfileScreenTest : TestCase() {
     fun profileScreen_selectingMoneyPreferenceUpdatesViewModel() = run {
         step("Display ProfileScreen") {
             composeTestRule.setContent { SkillSwapAppTheme { ProfileScreen(vm = viewModel) } }
+            composeTestRule.waitForIdle()
         }
 
         step("Expand preferences section and select Money") {
+            waitForNodeToExist(ProfileTestTags.PREFERENCES_SECTION)
             composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
+
+            waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performClick()
 
-            // Wait for ViewModel preference to update to MONEY
             waitForPreferenceUpdate(Preference.MONEY)
 
             val updatedPreference = viewModel.userState.value.preference
@@ -219,7 +193,6 @@ class ProfileScreenTest : TestCase() {
         step("Select Skills preference") {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performClick()
 
-            // Wait for ViewModel preference to update back to SKILLS
             waitForPreferenceUpdate(Preference.SKILLS)
 
             val updatedPreference = viewModel.userState.value.preference

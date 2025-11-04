@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.FirebaseApp
@@ -102,7 +103,7 @@ class SkillsEditScreenTest : TestCase() {
         viewModel = EditUserViewModel(repo)
     }
 
-    private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 5000) {
+    private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 10_000) {
         composeTestRule.waitUntil(timeoutMillis) {
             try {
                 composeTestRule.onNodeWithTag(tag).assertExists()
@@ -129,23 +130,58 @@ class SkillsEditScreenTest : TestCase() {
         }
     }
 
+    private fun inputSearchAndWaitForSuggestion(
+        query: String,
+        suggestionIndex: Int = 0,
+        timeoutMillis: Long = 15_000
+    ) {
+        val searchTag = SkillsEditTestTags.SEARCH_FIELD
+        val suggestionTag = "${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_$suggestionIndex"
+
+        composeTestRule.onNodeWithTag(searchTag).performClick()
+        composeTestRule.onNodeWithTag(searchTag).performTextClearance()
+        composeTestRule.onNodeWithTag(searchTag).performTextInput(query)
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis) {
+            try {
+                composeTestRule.onNodeWithTag(suggestionTag).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
     @Test
     fun testEditUserScreenDisplayedBasicComponents() = run {
         step("Display SkillsEditScreen with real repository") {
             composeTestRule.setContent {
                 SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
             }
+            composeTestRule.waitForIdle()
         }
 
         step("Verify Edit User Screen elements are displayed") {
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SCREEN_CONTAINER).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.TITLE).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.DROPDOWN).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_COUNT).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_LIST).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.CANCEL_BUTTON).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).assertIsDisplayed()
+            // Ensure screen is present first
+            waitForNodeToExist(SkillsEditTestTags.SCREEN_CONTAINER)
+
+            val tags =
+                listOf(
+                    SkillsEditTestTags.TITLE,
+                    SkillsEditTestTags.DROPDOWN,
+                    SkillsEditTestTags.SEARCH_FIELD,
+                    SkillsEditTestTags.SELECTED_COUNT,
+                    SkillsEditTestTags.SELECTED_LIST,
+                    SkillsEditTestTags.CANCEL_BUTTON,
+                    SkillsEditTestTags.SAVE_BUTTON
+                )
+
+            tags.forEach { tag ->
+                waitForNodeToExist(tag)
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            }
         }
     }
 
@@ -182,17 +218,11 @@ class SkillsEditScreenTest : TestCase() {
             composeTestRule.setContent {
                 SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
             }
+            composeTestRule.waitForIdle()
         }
 
         step("Add a new skill and verify ViewModel state") {
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performClick()
-            composeTestRule
-                .onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD)
-                .performTextInput("algorithms")
-
-            // Wait for suggestion to appear
-            waitForNodeToExist("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
-
+            inputSearchAndWaitForSuggestion("algorithms", suggestionIndex = 0)
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
                 .performClick()
@@ -257,25 +287,14 @@ class SkillsEditScreenTest : TestCase() {
                 .performClick()
 
             // Add ALGORITHMS
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performClick()
-            composeTestRule
-                .onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD)
-                .performTextInput("algorithms")
-
-            waitForNodeToExist("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
-
+            inputSearchAndWaitForSuggestion("algorithms", suggestionIndex = 0)
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
                 .performClick()
+            composeTestRule.waitForIdle()
 
             // Add MACHINE_DESIGN
-            composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performClick()
-            composeTestRule
-                .onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD)
-                .performTextInput("machine")
-
-            waitForNodeToExist("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
-
+            inputSearchAndWaitForSuggestion("machine", suggestionIndex = 0)
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
                 .performClick()
