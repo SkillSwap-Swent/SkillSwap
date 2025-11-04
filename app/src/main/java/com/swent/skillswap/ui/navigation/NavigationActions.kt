@@ -10,15 +10,19 @@ sealed class Screen(
     val name: String,
     val isTopLevelDestination: Boolean = false,
 ) {
-    object SignInMain : Screen(route = "signIn", name = "signIn", isTopLevelDestination = false)
+    object SignInMain : Screen(route = "signIn", name = "Sign In", isTopLevelDestination = false)
 
     object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
 
-    object Offers : Screen(route = "offers", name = "offers", isTopLevelDestination = true)
+    object Offers : Screen(route = "offers", name = "Offers", isTopLevelDestination = true)
 
-    object Profile : Screen(route = "profile", name = "profile", isTopLevelDestination = true)
+    object Profile : Screen(route = "profile", name = "Profile", isTopLevelDestination = true)
 
-    object Chat : Screen(route = "chat", name = "chat", isTopLevelDestination = true)
+    object EditProfile : Screen(route = "edit_profile", name = "Edit profile")
+
+    object EditSkills : Screen(route = "edit_skills", name = "Edit Skills")
+
+    object Chat : Screen(route = "chat", name = "Chat", isTopLevelDestination = true)
 }
 
 open class NavigationActions(

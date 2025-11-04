@@ -54,6 +54,7 @@ object EditUserTags {
 fun EditUserScreen(
     vm: EditUserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
+    onSkillsPressed: () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
@@ -213,7 +214,7 @@ fun EditUserScreen(
                             Modifier.padding(4.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { /* TODO Next Sprint: Open skill selection screen */}
+                                .clickable { onSkillsPressed() }
                                 .testTag(EditUserTags.SKILLSET_SECTION)
                     ) {
                         FlowRow(
