@@ -23,7 +23,7 @@ open class PostDataClassTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = setOf(EveryTag.of(PostTag.REOCCURRING)),
+            tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
             creation = Timestamp(Date(System.currentTimeMillis() - 10)),
             status = PostStatus.POSTED,
@@ -42,7 +42,7 @@ open class PostDataClassTest {
                 title = "Need help with Kotlin",
                 description = "Looking for an expert to teach me Kotlin.",
                 ownerId = "user456",
-                tags = setOf(EveryTag.of(PostTag.REOCCURRING)),
+                tags = setOf(PostTag.REOCCURRING),
                 expiry = expiryDate,
                 creation = creationDate,
                 status = PostStatus.POSTED,
@@ -54,7 +54,7 @@ open class PostDataClassTest {
         assertEquals("Need help with Kotlin", request.title)
         assertEquals("Looking for an expert to teach me Kotlin.", request.description)
         assertEquals("user456", request.ownerId)
-        assertEquals(setOf(EveryTag.of(PostTag.REOCCURRING)), request.tags)
+        assertEquals(setOf(PostTag.REOCCURRING), request.tags)
         assertEquals(expiryDate, request.expiry)
         assertEquals(creationDate, request.creation)
         assertEquals(PostStatus.POSTED, request.status)
@@ -104,10 +104,15 @@ open class PostDataClassTest {
 
     @Test
     fun testEveryTagCasting() {
-        val postTag = EveryTag.of(PostTag.REOCCURRING)
+        val postTag = EveryTag.valueOf(PostTag.REOCCURRING.toString())
         assertEquals(PostTag.REOCCURRING.toString(), postTag.toString())
 
-        val skillTag = EveryTag.of(SkillTag.ALGORITHMS)
+        val skillTag = EveryTag.valueOf(SkillTag.ALGORITHMS.toString())
         assertEquals(SkillTag.ALGORITHMS.toString(), skillTag.toString())
+    }
+
+    @Test
+    fun testEveryTagCasting_incorrect() {
+        assertThrows(IllegalArgumentException::class.java) { EveryTag.valueOf("Walter White") }
     }
 }
