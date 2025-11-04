@@ -8,8 +8,11 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +48,7 @@ data class EditUserUiState(
 
 class EditUserViewModel(
     // val navigation:
-    private val repo: UserRepositery
+    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
 ) : ViewModel() {
 
     /** Internal state of the Edit User screen. */
@@ -151,6 +154,8 @@ class EditUserViewModel(
             clearError = { it.copy(profilePictureError = null) }
         )
     }
+
+     */
     /** Sets the skill set of the edited user */
     fun setSkills(skills: Set<Skill>) {
         setField(
@@ -163,6 +168,8 @@ class EditUserViewModel(
             clearError = { it.copy(skillSetError = null) }
         )
     }
+
+    /*
 
     /** Sets the availability of the edited user */
     fun setAvailability(availability: List<com.swent.skillswap.model.user.Availability>) {
