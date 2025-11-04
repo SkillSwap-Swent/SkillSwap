@@ -29,8 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
-import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
+import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 import com.swent.skillswap.ui.utils.SkillSwapTextField
 import com.swent.skillswap.viewModel.SignInEvent
 import com.swent.skillswap.viewModel.SignInViewModel
@@ -162,7 +162,7 @@ fun SignInMainScreen(
 
             // ----- Create Account button -----
             Spacer(modifier = Modifier.height(40.dp))
-            GradientButton(
+            SkillSwapShadowButton(
                 onClick = { vm.createAccount() },
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
