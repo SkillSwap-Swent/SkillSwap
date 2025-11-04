@@ -20,9 +20,9 @@ import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserTags
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.ui.editUser.EditUserViewModel
 import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await

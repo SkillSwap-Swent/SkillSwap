@@ -179,21 +179,20 @@ class EditUserViewModel(
     /** Updates the edited user in the state with new values. */
     fun validate() {
         /** PRECONDITIONS */
-        if(
+        if (
             uiState.value.usernameError != null ||
-            uiState.value.emailError != null ||
-            uiState.value.profilePictureError != null ||
-            uiState.value.skillSetError != null ||
-            uiState.value.ratingError != null ||
-            uiState.value.availabilityError != null ||
-            uiState.value.isLoading
-        ){
+                uiState.value.emailError != null ||
+                uiState.value.profilePictureError != null ||
+                uiState.value.skillSetError != null ||
+                uiState.value.ratingError != null ||
+                uiState.value.availabilityError != null ||
+                uiState.value.isLoading
+        ) {
             /** There is still some error in the form, do not proceed */
             return
         }
         /** Fetch the edited user from the state and do nothing if the user is not fetched */
         val editedUser = _uiState.value.editedUser ?: return
-
 
         /** The preconditions are fulfilled, proceed to validate */
         viewModelScope.launch {
