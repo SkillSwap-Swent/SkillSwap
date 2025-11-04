@@ -25,8 +25,8 @@ class PostConversationItemTest {
             title = "Graphic Design Help",
             description = "desc",
             ownerId = "u1",
-            tags = listOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES),
-            paymentMethods = listOf(PaymentMethod.SKILLS),
+            tags = setOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES),
+            paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Timestamp.now().seconds + 86400, 0),
             creation = Timestamp(Timestamp.now().seconds - 10, 0),
             status = PostStatus.POSTED,
@@ -66,7 +66,7 @@ class PostConversationItemTest {
 
     @Test
     fun handles_no_tags_gracefully() {
-        val noTagOffer = offer().copy(tags = emptyList())
+        val noTagOffer = offer().copy(tags = emptySet())
         composeRule.setContent {
             MaterialTheme { PostConversationItem(post = noTagOffer, user = null, onClick = {}) }
         }
@@ -81,7 +81,7 @@ class PostConversationItemTest {
             offer()
                 .copy(
                     tags =
-                        listOf(
+                        setOf(
                             SkillTag.COMPUTER_PROGRAMMING,
                             SkillTag.DATA_STRUCTURES,
                             SkillTag.ALGORITHMS
