@@ -20,6 +20,7 @@ import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.ui.user.SkillsEditTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
+import kotlin.ranges.contains
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -191,16 +192,19 @@ class SkillsEditScreenTest : TestCase() {
             composeTestRule.setContent {
                 SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
             }
+            composeTestRule.waitForIdle()
         }
 
         step("Remove one skill from the user") {
+            // Wait for the skill chip to exist before clicking
+            waitForNodeToExist("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}")
+
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}")
                 .performClick()
 
             composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
 
-            // Wait for ViewModel state to update
             waitForSkillInViewModel(SkillTag.DATABASES, shouldExist = false)
 
             val updatedUser = viewModel.uiState.value.editedUser
