@@ -20,15 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
@@ -123,67 +117,8 @@ fun SkillSwapShadowButton(
                 )
             else null,
         shape = shape,
-        modifier = modifier /*.outerShadow(shape)*/
+        modifier = modifier
     ) {
         content()
     }
 }
-
-/**
- * Draws a blurred, **outer-only** shadow around a shape, keeping the inner area fully transparent.
- * Useful for “glassmorphism” effects where a component should appear raised but translucent.
- *
- * The shadow is drawn outside the provided [shape] using a blur mask. The inside of the shape
- * remains untouched, so the button or surface can stay transparent.
- *
- * @param shape the outline shape used to calculate shadow boundaries.
- * @param blur the radius of the shadow blur; higher values produce a softer glow.
- * @param offsetY the vertical offset of the shadow, in dp.
- */
-fun Modifier.outerShadow(
-    shape: Shape,
-    blur: Dp = 4.dp,
-    offsetY: Dp = 2.dp,
-): Modifier =
-    this.then(
-        Modifier.drawBehind {
-            // Create an outline for the current shape and size
-            val outline = shape.createOutline(size, layoutDirection, this)
-            val rr =
-                when (outline) {
-                    is Outline.Rounded -> outline.roundRect
-                    is Outline.Generic -> return@drawBehind // generic paths not supported
-                    is Outline.Rectangle ->
-                        RoundRect(0f, 0f, size.width, size.height, CornerRadius.Zero)
-                }
-
-            val path = Path().apply { addRoundRect(rr) }
-
-            // Configure the native paint with a blur mask
-            val frameworkPaint =
-                Paint().asFrameworkPaint().apply {
-                    isAntiAlias = true
-                    alpha = shadow_opacity // shadow opacity
-                    maskFilter =
-                        android.graphics.BlurMaskFilter(
-                            blur.toPx(),
-                            android.graphics.BlurMaskFilter.Blur.NORMAL
-                        )
-                }
-            // Clip outside of the shape so the shadow is drawn only externally
-            drawIntoCanvas { canvas ->
-                canvas.save()
-                canvas.clipPath(path, clipOp = ClipOp.Difference)
-                canvas.nativeCanvas.drawRoundRect(
-                    rr.left,
-                    rr.top + offsetY.toPx(),
-                    rr.right,
-                    rr.bottom + offsetY.toPx(),
-                    rr.topLeftCornerRadius.x,
-                    rr.topLeftCornerRadius.y,
-                    frameworkPaint
-                )
-                canvas.restore()
-            }
-        }
-    )
