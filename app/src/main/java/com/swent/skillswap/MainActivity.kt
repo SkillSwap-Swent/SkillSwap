@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.navigation
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
@@ -83,12 +84,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
 
-    val startDestination =
-        if (FirebaseAuth.getInstance().currentUser != null) {
-            Screen.Profile.route
-        } else {
-            Screen.SignInMain.route
-        }
+    val startDestination = Screen.SignInMain.name
 
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
@@ -122,47 +118,63 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
                     .padding(paddingValues)
         ) {
-            composable(Screen.SignInMain.route) {
-                SignInMainScreen(
-                    goToCreateAccountScreen = {
-                        navigationActions.navigateTo(Screen.SignInCreateAccount)
-                    },
-                    goToMainScreen = { navigationActions.navigateTo(Screen.Profile) }
-                )
+            // SIGN IN / CREATE ACCOUNT SCREENS
+            navigation(
+                startDestination = Screen.SignInMain.route,
+                route = Screen.SignInMain.name
+            ){
+                composable(Screen.SignInMain.route) {
+                    SignInMainScreen(
+                        goToCreateAccountScreen = {
+                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                        },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Profile) }
+                    )
+                }
+                composable(Screen.SignInCreateAccount.route) {
+                    SignInCreateAccountScreen(
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
+                    )
+                }
             }
-            composable(Screen.SignInCreateAccount.route) {
-                SignInCreateAccountScreen(
-                    goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
-                )
+
+
+            // USER SCREENS
+            navigation(
+                startDestination = Screen.Profile.route,
+                route= Screen.Profile.name
+            ){
+                composable(Screen.Profile.route) {
+                    val profileViewModel: ProfileViewModel = viewModel()
+                    profileViewModel.loadCurrentUser()
+                    ProfileScreen(
+                        vm = profileViewModel,
+                        onLogoutClick = {
+                            FirebaseAuth.getInstance().signOut()
+                            navigationActions.navigateTo(Screen.SignInMain)
+                        },
+                        onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) }
+                    )
+                }
+                composable(Screen.EditProfile.route) {
+                    EditUserScreen(
+                        vm = editProfileViewModel,
+                        onGoBack = { navigationActions.goBack() },
+                        onSkillsPressed = { navigationActions.navigateTo(Screen.EditSkills) }
+                    )
+                }
+                composable(Screen.EditSkills.route) {
+                    SkillsEditScreen(
+                        vm = editProfileViewModel,
+                        onBackClick = { navigationActions.goBack() }
+                    )
+                }
             }
+
 
             composable(Screen.Offers.route) { OfferScreen() }
 
-            composable(Screen.Profile.route) {
-                val profileViewModel: ProfileViewModel = viewModel()
-                profileViewModel.loadCurrentUser()
-                ProfileScreen(
-                    vm = profileViewModel,
-                    onLogoutClick = {
-                        FirebaseAuth.getInstance().signOut()
-                        navigationActions.navigateTo(Screen.SignInMain)
-                    },
-                    onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) }
-                )
-            }
-            composable(Screen.EditProfile.route) {
-                EditUserScreen(
-                    vm = editProfileViewModel,
-                    onGoBack = { navigationActions.goBack() },
-                    onSkillsPressed = { navigationActions.navigateTo(Screen.EditSkills) }
-                )
-            }
-            composable(Screen.EditSkills.route) {
-                SkillsEditScreen(
-                    vm = editProfileViewModel,
-                    onBackClick = { navigationActions.goBack() }
-                )
-            }
+
             composable(Screen.Chat.route) {
                 ChatScreen(
                     posts = ChatScreenData.getSamplePosts(),

@@ -54,12 +54,14 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
+
     var expandedEmail by remember { mutableStateOf(false) }
     var expandedUsername by remember { mutableStateOf(false) }
     var expandedSkills by remember { mutableStateOf(false) }
     var expandedPreferences by remember { mutableStateOf(false) }
 
     val uiState by vm.userState.collectAsState()
+
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),

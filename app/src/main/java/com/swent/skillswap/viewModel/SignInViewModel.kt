@@ -92,7 +92,7 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
                 googleModel.signIn(SignInGoogleParams(activity, credentialManager))
                 try {
                     // Check if user’s Google account info already exists in Firestore.
-                    if ((googleModel as SignInGoogleModel).googleAccountInfoAreSavedInFirestore()) {
+                    if (googleModel.googleAccountInfoAreSavedInFirestore()) {
                         // User exists → go to main app.
                         _eventFlow.emit(SignInEvent.NavigateToMainScreen)
                     } else {
