@@ -62,7 +62,6 @@ fun ProfileScreen(
 
     val uiState by vm.userState.collectAsState()
 
-
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally

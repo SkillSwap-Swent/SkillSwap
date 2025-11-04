@@ -14,11 +14,11 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.ui.user.SkillsEditTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.ui.editUser.EditUserViewModel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before

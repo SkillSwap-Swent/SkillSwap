@@ -2,7 +2,6 @@ package com.swent.skillswap
 
 import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -25,8 +24,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
@@ -50,7 +49,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         /*For testing purposes on sign in*/
-        //FirebaseAuth.getInstance().signOut()
+        // FirebaseAuth.getInstance().signOut()
         setContent {
             SkillSwapAppTheme() {
                 // A surface container using the 'background' color from the theme
@@ -119,10 +118,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     .padding(paddingValues)
         ) {
             // SIGN IN / CREATE ACCOUNT SCREENS
-            navigation(
-                startDestination = Screen.SignInMain.route,
-                route = Screen.SignInMain.name
-            ){
+            navigation(startDestination = Screen.SignInMain.route, route = Screen.SignInMain.name) {
                 composable(Screen.SignInMain.route) {
                     SignInMainScreen(
                         goToCreateAccountScreen = {
@@ -138,12 +134,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-
             // USER SCREENS
-            navigation(
-                startDestination = Screen.Profile.route,
-                route= Screen.Profile.name
-            ){
+            navigation(startDestination = Screen.Profile.route, route = Screen.Profile.name) {
                 composable(Screen.Profile.route) {
                     val profileViewModel: ProfileViewModel = viewModel()
                     profileViewModel.loadCurrentUser()
@@ -171,9 +163,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-
             composable(Screen.Offers.route) { OfferScreen() }
-
 
             composable(Screen.Chat.route) {
                 ChatScreen(
