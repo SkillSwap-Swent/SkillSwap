@@ -52,7 +52,7 @@ class FakePostRepository : PostRepository {
     }
 
     override suspend fun getMultiplePosts(
-        numberOfPosts: Int,
+        numberOfPosts: Long,
         type: PostType,
         titleContains: String,
         ownerId: String,

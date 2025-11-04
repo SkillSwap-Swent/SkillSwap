@@ -9,7 +9,7 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
 
-const val NUMB_POSTS_TO_FETCH = 10
+const val NUMB_POSTS_TO_FETCH = 10L
 const val PRELOAD_THRESHOLD = 3
 
 private class FeedControllerImpl(
