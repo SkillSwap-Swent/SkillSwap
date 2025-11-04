@@ -14,7 +14,8 @@ data class Offer(
     override val expiry: Timestamp,
     override val creation: Timestamp,
     override val status: PostStatus,
-    override val media: List<String>
+    override val media: List<String>,
+    override val postReplies: Set<PostReply> = emptySet()
 ) : Post {
     override val type: PostType = PostType.OFFER
 }
