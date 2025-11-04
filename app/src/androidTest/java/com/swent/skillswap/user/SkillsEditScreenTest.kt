@@ -217,9 +217,34 @@ class SkillsEditScreenTest : TestCase() {
             composeTestRule.setContent {
                 SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
             }
+            // Wait for initial composition
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule
+                        .onNodeWithTag(SkillsEditTestTags.SCREEN_CONTAINER)
+                        .assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
         }
 
         step("Remove and add multiple skills") {
+            // Wait for skill chips to exist before clicking
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule
+                        .onNodeWithTag(
+                            "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}"
+                        )
+                        .assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
+
             // Remove DATABASES and DIGITAL_LOGIC
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}")

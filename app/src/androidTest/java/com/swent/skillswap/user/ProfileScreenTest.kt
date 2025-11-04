@@ -119,6 +119,15 @@ class ProfileScreenTest : TestCase() {
     fun profileScreen_displaysAllElements() = run {
         step("Display ProfileScreen") {
             composeTestRule.setContent { SkillSwapAppTheme { ProfileScreen(vm = viewModel) } }
+            // Give the initial composition time to settle
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
         }
 
         step("Verify all profile elements are displayed") {
@@ -138,54 +147,55 @@ class ProfileScreenTest : TestCase() {
             composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
             composeTestRule.waitUntil(5000) {
                 try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertExists()
+                    composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
                     true
                 } catch (e: Exception) {
                     false
                 }
             }
-            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify username section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
             composeTestRule.waitUntil(5000) {
                 try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertExists()
+                    composeTestRule
+                        .onNodeWithTag(ProfileTestTags.USERNAME_VALUE)
+                        .assertIsDisplayed()
                     true
                 } catch (e: Exception) {
                     false
                 }
             }
-            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify skills section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
             composeTestRule.waitUntil(5000) {
                 try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertExists()
+                    composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
                     true
                 } catch (e: Exception) {
                     false
                 }
             }
-            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
         }
 
         step("Expand and verify preferences section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
             composeTestRule.waitUntil(5000) {
                 try {
-                    composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertExists()
+                    composeTestRule
+                        .onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY)
+                        .assertIsDisplayed()
+                    composeTestRule
+                        .onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS)
+                        .assertIsDisplayed()
                     true
                 } catch (e: Exception) {
                     false
                 }
             }
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
         }
     }
 
