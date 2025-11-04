@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object SkillsEditTestTags {

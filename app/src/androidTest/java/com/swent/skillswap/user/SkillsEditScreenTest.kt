@@ -18,7 +18,7 @@ import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.ui.user.SkillsEditTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.viewModel.EditUserViewModel
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before

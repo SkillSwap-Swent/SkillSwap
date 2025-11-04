@@ -36,7 +36,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.ui.theme.*
 import com.swent.skillswap.ui.utils.*
-import com.swent.skillswap.viewModel.EditUserViewModel
 
 object EditUserTags {
     const val GO_BACK_BUTTON = "edit_user_go_back_button"

@@ -2,6 +2,7 @@ package com.swent.skillswap
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -30,6 +31,7 @@ import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
 import com.swent.skillswap.ui.chat.ChatScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
@@ -40,7 +42,6 @@ import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
-import com.swent.skillswap.viewModel.EditUserViewModel
 import com.swent.skillswap.viewModel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         /*For testing purposes on sign in*/
-        // FirebaseAuth.getInstance().signOut()
+        //FirebaseAuth.getInstance().signOut()
         setContent {
             SkillSwapAppTheme() {
                 // A surface container using the 'background' color from the theme
@@ -85,7 +86,9 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val startDestination =
         if (FirebaseAuth.getInstance().currentUser != null) {
             Screen.Profile.route
-        } else Screen.SignInMain.route
+        } else {
+            Screen.SignInMain.route
+        }
 
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
