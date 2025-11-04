@@ -138,19 +138,9 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
         val postReplies: Set<PostReply> =
-            document.get("postReplies")?.let { list ->
-                (list as? List<Map<String, Any>>)
-                    ?.map { map ->
-                        PostReply(
-                            postId = map["postId"] as String,
-                            ownerId = map["ownerId"] as String,
-                            message = map["message"] as String,
-                            creation = map["creation"] as Timestamp,
-                            postType = PostType.valueOf(map["postType"] as String)
-                        )
-                    }
-                    ?.toSet() ?: emptySet()
-            } ?: emptySet()
+            (document.get("postReplies") as? List<*>)
+                ?.map { item -> documentToPostReply(item) }
+                ?.toSet() ?: emptySet()
 
         val post =
             when (postType) {
@@ -173,6 +163,37 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
+    }
+
+    private fun documentToPostReply(item: Any?): PostReply {
+        val map =
+            item as? Map<*, *>
+                ?: error(
+                    "Invalid post reply entry: expected Map but got ${item?.javaClass?.simpleName}"
+                )
+
+        val postId =
+            map["postId"] as? String ?: error("Missing or invalid 'postId' in post reply: $map")
+        val ownerId =
+            map["ownerId"] as? String ?: error("Missing or invalid 'ownerId' in post reply: $map")
+        val message =
+            map["message"] as? String ?: error("Missing or invalid 'message' in post reply: $map")
+        val creation =
+            map["creation"] as? Timestamp
+                ?: error("Missing or invalid 'creation' in post reply: $map")
+        val postTypeStr =
+            map["postType"] as? String ?: error("Missing or invalid 'postType' in post reply: $map")
+        val postType =
+            runCatching { PostType.valueOf(postTypeStr) }
+                .getOrElse { error("Invalid postType value: '$postTypeStr' in post reply: $map") }
+
+        return PostReply(
+            postId = postId,
+            ownerId = ownerId,
+            message = message,
+            creation = creation,
+            postType = postType
+        )
     }
 
     private fun getCollectionPath(type: PostType): CollectionReference {
