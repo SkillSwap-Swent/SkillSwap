@@ -14,6 +14,8 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
 import kotlinx.coroutines.tasks.await
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
@@ -136,7 +138,9 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
-        val postReplies = document.toObject(Request::class.java)?.postReplies ?: emptySet()
+        val postReplies =
+            document.getString("postReplies")?.let { Json.decodeFromString<Set<PostReply>>(it) }
+                ?: emptySet()
 
         val post =
             when (postType) {
