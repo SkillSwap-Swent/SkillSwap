@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
+import kotlin.String
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -18,8 +19,7 @@ import org.junit.runner.RunWith
 class PostRepositoryInstrumentedTest {
 
     private lateinit var repo: PostRepository
-
-    private val request1 =
+    val request1 =
         Request(
             uid = "123",
             title = "Need help with Kotlin",
@@ -30,7 +30,17 @@ class PostRepositoryInstrumentedTest {
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            postReplies =
+                setOf(
+                    PostReply(
+                        postId = "123",
+                        ownerId = "replier123",
+                        creation = Timestamp.now(),
+                        message = "I want to help!",
+                        postType = PostType.REQUEST
+                    )
+                )
         )
 
     @Before
@@ -66,6 +76,7 @@ class PostRepositoryInstrumentedTest {
             assertEquals(req.status, fetched.status)
             assertEquals(req.media, fetched.media)
             assertEquals(PostType.REQUEST, fetched.type)
+            assertEquals(req.postReplies, fetched.postReplies)
         }
     }
 

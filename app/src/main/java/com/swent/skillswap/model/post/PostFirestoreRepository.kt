@@ -5,6 +5,7 @@
  */
 package com.swent.skillswap.model.post
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -136,6 +137,21 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
+        val postReplies: Set<PostReply> =
+            document.get("postReplies")?.let { list ->
+                (list as? List<Map<String, Any>>)
+                    ?.map { map ->
+                        PostReply(
+                            postId = map["postId"] as String,
+                            ownerId = map["ownerId"] as String,
+                            message = map["message"] as String,
+                            creation = map["creation"] as Timestamp,
+                            postType = PostType.valueOf(map["postType"] as String)
+                        )
+                    }
+                    ?.toSet() ?: emptySet()
+            } ?: emptySet()
+
         val post =
             when (postType) {
                 PostType.REQUEST ->
@@ -149,7 +165,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         expiry,
                         creation,
                         status,
-                        media
+                        media,
+                        postReplies
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
@@ -177,7 +194,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             creation = post.creation,
             status = post.status,
             media = post.media,
-            type = post.type
+            type = post.type,
+            postReplies = post.postReplies.toList()
         )
     }
 }
