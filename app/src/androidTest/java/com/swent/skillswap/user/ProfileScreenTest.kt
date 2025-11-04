@@ -106,6 +106,15 @@ class ProfileScreenTest : TestCase() {
         viewModel = ProfileViewModel(repo)
     }
 
+    private fun waitForPreferenceUpdate(
+        expectedPreference: Preference,
+        timeoutMillis: Long = 5000
+    ) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            viewModel.userState.value.preference == expectedPreference
+        }
+    }
+
     @Test
     fun profileScreen_displaysAllElements() = run {
         step("Display ProfileScreen") {
@@ -127,27 +136,57 @@ class ProfileScreenTest : TestCase() {
 
         step("Expand and verify email section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
             composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify username section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
             composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify skills section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertIsDisplayed()
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
         }
 
         step("Expand and verify preferences section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertIsDisplayed()
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
         }
-
-        Thread.sleep(500)
     }
 
     @Test
@@ -160,7 +199,8 @@ class ProfileScreenTest : TestCase() {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performClick()
 
-            Thread.sleep(200)
+            // Wait for ViewModel preference to update to MONEY
+            waitForPreferenceUpdate(Preference.MONEY)
 
             val updatedPreference = viewModel.userState.value.preference
             assert(updatedPreference == Preference.MONEY)
@@ -169,7 +209,8 @@ class ProfileScreenTest : TestCase() {
         step("Select Skills preference") {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performClick()
 
-            Thread.sleep(200)
+            // Wait for ViewModel preference to update back to SKILLS
+            waitForPreferenceUpdate(Preference.SKILLS)
 
             val updatedPreference = viewModel.userState.value.preference
             assert(updatedPreference == Preference.SKILLS)
