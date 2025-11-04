@@ -85,11 +85,7 @@ object ChatScreenData {
                 title = "Graphic Design Help",
                 description = "Professional designer offering logo and branding assistance",
                 ownerId = "user2",
-                tags =
-                    setOf(
-                        EveryTag.of(SkillTag.COMPUTER_PROGRAMMING),
-                        EveryTag.of(SkillTag.DATA_STRUCTURES)
-                    ),
+                tags = setOf(EveryTag.of(SkillTag.COMPUTER_PROGRAMMING), EveryTag.of(SkillTag.DATA_STRUCTURES)),
                 paymentMethod = PaymentMethod.SKILLSANDCASH,
                 expiry = future,
                 creation = now,
@@ -101,11 +97,7 @@ object ChatScreenData {
                 title = "Bike Repair Service",
                 description = "Experienced mechanic offering bike maintenance and repair",
                 ownerId = "user3",
-                tags =
-                    setOf(
-                        EveryTag.of(SkillTag.PHYSICS_MECHANICS),
-                        EveryTag.of(SkillTag.MATERIALS_ENGINEERING)
-                    ),
+                tags = setOf(EveryTag.of(SkillTag.PHYSICS_MECHANICS), EveryTag.of(SkillTag.MATERIALS_ENGINEERING)),
                 paymentMethod = PaymentMethod.SKILLS,
                 expiry = future,
                 creation = now,
@@ -130,11 +122,7 @@ object ChatScreenData {
                 title = "Web Development Help",
                 description = "Need assistance with React and JavaScript projects",
                 ownerId = "user1",
-                tags =
-                    setOf(
-                        EveryTag.of(SkillTag.COMPUTER_PROGRAMMING),
-                        EveryTag.of(SkillTag.ALGORITHMS)
-                    ),
+                tags = setOf(EveryTag.of(SkillTag.COMPUTER_PROGRAMMING), EveryTag.of(SkillTag.ALGORITHMS)),
                 paymentMethod = PaymentMethod.SKILLS,
                 expiry = future,
                 creation = now,
