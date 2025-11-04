@@ -159,14 +159,10 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
                             "No skills listed"
                         } else {
                             post.tags.take(2).joinToString(", ") {
-                                it.value
-                                    .toString()
-                                    .replace("_", " ")
-                                    .lowercase()
-                                    .replaceFirstChar { char ->
-                                        if (char.isLowerCase()) char.titlecase()
-                                        else char.toString()
-                                    }
+                                it.toString().replace("_", " ").lowercase().replaceFirstChar { char
+                                    ->
+                                    if (char.isLowerCase()) char.titlecase() else char.toString()
+                                }
                             }
                         },
                     fontSize = 14.sp,
