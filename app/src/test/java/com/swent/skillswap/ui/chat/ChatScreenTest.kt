@@ -12,7 +12,6 @@ import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
-import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
 import org.junit.Rule
@@ -37,7 +36,7 @@ class ChatScreenTest {
                 "Graphic Design Help",
                 "desc",
                 "u2",
-                setOf(EveryTag.of(SkillTag.COMPUTER_PROGRAMMING)),
+                setOf(SkillTag.COMPUTER_PROGRAMMING),
                 PaymentMethod.SKILLS,
                 futureTs(),
                 pastTs(),
@@ -49,7 +48,7 @@ class ChatScreenTest {
                 "Need Math Tutor",
                 "desc",
                 "u1",
-                setOf(EveryTag.of(SkillTag.CALCULUS)),
+                setOf(SkillTag.CALCULUS),
                 PaymentMethod.SKILLS,
                 futureTs(),
                 pastTs(),

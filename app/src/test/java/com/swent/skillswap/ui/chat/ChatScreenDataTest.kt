@@ -6,6 +6,7 @@ package com.swent.skillswap.ui.chat
 
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.tags.SkillTag
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -99,6 +100,7 @@ class ChatScreenDataTest {
         val post = posts.first()
 
         assertTrue(post.tags.isNotEmpty())
+        assertTrue(post.tags.all { it is SkillTag })
     }
 
     @Test
