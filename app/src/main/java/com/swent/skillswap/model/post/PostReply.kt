@@ -14,13 +14,13 @@ data class PostReply(
     /** The type of the post that the reply is associated with. */
     val postType: PostType
 ) {
-    // Needed only for Firestore's deserializer
-    constructor() :
-        this(
-            postId = "",
-            ownerId = "",
-            creation = Timestamp.now(),
-            message = "",
-            postType = PostType.REQUEST
-        )
+    //    // Needed only for Firestore's deserializer
+    //    constructor() :
+    //        this(
+    //            postId = "",
+    //            ownerId = "",
+    //            creation = Timestamp.now(),
+    //            message = "",
+    //            postType = PostType.REQUEST
+    //        )
 }

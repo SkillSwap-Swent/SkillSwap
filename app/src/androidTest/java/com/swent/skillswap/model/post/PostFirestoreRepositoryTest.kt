@@ -2,9 +2,11 @@ package com.swent.skillswap.model.post
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
+import kotlin.String
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -30,7 +32,17 @@ class PostRepositoryInstrumentedTest {
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            postReplies =
+                setOf(
+                    PostReply(
+                        postId = "123",
+                        ownerId = "replier123",
+                        creation = Timestamp.now(),
+                        message = "I want to help!",
+                        postType = PostType.REQUEST
+                    )
+                )
         )
 
     @Before
