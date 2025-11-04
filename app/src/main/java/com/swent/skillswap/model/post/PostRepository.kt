@@ -38,7 +38,7 @@ interface PostRepository {
      * @throws Exception Database exceptions will be thrown.
      */
     suspend fun getMultiplePosts(
-        numberOfPosts: Int,
+        numberOfPosts: Long,
         type: PostType,
         // optional filters
         titleContains: String = "",

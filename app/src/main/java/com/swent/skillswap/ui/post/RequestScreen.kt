@@ -349,7 +349,7 @@ fun NewRequestScreenPreview() {
                 "preview-uid"
 
             override suspend fun getMultiplePosts(
-                numberOfPosts: Int,
+                numberOfPosts: Long,
                 type: com.swent.skillswap.model.post.PostType,
                 titleContains: String,
                 ownerId: String,

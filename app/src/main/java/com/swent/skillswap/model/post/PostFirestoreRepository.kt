@@ -28,7 +28,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     }
 
     override suspend fun getMultiplePosts(
-        numberOfPosts: Int,
+        numberOfPosts: Long,
         type: PostType,
         titleContains: String,
         ownerId: String,
@@ -49,7 +49,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         titleContains: String,
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
-        numberOfPosts: Int
+        numberOfPosts: Long
     ): Query {
         var query: Query = getCollectionPath(type)
 
@@ -69,7 +69,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
         }
 
-        return query.limit(numberOfPosts.toLong())
+        return query.limit(numberOfPosts)
     }
 
     /**
