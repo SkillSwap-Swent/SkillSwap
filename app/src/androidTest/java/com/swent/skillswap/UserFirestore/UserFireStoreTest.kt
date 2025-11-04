@@ -9,7 +9,9 @@ package com.swent.skillswap.UserFirestore
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -29,11 +31,10 @@ class UserFireStoreTest {
 
     init {
         FirebaseEmulator.startEmulator()
-        db = FirebaseEmulator.firestore // get the firestore instance pointing to the emulator
-        repo = UserRepoFirestore(db) // initialize the repository
+        db = FirebaseEmulator.firestore
+        repo = UserRepoFirestore(db)
     }
 
-    // Nettoie la collection users avant chaque test
     @Before
     fun setUp() = runBlocking {
         val users = FirebaseEmulator.firestore.collection("users").get().await()
@@ -53,13 +54,12 @@ class UserFireStoreTest {
                 profilePicture = "",
                 skillSet = setOf(),
                 rating = 5.0f,
-                availability = listOf()
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = Location(0.0, 0.0, "test_location")
             )
 
-        // Ajout de l'utilisateur
-
         repo.addUser(user)
-        // Récupération de l'utilisateur
         val retrievedUser = repo.getUser(uid)
 
         assertNotNull(retrievedUser)
@@ -69,6 +69,8 @@ class UserFireStoreTest {
         assertEquals(user.rating, retrievedUser.rating)
         assertEquals(user.skillSet, retrievedUser.skillSet)
         assertEquals(user.availability, retrievedUser.availability)
+        assertEquals(user.preference, retrievedUser.preference)
+        assertEquals(user.location, retrievedUser.location)
     }
 
     @Test
@@ -103,10 +105,11 @@ class UserFireStoreTest {
                 profilePicture = "",
                 skillSet = setOf(skill1, skill2),
                 rating = 4.0f,
-                availability = listOf(availability1, availability2)
+                availability = listOf(availability1, availability2),
+                preference = Preference.MONEY,
+                location = Location(46.5191, 6.5668, "EPFL")
             )
 
-        // add user in firestore
         repo.addUser(user)
 
         assertEquals(user, repo.getUser(uid))
@@ -123,14 +126,14 @@ class UserFireStoreTest {
                 profilePicture = "",
                 skillSet = setOf(),
                 rating = 5.0f,
-                availability = listOf()
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = Location(0.0, 0.0, "initial_location")
             )
-        // add the basci user
-        repo.addUser(basicUser)
 
+        repo.addUser(basicUser)
         assertEquals(basicUser, repo.getUser(uid))
 
-        // the edited user
         val skill1 =
             Skill(
                 name = SkillTag.COMPUTER_PROGRAMMING,
@@ -160,7 +163,9 @@ class UserFireStoreTest {
                 profilePicture = "pic.url",
                 skillSet = setOf(skill1, skill2),
                 rating = 4.0f,
-                availability = listOf(availability1, availability2)
+                availability = listOf(availability1, availability2),
+                preference = Preference.MONEY,
+                location = Location(48.8566, 2.3522, "Paris")
             )
 
         repo.editUser(basicUser.uid, editedUser)
@@ -169,8 +174,6 @@ class UserFireStoreTest {
 
     @Test
     fun deleteSingleUserFromMultiple() = runBlocking {
-
-        // User 1
         val uid1 = repo.getNewUid()
         val user1 =
             User(
@@ -180,10 +183,11 @@ class UserFireStoreTest {
                 profilePicture = "",
                 skillSet = setOf(),
                 rating = 5.0f,
-                availability = listOf()
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = Location(40.7128, -74.0060, "New York")
             )
 
-        // User 2
         val skill1 =
             Skill(
                 name = SkillTag.COMPUTER_PROGRAMMING,
@@ -214,19 +218,152 @@ class UserFireStoreTest {
                 profilePicture = "pic.url",
                 skillSet = setOf(skill1, skill2),
                 rating = 4.0f,
-                availability = listOf(availability1, availability2)
+                availability = listOf(availability1, availability2),
+                preference = Preference.MONEY,
+                location = Location(51.5074, -0.1278, "London")
             )
 
         repo.addUser(user1)
         repo.addUser(user2)
 
-        // delete user 1
         repo.deleteUser(user1.uid)
 
-        // get user 1 should throw an exception
         assertThrows(Exception::class.java) { runBlocking { repo.getUser(user1.uid) } }
 
-        // get user 2 should work
         assertEquals(user2, repo.getUser(user2.uid))
+    }
+
+    @Test
+    fun editUserLocation() = runBlocking {
+        val uid = repo.getNewUid()
+        val initialLocation = Location(46.5191, 6.5668, "EPFL")
+        val user =
+            User(
+                uid = uid,
+                username = "locationtester",
+                email = "location@test.com",
+                profilePicture = "",
+                skillSet = setOf(),
+                rating = 5.0f,
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = initialLocation
+            )
+
+        repo.addUser(user)
+        assertEquals(initialLocation, repo.getUser(uid).location)
+
+        val newLocation = Location(48.8566, 2.3522, "Paris, France")
+        val updatedUser = user.copy(location = newLocation)
+
+        repo.editUser(uid, updatedUser)
+        val retrievedUser = repo.getUser(uid)
+
+        assertEquals(newLocation.latitude, retrievedUser.location.latitude, 0.0001)
+        assertEquals(newLocation.longitude, retrievedUser.location.longitude, 0.0001)
+        assertEquals(newLocation.name, retrievedUser.location.name)
+    }
+
+    @Test
+    fun editUserPreference() = runBlocking {
+        val uid = repo.getNewUid()
+        val user =
+            User(
+                uid = uid,
+                username = "preferencetester",
+                email = "preference@test.com",
+                profilePicture = "",
+                skillSet = setOf(),
+                rating = 5.0f,
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = Location(0.0, 0.0, "test")
+            )
+
+        repo.addUser(user)
+        assertEquals(Preference.SKILLS, repo.getUser(uid).preference)
+
+        val updatedUser = user.copy(preference = Preference.MONEY)
+        repo.editUser(uid, updatedUser)
+
+        assertEquals(Preference.MONEY, repo.getUser(uid).preference)
+    }
+
+    @Test
+    fun testMultipleLocationsWithDifferentCoordinates() = runBlocking {
+        val uid1 = repo.getNewUid()
+        val user1 =
+            User(
+                uid = uid1,
+                username = "user1",
+                email = "user1@test.com",
+                profilePicture = "",
+                skillSet = setOf(),
+                rating = 5.0f,
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = Location(46.5191, 6.5668, "EPFL, Switzerland")
+            )
+
+        val uid2 = repo.getNewUid()
+        val user2 =
+            User(
+                uid = uid2,
+                username = "user2",
+                email = "user2@test.com",
+                profilePicture = "",
+                skillSet = setOf(),
+                rating = 5.0f,
+                availability = listOf(),
+                preference = Preference.MONEY,
+                location = Location(35.6762, 139.6503, "Tokyo, Japan")
+            )
+
+        repo.addUser(user1)
+        repo.addUser(user2)
+
+        val retrievedUser1 = repo.getUser(uid1)
+        val retrievedUser2 = repo.getUser(uid2)
+
+        assertEquals(user1.location, retrievedUser1.location)
+        assertEquals(user2.location, retrievedUser2.location)
+        assertNotEquals(retrievedUser1.location, retrievedUser2.location)
+    }
+
+    @Test
+    fun testBothPreferenceValues() = runBlocking {
+        val uid1 = repo.getNewUid()
+        val userWithSkillsPreference =
+            User(
+                uid = uid1,
+                username = "skillsuser",
+                email = "skills@test.com",
+                profilePicture = "",
+                skillSet = setOf(),
+                rating = 5.0f,
+                availability = listOf(),
+                preference = Preference.SKILLS,
+                location = Location(0.0, 0.0, "test")
+            )
+
+        val uid2 = repo.getNewUid()
+        val userWithMoneyPreference =
+            User(
+                uid = uid2,
+                username = "moneyuser",
+                email = "money@test.com",
+                profilePicture = "",
+                skillSet = setOf(),
+                rating = 5.0f,
+                availability = listOf(),
+                preference = Preference.MONEY,
+                location = Location(0.0, 0.0, "test")
+            )
+
+        repo.addUser(userWithSkillsPreference)
+        repo.addUser(userWithMoneyPreference)
+
+        assertEquals(Preference.SKILLS, repo.getUser(uid1).preference)
+        assertEquals(Preference.MONEY, repo.getUser(uid2).preference)
     }
 }

@@ -32,7 +32,8 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 skillSet = deserializeSkills(data["skillSet"] as String),
                 rating = (data["rating"] as? Number)?.toFloat() ?: 0f,
                 availability = deserializeAvailabilities(data["availability"] as String),
-                preference = deserializePreference(data["preference"] as String)
+                preference = deserializePreference(data["preference"] as String),
+                location = deserializeLocation(data["location"] as String)
             )
         } catch (e: Exception) {
             Log.e("UserRepoFirestore", "Error while getting user in getUser", e)
@@ -49,7 +50,8 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 "skillSet" to serializeSkills(user.skillSet),
                 "rating" to user.rating,
                 "availability" to serializeAvailabilities(user.availability),
-                "preference" to serializePreference(user.preference)
+                "preference" to serializePreference(user.preference),
+                "location" to serializeLocation(user.location)
             )
 
         db.collection(USERS_COLLECTION).document(user.uid).set(userData)
@@ -73,7 +75,8 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                     "skillSet" to serializeSkills(newValue.skillSet),
                     "rating" to newValue.rating,
                     "availability" to serializeAvailabilities(newValue.availability),
-                    "preference" to serializePreference(newValue.preference)
+                    "preference" to serializePreference(newValue.preference),
+                    "location" to serializeLocation(newValue.location)
                 ),
                 SetOptions.merge()
             )

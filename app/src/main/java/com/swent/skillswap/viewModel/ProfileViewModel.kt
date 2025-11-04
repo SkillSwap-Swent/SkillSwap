@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.user.Availability
 import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
@@ -78,6 +79,7 @@ class ProfileViewModel(
      * @param rating Optional new user rating
      * @param availability Optional new availability schedule
      * @param preference Optional new user preferences
+     * @param location Optional new user location
      */
     fun updateUserAttributes(
         username: String? = null,
@@ -86,7 +88,8 @@ class ProfileViewModel(
         skillSet: Set<Skill>? = null,
         rating: Float? = null,
         availability: List<Availability>? = null,
-        preference: Preference? = null
+        preference: Preference? = null,
+        location: Location? = null
     ) {
         val current = _userState.value
         val uid = current.uid.ifEmpty { FirebaseAuth.getInstance().currentUser?.uid }
@@ -104,7 +107,8 @@ class ProfileViewModel(
                 skillSet = skillSet ?: current.skillSet,
                 rating = rating ?: current.rating,
                 availability = availability ?: current.availability,
-                preference = preference ?: current.preference
+                preference = preference ?: current.preference,
+                location = location ?: current.location
             )
 
         viewModelScope.launch {

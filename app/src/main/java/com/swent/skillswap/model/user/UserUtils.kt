@@ -8,6 +8,7 @@
 package com.swent.skillswap.model.user
 
 import android.annotation.SuppressLint
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.SkillTag
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -35,6 +36,14 @@ data class SerializableAvailability(
     val day: String = "",
     val startTime: String = "",
     val endTime: String = ""
+)
+
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SerializableLocation(
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val name: String = ""
 )
 
 /* HELPER FUNCTIONS */
@@ -107,4 +116,14 @@ fun serializePreference(pref: Preference): String = pref.name
  */
 fun deserializePreference(preference: String): Preference {
     return Preference.valueOf(preference)
+}
+
+fun serializeLocation(location: Location): String {
+    val serialized = SerializableLocation(location.latitude, location.longitude, location.name)
+    return Json.encodeToString(serialized)
+}
+
+fun deserializeLocation(location: String): Location {
+    val deserialized = Json.decodeFromString<SerializableLocation>(location)
+    return Location(deserialized.latitude, deserialized.longitude, deserialized.name)
 }
