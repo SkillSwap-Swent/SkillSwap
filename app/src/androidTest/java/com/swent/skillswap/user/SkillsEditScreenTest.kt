@@ -68,29 +68,26 @@ class SkillsEditScreenTest : TestCase() {
             FirebaseEmulator.firestore.collection("users").document(doc.id).delete().await()
         }
 
-        // Initialize FirebaseApp if necessary (useful for UI component runtime)
+        // Initialize FirebaseApp if necessary
         try {
             if (FirebaseApp.getApps(ctx).isEmpty()) {
                 FirebaseApp.initializeApp(ctx)
             }
         } catch (e: Exception) {
-            // Ignore if already initialized or if initialization fails in emulator test
+            // Ignore if already initialized
         }
 
         // Auth: create / sign in a user on the emulator
         val auth = FirebaseAuth.getInstance()
         val testPassword = "test-password-123"
         try {
-            // Try creating the user; if it exists, creation will throw and we'll sign in instead
             auth.createUserWithEmailAndPassword(testUser.email, testPassword).await()
         } catch (e: Exception) {
-            // Ignore - user may already exist on emulator
+            // Ignore - user may already exist
         }
-        // Ensure signed in
         try {
             auth.signInWithEmailAndPassword(testUser.email, testPassword).await()
         } catch (e: Exception) {
-            // Fallback to anonymous sign-in if email sign-in failed
             try {
                 auth.signInAnonymously().await()
             } catch (_: Exception) {
@@ -98,15 +95,38 @@ class SkillsEditScreenTest : TestCase() {
             }
         }
 
-        // Get the effective uid (auth) or generate one if absent
         val authUid = auth.currentUser?.uid ?: repo.getNewUid()
-
-        // Add a Firestore user corresponding to the logged-in user
         val userToAdd = testUser.copy(uid = authUid)
         repo.addUser(userToAdd)
 
-        // Instantiate the ViewModel with the emulated repo
         viewModel = EditUserViewModel(repo)
+    }
+
+    private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 5000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            try {
+                composeTestRule.onNodeWithTag(tag).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    private fun waitForSkillInViewModel(
+        skillTag: SkillTag,
+        shouldExist: Boolean,
+        timeoutMillis: Long = 5000
+    ) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            val updatedUser = viewModel.uiState.value.editedUser
+            val skillNames = updatedUser?.skillSet?.map { it.name } ?: emptyList()
+            if (shouldExist) {
+                skillNames.contains(skillTag)
+            } else {
+                !skillNames.contains(skillTag)
+            }
+        }
     }
 
     @Test
@@ -127,8 +147,6 @@ class SkillsEditScreenTest : TestCase() {
             composeTestRule.onNodeWithTag(SkillsEditTestTags.CANCEL_BUTTON).assertIsDisplayed()
             composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).assertIsDisplayed()
         }
-
-        Thread.sleep(1000)
     }
 
     @Test
@@ -146,7 +164,8 @@ class SkillsEditScreenTest : TestCase() {
 
             composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
 
-            Thread.sleep(500)
+            // Wait for ViewModel state to update
+            waitForSkillInViewModel(SkillTag.DATABASES, shouldExist = false)
 
             val updatedUser = viewModel.uiState.value.editedUser
             val skillNames = updatedUser?.skillSet?.map { it.name }
@@ -171,7 +190,8 @@ class SkillsEditScreenTest : TestCase() {
                 .onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD)
                 .performTextInput("algorithms")
 
-            Thread.sleep(500)
+            // Wait for suggestion to appear
+            waitForNodeToExist("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
 
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
@@ -179,7 +199,8 @@ class SkillsEditScreenTest : TestCase() {
 
             composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
 
-            Thread.sleep(500)
+            // Wait for ViewModel state to update
+            waitForSkillInViewModel(SkillTag.ALGORITHMS, shouldExist = true)
 
             val updatedUser = viewModel.uiState.value.editedUser
             val skillNames = updatedUser?.skillSet?.map { it.name }
@@ -216,7 +237,7 @@ class SkillsEditScreenTest : TestCase() {
                 .onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD)
                 .performTextInput("algorithms")
 
-            Thread.sleep(500)
+            waitForNodeToExist("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
 
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
@@ -228,7 +249,7 @@ class SkillsEditScreenTest : TestCase() {
                 .onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD)
                 .performTextInput("machine")
 
-            Thread.sleep(500)
+            waitForNodeToExist("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
 
             composeTestRule
                 .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
@@ -236,7 +257,16 @@ class SkillsEditScreenTest : TestCase() {
 
             composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
 
-            Thread.sleep(500)
+            // Wait for ViewModel state to reflect all changes
+            composeTestRule.waitUntil(5000) {
+                val updatedUser = viewModel.uiState.value.editedUser
+                val skillNames = updatedUser?.skillSet?.map { it.name } ?: emptyList()
+                skillNames.size == 3 &&
+                    !skillNames.contains(SkillTag.DATABASES) &&
+                    !skillNames.contains(SkillTag.DIGITAL_LOGIC) &&
+                    skillNames.contains(SkillTag.ALGORITHMS) &&
+                    skillNames.contains(SkillTag.MACHINE_DESIGN)
+            }
 
             val updatedUser = viewModel.uiState.value.editedUser
             val skillNames = updatedUser?.skillSet?.map { it.name }
