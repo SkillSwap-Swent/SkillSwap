@@ -2,6 +2,7 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
 
 data class Offer(
@@ -14,7 +15,8 @@ data class Offer(
     override val expiry: Timestamp,
     override val creation: Timestamp,
     override val status: PostStatus,
-    override val media: List<String>
+    override val media: List<String>,
+    override val location: Location
 ) : Post {
     override val type: PostType = PostType.OFFER
 }

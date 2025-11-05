@@ -2,6 +2,7 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
 
 data class Request(
@@ -15,6 +16,7 @@ data class Request(
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
+    override val location: Location
 ) : Post {
     override val type: PostType
         get() = PostType.REQUEST

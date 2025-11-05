@@ -12,7 +12,11 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
+import kotlin.math.pow
+import kotlin.text.get
+import kotlin.toString
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
@@ -32,11 +36,24 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
         status: PostStatus?,
+        userLocation: Location?,
+        maxDistanceKm: Double?
     ): List<Post> {
         val query: Query =
             buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
 
-        return query.get().await().map { documentToPost(it) }.sortedByDescending { it.creation }
+        var posts = query.get().await().map { documentToPost(it) }
+
+        if (userLocation != null && maxDistanceKm != null) {
+
+            val epsilon = 0.05 // small tolerance for floating-point errors
+            posts =
+                posts.filter { post ->
+                    calculateDistance(userLocation, post.location) <= maxDistanceKm + epsilon
+                }
+        }
+
+        return posts.sortedByDescending { it.creation }
     }
 
     private fun buildQuery(
@@ -59,7 +76,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         }
         query = query.whereEqualTo("paymentMethod", paymentMethod)
 
-        // perform complex seachKeys filter to bypass limit of single whereArrayContainsAny per
+        // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
         // query
         val searchKeys = buildSearchKeys(titleContains, tags)
         if (searchKeys.isNotEmpty()) {
@@ -136,6 +153,14 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
+        val locationMap = document.get("location") as? Map<*, *>
+        val location =
+            Location(
+                latitude = locationMap?.get("latitude") as? Double ?: 0.0,
+                longitude = locationMap?.get("longitude") as? Double ?: 0.0,
+                name = locationMap?.get("name") as? String ?: ""
+            )
+
         val post =
             when (postType) {
                 PostType.REQUEST ->
@@ -149,7 +174,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         expiry,
                         creation,
                         status,
-                        media
+                        media,
+                        location
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
@@ -165,19 +191,44 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         }
     }
 
-    private fun serializePost(post: Post): SerializablePost {
-        return SerializablePost(
-            uid = post.uid,
-            title = post.title,
-            description = post.description,
-            ownerId = post.ownerId,
-            tags = post.tags.toList(),
-            paymentMethod = post.paymentMethod,
-            expiry = post.expiry,
-            creation = post.creation,
-            status = post.status,
-            media = post.media,
-            type = post.type
+    private fun serializePost(post: Post): Map<String, Any> {
+        return mapOf(
+            "uid" to post.uid,
+            "title" to post.title,
+            "description" to post.description,
+            "ownerId" to post.ownerId,
+            "tags" to post.tags.map { it.toString() },
+            "paymentMethod" to post.paymentMethod.name,
+            "expiry" to post.expiry,
+            "creation" to post.creation,
+            "status" to post.status.name,
+            "media" to post.media,
+            "type" to post.type.name,
+            "location" to
+                mapOf( // Store as nested map instead of JSON string
+                    "latitude" to post.location.latitude,
+                    "longitude" to post.location.longitude,
+                    "name" to post.location.name
+                ),
+            "searchKeys" to buildSearchKeys(post.title, post.tags as Set<EveryTag>)
         )
+    }
+
+    private fun calculateDistance(loc1: Location, loc2: Location): Double {
+        val lat1 = Math.toRadians(loc1.latitude)
+        val lon1 = Math.toRadians(loc1.longitude)
+        val lat2 = Math.toRadians(loc2.latitude)
+        val lon2 = Math.toRadians(loc2.longitude)
+
+        val dLat = lat2 - lat1
+        val dLon = lon2 - lon1
+
+        val a =
+            Math.sin(dLat / 2).pow(2.0) +
+                Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2).pow(2.0)
+
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        val earthRadiusKm = 6371.0
+        return earthRadiusKm * c
     }
 }

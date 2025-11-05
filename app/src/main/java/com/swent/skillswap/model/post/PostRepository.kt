@@ -7,6 +7,7 @@
  */
 package com.swent.skillswap.model.post
 
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
 
 /**
@@ -45,7 +46,9 @@ interface PostRepository {
         ownerId: String = "",
         paymentMethod: PaymentMethod = PaymentMethod.SKILLSANDCASH,
         tags: Set<EveryTag> = emptySet(),
-        status: PostStatus? = null
+        status: PostStatus? = null,
+        userLocation: Location? = null,
+        maxDistanceKm: Double? = null
     ): List<Post>
 
     /**

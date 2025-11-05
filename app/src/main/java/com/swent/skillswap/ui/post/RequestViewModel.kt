@@ -3,6 +3,7 @@ package com.swent.skillswap.ui.post
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -33,6 +34,7 @@ data class RequestUIState(
     val tags: Set<EveryTag> = emptySet(),
     val paymentMethod: PaymentMethod = PaymentMethod.SKILLS,
     val expiry: Timestamp = Timestamp.now(),
+    val location: Location = Location(46.5191, 6.5668, "EPFL, Switzerland"), // Default fallback
 
     // Error fields
     val titleError: String = "",
@@ -59,7 +61,6 @@ class RequestViewModel(
         const val REQUEST_LIFESPAN_DAYS = 30L
     }
 
-    // Load existing post data if editing
     init {
         if (postId != null) {
             loadPost(postId)
@@ -78,6 +79,7 @@ class RequestViewModel(
                         description = post.description,
                         tags = post.tags.toSet(),
                         paymentMethod = post.paymentMethod,
+                        location = post.location,
                         isLoading = false
                     )
                 }
@@ -132,6 +134,10 @@ class RequestViewModel(
         _uiState.update { current -> current.copy(paymentMethod = methodClicked) }
     }
 
+    fun setLocation(newLocation: Location) {
+        _uiState.update { it.copy(location = newLocation) }
+    }
+
     fun save(postOperation: PostOperation) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, submitError = null) }
@@ -159,19 +165,17 @@ class RequestViewModel(
                             ),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
-                        media = emptyList()
+                        media = emptyList(),
+                        location = _uiState.value.location
                     )
 
-                // Will call validate() internally
                 when (postOperation) {
                     PostOperation.ADD -> postRepository.addPost(request)
                     PostOperation.EDIT -> postRepository.editPost(uid, request)
                 }
 
-                // Success
                 _uiState.update { it.copy(isLoading = false, isSubmitSuccessful = true) }
             } catch (e: Exception) {
-                // Handle error
                 _uiState.update {
                     it.copy(isLoading = false, submitError = e.message ?: "Failed to create post")
                 }

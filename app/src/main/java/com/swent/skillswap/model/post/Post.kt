@@ -11,6 +11,7 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
 
 /**
@@ -40,6 +41,8 @@ interface Post {
     val media: List<String>
     /** The type of the post, indicating whether it's an offer or a request. */
     val type: PostType
+    /** The meeting location of the post */
+    val location: Location
     /**
      * A list of normalized search keywords used to support Firestore queries with
      * `whereArrayContainsAny`.

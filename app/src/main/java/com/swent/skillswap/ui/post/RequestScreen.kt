@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
@@ -355,7 +356,9 @@ fun NewRequestScreenPreview() {
                 ownerId: String,
                 paymentMethod: PaymentMethod,
                 tags: Set<com.swent.skillswap.model.tags.EveryTag>,
-                status: com.swent.skillswap.model.post.PostStatus?
+                status: com.swent.skillswap.model.post.PostStatus?,
+                userLocation: Location?,
+                maxDistanceKm: Double?
             ): List<com.swent.skillswap.model.post.Post> = emptyList()
 
             override suspend fun getPost(
