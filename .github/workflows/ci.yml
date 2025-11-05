@@ -87,7 +87,10 @@ jobs:
             echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
           else
             echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
-          fi
+          fi  
+           
+
+      # This step runs gradle commands to build the application
       - name: Assemble
         run: |
           # To run the CI with debug information, add --info
