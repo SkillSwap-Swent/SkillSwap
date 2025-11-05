@@ -20,9 +20,9 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.ui.Auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.Auth.AuthMainScreen
 import com.swent.skillswap.ui.Auth.CreateAccountTags
-import com.swent.skillswap.ui.Auth.SignInCreateAccountScreen
-import com.swent.skillswap.ui.Auth.SignInMainScreen
 import com.swent.skillswap.ui.Auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreen
@@ -74,6 +74,7 @@ class AuthGoogleTest : TestCase() {
         @AfterClass
         @JvmStatic
         fun globalTearDown() {
+            auth.signOut()
             FirebaseEmulator.clearAuthEmulator()
             FirebaseEmulator.clearFirestoreEmulator()
         }
@@ -119,21 +120,21 @@ class AuthGoogleTest : TestCase() {
 
             NavHost(
                 navController = navController,
-                startDestination = Screen.SignInMain.route,
+                startDestination = Screen.AuthMain.route,
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable(Screen.SignInMain.route) {
-                    SignInMainScreen(
+                composable(Screen.AuthMain.route) {
+                    AuthMainScreen(
                         goToCreateAccountScreen = {
-                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                            navigationActions.navigateTo(Screen.CreateAccount)
                         },
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         vm = vmSignIn,
                         credentialManager = credential
                     )
                 }
-                composable(Screen.SignInCreateAccount.route) {
-                    SignInCreateAccountScreen(
+                composable(Screen.CreateAccount.route) {
+                    AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         vm = vmCreateAccount
                     )

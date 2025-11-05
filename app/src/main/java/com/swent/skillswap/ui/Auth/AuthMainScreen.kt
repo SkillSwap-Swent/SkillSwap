@@ -61,7 +61,7 @@ val signInButtonStroke = BorderStroke(1.dp, Color.White)
  * using LaunchedEffect.
  */
 @Composable
-fun SignInMainScreen(
+fun AuthMainScreen(
     goToMainScreen: () -> Unit = {},
     goToCreateAccountScreen: () -> Unit = {},
     goToPasswordRecovery: () -> Unit = {},

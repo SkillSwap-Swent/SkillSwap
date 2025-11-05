@@ -18,9 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.Auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.Auth.AuthMainScreen
 import com.swent.skillswap.ui.Auth.CreateAccountTags
-import com.swent.skillswap.ui.Auth.SignInCreateAccountScreen
-import com.swent.skillswap.ui.Auth.SignInMainScreen
 import com.swent.skillswap.ui.Auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreen
@@ -68,6 +68,7 @@ class AuthClassicTest : TestCase() {
         @AfterClass
         @JvmStatic
         fun globalTearDown() {
+            auth.signOut()
             FirebaseEmulator.clearAuthEmulator()
             FirebaseEmulator.clearFirestoreEmulator()
         }
@@ -87,21 +88,21 @@ class AuthClassicTest : TestCase() {
 
             NavHost(
                 navController = navController,
-                startDestination = Screen.SignInMain.route,
+                startDestination = Screen.AuthMain.route,
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable(Screen.SignInMain.route) {
-                    SignInMainScreen(
+                composable(Screen.AuthMain.route) {
+                    AuthMainScreen(
                         goToCreateAccountScreen = {
-                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                            navigationActions.navigateTo(Screen.CreateAccount)
                         },
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         vm = vmSignIn
                     )
                 }
-                composable(Screen.SignInCreateAccount.route) {
+                composable(Screen.CreateAccount.route) {
                     // Classic flow (isGoogleAccount = false)
-                    SignInCreateAccountScreen(
+                    AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         googleAccount = false,
                         vm = vmCreateAccount

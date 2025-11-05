@@ -102,7 +102,7 @@ object CreateAccountRoutes {
  * - an event collector for ViewModel navigation events
  */
 @Composable
-fun SignInCreateAccountScreen(
+fun AuthCreateAccountScreen(
     goToMainScreen: () -> Unit = {},
     googleAccount: Boolean = FirebaseAuth.getInstance().currentUser != null,
     vm: CreateAccountViewModel = viewModel(factory = CreateAccountVmFactory(googleAccount))

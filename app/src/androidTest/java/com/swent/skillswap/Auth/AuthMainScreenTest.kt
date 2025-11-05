@@ -8,7 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import com.swent.skillswap.ui.Auth.SignInMainScreen
+import com.swent.skillswap.ui.Auth.AuthMainScreen
 import com.swent.skillswap.ui.Auth.SignInTags
 import org.junit.Before
 import org.junit.Rule
@@ -22,7 +22,7 @@ class AuthMainScreenTest : TestCase() {
 
     @Before
     fun setUp() {
-        composeTestRule.setContent { SignInMainScreen() }
+        composeTestRule.setContent { AuthMainScreen() }
     }
 
     @Test
