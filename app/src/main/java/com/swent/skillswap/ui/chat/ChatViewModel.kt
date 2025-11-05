@@ -10,9 +10,7 @@ data class ChatUIState(
     val users: Pair<String, String> = Pair("", "")
 )
 
-class ChatViewModel (
-    private val chatRepository: ChatRepository
-) : ViewModel {
+class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel {
     private val _uiState = MutableStateFlow(ChatUIState())
     val uiState: StateFlow<ChatUIState> = _uiState
 

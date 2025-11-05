@@ -3,8 +3,8 @@ package com.swent.skillswap.model.chat
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Repository interface for chat operations.
- * Provides methods for streaming messages and sending messages
+ * Repository interface for chat operations. Provides methods for streaming messages and sending
+ * messages
  */
 interface ChatRepository {
 
@@ -23,9 +23,5 @@ interface ChatRepository {
      * @param senderId The sender's user ID
      * @param content The message content
      */
-    suspend fun sendMessage(
-        chatId: String,
-        senderId: String,
-        content: String
-    )
+    suspend fun sendMessage(chatId: String, senderId: String, content: String)
 }
