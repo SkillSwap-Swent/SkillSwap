@@ -2,6 +2,7 @@ package com.swent.skillswap.model.post
 
 import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.delay
 
 // In-memory PostRepository implementation for testing. Provides deterministic behavior
@@ -117,22 +118,6 @@ class FakePostRepository : PostRepository {
 
     override suspend fun deletePost(type: PostType, postId: String) {
         posts.remove(postId)
-    }
-
-    private fun calculateDistance(loc1: Location, loc2: Location): Double {
-        val earthRadiusKm = 6371.0
-        val dLat = Math.toRadians(loc2.latitude - loc1.latitude)
-        val dLon = Math.toRadians(loc2.longitude - loc1.longitude)
-
-        val a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(loc1.latitude)) *
-                    Math.cos(Math.toRadians(loc2.latitude)) *
-                    Math.sin(dLon / 2) *
-                    Math.sin(dLon / 2)
-
-        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-        return earthRadiusKm * c
     }
 
     // Test helpers

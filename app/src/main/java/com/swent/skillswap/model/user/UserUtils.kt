@@ -127,3 +127,23 @@ fun deserializeLocation(location: String): Location {
     val deserialized = Json.decodeFromString<SerializableLocation>(location)
     return Location(deserialized.latitude, deserialized.longitude, deserialized.name)
 }
+
+fun calculateDistance(loc1: Location, loc2: Location): Double {
+
+    val earthRadiusKm = 6371.0
+
+    val dLat = Math.toRadians(loc2.latitude - loc1.latitude)
+
+    val dLon = Math.toRadians(loc2.longitude - loc1.longitude)
+
+    val a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(Math.toRadians(loc1.latitude)) *
+                Math.cos(Math.toRadians(loc2.latitude)) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2)
+
+    val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+    return earthRadiusKm * c
+}

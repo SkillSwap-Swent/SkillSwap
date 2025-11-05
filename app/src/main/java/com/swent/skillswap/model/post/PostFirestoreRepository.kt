@@ -14,9 +14,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
-import kotlin.math.pow
-import kotlin.text.get
-import kotlin.toString
+import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
@@ -212,23 +210,5 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                 ),
             "searchKeys" to buildSearchKeys(post.title, post.tags as Set<EveryTag>)
         )
-    }
-
-    private fun calculateDistance(loc1: Location, loc2: Location): Double {
-        val lat1 = Math.toRadians(loc1.latitude)
-        val lon1 = Math.toRadians(loc1.longitude)
-        val lat2 = Math.toRadians(loc2.latitude)
-        val lon2 = Math.toRadians(loc2.longitude)
-
-        val dLat = lat2 - lat1
-        val dLon = lon2 - lon1
-
-        val a =
-            Math.sin(dLat / 2).pow(2.0) +
-                Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2).pow(2.0)
-
-        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-        val earthRadiusKm = 6371.0
-        return earthRadiusKm * c
     }
 }
