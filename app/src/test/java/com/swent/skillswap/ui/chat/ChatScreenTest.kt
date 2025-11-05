@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
@@ -29,6 +30,8 @@ class ChatScreenTest {
 
     private fun pastTs() = Timestamp(now() - 10, 0)
 
+    private val testLocation = Location(latitude = 46.5191, longitude = 6.5668, name = "EPFL")
+
     private fun samplePosts(): List<Post> =
         listOf(
             Offer(
@@ -41,7 +44,8 @@ class ChatScreenTest {
                 futureTs(),
                 pastTs(),
                 PostStatus.POSTED,
-                emptyList()
+                emptyList(),
+                testLocation
             ),
             Request(
                 "r1",
@@ -53,7 +57,8 @@ class ChatScreenTest {
                 futureTs(),
                 pastTs(),
                 PostStatus.POSTED,
-                emptyList()
+                emptyList(),
+                testLocation
             )
         )
 

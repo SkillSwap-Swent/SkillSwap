@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostStatus
@@ -19,6 +20,8 @@ class PostConversationItemTest {
 
     @get:Rule val composeRule = createComposeRule()
 
+    private val testLocation = Location(latitude = 46.5191, longitude = 6.5668, name = "EPFL")
+
     private fun offer(): Offer =
         Offer(
             uid = "o1",
@@ -30,7 +33,8 @@ class PostConversationItemTest {
             expiry = Timestamp(Timestamp.now().seconds + 86400, 0),
             creation = Timestamp(Timestamp.now().seconds - 10, 0),
             status = PostStatus.POSTED,
-            media = emptyList()
+            media = emptyList(),
+            testLocation
         )
 
     @Test

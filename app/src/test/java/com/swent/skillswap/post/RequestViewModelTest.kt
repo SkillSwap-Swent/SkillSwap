@@ -3,6 +3,7 @@
 package com.swent.skillswap.post
 
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.ui.post.PostOperation
@@ -27,6 +28,8 @@ class RequestViewModelTest {
     private lateinit var viewModel: RequestViewModel
     private val testUserId = "test-user-123"
 
+    private val testLocation = Location(latitude = 46.5191, longitude = 6.5668, name = "EPFL")
+
     // Test fixture
     private val sampleRequest =
         Request(
@@ -39,7 +42,8 @@ class RequestViewModelTest {
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
-            media = emptyList()
+            media = emptyList(),
+            location = testLocation
         )
 
     @Before
