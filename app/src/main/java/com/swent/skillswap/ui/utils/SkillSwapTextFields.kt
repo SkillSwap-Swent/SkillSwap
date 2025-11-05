@@ -38,7 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import com.swent.skillswap.R
-import com.swent.skillswap.ui.signIn.CreateAccountTags
+import com.swent.skillswap.ui.Auth.CreateAccountTags
 
 /**
  * SkillSwap text field — **filled** variant.

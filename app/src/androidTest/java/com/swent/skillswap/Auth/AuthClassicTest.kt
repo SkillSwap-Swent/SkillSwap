@@ -1,5 +1,5 @@
 /** @author Topaze17(ELiott) huge help from chatGPT to make it work correctly */
-package com.swent.skillswap.signIn
+package com.swent.skillswap.Auth
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,15 +18,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.Auth.CreateAccountTags
+import com.swent.skillswap.ui.Auth.SignInCreateAccountScreen
+import com.swent.skillswap.ui.Auth.SignInMainScreen
+import com.swent.skillswap.ui.Auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
-import com.swent.skillswap.ui.signIn.SignInMainScreen
-import com.swent.skillswap.ui.signIn.SignInTags
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.utils.FirebaseEmulator
 import com.swent.skillswap.viewModel.CreateAccountViewModel

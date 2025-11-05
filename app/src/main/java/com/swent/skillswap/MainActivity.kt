@@ -28,6 +28,8 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
+import com.swent.skillswap.ui.Auth.SignInCreateAccountScreen
+import com.swent.skillswap.ui.Auth.SignInMainScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
@@ -38,8 +40,6 @@ import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
 import com.swent.skillswap.ui.signIn.PasswordRecoveryScreen
-import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
-import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen

@@ -30,7 +30,12 @@ sealed class SignInEvent {
     /** Navigate to the Create Account screen (first-time Google sign-in). */
     object NavigateToCreateAccountScreen : SignInEvent()
 }
-
+/**
+ * Represents the current state of the Sign-In screen UI.
+ *
+ * Holds user inputs and validation error messages so that the UI can reactively update fields and
+ * display errors as needed.
+ */
 data class SignInUIState(
     val email: String = "",
     val password: String = "",
@@ -39,12 +44,13 @@ data class SignInUIState(
 )
 
 /**
- * ViewModel responsible for managing Sign-In logic and emitting navigation events.
+ * ViewModel responsible for managing Sign-In logic, user validation, and navigation events.
  *
- * Handles:
- * - Google Sign-In via CredentialManager
- * - Triggering navigation events based on authentication results
- * - Directing the UI to appropriate next steps (main screen or account creation)
+ * Responsibilities:
+ * - Handles both **Google Sign-In** (via [CredentialManager]) and **Classic Sign-In**.
+ * - Validates user input (email, password).
+ * - Emits [SignInEvent]s for navigation to the appropriate screen.
+ * - Coordinates Firebase Authentication logic through [SignInGoogleModel] and [SignInClassicModel].
  */
 class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance()) : ViewModel() {
 
@@ -52,13 +58,21 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
         MutableStateFlow<SignInUIState>(SignInUIState())
     val uiState: StateFlow<SignInUIState> = _uiState
     // The sign-in model abstraction. We use the Google-specific implementation here.
-    private val googleModel: SignInGoogleModel = SignInGoogleModel(auth)
-    private val classicModel: SignInClassicModel = SignInClassicModel(auth)
+    private val googleModel: SignInGoogleModel =
+        SignInGoogleModel(auth) // Handles Google sign-in logic
+    private val classicModel: SignInClassicModel =
+        SignInClassicModel(auth) // Handles email/password sign-in
     // SharedFlow used for one-time UI events (navigation actions).
     // Unlike StateFlow, SharedFlow won't re-emit old events when the UI recomposes.
     private val _eventFlow = MutableSharedFlow<SignInEvent>()
     val eventFlow: SharedFlow<SignInEvent> = _eventFlow // Public read-only access
-    /** check if the user is meant to be there */
+    /**
+     * Checks whether the current user already has a valid account record in Firestore. If so,
+     * automatically navigates to the main screen.
+     *
+     * This is primarily used when returning to the Create Account screen to skip redundant account
+     * creation for existing users.
+     */
     fun check() {
         if (auth.currentUser != null) {
             val isGoogleUser = auth.currentUser?.providerData?.any { it.providerId == "google.com" }
@@ -151,7 +165,7 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
         _uiState.update { it.copy(emailError = msg) }
         return msg.isEmpty()
     }
-
+    /** Validates password rules */
     private fun validatePasswords(): Boolean {
         val pwd = _uiState.value.password
 
@@ -168,7 +182,12 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
 
         return passwordError.isEmpty()
     }
+    // ---------- Aggregate Validators ----------
 
+    /**
+     * Runs all validation functions (username, email, password, skills) and returns true only if
+     * all are valid.
+     */
     fun validateInputs(): Boolean {
         val results = listOf(validateEmail(), validatePasswords())
         return results.all { it }
