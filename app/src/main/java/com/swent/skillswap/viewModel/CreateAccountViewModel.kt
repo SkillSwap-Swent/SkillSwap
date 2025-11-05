@@ -9,11 +9,11 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.swent.skillswap.model.SignIn.CreateAccountClassicParams
-import com.swent.skillswap.model.SignIn.CreateAccountGoogleParams
-import com.swent.skillswap.model.SignIn.SignInClassicModel
-import com.swent.skillswap.model.SignIn.SignInGoogleModel
-import com.swent.skillswap.model.SignIn.SignInInterface
+import com.swent.skillswap.model.Auth.AuthClassicModel
+import com.swent.skillswap.model.Auth.AuthGoogleModel
+import com.swent.skillswap.model.Auth.CreateAccountClassicParams
+import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
+import com.swent.skillswap.model.Auth.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.Auth.CreateAccountRoutes
 import com.swent.skillswap.resources.ValidationConfig
@@ -63,7 +63,7 @@ data class CreateAccountUIState(
  * Responsibilities:
  * - Maintain [CreateAccountUIState] for reactive updates.
  * - Validate user input fields.
- * - Interact with [SignInGoogleModel] or [SignInClassicModel] to persist data.
+ * - Interact with [AuthGoogleModel] or [AuthClassicModel] to persist data.
  * - Emit [CreateAccountEvent]s for one-time navigation actions.
  */
 class CreateAccountViewModel(
@@ -72,8 +72,7 @@ class CreateAccountViewModel(
     val firestore: FirebaseFirestore = Firebase.firestore
 ) : ViewModel() {
     private val model: SignInInterface =
-        if (isGoogleAccount) SignInGoogleModel(auth, firestore)
-        else SignInClassicModel(auth, firestore)
+        if (isGoogleAccount) AuthGoogleModel(auth, firestore) else AuthClassicModel(auth, firestore)
 
     private val _uiState: MutableStateFlow<CreateAccountUIState> =
         MutableStateFlow<CreateAccountUIState>(CreateAccountUIState())
@@ -91,7 +90,7 @@ class CreateAccountViewModel(
      * creation for existing users.
      */
     fun check() {
-        if (isGoogleAccount && model is SignInGoogleModel) {
+        if (isGoogleAccount && model is AuthGoogleModel) {
             viewModelScope.launch {
                 if (model.googleAccountInfoAreSavedInFirestore()) {
                     _eventFlow.emit(CreateAccountEvent.NavigateToMainScreen)

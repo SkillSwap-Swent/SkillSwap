@@ -7,10 +7,10 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.swent.skillswap.model.SignIn.SignInClassicModel
-import com.swent.skillswap.model.SignIn.SignInClassicParams
-import com.swent.skillswap.model.SignIn.SignInGoogleModel
-import com.swent.skillswap.model.SignIn.SignInGoogleParams
+import com.swent.skillswap.model.Auth.AuthClassicModel
+import com.swent.skillswap.model.Auth.AuthGoogleModel
+import com.swent.skillswap.model.Auth.SignInClassicParams
+import com.swent.skillswap.model.Auth.SignInGoogleParams
 import com.swent.skillswap.resources.ValidationConfig
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,7 +50,7 @@ data class SignInUIState(
  * - Handles both **Google Sign-In** (via [CredentialManager]) and **Classic Sign-In**.
  * - Validates user input (email, password).
  * - Emits [SignInEvent]s for navigation to the appropriate screen.
- * - Coordinates Firebase Authentication logic through [SignInGoogleModel] and [SignInClassicModel].
+ * - Coordinates Firebase Authentication logic through [AuthGoogleModel] and [AuthClassicModel].
  */
 class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance()) : ViewModel() {
 
@@ -58,10 +58,9 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
         MutableStateFlow<SignInUIState>(SignInUIState())
     val uiState: StateFlow<SignInUIState> = _uiState
     // The sign-in model abstraction. We use the Google-specific implementation here.
-    private val googleModel: SignInGoogleModel =
-        SignInGoogleModel(auth) // Handles Google sign-in logic
-    private val classicModel: SignInClassicModel =
-        SignInClassicModel(auth) // Handles email/password sign-in
+    private val googleModel: AuthGoogleModel = AuthGoogleModel(auth) // Handles Google sign-in logic
+    private val classicModel: AuthClassicModel =
+        AuthClassicModel(auth) // Handles email/password sign-in
     // SharedFlow used for one-time UI events (navigation actions).
     // Unlike StateFlow, SharedFlow won't re-emit old events when the UI recomposes.
     private val _eventFlow = MutableSharedFlow<SignInEvent>()

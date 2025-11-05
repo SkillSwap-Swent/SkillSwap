@@ -1,5 +1,5 @@
 /** @author Topaze17 used ChatGPT for comment. */
-package com.swent.skillswap.model.SignIn
+package com.swent.skillswap.model.Auth
 
 import android.app.Activity
 import androidx.credentials.CredentialManager

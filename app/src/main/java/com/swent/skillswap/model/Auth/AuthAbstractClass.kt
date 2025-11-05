@@ -1,5 +1,5 @@
 /** @author Topaze17 used ChatGPT for comment. */
-package com.swent.skillswap.model.SignIn
+package com.swent.skillswap.model.Auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -10,10 +10,10 @@ import com.google.firebase.firestore.FirebaseFirestore
  * This class implements [SignInInterface] and defines shared authentication behavior for all
  * sign-in strategies (e.g., classic email/password or Google sign-in).
  *
- * Subclasses such as [SignInClassicModel] and [SignInGoogleModel] are responsible for providing
+ * Subclasses such as [AuthClassicModel] and [AuthGoogleModel] are responsible for providing
  * concrete implementations of the sign-in and account-creation logic.
  */
-abstract class SignInAbstractClass(
+abstract class AuthAbstractClass(
     protected val auth: FirebaseAuth,
     protected val firestore: FirebaseFirestore
 ) : SignInInterface {
