@@ -28,18 +28,6 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         }
     }
 
-    /**
-     * override fun getChat(chatUid: String): Chat { /** Preconditions */
-     * require(chatUid.isNotEmpty()) { "chatUid cannot be empty" }
-     *
-     * /** Get chat */ return try { val document =
-     * db.collection(FirestorePaths.CHATS_COLLECTION).document(chatUid).get().await()
-     * document.toObject(Chat::class.java) //TODO deserialization ?: throw Exception("Chat not found
-     * with uid: $chatUid")
-     *
-     * } catch (e: Exception) { throw Exception("Error while getting chat in getChat: ${e.message}")
-     * } }
-     */
     override suspend fun sendMessage(chatId: String, message: Message) {
         /** Preconditions */
         require(chatId.isNotEmpty()) { "chatUid cannot be empty" }
@@ -59,24 +47,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             throw Exception("Error while sending message in sendMessage: ${e.message}")
         }
     }
-    /*
-    override fun streamMessages(chatId: String) = callbackFlow {
-        val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatUid)
-        document.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                println("Listen failed: ${error.message}")
-                return@addSnapshotListener
-            }
 
-            if (snapshot != null && snapshot.exists()) {
-                val chat = snapshot.toObject(Chat::class.java) // TODO deserialization
-                trySend(chat)
-            } else {
-                println("Current chat data: null")
-            }
-
-        }
-    }*/
     override fun streamMessages(chatId: String): Flow<List<Message>> {
         TODO("Being implemented")
     }
