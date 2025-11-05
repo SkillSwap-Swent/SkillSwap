@@ -87,23 +87,7 @@ jobs:
             echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
           else
             echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
-          fi  
-           
-      - name: Show emulator screen info
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          target: google_apis
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: |
-            adb wait-for-device
-            echo "Screen resolution:"
-            adb shell wm size
-            echo "Screen density:"
-            adb shell wm densitynds to build the application
+          fi
       - name: Assemble
         run: |
           # To run the CI with debug information, add --info
