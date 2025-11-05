@@ -16,6 +16,7 @@ import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.utils.FirebaseEmulator
+import kotlin.text.get
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Assert.*
@@ -31,10 +32,11 @@ class UserFireStoreTest {
 
     init {
         FirebaseEmulator.startEmulator()
-        db = FirebaseEmulator.firestore
-        repo = UserRepoFirestore(db)
+        db = FirebaseEmulator.firestore // get the firestore instance pointing to the emulator
+        repo = UserRepoFirestore(db) // initialize the repository
     }
 
+    // Nettoie la collection users avant chaque test
     @Before
     fun setUp() = runBlocking {
         val users = FirebaseEmulator.firestore.collection("users").get().await()
@@ -59,7 +61,9 @@ class UserFireStoreTest {
                 location = Location(0.0, 0.0, "test_location")
             )
 
+        // Ajout de l'utilisateur
         repo.addUser(user)
+        // Récupération de l'utilisateur
         val retrievedUser = repo.getUser(uid)
 
         assertNotNull(retrievedUser)
@@ -110,6 +114,7 @@ class UserFireStoreTest {
                 location = Location(46.5191, 6.5668, "EPFL")
             )
 
+        // add user in firestore
         repo.addUser(user)
 
         assertEquals(user, repo.getUser(uid))
@@ -131,9 +136,11 @@ class UserFireStoreTest {
                 location = Location(0.0, 0.0, "initial_location")
             )
 
+        // add the basic user
         repo.addUser(basicUser)
         assertEquals(basicUser, repo.getUser(uid))
 
+        // the edited user
         val skill1 =
             Skill(
                 name = SkillTag.COMPUTER_PROGRAMMING,
@@ -174,6 +181,7 @@ class UserFireStoreTest {
 
     @Test
     fun deleteSingleUserFromMultiple() = runBlocking {
+        // User 1
         val uid1 = repo.getNewUid()
         val user1 =
             User(
@@ -188,6 +196,7 @@ class UserFireStoreTest {
                 location = Location(40.7128, -74.0060, "New York")
             )
 
+        // User 2
         val skill1 =
             Skill(
                 name = SkillTag.COMPUTER_PROGRAMMING,
@@ -226,10 +235,13 @@ class UserFireStoreTest {
         repo.addUser(user1)
         repo.addUser(user2)
 
+        // delete user 1
         repo.deleteUser(user1.uid)
 
+        // get user 1 should throw an exception
         assertThrows(Exception::class.java) { runBlocking { repo.getUser(user1.uid) } }
 
+        // get user 2 should work
         assertEquals(user2, repo.getUser(user2.uid))
     }
 

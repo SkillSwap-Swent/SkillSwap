@@ -61,6 +61,7 @@ class RequestViewModel(
         const val REQUEST_LIFESPAN_DAYS = 30L
     }
 
+    // Load existing post data if editing
     init {
         if (postId != null) {
             loadPost(postId)
@@ -169,13 +170,16 @@ class RequestViewModel(
                         location = _uiState.value.location
                     )
 
+                // Will call validate() internally
                 when (postOperation) {
                     PostOperation.ADD -> postRepository.addPost(request)
                     PostOperation.EDIT -> postRepository.editPost(uid, request)
                 }
 
+                // Success
                 _uiState.update { it.copy(isLoading = false, isSubmitSuccessful = true) }
             } catch (e: Exception) {
+                // Handle error
                 _uiState.update {
                     it.copy(isLoading = false, submitError = e.message ?: "Failed to create post")
                 }

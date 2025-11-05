@@ -12,6 +12,10 @@ import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.SkillTag
 import java.time.DayOfWeek
 import java.time.LocalTime
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -38,6 +42,9 @@ data class SerializableAvailability(
     val endTime: String = ""
 )
 
+/*
+ * Serializable version of Location class to convert to/from JSON automatically with kotlinx.serialization
+ */
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class SerializableLocation(
@@ -69,7 +76,7 @@ fun deserializeAvailabilities(availabilityList: String): List<Availability> {
 }
 
 /*
- * These functions serialize/deserialize single skills and single availabilities
+ * These functions serialize/deserialize single skills, single availabilities, single preferences and single locations
  */
 fun serializeSingleSkill(skill: Skill): String {
     val serialized = SerializableSkill(skill.name.name, skill.rank, skill.description)
@@ -99,11 +106,8 @@ fun deserializeSingleAvailability(availability: String): Availability {
         LocalTime.parse(deserialized.endTime)
     )
 }
-/**
- * Serialize a [Preference] to its string representation.
- *
- * @param pref Preference to serialize.
- * @return String name of the preference enum.
+/*
+ * These functions serialize/deserialize single skills and single availabilities
  */
 fun serializePreference(pref: Preference): String = pref.name
 
@@ -137,13 +141,13 @@ fun calculateDistance(loc1: Location, loc2: Location): Double {
     val dLon = Math.toRadians(loc2.longitude - loc1.longitude)
 
     val a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(Math.toRadians(loc1.latitude)) *
-                Math.cos(Math.toRadians(loc2.latitude)) *
-                Math.sin(dLon / 2) *
-                Math.sin(dLon / 2)
+        sin(dLat / 2) * sin(dLat / 2) +
+            cos(Math.toRadians(loc1.latitude)) *
+                cos(Math.toRadians(loc2.latitude)) *
+                sin(dLon / 2) *
+                sin(dLon / 2)
 
-    val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
     return earthRadiusKm * c
 }
