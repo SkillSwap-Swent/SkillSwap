@@ -2,6 +2,7 @@ package com.swent.skillswap.model.post
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
@@ -19,6 +20,10 @@ class PostRepositoryInstrumentedTest {
 
     private lateinit var repo: PostRepository
 
+    private val epflLocation = GeoPoint(46.5191, 6.5668)
+    private val lausanneLocation = GeoPoint(46.5197, 6.6323)
+    private val genevaLocation = GeoPoint(46.2044, 6.1432)
+
     private val request1 =
         Request(
             uid = "123",
@@ -30,7 +35,8 @@ class PostRepositoryInstrumentedTest {
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            location = epflLocation
         )
 
     @Before
@@ -66,6 +72,9 @@ class PostRepositoryInstrumentedTest {
             assertEquals(req.status, fetched.status)
             assertEquals(req.media, fetched.media)
             assertEquals(PostType.REQUEST, fetched.type)
+            assertEquals(req.location.latitude, fetched.location.latitude, 0.0001)
+            assertEquals(req.location.longitude, fetched.location.longitude, 0.0001)
+            assertEquals(req.location, fetched.location)
         }
     }
 
@@ -79,7 +88,6 @@ class PostRepositoryInstrumentedTest {
 
     @Test
     fun editPost_invalid_throws() {
-
         runTest {
             val id = repo.getNewUid(PostType.REQUEST)
             val original = request1.copy(uid = id, title = "Need help with Kotlin")
@@ -100,13 +108,16 @@ class PostRepositoryInstrumentedTest {
             val updated =
                 original.copy(
                     title = "Need help with Advanced Kotlin",
-                    description = "Coroutines & Flows deep dive"
+                    description = "Coroutines & Flows deep dive",
+                    location = lausanneLocation
                 )
             repo.editPost(id, updated)
 
             val fetched = repo.getPost(PostType.REQUEST, id) as Request
             assertEquals("Need help with Advanced Kotlin", fetched.title)
             assertEquals("Coroutines & Flows deep dive", fetched.description)
+            assertEquals(lausanneLocation.latitude, fetched.location.latitude, 0.0001)
+            assertEquals(lausanneLocation.longitude, fetched.location.longitude, 0.0001)
         }
     }
 
@@ -127,7 +138,6 @@ class PostRepositoryInstrumentedTest {
 
     @Test
     fun getMultiplePosts_filters_owner_and_status() {
-
         runTest {
             val a1 =
                 request1.copy(
@@ -166,7 +176,6 @@ class PostRepositoryInstrumentedTest {
 
     @Test
     fun getMultiplePosts_searchKeys_filters() {
-
         runTest {
             val id = repo.getNewUid(PostType.REQUEST)
             val req = request1.copy(uid = id, title = "Need help with Kotlin Concurrency")
@@ -185,10 +194,122 @@ class PostRepositoryInstrumentedTest {
     }
 
     @Test
+    fun getMultiplePosts_filtersByDistance_withinRadius() {
+        runTest {
+            val nearbyId = repo.getNewUid(PostType.REQUEST)
+            val nearbyPost = request1.copy(uid = nearbyId, location = epflLocation)
+
+            val farId = repo.getNewUid(PostType.REQUEST)
+            val farPost = request1.copy(uid = farId, location = genevaLocation)
+
+            repo.addPost(nearbyPost)
+            repo.addPost(farPost)
+
+            // Search from Lausanne (5km radius should include EPFL but not Geneva)
+            val results =
+                repo.getMultiplePosts(
+                    numberOfPosts = 10,
+                    type = PostType.REQUEST,
+                    userLocation = lausanneLocation,
+                    maxDistanceKm = 5.0
+                )
+
+            assertEquals(1, results.size)
+            assertEquals(nearbyId, (results.first() as Request).uid)
+        }
+    }
+
+    @Test
+    fun getMultiplePosts_filtersByDistance_outsideRadius() {
+        runTest {
+            val id = repo.getNewUid(PostType.REQUEST)
+            val post = request1.copy(uid = id, location = genevaLocation)
+            repo.addPost(post)
+
+            // Search from EPFL with 10km radius (Geneva is ~50km away)
+            val results =
+                repo.getMultiplePosts(
+                    numberOfPosts = 10,
+                    type = PostType.REQUEST,
+                    userLocation = epflLocation,
+                    maxDistanceKm = 10.0
+                )
+
+            assertTrue(results.isEmpty())
+        }
+    }
+
+    @Test
+    fun getMultiplePosts_noLocationFilter_returnsAll() {
+        runTest {
+            val id1 = repo.getNewUid(PostType.REQUEST)
+            val id2 = repo.getNewUid(PostType.REQUEST)
+            val post1 = request1.copy(uid = id1, location = epflLocation)
+            val post2 = request1.copy(uid = id2, location = genevaLocation)
+
+            repo.addPost(post1)
+            repo.addPost(post2)
+
+            // No location filter provided
+            val results = repo.getMultiplePosts(numberOfPosts = 10, type = PostType.REQUEST)
+
+            assertEquals(2, results.size)
+        }
+    }
+
+    @Test
+    fun getMultiplePosts_combinedFilters_searchKeysAndDistance() {
+        runTest {
+            val nearbyMatchId = repo.getNewUid(PostType.REQUEST)
+            val nearbyMatch =
+                request1.copy(
+                    uid = nearbyMatchId,
+                    title = "Kotlin Expert Needed",
+                    location = lausanneLocation
+                )
+
+            val farMatchId = repo.getNewUid(PostType.REQUEST)
+            val farMatch =
+                request1.copy(
+                    uid = farMatchId,
+                    title = "Kotlin Help Required",
+                    location = genevaLocation
+                )
+
+            val nearbyNoMatchId = repo.getNewUid(PostType.REQUEST)
+            val nearbyNoMatch =
+                request1.copy(
+                    uid = nearbyNoMatchId,
+                    title = "Python Programming",
+                    location = epflLocation
+                )
+
+            repo.addPost(nearbyMatch)
+            repo.addPost(farMatch)
+            repo.addPost(nearbyNoMatch)
+
+            // Search for "Kotlin" within 10km of EPFL
+            val results =
+                repo.getMultiplePosts(
+                    numberOfPosts = 10,
+                    type = PostType.REQUEST,
+                    titleContains = "Kotlin",
+                    userLocation = epflLocation,
+                    maxDistanceKm = 10.0
+                )
+
+            // Should only return nearbyMatch (nearby AND contains "Kotlin")
+            assertEquals(1, results.size)
+            assertEquals(nearbyMatchId, (results.first() as Request).uid)
+        }
+    }
+
+    @Test
     fun getPost_wrongType_throws() {
         runTest {
             val id = repo.getNewUid(PostType.REQUEST)
             val req = request1.copy(uid = id)
+            repo.addPost(req)
 
             assertThrows(IllegalStateException::class.java) {
                 runTest { repo.getPost(PostType.OFFER, id) }
@@ -207,7 +328,6 @@ class PostRepositoryInstrumentedTest {
         }
     }
 
-    // TODO: temporary tests while offers aren't implemented
     @Test
     fun getUid_Offer_fails() {
         assertThrows(NotImplementedError::class.java) { repo.getNewUid(PostType.OFFER) }
