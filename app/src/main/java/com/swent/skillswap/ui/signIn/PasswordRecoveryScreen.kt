@@ -24,7 +24,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
@@ -32,6 +31,7 @@ import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 import com.swent.skillswap.ui.utils.SkillSwapTextField
 import com.swent.skillswap.viewModel.PasswordRecoveryEvent
 import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
+import kotlinx.coroutines.delay
 
 // ----- UI Test Tags -----
 object PasswordRecoveryTags {
@@ -59,7 +59,11 @@ fun PasswordRecoveryScreen(
     goBackToSignIn: () -> Unit = {},
     vm: PasswordRecoveryViewModel = viewModel()
 ) {
+    val scroll = rememberScrollState()
+    val uiState by vm.uiState.collectAsState()
+
     // Listen for one-time events from the ViewModel
+    // Also handle navigation when success message is shown (user can navigate after seeing success)
     LaunchedEffect(Unit) {
         vm.eventFlow.collect { event ->
             when (event) {
@@ -68,8 +72,13 @@ fun PasswordRecoveryScreen(
         }
     }
 
-    val scroll = rememberScrollState()
-    val uiState by vm.uiState.collectAsState()
+    // Auto-navigate after success message is shown (replaces hardcoded delay in ViewModel)
+    LaunchedEffect(uiState.successMessage) {
+        if (uiState.successMessage.isNotEmpty()) {
+            delay(2000) // Show success message for 2 seconds
+            goBackToSignIn()
+        }
+    }
 
     Scaffold { padding ->
         Column(
@@ -79,11 +88,11 @@ fun PasswordRecoveryScreen(
                     .fillMaxSize()
                     .verticalScroll(scroll)
         ) {
-            // Title
-            Spacer(modifier = Modifier.height(200.dp))
+            // Title - using aspect ratio for spacing instead of magic numbers
+            Spacer(modifier = Modifier.fillMaxHeight(0.25f))
             Text(
                 text = "Password Recovery",
-                fontSize = 32.sp,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
@@ -92,14 +101,14 @@ fun PasswordRecoveryScreen(
 
             Text(
                 text = "Enter your email address and we'll send you a link to reset your password.",
-                fontSize = 16.sp,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp)
             )
 
-            // Email field
-            Spacer(modifier = Modifier.height(40.dp))
+            // Email field - using aspect ratio for spacing
+            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
             SkillSwapTextField(
                 value = uiState.email,
                 supportText = uiState.emailError,
@@ -135,8 +144,8 @@ fun PasswordRecoveryScreen(
                 ) {
                     Text(
                         text = uiState.successMessage,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -160,16 +169,16 @@ fun PasswordRecoveryScreen(
                 ) {
                     Text(
                         text = uiState.errorMessage,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onErrorContainer,
-                        fontSize = 14.sp,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
             }
 
-            // Send button
-            Spacer(modifier = Modifier.height(40.dp))
+            // Send button - using aspect ratio for spacing
+            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
             SkillSwapShadowButton(
                 onClick = { vm.sendPasswordResetEmail() },
                 modifier =
@@ -185,7 +194,11 @@ fun PasswordRecoveryScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(text = "Send Reset Link", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                    Text(
+                        text = "Send Reset Link",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
 
@@ -207,7 +220,7 @@ fun PasswordRecoveryScreen(
                         .fillMaxWidth(0.6f)
                         .testTag(PasswordRecoveryTags.BACK_BUTTON)
             ) {
-                Text(text = "Back to Sign In", fontSize = 14.sp)
+                Text(text = "Back to Sign In", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

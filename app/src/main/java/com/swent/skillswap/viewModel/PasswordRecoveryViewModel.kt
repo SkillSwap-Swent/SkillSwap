@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.delay
+import com.swent.skillswap.resources.ValidationConfig
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -75,9 +75,8 @@ class PasswordRecoveryViewModel(private val auth: FirebaseAuth = FirebaseAuth.ge
                         errorMessage = ""
                     )
                 }
-                // Navigate back to sign-in after a short delay to show success message
-                delay(2000)
-                _eventFlow.emit(PasswordRecoveryEvent.NavigateToSignIn)
+                // UI will handle navigation based on success message state
+                // No hardcoded delay - let user see success message and navigate when ready
             } catch (e: Exception) {
                 Log.e("PasswordRecovery", "Error sending password reset email", e)
                 val errorMsg =
@@ -94,11 +93,9 @@ class PasswordRecoveryViewModel(private val auth: FirebaseAuth = FirebaseAuth.ge
         }
     }
 
-    // Regular expression for validating email formats
-    private val emailRegex by lazy { "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex() }
-
     /**
-     * Validates the email format. Updates the emailError field in UI state.
+     * Validates the email format using shared validation config. Updates the emailError field in UI
+     * state.
      *
      * @return true if email is valid, false otherwise
      */
@@ -107,7 +104,7 @@ class PasswordRecoveryViewModel(private val auth: FirebaseAuth = FirebaseAuth.ge
         val msg =
             when {
                 email.isBlank() -> "Email cannot be empty"
-                !emailRegex.matches(email) -> "Invalid email format"
+                !ValidationConfig.EMAIL_REGEX.matches(email) -> "Invalid email format"
                 else -> ""
             }
         _uiState.update { it.copy(emailError = msg) }
