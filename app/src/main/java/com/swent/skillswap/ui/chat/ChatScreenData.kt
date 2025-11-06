@@ -5,6 +5,7 @@
 package com.swent.skillswap.ui.chat
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
@@ -15,6 +16,8 @@ import com.swent.skillswap.model.user.User
 
 /** Sample data provider for chat screen demonstration */
 object ChatScreenData {
+
+    private val defaultLocation = GeoPoint(46.5191, 6.5668)
 
     fun getSampleUsers(): Map<String, User> {
         return mapOf(
@@ -77,7 +80,8 @@ object ChatScreenData {
                 expiry = future,
                 creation = now,
                 status = PostStatus.POSTED,
-                media = emptyList()
+                media = emptyList(),
+                location = defaultLocation
             ),
             Offer(
                 uid = "post2",
@@ -89,7 +93,8 @@ object ChatScreenData {
                 expiry = future,
                 creation = now,
                 status = PostStatus.POSTED,
-                media = emptyList()
+                media = emptyList(),
+                location = defaultLocation
             ),
             Offer(
                 uid = "post3",
@@ -101,7 +106,8 @@ object ChatScreenData {
                 expiry = future,
                 creation = now,
                 status = PostStatus.POSTED,
-                media = emptyList()
+                media = emptyList(),
+                location = defaultLocation
             ),
             // Request posts (2)
             Request(
@@ -114,7 +120,8 @@ object ChatScreenData {
                 expiry = future,
                 creation = now,
                 status = PostStatus.POSTED,
-                media = emptyList()
+                media = emptyList(),
+                location = defaultLocation
             ),
             Request(
                 uid = "post5",
@@ -126,7 +133,8 @@ object ChatScreenData {
                 expiry = future,
                 creation = now,
                 status = PostStatus.POSTED,
-                media = emptyList()
+                media = emptyList(),
+                location = defaultLocation
             )
         )
     }

@@ -1,6 +1,8 @@
 package com.swent.skillswap.model.post
 
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.delay
 
 // In-memory PostRepository implementation for testing. Provides deterministic behavior
@@ -56,15 +58,29 @@ class FakePostRepository : PostRepository {
         ownerId: String,
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
-        status: PostStatus?
+        status: PostStatus?,
+        userLocation: GeoPoint?,
+        maxDistanceKm: Double?
     ): List<Post> {
-        return posts.values
-            .filter { it.type == type }
-            .filter {
-                titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true)
-            }
-            .filter { ownerId.isEmpty() || it.ownerId == ownerId }
-            .take(numberOfPosts.toInt())
+        var filteredPosts =
+            posts.values
+                .filter { it.type == type }
+                .filter {
+                    titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true)
+                }
+                .filter { ownerId.isEmpty() || it.ownerId == ownerId }
+                .filter { it.paymentMethod == paymentMethod }
+                .filter { status == null || it.status == status }
+
+        // Filter by distance if location and maxDistance are provided
+        if (userLocation != null && maxDistanceKm != null) {
+            filteredPosts =
+                filteredPosts.filter { post ->
+                    calculateDistance(userLocation, post.location) <= maxDistanceKm
+                }
+        }
+
+        return filteredPosts.take(numberOfPosts.toInt())
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {

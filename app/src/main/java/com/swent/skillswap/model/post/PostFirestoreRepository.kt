@@ -9,11 +9,13 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
@@ -33,11 +35,24 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
         status: PostStatus?,
+        userLocation: GeoPoint?,
+        maxDistanceKm: Double?
     ): List<Post> {
         val query: Query =
             buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
 
-        return query.get().await().map { documentToPost(it) }.sortedByDescending { it.creation }
+        var posts = query.get().await().map { documentToPost(it) }
+
+        if (userLocation != null && maxDistanceKm != null) {
+
+            val epsilon = 0.05 // small tolerance for floating-point errors
+            posts =
+                posts.filter { post ->
+                    calculateDistance(userLocation, post.location) <= maxDistanceKm + epsilon
+                }
+        }
+
+        return posts.sortedByDescending { it.creation }
     }
 
     private fun buildQuery(
@@ -60,7 +75,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         }
         query = query.whereEqualTo("paymentMethod", paymentMethod)
 
-        // perform complex seachKeys filter to bypass limit of single whereArrayContainsAny per
+        // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
         // query
         val searchKeys = buildSearchKeys(titleContains, tags)
         if (searchKeys.isNotEmpty()) {
@@ -137,6 +152,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
+        val location = document.getGeoPoint("location")!!
+
         val postReplies: Set<PostReply> =
             (document.get("postReplies") as? List<*>)
                 ?.map { item -> documentToPostReply(item) }
@@ -156,7 +173,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         creation,
                         status,
                         media,
-                        postReplies
+                        postReplies,
+                        location
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
@@ -216,6 +234,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             status = post.status,
             media = post.media,
             type = post.type,
+            location = post.location,
             postReplies = post.postReplies.toList()
         )
     }

@@ -11,6 +11,7 @@ import com.swent.skillswap.model.SignIn.SignInClassicModel
 import com.swent.skillswap.model.SignIn.SignInClassicParams
 import com.swent.skillswap.model.SignIn.SignInGoogleModel
 import com.swent.skillswap.model.SignIn.SignInGoogleParams
+import com.swent.skillswap.resources.ValidationConfig
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -135,8 +136,9 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
     /** Handles navigation to the Create Account screen directly (manual registration path). */
     fun createAccount() =
         viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen) }
-    // Regular expression for validating email formats (simple pattern) can be change easily
-    private val emailRegex by lazy { "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex() }
+
+    // Use shared email validation regex from ValidationConfig
+    private val emailRegex = ValidationConfig.EMAIL_REGEX
 
     private fun validateEmail(): Boolean {
         val email = _uiState.value.email

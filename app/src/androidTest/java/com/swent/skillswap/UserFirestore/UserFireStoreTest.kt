@@ -9,11 +9,15 @@ package com.swent.skillswap.UserFirestore
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.utils.FirebaseEmulator
+import java.time.DayOfWeek
+import java.time.LocalTime
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Assert.*
@@ -29,11 +33,10 @@ class UserFireStoreTest {
 
     init {
         FirebaseEmulator.startEmulator()
-        db = FirebaseEmulator.firestore // get the firestore instance pointing to the emulator
-        repo = UserRepoFirestore(db) // initialize the repository
+        db = FirebaseEmulator.firestore
+        repo = UserRepoFirestore(db)
     }
 
-    // Nettoie la collection users avant chaque test
     @Before
     fun setUp() = runBlocking {
         val users = FirebaseEmulator.firestore.collection("users").get().await()
@@ -42,24 +45,58 @@ class UserFireStoreTest {
         }
     }
 
+    // Helper functions
+    private fun createAvailability(
+        day: DayOfWeek,
+        startHour: Int,
+        startMin: Int,
+        endHour: Int,
+        endMin: Int
+    ) =
+        com.swent.skillswap.model.user.Availability(
+            day = day,
+            startTime = LocalTime.of(startHour, startMin),
+            endTime = LocalTime.of(endHour, endMin)
+        )
+
+    private fun createSkill(name: SkillTag, rank: Float, description: String) =
+        Skill(name = name, rank = rank, description = description)
+
+    private fun createUser(
+        uid: String,
+        username: String,
+        email: String,
+        profilePicture: String = "",
+        skillSet: Set<Skill> = setOf(),
+        rating: Float = 5.0f,
+        availability: List<com.swent.skillswap.model.user.Availability> = listOf(),
+        preference: Preference = Preference.SKILLS,
+        location: GeoPoint = GeoPoint(0.0, 0.0)
+    ) =
+        User(
+            uid = uid,
+            username = username,
+            email = email,
+            profilePicture = profilePicture,
+            skillSet = skillSet,
+            rating = rating,
+            availability = availability,
+            preference = preference,
+            location = location
+        )
+
     @Test
     fun addAndRetrieveUserwithemptySkillAndAvaibility() = runBlocking {
         val uid = repo.getNewUid()
         val user =
-            User(
+            createUser(
                 uid = uid,
                 username = "testuser",
                 email = "test@example.com",
-                profilePicture = "",
-                skillSet = setOf(),
-                rating = 5.0f,
-                availability = listOf()
+                location = GeoPoint(0.0, 0.0)
             )
 
-        // Ajout de l'utilisateur
-
         repo.addUser(user)
-        // Récupération de l'utilisateur
         val retrievedUser = repo.getUser(uid)
 
         assertNotNull(retrievedUser)
@@ -69,46 +106,32 @@ class UserFireStoreTest {
         assertEquals(user.rating, retrievedUser.rating)
         assertEquals(user.skillSet, retrievedUser.skillSet)
         assertEquals(user.availability, retrievedUser.availability)
+        assertEquals(user.preference, retrievedUser.preference)
+        assertEquals(user.location, retrievedUser.location)
     }
 
     @Test
     fun addAndRetrieveUserwithSkillAndAvaibility() = runBlocking {
-        val skill1 =
-            Skill(
-                name = SkillTag.COMPUTER_PROGRAMMING,
-                rank = 4.5f,
-                description = "I love programming"
-            )
-        val skill2 = Skill(name = SkillTag.DATABASES, rank = 3.0f, description = "database is ez")
+        val skill1 = createSkill(SkillTag.COMPUTER_PROGRAMMING, 4.5f, "I love programming")
+        val skill2 = createSkill(SkillTag.DATABASES, 3.0f, "database is ez")
 
-        val availability1 =
-            com.swent.skillswap.model.user.Availability(
-                day = java.time.DayOfWeek.MONDAY,
-                startTime = java.time.LocalTime.of(9, 0),
-                endTime = java.time.LocalTime.of(11, 0)
-            )
-        val availability2 =
-            com.swent.skillswap.model.user.Availability(
-                day = java.time.DayOfWeek.WEDNESDAY,
-                startTime = java.time.LocalTime.of(14, 0),
-                endTime = java.time.LocalTime.of(16, 0)
-            )
+        val availability1 = createAvailability(DayOfWeek.MONDAY, 9, 0, 11, 0)
+        val availability2 = createAvailability(DayOfWeek.WEDNESDAY, 14, 0, 16, 0)
 
         val uid = repo.getNewUid()
         val user =
-            User(
+            createUser(
                 uid = uid,
                 username = "testuser2",
                 email = "endenejnd@mdek.ch",
-                profilePicture = "",
                 skillSet = setOf(skill1, skill2),
                 rating = 4.0f,
-                availability = listOf(availability1, availability2)
+                availability = listOf(availability1, availability2),
+                preference = Preference.MONEY,
+                location = GeoPoint(46.5191, 6.5668)
             )
 
-        // add user in firestore
         repo.addUser(user)
-
         assertEquals(user, repo.getUser(uid))
     }
 
@@ -116,51 +139,33 @@ class UserFireStoreTest {
     fun editUser() = runBlocking {
         val uid = repo.getNewUid()
         val basicUser =
-            User(
+            createUser(
                 uid = uid,
                 username = "testuser",
                 email = "test@example.com",
-                profilePicture = "",
-                skillSet = setOf(),
-                rating = 5.0f,
-                availability = listOf()
+                location = GeoPoint(0.0, 0.0)
             )
-        // add the basci user
-        repo.addUser(basicUser)
 
+        repo.addUser(basicUser)
         assertEquals(basicUser, repo.getUser(uid))
 
-        // the edited user
-        val skill1 =
-            Skill(
-                name = SkillTag.COMPUTER_PROGRAMMING,
-                rank = 4.5f,
-                description = "I love programming"
-            )
-        val skill2 = Skill(name = SkillTag.DATABASES, rank = 3.0f, description = "database is ez")
+        val skill1 = createSkill(SkillTag.COMPUTER_PROGRAMMING, 4.5f, "I love programming")
+        val skill2 = createSkill(SkillTag.DATABASES, 3.0f, "database is ez")
 
-        val availability1 =
-            com.swent.skillswap.model.user.Availability(
-                day = java.time.DayOfWeek.MONDAY,
-                startTime = java.time.LocalTime.of(9, 0),
-                endTime = java.time.LocalTime.of(11, 0)
-            )
-        val availability2 =
-            com.swent.skillswap.model.user.Availability(
-                day = java.time.DayOfWeek.WEDNESDAY,
-                startTime = java.time.LocalTime.of(14, 0),
-                endTime = java.time.LocalTime.of(16, 0)
-            )
+        val availability1 = createAvailability(DayOfWeek.MONDAY, 9, 0, 11, 0)
+        val availability2 = createAvailability(DayOfWeek.WEDNESDAY, 14, 0, 16, 0)
 
         val editedUser =
-            User(
+            createUser(
                 uid = uid,
                 username = "testuser2",
                 email = "endenejnd@mdek.ch",
                 profilePicture = "pic.url",
                 skillSet = setOf(skill1, skill2),
                 rating = 4.0f,
-                availability = listOf(availability1, availability2)
+                availability = listOf(availability1, availability2),
+                preference = Preference.MONEY,
+                location = GeoPoint(48.8566, 2.3522)
             )
 
         repo.editUser(basicUser.uid, editedUser)
@@ -169,64 +174,147 @@ class UserFireStoreTest {
 
     @Test
     fun deleteSingleUserFromMultiple() = runBlocking {
-
-        // User 1
         val uid1 = repo.getNewUid()
         val user1 =
-            User(
+            createUser(
                 uid = uid1,
                 username = "testuser",
                 email = "j'ailadalle@gmail.com",
-                profilePicture = "",
-                skillSet = setOf(),
-                rating = 5.0f,
-                availability = listOf()
+                location = GeoPoint(40.7128, -74.0060)
             )
 
-        // User 2
-        val skill1 =
-            Skill(
-                name = SkillTag.COMPUTER_PROGRAMMING,
-                rank = 4.5f,
-                description = "I love programming"
-            )
-        val skill2 = Skill(name = SkillTag.DATABASES, rank = 3.0f, description = "database is ez")
+        val skill1 = createSkill(SkillTag.COMPUTER_PROGRAMMING, 4.5f, "I love programming")
+        val skill2 = createSkill(SkillTag.DATABASES, 3.0f, "database is ez")
 
-        val availability1 =
-            com.swent.skillswap.model.user.Availability(
-                day = java.time.DayOfWeek.MONDAY,
-                startTime = java.time.LocalTime.of(9, 0),
-                endTime = java.time.LocalTime.of(11, 0)
-            )
-        val availability2 =
-            com.swent.skillswap.model.user.Availability(
-                day = java.time.DayOfWeek.WEDNESDAY,
-                startTime = java.time.LocalTime.of(14, 0),
-                endTime = java.time.LocalTime.of(16, 0)
-            )
+        val availability1 = createAvailability(DayOfWeek.MONDAY, 9, 0, 11, 0)
+        val availability2 = createAvailability(DayOfWeek.WEDNESDAY, 14, 0, 16, 0)
 
         val uid2 = repo.getNewUid()
         val user2 =
-            User(
+            createUser(
                 uid = uid2,
                 username = "testuser2",
                 email = "endenejnd@mdek.ch",
                 profilePicture = "pic.url",
                 skillSet = setOf(skill1, skill2),
                 rating = 4.0f,
-                availability = listOf(availability1, availability2)
+                availability = listOf(availability1, availability2),
+                preference = Preference.MONEY,
+                location = GeoPoint(51.5074, -0.1278)
             )
 
         repo.addUser(user1)
         repo.addUser(user2)
 
-        // delete user 1
         repo.deleteUser(user1.uid)
 
-        // get user 1 should throw an exception
         assertThrows(Exception::class.java) { runBlocking { repo.getUser(user1.uid) } }
-
-        // get user 2 should work
         assertEquals(user2, repo.getUser(user2.uid))
+    }
+
+    @Test
+    fun editUserLocation() = runBlocking {
+        val uid = repo.getNewUid()
+        val initialLocation = GeoPoint(46.5191, 6.5668)
+        val user =
+            createUser(
+                uid = uid,
+                username = "locationtester",
+                email = "location@test.com",
+                location = initialLocation
+            )
+
+        repo.addUser(user)
+        assertEquals(initialLocation, repo.getUser(uid).location)
+
+        val newLocation = GeoPoint(48.8566, 2.3522)
+        val updatedUser = user.copy(location = newLocation)
+
+        repo.editUser(uid, updatedUser)
+        val retrievedUser = repo.getUser(uid)
+
+        assertEquals(newLocation.latitude, retrievedUser.location.latitude, 0.0001)
+        assertEquals(newLocation.longitude, retrievedUser.location.longitude, 0.0001)
+    }
+
+    @Test
+    fun editUserPreference() = runBlocking {
+        val uid = repo.getNewUid()
+        val user =
+            createUser(
+                uid = uid,
+                username = "preferencetester",
+                email = "preference@test.com",
+                location = GeoPoint(0.0, 0.0)
+            )
+
+        repo.addUser(user)
+        assertEquals(Preference.SKILLS, repo.getUser(uid).preference)
+
+        val updatedUser = user.copy(preference = Preference.MONEY)
+        repo.editUser(uid, updatedUser)
+
+        assertEquals(Preference.MONEY, repo.getUser(uid).preference)
+    }
+
+    @Test
+    fun testMultipleLocationsWithDifferentCoordinates() = runBlocking {
+        val uid1 = repo.getNewUid()
+        val user1 =
+            createUser(
+                uid = uid1,
+                username = "user1",
+                email = "user1@test.com",
+                location = GeoPoint(46.5191, 6.5668)
+            )
+
+        val uid2 = repo.getNewUid()
+        val user2 =
+            createUser(
+                uid = uid2,
+                username = "user2",
+                email = "user2@test.com",
+                preference = Preference.MONEY,
+                location = GeoPoint(35.6762, 139.6503)
+            )
+
+        repo.addUser(user1)
+        repo.addUser(user2)
+
+        val retrievedUser1 = repo.getUser(uid1)
+        val retrievedUser2 = repo.getUser(uid2)
+
+        assertEquals(user1.location, retrievedUser1.location)
+        assertEquals(user2.location, retrievedUser2.location)
+        assertNotEquals(retrievedUser1.location, retrievedUser2.location)
+    }
+
+    @Test
+    fun testBothPreferenceValues() = runBlocking {
+        val uid1 = repo.getNewUid()
+        val userWithSkillsPreference =
+            createUser(
+                uid = uid1,
+                username = "skillsuser",
+                email = "skills@test.com",
+                preference = Preference.SKILLS,
+                location = GeoPoint(0.0, 0.0)
+            )
+
+        val uid2 = repo.getNewUid()
+        val userWithMoneyPreference =
+            createUser(
+                uid = uid2,
+                username = "moneyuser",
+                email = "money@test.com",
+                preference = Preference.MONEY,
+                location = GeoPoint(0.0, 0.0)
+            )
+
+        repo.addUser(userWithSkillsPreference)
+        repo.addUser(userWithMoneyPreference)
+
+        assertEquals(Preference.SKILLS, repo.getUser(uid1).preference)
+        assertEquals(Preference.MONEY, repo.getUser(uid2).preference)
     }
 }

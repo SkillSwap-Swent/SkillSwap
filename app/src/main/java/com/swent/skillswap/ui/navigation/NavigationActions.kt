@@ -14,6 +14,8 @@ sealed class Screen(
 
     object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
 
+    object PasswordRecovery : Screen(route = "password_recovery", name = "Password Recovery")
+
     object Offers : Screen(route = "offers", name = "Offers", isTopLevelDestination = true)
 
     object Profile : Screen(route = "profile", name = "Profile", isTopLevelDestination = true)
