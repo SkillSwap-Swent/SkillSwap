@@ -16,7 +16,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PostDataClassTest {
+open class PostDataClassTest {
 
     private val testLocation = GeoPoint(46.5191, 6.5668)
 

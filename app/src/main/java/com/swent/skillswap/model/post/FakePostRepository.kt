@@ -15,6 +15,8 @@ class FakePostRepository : PostRepository {
     private var shouldFailOnEdit = false
     private var shouldFailOnGet = false
     private var delayMillis = 0L
+    var getMultiplePostsCalls = 0
+    var lastEditedPost: Post? = null
 
     // Preload posts for deterministic testing
     fun preloadPosts(vararg postsToPreload: Post) {
@@ -62,6 +64,7 @@ class FakePostRepository : PostRepository {
         userLocation: GeoPoint?,
         maxDistanceKm: Double?
     ): List<Post> {
+        getMultiplePostsCalls++
         var filteredPosts =
             posts.values
                 .filter { it.type == type }
@@ -113,6 +116,7 @@ class FakePostRepository : PostRepository {
         if (!posts.containsKey(postId)) {
             throw Exception("Cannot edit non-existent post: $postId")
         }
+        lastEditedPost = newPost
         posts[postId] = newPost
     }
 
