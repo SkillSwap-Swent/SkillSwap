@@ -45,7 +45,8 @@ class PostRepositoryInstrumentedTest {
                         ownerId = "replier123",
                         creation = Timestamp.now(),
                         message = "I want to help!",
-                        postType = PostType.REQUEST
+                        postType = PostType.REQUEST,
+                        replyStatus = ReplyStatus.PROPOSED
                     )
                 )
         )
