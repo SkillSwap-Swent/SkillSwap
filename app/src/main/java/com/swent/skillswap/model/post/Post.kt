@@ -11,6 +11,7 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.EveryTag
 
 /**
@@ -40,6 +41,8 @@ interface Post {
     val media: List<String>
     /** The type of the post, indicating whether it's an offer or a request. */
     val type: PostType
+    /** The meeting location of the post */
+    val location: GeoPoint
     /**
      * A list of normalized search keywords used to support Firestore queries with
      * `whereArrayContainsAny`.
@@ -57,6 +60,8 @@ interface Post {
      */
     val searchKeys: List<String>
         get() = buildSearchKeys()
+
+    val postReplies: Collection<PostReply>
 
     /**
      * In the current implementation the keywords aren't separated by category. This means that when

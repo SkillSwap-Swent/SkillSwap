@@ -8,9 +8,14 @@
 package com.swent.skillswap.model.user
 
 import android.annotation.SuppressLint
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.SkillTag
 import java.time.DayOfWeek
 import java.time.LocalTime
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -60,7 +65,7 @@ fun deserializeAvailabilities(availabilityList: String): List<Availability> {
 }
 
 /*
- * These functions serialize/deserialize single skills and single availabilities
+ * These functions serialize/deserialize single skills, single availabilities, single preferences and single locations
  */
 fun serializeSingleSkill(skill: Skill): String {
     val serialized = SerializableSkill(skill.name.name, skill.rank, skill.description)
@@ -90,11 +95,8 @@ fun deserializeSingleAvailability(availability: String): Availability {
         LocalTime.parse(deserialized.endTime)
     )
 }
-/**
- * Serialize a [Preference] to its string representation.
- *
- * @param pref Preference to serialize.
- * @return String name of the preference enum.
+/*
+ * These functions serialize/deserialize single skills and single availabilities
  */
 fun serializePreference(pref: Preference): String = pref.name
 
@@ -107,4 +109,24 @@ fun serializePreference(pref: Preference): String = pref.name
  */
 fun deserializePreference(preference: String): Preference {
     return Preference.valueOf(preference)
+}
+
+fun calculateDistance(loc1: GeoPoint, loc2: GeoPoint): Double {
+
+    val earthRadiusKm = 6371.0
+
+    val dLat = Math.toRadians(loc2.latitude - loc1.latitude)
+
+    val dLon = Math.toRadians(loc2.longitude - loc1.longitude)
+
+    val a =
+        sin(dLat / 2) * sin(dLat / 2) +
+            cos(Math.toRadians(loc1.latitude)) *
+                cos(Math.toRadians(loc2.latitude)) *
+                sin(dLon / 2) *
+                sin(dLon / 2)
+
+    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return earthRadiusKm * c
 }

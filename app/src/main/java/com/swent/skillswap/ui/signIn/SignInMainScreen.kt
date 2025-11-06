@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +66,7 @@ val signInButtonStroke = BorderStroke(1.dp, Color.White)
 fun SignInMainScreen(
     goToMainScreen: () -> Unit = {},
     goToCreateAccountScreen: () -> Unit = {},
+    goToPasswordRecovery: () -> Unit = {},
     context: Context = LocalContext.current,
     credentialManager: CredentialManager = CredentialManager.create(LocalContext.current),
     vm: SignInViewModel = viewModel()
@@ -124,6 +126,19 @@ fun SignInMainScreen(
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.PASSWORD_FIELD)
             )
+            // ----- Forgot Password link -----
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(
+                onClick = goToPasswordRecovery,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Forgot Password?",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
             // ----- Google Sign-In button -----
             Spacer(modifier = Modifier.height(50.dp))
             OutlinedButton(

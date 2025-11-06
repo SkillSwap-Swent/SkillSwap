@@ -5,14 +5,17 @@
  */
 package com.swent.skillswap.model.post
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
@@ -32,11 +35,24 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
         status: PostStatus?,
+        userLocation: GeoPoint?,
+        maxDistanceKm: Double?
     ): List<Post> {
         val query: Query =
             buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
 
-        return query.get().await().map { documentToPost(it) }.sortedByDescending { it.creation }
+        var posts = query.get().await().map { documentToPost(it) }
+
+        if (userLocation != null && maxDistanceKm != null) {
+
+            val epsilon = 0.05 // small tolerance for floating-point errors
+            posts =
+                posts.filter { post ->
+                    calculateDistance(userLocation, post.location) <= maxDistanceKm + epsilon
+                }
+        }
+
+        return posts.sortedByDescending { it.creation }
     }
 
     private fun buildQuery(
@@ -59,7 +75,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         }
         query = query.whereEqualTo("paymentMethod", paymentMethod)
 
-        // perform complex seachKeys filter to bypass limit of single whereArrayContainsAny per
+        // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
         // query
         val searchKeys = buildSearchKeys(titleContains, tags)
         if (searchKeys.isNotEmpty()) {
@@ -136,6 +152,13 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
+        val location = document.getGeoPoint("location")!!
+
+        val postReplies: Set<PostReply> =
+            (document.get("postReplies") as? List<*>)
+                ?.map { item -> documentToPostReply(item) }
+                ?.toSet() ?: emptySet()
+
         val post =
             when (postType) {
                 PostType.REQUEST ->
@@ -149,13 +172,57 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         expiry,
                         creation,
                         status,
-                        media
+                        media,
+                        postReplies,
+                        location
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
+    }
+
+    private fun documentToPostReply(item: Any?): PostReply {
+        val map =
+            item as? Map<*, *>
+                ?: error(
+                    "Invalid post reply entry: expected Map but got ${item?.javaClass?.simpleName}"
+                )
+
+        val uid = map["uid"] as? String ?: error("Missing or invalid 'uid' in post reply: $map")
+        val postId =
+            map["postId"] as? String ?: error("Missing or invalid 'postId' in post reply: $map")
+        val ownerId =
+            map["ownerId"] as? String ?: error("Missing or invalid 'ownerId' in post reply: $map")
+        val message =
+            map["message"] as? String ?: error("Missing or invalid 'message' in post reply: $map")
+        val creation =
+            map["creation"] as? Timestamp
+                ?: error("Missing or invalid 'creation' in post reply: $map")
+        val postTypeStr =
+            map["postType"] as? String ?: error("Missing or invalid 'postType' in post reply: $map")
+        val replyStatusStr =
+            map["replyStatus"] as? String
+                ?: error("Missing or invalid 'replyStatus' in post reply: $map")
+        val postType =
+            runCatching { PostType.valueOf(postTypeStr) }
+                .getOrElse { error("Invalid postType value: '$postTypeStr' in post reply: $map") }
+        val replyStatus =
+            runCatching { ReplyStatus.valueOf(replyStatusStr) }
+                .getOrElse {
+                    error("Invalid replyStatus value: '$replyStatusStr' in post reply: $map")
+                }
+
+        return PostReply(
+            uid = uid,
+            postId = postId,
+            ownerId = ownerId,
+            message = message,
+            creation = creation,
+            postType = postType,
+            replyStatus = replyStatus
+        )
     }
 
     private fun getCollectionPath(type: PostType): CollectionReference {
@@ -177,7 +244,9 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             creation = post.creation,
             status = post.status,
             media = post.media,
-            type = post.type
+            type = post.type,
+            location = post.location,
+            postReplies = post.postReplies.toList()
         )
     }
 }

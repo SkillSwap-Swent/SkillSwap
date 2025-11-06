@@ -1,6 +1,8 @@
 package com.swent.skillswap.model.post
 
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.delay
 
 // In-memory PostRepository implementation for testing. Provides deterministic behavior
@@ -13,6 +15,8 @@ class FakePostRepository : PostRepository {
     private var shouldFailOnEdit = false
     private var shouldFailOnGet = false
     private var delayMillis = 0L
+    var getMultiplePostsCalls = 0
+    var lastEditedPost: Post? = null
 
     // Preload posts for deterministic testing
     fun preloadPosts(vararg postsToPreload: Post) {
@@ -56,15 +60,30 @@ class FakePostRepository : PostRepository {
         ownerId: String,
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
-        status: PostStatus?
+        status: PostStatus?,
+        userLocation: GeoPoint?,
+        maxDistanceKm: Double?
     ): List<Post> {
-        return posts.values
-            .filter { it.type == type }
-            .filter {
-                titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true)
-            }
-            .filter { ownerId.isEmpty() || it.ownerId == ownerId }
-            .take(numberOfPosts.toInt())
+        getMultiplePostsCalls++
+        var filteredPosts =
+            posts.values
+                .filter { it.type == type }
+                .filter {
+                    titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true)
+                }
+                .filter { ownerId.isEmpty() || it.ownerId == ownerId }
+                .filter { it.paymentMethod == paymentMethod }
+                .filter { status == null || it.status == status }
+
+        // Filter by distance if location and maxDistance are provided
+        if (userLocation != null && maxDistanceKm != null) {
+            filteredPosts =
+                filteredPosts.filter { post ->
+                    calculateDistance(userLocation, post.location) <= maxDistanceKm
+                }
+        }
+
+        return filteredPosts.take(numberOfPosts.toInt())
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {
@@ -97,6 +116,7 @@ class FakePostRepository : PostRepository {
         if (!posts.containsKey(postId)) {
             throw Exception("Cannot edit non-existent post: $postId")
         }
+        lastEditedPost = newPost
         posts[postId] = newPost
     }
 
