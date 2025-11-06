@@ -24,12 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.model.offer.FeedOffer
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Displays the main FeedOffer screen.
@@ -238,28 +235,4 @@ fun FeedOfferMenu(onBlockUser: () -> Unit, onReportOffer: () -> Unit, onDismiss:
             }
         )
     }
-}
-/** Fake ViewModel for preview purposes. */
-class FakeFeedScreenViewModel : FeedScreenViewModel() {
-
-    private val fakeOffer =
-        FeedOffer(
-            skillProvided = "Guitar Lessons",
-            authorID = "user123",
-            authorName = "Alice Martin",
-            requesterAvatar = "https://picsum.photos/200",
-            receiverName = "Bob Carter",
-            skillRequested = "Portrait Photography",
-            thumbnail = "https://picsum.photos/600/300",
-            specification = "Bring your guitar",
-            description =
-                "I don't have any focus for portrait please make a recommendation" +
-                    " and if possible use your material"
-        )
-
-    private val _fakeState =
-        MutableStateFlow(FeedScreenUiState(offers = listOf(fakeOffer), current = fakeOffer))
-
-    override val uiState: StateFlow<FeedScreenUiState>
-        get() = _fakeState
 }

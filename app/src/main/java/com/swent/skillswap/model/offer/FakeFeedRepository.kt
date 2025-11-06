@@ -11,15 +11,8 @@ class FakeFeedRepository : FeedRepository {
     private val skippedOffers = mutableListOf<Pair<FeedOffer, String>>()
     private val preloadedOffers = mutableListOf<FeedOffer>()
     private var postCounter = 0
-
-    // Private mutable lists + public read-only exposure
     private val _blockedUsers = mutableListOf<String>()
-    val blockedUsers: List<String>
-        get() = _blockedUsers
-
     private val _reportedOffers = mutableListOf<FeedOffer>()
-    val reportedOffers: List<FeedOffer>
-        get() = _reportedOffers
 
     fun preloadOffers(vararg offers: FeedOffer) {
         preloadedOffers.clear()
@@ -48,8 +41,6 @@ class FakeFeedRepository : FeedRepository {
     override fun skip(offer: FeedOffer, userId: String) {
         skippedOffers.add(offer to userId)
     }
-
-    override fun getThumbnail(thumbnailId: String) {}
 
     override fun blockUser(userId: String) {
         _blockedUsers.add(userId)

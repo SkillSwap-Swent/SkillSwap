@@ -35,13 +35,18 @@ interface FeedRepository {
     fun skip(offer: FeedOffer, userId: String)
 
     /**
-     * Retrieves the thumbnail associated with the given [thumbnailId].
+     * Blocks a user with the specified [userId], preventing further interaction or communication
+     * with that user within the application.
      *
-     * @param thumbnailId The identifier for the thumbnail image.
+     * @param userId The unique identifier of the user to be blocked.
      */
-    fun getThumbnail(thumbnailId: String)
-
     fun blockUser(userId: String)
 
-    fun reportOffer(offer: com.swent.skillswap.model.offer.FeedOffer)
+    /**
+     * Reports an offer to the system for review, indicating that it may violate guidelines or
+     * contain inappropriate content.
+     *
+     * @param offer The [FeedOffer] instance representing the offer to be reported.
+     */
+    fun reportOffer(offer: FeedOffer)
 }
