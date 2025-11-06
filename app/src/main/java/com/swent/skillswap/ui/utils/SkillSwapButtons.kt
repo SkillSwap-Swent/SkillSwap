@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.theme.getLinearBrush
 
 enum class SkillSwapButtonShape {
@@ -291,30 +290,3 @@ fun SkillSwapButtonOutline(
         }
     }
 }
-/**
- * /** Preview showcasing different variations of [SkillSwapButtonOutline].
- *
- * This preview demonstrates:
- * - A **default** outlined button.
- * - A button **with an icon** and larger size.
- * - A **disabled** medium-sized button.
- * - A **square extra-large** button for visual contrast.
- *
- * The preview uses the [SkillSwapAppTheme] for consistent styling and layout spacing to visualize
- * how the component adapts to various configurations.
- *
- * @author Joey Gugler using chatGPT /
- * @Preview(showBackground = true, showSystemUi = true)
- * @Composable fun PreviewSkillSwapButtonOutline() { SkillSwapAppTheme { Column( modifier =
- *   Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp), ) {
- *   SkillSwapButtonOutline( labelText = "Default", onClick = {}, )
- *
- * SkillSwapButtonOutline( labelText = "With Icon", onClick = {}, icon = Icons.Default.Favorite,
- * size = SkillSwapButtonSize.L )
- *
- * SkillSwapButtonOutline( labelText = "Disabled", onClick = {}, enabled = false, size =
- * SkillSwapButtonSize.M )
- *
- * SkillSwapButtonOutline( labelText = "Square XL", onClick = {}, shape =
- * SkillSwapButtonShape.SQUARE, size = SkillSwapButtonSize.XL ) } } } /
- */
