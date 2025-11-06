@@ -26,4 +26,49 @@ class ChatUtilsTest {
             assertEquals(originalMessage.timestamp, deserialized.timestamp)
         }
     }
+
+    @Test
+    fun testDeserializeInvalidDataThrowsException() {
+        val emptyIdMessage = Message(
+            id = "",
+            senderId = "user1",
+            content = "Hello",
+            timestamp = 1616161616L
+        )
+
+        val emptyUserIdMessage = Message(
+            id = "msg1",
+            senderId = "",
+            content = "Hello",
+            timestamp = 1616161616L
+        )
+
+        val emptyContentMessage = Message(
+            id = "msg1",
+            senderId = "user1",
+            content = "",
+            timestamp = 1616161616L
+        )
+
+        val negativeTimestampMessage = Message(
+            id = "msg1",
+            senderId = "user1",
+            content = "Hello",
+            timestamp = -1616161616L
+        )
+
+        val messagesToTest = listOf(
+            emptyIdMessage,
+            emptyUserIdMessage,
+            emptyContentMessage,
+            negativeTimestampMessage
+        )
+
+        messagesToTest.forEach { message ->
+           assertThrows(IllegalArgumentException::class.java) {
+               serializeMessage(message)
+           }
+        }
+
+    }
 }
