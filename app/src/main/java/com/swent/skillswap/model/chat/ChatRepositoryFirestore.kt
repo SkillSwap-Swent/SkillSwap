@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepository {
@@ -40,14 +41,18 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
      * } catch (e: Exception) { throw Exception("Error while getting chat in getChat: ${e.message}")
      * } }
      */
-    override suspend fun sendMessage(chatId: String, message: Message) {
+    override suspend fun sendMessage(chatId: String, content: String) {
         /** Preconditions */
         require(chatId.isNotEmpty()) { "chatUid cannot be empty" }
-        require(message.senderId.isNotEmpty()) { "senderUid cannot be empty" }
-        require(message.content.isNotEmpty()) { "message content cannot be empty" }
-        require(message.timestamp > 0) { "timestamp must be positive" }
+        require(content.isNotEmpty()) { "content cannot be empty" }
 
         /** Send message */
+        val message = Message(
+            id = getMessageId(),
+            senderId = getCurrentUserId(),
+            content = content,
+            timestamp = System.currentTimeMillis()
+        )
         try {
             val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId)
             if (!document.get().await().exists()) {
@@ -60,25 +65,30 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         }
     }
 
-    /*
+
     override fun streamMessages(chatId: String) = callbackFlow {
-        val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatUid)
+        val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId)
         document.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                println("Listen failed: ${error.message}")
                 return@addSnapshotListener
             }
 
             if (snapshot != null && snapshot.exists()) {
-                val chat = snapshot.toObject(Chat::class.java) // TODO deserialization
-                trySend(chat)
+                snapshot.get("messages")?.let { data ->
+                    val messagesList = (data as? List<*>)?.mapNotNull {
+                        deserializeMessage(
+                            (it as? String) ?: return@mapNotNull null
+                        )
+                    } ?: return@addSnapshotListener
+
+                    /** send the fetched messages list to the flow */
+                    trySend(messagesList)
+                }
             } else {
-                println("Current chat data: null")
+                /** Chat document does not exist */
+                return@addSnapshotListener
             }
 
         }
-    }*/
-    override fun streamMessages(chatId: String): Flow<List<Message>> {
-        TODO("Not yet implemented")
     }
 }
