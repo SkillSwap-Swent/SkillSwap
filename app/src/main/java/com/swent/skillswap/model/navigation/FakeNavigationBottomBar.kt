@@ -8,7 +8,7 @@ package com.swent.skillswap.model.navigation
  *
  * @property goToProfileCalled True if [goToProfile] was called.
  * @property goToChatCalled True if [goToChat] was called.
- * @property goToOfferScreenCalled True if [goToOfferScreen] was called.
+ * @property goToOfferScreenCalled True if [goToFeedScreen] was called.
  * @author Joey Gugler Made Using Ai (chatGPT)
  */
 class FakeNavigationBottomBar : NavigationBottomBar {
@@ -33,7 +33,7 @@ class FakeNavigationBottomBar : NavigationBottomBar {
     }
 
     /** Marks [goToOfferScreenCalled] as true. */
-    override fun goToOfferScreen() {
+    override fun goToFeedScreen() {
         goToOfferScreenCalled = true
     }
 

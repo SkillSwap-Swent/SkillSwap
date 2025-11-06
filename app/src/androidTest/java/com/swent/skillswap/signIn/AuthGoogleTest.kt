@@ -21,10 +21,10 @@ import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.ui.chat.ChatScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.offerScreen.OfferScreen
-import com.swent.skillswap.ui.offerScreen.OfferScreenTestTags
 import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
@@ -138,7 +138,7 @@ class AuthGoogleTest : TestCase() {
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Offers.route) { OfferScreen() }
+                composable(Screen.Offers.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatScreen() }
                 composable(Screen.Profile.route) { ProfileMainScreen() }
             }
@@ -181,11 +181,11 @@ class AuthGoogleTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
     }
 
     /** Returning Google user (profile already exists) → straight to Offers after sign-in. */
@@ -197,10 +197,10 @@ class AuthGoogleTest : TestCase() {
 
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
     }
 }

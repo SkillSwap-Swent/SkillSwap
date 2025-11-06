@@ -17,8 +17,8 @@ data class User(
     val skillSet: Set<Skill>,
     val rating: Float,
     val availability: List<Availability>
-    // val offerSet: Set<Offer>,
-    // val favoriteOffers: Set<Offer>
+    // val offerSet: Set<FeedOffer>,
+    // val favoriteOffers: Set<FeedOffer>
 )
 
 /*

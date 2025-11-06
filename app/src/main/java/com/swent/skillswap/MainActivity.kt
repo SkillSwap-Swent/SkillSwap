@@ -27,16 +27,15 @@ import androidx.navigation.compose.rememberNavController
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
 import com.swent.skillswap.ui.chat.ChatScreenData
+import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
-import com.swent.skillswap.ui.offerScreen.OfferScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileMainScreen
-import kotlin.collections.contains
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,7 +120,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 )
             }
 
-            composable(Screen.Offers.route) { OfferScreen() }
+            composable(Screen.Offers.route) { FeedScreen() }
             composable(Screen.Chat.route) {
                 ChatScreen(
                     posts = ChatScreenData.getSamplePosts(),
