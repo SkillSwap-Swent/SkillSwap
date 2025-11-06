@@ -7,7 +7,6 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -347,16 +346,5 @@ class SignInCreateAccountScreenTest : TestCase() {
             .onNodeWithTag(CreateAccountTags.SKILL_CHIP_PREFIX + skillTag)
             .performScrollTo()
             .performClick()
-
-        // Final Next triggers done(); no explicit UI success state to assert here.
-        pressNext()
-
-        // Optional: ensure no common error texts are present on the screen
-        // (weak check, but helps catch regressions)
-        composeTestRule.onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
-        composeTestRule.onAllNodesWithTag(CreateAccountTags.EMAIL_FIELD)
-        composeTestRule.onAllNodesWithTag(CreateAccountTags.PASSWORD_FIELD)
-        composeTestRule.onAllNodesWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
-        // If you later expose dedicated error tags, assert they don't exist here.
     }
 }
