@@ -29,19 +29,20 @@ class ChatViewModel(
 
     private fun startListening() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            _uiState.update { it.copy(isLoading = true) }
 
             try {
                 chatRepository.streamMessages(chatId).collect { messages ->
-                    _uiState.value =
-                        _uiState.value.copy(
+                    _uiState.update {
+                        it.copy(
                             messages = messages.sortedBy { it.timestamp },
                             isLoading = false,
                             error = null
                         )
+                    }
                 }
             } catch (exception: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = exception.message)
+                _uiState.update { it.copy(isLoading = false, error = exception.message) }
             }
         }
     }
@@ -52,7 +53,7 @@ class ChatViewModel(
             try {
                 chatRepository.sendMessage(chatId, currentUserId, content)
             } catch (exception: Exception) {
-                _uiState.value = _uiState.value.copy(error = exception.message, isLoading = false)
+                _uiState.update { it.copy(error = exception.message, isLoading = false) }
             }
         }
     }
