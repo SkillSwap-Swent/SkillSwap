@@ -25,16 +25,27 @@ class PasswordRecoveryViewModelTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        // Initialize Firebase if not already initialized
         try {
-            val options =
-                FirebaseOptions.Builder()
-                    .setApplicationId("test-app-id")
-                    .setApiKey("test-api-key")
-                    .setProjectId("test-project")
-                    .build()
-            FirebaseApp.initializeApp(context, options)
-        } catch (e: Exception) {
-            // Firebase might already be initialized or other error, ignore
+            FirebaseApp.getInstance()
+        } catch (e: IllegalStateException) {
+            // Firebase not initialized, initialize it now
+            try {
+                val options =
+                    FirebaseOptions.Builder()
+                        .setApplicationId("test-app-id")
+                        .setApiKey("test-api-key")
+                        .setProjectId("test-project")
+                        .build()
+                FirebaseApp.initializeApp(context, options)
+            } catch (e2: Exception) {
+                // If initialization fails, try without explicit options (uses default)
+                try {
+                    FirebaseApp.initializeApp(context)
+                } catch (e3: Exception) {
+                    // Ignore if still fails
+                }
+            }
         }
         viewModel = PasswordRecoveryViewModel()
     }
