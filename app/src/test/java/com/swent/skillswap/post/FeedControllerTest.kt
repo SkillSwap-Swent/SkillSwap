@@ -7,6 +7,7 @@ import com.swent.skillswap.post.PostDataClassTest
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 open class FeedControllerTest : PostDataClassTest() {
@@ -36,7 +37,7 @@ open class FeedControllerTest : PostDataClassTest() {
             // verify initialLoad happened + getNextPost will run another fetch since queue has less
             // than 3 (threshold) posts
             assertEquals(2, repo.getMultiplePostsCalls)
-            assert(ctrl.currentPost.value != null)
+            assertNotNull(ctrl.currentPost.value)
         }
     }
 
@@ -59,7 +60,7 @@ open class FeedControllerTest : PostDataClassTest() {
     fun controllerSkip() {
         runTest {
             val (_, ctrl) = initController()
-            assert(ctrl.currentPost.value != null)
+            assertNotNull(ctrl.currentPost.value)
             val firstPostUid = ctrl.currentPost.value!!.uid // assert non null after assert non null
 
             ctrl.skipPost()
@@ -71,7 +72,7 @@ open class FeedControllerTest : PostDataClassTest() {
     fun controllerRefills() {
         runTest {
             val (_, ctrl) = initController()
-            assert(ctrl.currentPost.value != null)
+            assertNotNull(ctrl.currentPost.value)
             val firstPostUid = ctrl.currentPost.value!!.uid // assert non null after assert non null
 
             ctrl.skipPost()
