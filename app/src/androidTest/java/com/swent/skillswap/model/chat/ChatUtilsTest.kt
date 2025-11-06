@@ -53,4 +53,11 @@ class ChatUtilsTest {
             assertThrows(IllegalArgumentException::class.java) { serializeMessage(message) }
         }
     }
+
+    @Test
+    fun deserializeInvalidMessageFormatThrowsException() {
+        val invalidData = ""
+
+        assertThrows(Exception::class.java) { deserializeMessage(invalidData) }
+    }
 }
