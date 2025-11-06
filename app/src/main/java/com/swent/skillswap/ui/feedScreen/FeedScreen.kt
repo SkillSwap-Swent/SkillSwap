@@ -163,8 +163,6 @@ fun FeedScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
-
                 // === Action Buttons ===
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -217,21 +215,3 @@ fun FeedOfferMenu(onBlockUser: () -> Unit, onReportOffer: () -> Unit, onDismiss:
         )
     }
 }
-
-/**
- * /** Fake ViewModel for preview purposes. */ class FakeFeedScreenViewModel : FeedScreenViewModel()
- * { private val fakeOffer = FeedOffer( skillProvided = "Guitar Lessons", authorID = "user123",
- * authorName = "Alice Martin", requesterAvatar = "https://picsum.photos/200", receiverName = "Bob
- * Carter", skillRequested = "Portrait Photography", thumbnail = "https://picsum.photos/600/300",
- * specification = "Bring your guitar", description = "I don't have any focus for portrait please
- * make a recommendation" + " and if possible use your material" )
- *
- * private val _fakeState = MutableStateFlow(FeedScreenUiState(offers = listOf(fakeOffer), current =
- * fakeOffer)) override val uiState: StateFlow<FeedScreenUiState> get() = _fakeState }
- *
- * /** Preview of the FeedScreen composable using a mock ViewModel and theme. */
- *
- * @Preview(showBackground = true, showSystemUi = true)
- * @Composable fun PreviewFeedScreen() { SkillSwapAppTheme { FeedScreen(vm =
- *   FakeFeedScreenViewModel()) } }*
- */
