@@ -2,7 +2,6 @@ package com.swent.skillswap.ui.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,17 +17,17 @@ data class ChatUIState(
 
 class ChatViewModel(
     private val chatRepository: ChatRepository,
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val currentUserId: String,
     private val chatId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ChatUIState())
     val uiState: StateFlow<ChatUIState> = _uiState.asStateFlow()
 
     init {
-        startListening(chatId)
+        startListening()
     }
 
-    private fun startListening(chatId: String) {
+    private fun startListening() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
@@ -49,12 +48,11 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(chatId: String, content: String) {
-        val currentUser = auth.currentUser?.uid ?: return
+    fun sendMessage(content: String) {
 
         viewModelScope.launch {
             try {
-                chatRepository.sendMessage(chatId, currentUser, content)
+                chatRepository.sendMessage(chatId, currentUserId, content)
             } catch (exception: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = exception.message,
