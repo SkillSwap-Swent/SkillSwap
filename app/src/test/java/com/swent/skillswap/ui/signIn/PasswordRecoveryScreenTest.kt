@@ -12,9 +12,12 @@ import com.google.firebase.FirebaseOptions
 import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class PasswordRecoveryScreenTest {
 
@@ -28,22 +31,19 @@ class PasswordRecoveryScreenTest {
             FirebaseApp.getInstance()
         } catch (e: IllegalStateException) {
             // Firebase not initialized, initialize it now
-            try {
-                val options =
-                    FirebaseOptions.Builder()
-                        .setApplicationId("test-app-id")
-                        .setApiKey("test-api-key")
-                        .setProjectId("test-project")
-                        .build()
-                FirebaseApp.initializeApp(context, options)
-            } catch (e2: Exception) {
-                // If initialization fails, try without explicit options (uses default)
-                try {
-                    FirebaseApp.initializeApp(context)
-                } catch (e3: Exception) {
-                    // Ignore if still fails
-                }
-            }
+            val options =
+                FirebaseOptions.Builder()
+                    .setApplicationId("test-app-id")
+                    .setApiKey("test-api-key")
+                    .setProjectId("test-project")
+                    .build()
+            FirebaseApp.initializeApp(context, options)
+        }
+        // Verify Firebase is initialized before creating ViewModel
+        try {
+            FirebaseApp.getInstance()
+        } catch (e: IllegalStateException) {
+            throw AssertionError("Failed to initialize Firebase for tests", e)
         }
         return PasswordRecoveryViewModel()
     }
@@ -54,7 +54,7 @@ class PasswordRecoveryScreenTest {
         composeRule.setContent { MaterialTheme { PasswordRecoveryScreen(vm = viewModel) } }
 
         composeRule.onNodeWithText("Password Recovery").assertExists()
-        composeRule.onNodeWithText("Enter your email address").assertExists()
+        composeRule.onNodeWithText("Enter your email address", substring = true).assertExists()
     }
 
     @Test

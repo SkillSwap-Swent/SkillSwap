@@ -12,9 +12,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class PasswordRecoveryViewModelTest {
 
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
@@ -24,27 +29,34 @@ class PasswordRecoveryViewModelTest {
     @Before
     fun setUp() {
         val context = RuntimeEnvironment.getApplication()
+        requireNotNull(context) { "Robolectric context must not be null" }
+
         // Initialize Firebase if not already initialized
         try {
             FirebaseApp.getInstance()
         } catch (e: IllegalStateException) {
             // Firebase not initialized, initialize it now
+            val options =
+                FirebaseOptions.Builder()
+                    .setApplicationId("test-app-id")
+                    .setApiKey("test-api-key")
+                    .setProjectId("test-project")
+                    .build()
             try {
-                val options =
-                    FirebaseOptions.Builder()
-                        .setApplicationId("test-app-id")
-                        .setApiKey("test-api-key")
-                        .setProjectId("test-project")
-                        .build()
                 FirebaseApp.initializeApp(context, options)
-            } catch (e2: Exception) {
-                // If initialization fails, try without explicit options (uses default)
-                try {
-                    FirebaseApp.initializeApp(context)
-                } catch (e3: Exception) {
-                    // Ignore if still fails
-                }
+            } catch (initError: Exception) {
+                // If initialization with options fails, rethrow to see the actual error
+                throw AssertionError(
+                    "Failed to initialize Firebase with options: ${initError.message}",
+                    initError
+                )
             }
+        }
+        // Verify Firebase is initialized before creating ViewModel
+        try {
+            FirebaseApp.getInstance()
+        } catch (e: IllegalStateException) {
+            throw AssertionError("Failed to initialize Firebase for tests", e)
         }
         viewModel = PasswordRecoveryViewModel()
     }
