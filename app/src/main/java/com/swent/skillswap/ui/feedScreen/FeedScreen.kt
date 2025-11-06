@@ -5,7 +5,9 @@ package com.swent.skillswap.ui.feedScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -18,12 +20,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.model.offer.FeedOffer
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Displays the main FeedOffer screen.
@@ -49,6 +57,8 @@ fun FeedScreen(
 
     val horizontalPadding = screenWidthDp * 0.05f
     val verticalPadding = screenHeightDp * 0.03f
+    val avatarSize = min(screenWidthDp * 0.12f, 40.dp) // max 60.dp
+    val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp) // max 40% of screen or 250.dp
 
     Box(
         modifier =
@@ -59,7 +69,8 @@ fun FeedScreen(
         Card(
             modifier =
                 Modifier.testTag(FeedScreenTestTags.FEED_CARD)
-                    .fillMaxWidth()
+                    .widthIn(max = screenWidthDp * 0.9f)
+                    .heightIn(max = screenHeightDp * 0.9f)
                     .aspectRatio(0.8f)
                     .pointerInput(Unit) {
                         detectDragGestures { _, dragAmount ->
@@ -86,7 +97,7 @@ fun FeedScreen(
                         model = offer.requesterAvatar,
                         contentDescription = "Requester Avatar",
                         modifier =
-                            Modifier.size(screenWidthDp * 0.1f)
+                            Modifier.size(avatarSize)
                                 .clip(CircleShape)
                                 .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
                     )
@@ -131,60 +142,75 @@ fun FeedScreen(
                     contentDescription = "FeedOffer Thumbnail",
                     modifier =
                         Modifier.fillMaxWidth()
+                            .heightIn(max = maxThumbnailHeight) // cap height
                             .aspectRatio(16f / 9f)
                             .testTag(FeedScreenTestTags.FEED_THUMBNAIL)
                 )
 
                 Spacer(Modifier.height(12.dp))
 
-                // === FeedOffer Info ===
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp)) {
-                    Text(
-                        text = "you will get : ${offer.skillProvided}",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.testTag(FeedScreenTestTags.SKILL_GIVE)
-                    )
-
-                    Text(
-                        text = offer.specification,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.testTag(FeedScreenTestTags.SPECIFICATION_TITLE)
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Text(
-                        text = offer.description,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.testTag(FeedScreenTestTags.SPECIFICATION_DESCRIPTION)
-                    )
-                }
-
-                // === Action Buttons ===
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                // === FeedOffer Info with scroll ===
+                Column(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .weight(1f) // takes remaining space inside card
+                            .padding(horizontal = 10.dp)
                 ) {
-                    SkillSwapButtonOutline(
-                        labelText = "",
-                        onClick = { vm.decline(offer) },
-                        icon = Icons.Default.Close,
-                        shape = SkillSwapButtonShape.ROUND,
-                        size = SkillSwapButtonSize.S,
-                        modifier = Modifier.testTag(FeedScreenTestTags.DECLINE_BUTTON)
-                    )
+                    Column(
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                                .weight(1f)
+                                .testTag(FeedScreenTestTags.SCROLL_BOX)
+                    ) {
+                        Text(
+                            text = "you will get : ${offer.skillProvided}",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.testTag(FeedScreenTestTags.SKILL_GIVE)
+                        )
 
-                    SkillSwapButtonOutline(
-                        labelText = "",
-                        onClick = { vm.accept(offer) },
-                        icon = Icons.Default.Check,
-                        shape = SkillSwapButtonShape.ROUND,
-                        size = SkillSwapButtonSize.S,
-                        modifier = Modifier.testTag(FeedScreenTestTags.ACCEPT_BUTTON)
-                    )
+                        Text(
+                            text = offer.specification,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.testTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Text(
+                            text = offer.description,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier =
+                                Modifier.testTag(FeedScreenTestTags.SPECIFICATION_DESCRIPTION)
+                        )
+                    }
+
+                    // Action Buttons: always visible at bottom
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        SkillSwapButtonOutline(
+                            labelText = "",
+                            onClick = { vm.decline(offer) },
+                            icon = Icons.Default.Close,
+                            shape = SkillSwapButtonShape.ROUND,
+                            size = SkillSwapButtonSize.S,
+                            modifier = Modifier.testTag(FeedScreenTestTags.DECLINE_BUTTON)
+                        )
+
+                        SkillSwapButtonOutline(
+                            labelText = "",
+                            onClick = { vm.accept(offer) },
+                            icon = Icons.Default.Check,
+                            shape = SkillSwapButtonShape.ROUND,
+                            size = SkillSwapButtonSize.S,
+                            modifier = Modifier.testTag(FeedScreenTestTags.ACCEPT_BUTTON)
+                        )
+                    }
                 }
             }
         }
@@ -214,4 +240,35 @@ fun FeedOfferMenu(onBlockUser: () -> Unit, onReportOffer: () -> Unit, onDismiss:
             }
         )
     }
+}
+/** Fake ViewModel for preview purposes. */
+class FakeFeedScreenViewModel : FeedScreenViewModel() {
+
+    private val fakeOffer =
+        FeedOffer(
+            skillProvided = "Guitar Lessons",
+            authorID = "user123",
+            authorName = "Alice Martin",
+            requesterAvatar = "https://picsum.photos/200",
+            receiverName = "Bob Carter",
+            skillRequested = "Portrait Photography",
+            thumbnail = "https://picsum.photos/600/300",
+            specification = "Bring your guitar",
+            description =
+                "I don't have any focus for portrait please make a recommendation" +
+                    " and if possible use your material"
+        )
+
+    private val _fakeState =
+        MutableStateFlow(FeedScreenUiState(offers = listOf(fakeOffer), current = fakeOffer))
+
+    override val uiState: StateFlow<FeedScreenUiState>
+        get() = _fakeState
+}
+
+/** Preview of the FeedScreen composable using a mock ViewModel and theme. */
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun PreviewFeedScreen() {
+    SkillSwapAppTheme { FeedScreen(vm = FakeFeedScreenViewModel()) }
 }

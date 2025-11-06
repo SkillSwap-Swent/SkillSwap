@@ -39,4 +39,5 @@ object FeedScreenTestTags {
 
     /** Tag for the display name of the user who created the offer. */
     const val REQUESTER_NAME = "REQUESTER_NAME"
+    const val SCROLL_BOX = "SCROLL_BOX"
 }
