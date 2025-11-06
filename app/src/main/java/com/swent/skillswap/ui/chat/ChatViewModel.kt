@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /*
-    Data class representing the UI state of the chat screen.
-    It includes the list of messages, loading status, and any error messages.
- */
+   Data class representing the UI state of the chat screen.
+   It includes the list of messages, loading status, and any error messages.
+*/
 data class ChatUIState(
     val messages: List<Message> = emptyList(),
     val isLoading: Boolean = false,
@@ -21,10 +21,10 @@ data class ChatUIState(
 )
 
 /*
-    ViewModel for managing chat state and interactions.
-    It includes functionality to stream messages and send new messages.
-    Each ChatViewModel instance is tied to a specific chat identified by chatId.
- */
+   ViewModel for managing chat state and interactions.
+   It includes functionality to stream messages and send new messages.
+   Each ChatViewModel instance is tied to a specific chat identified by chatId.
+*/
 class ChatViewModel(
     private val chatRepository: ChatRepository,
     private val currentUserId: String,
