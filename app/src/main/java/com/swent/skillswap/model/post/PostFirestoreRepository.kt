@@ -176,8 +176,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         postReplies,
                         location
                     )
-                // TODO("Replace with Offer when it's implemented")
-                PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
+                // TODO("Replace with FeedOffer when it's implemented")
+                PostType.OFFER -> throw NotImplementedError("FeedOffer posts are not supported yet")
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
@@ -227,7 +227,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
     private fun getCollectionPath(type: PostType): CollectionReference {
         return when (type) {
-            PostType.OFFER -> throw NotImplementedError("Offer posts are not supported yet")
+            PostType.OFFER -> throw NotImplementedError("FeedOffer posts are not supported yet")
             PostType.REQUEST -> requestsCollection
         }
     }

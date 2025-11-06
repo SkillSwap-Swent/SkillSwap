@@ -75,9 +75,9 @@ class ChatListScreenTest {
         }
 
         composeRule.onNodeWithText("Chat").assertExists()
-        composeRule.onNodeWithText("Offer").assertExists()
+        composeRule.onNodeWithText("FeedOffer").assertExists()
         composeRule.onNodeWithText("Request").assertExists()
-        // default is Offer selected, should show offer title
+        // default is FeedOffer selected, should show offer title
         composeRule.onNodeWithText("Graphic Design Help").assertExists()
     }
 
@@ -130,11 +130,11 @@ class ChatListScreenTest {
             MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
         }
 
-        // Offer visible first
+        // FeedOffer visible first
         composeRule.onNodeWithText("Graphic Design Help").assertExists()
         composeRule.onNodeWithText("Request").performClick()
         composeRule.onNodeWithText("Need Math Tutor").assertExists()
-        composeRule.onNodeWithText("Offer").performClick()
+        composeRule.onNodeWithText("FeedOffer").performClick()
         composeRule.onNodeWithText("Graphic Design Help").assertExists()
     }
 
@@ -157,7 +157,7 @@ class ChatListScreenTest {
         composeRule.setContent {
             MaterialTheme { ChatListScreen(posts = onlyRequests, users = users()) }
         }
-        // Offer tab is default; should show empty for offers
+        // FeedOffer tab is default; should show empty for offers
         composeRule.onNodeWithText("No offer posts available").assertExists()
     }
 
@@ -169,7 +169,7 @@ class ChatListScreenTest {
         composeRule.setContent {
             MaterialTheme { ChatListScreen(posts = samplePosts(), users = partialUsers) }
         }
-        // Offer owner is u2 (unknown) → shows Unknown User
+        // FeedOffer owner is u2 (unknown) → shows Unknown User
         composeRule.onNodeWithText("Unknown User").assertExists()
         // Switch to request (owner u1) → shows known user
         composeRule.onNodeWithText("Request").performClick()

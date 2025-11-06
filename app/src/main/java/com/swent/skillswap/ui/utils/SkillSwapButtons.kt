@@ -1,8 +1,20 @@
+/**
+ * Utility composables and modifiers used across the SkillSwap UI.
+ *
+ * Provides gradient-based buttons, transparent styled buttons, and a custom outer-shadow modifier
+ * that supports translucent components without obscuring shadows.
+ *
+ * @author Topaze17 (Eliott) Comments drafted with ChatGPT, reviewed and validated manually.
+ */
 package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.*
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
@@ -10,14 +22,35 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.theme.BrushDirection
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.theme.getLinearBrush
+
+enum class SkillSwapButtonShape {
+    ROUND,
+    SQUARE
+}
+
+enum class SkillSwapButtonSize {
+    XS,
+    S,
+    M,
+    L,
+    XL
+}
 
 /**
  * A reusable gradient-filled button built on top of [OutlinedButton].
@@ -165,3 +198,138 @@ fun Modifier.outerShadow(
             }
         }
     )
+
+@Composable
+fun SkillSwapButtonOutline(
+    labelText: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    shape: SkillSwapButtonShape = SkillSwapButtonShape.ROUND,
+    size: SkillSwapButtonSize = SkillSwapButtonSize.M
+) {
+    val height: Dp
+    val textSize: androidx.compose.ui.unit.TextUnit
+    val horizontalPadding: Dp
+    val iconSize: Dp
+
+    when (size) {
+        SkillSwapButtonSize.XS -> {
+            height = 28.dp
+            textSize = 12.sp
+            horizontalPadding = 8.dp
+            iconSize = 14.dp
+        }
+        SkillSwapButtonSize.S -> {
+            height = 32.dp
+            textSize = 13.sp
+            horizontalPadding = 10.dp
+            iconSize = 16.dp
+        }
+        SkillSwapButtonSize.M -> {
+            height = 40.dp
+            textSize = 14.sp
+            horizontalPadding = 12.dp
+            iconSize = 18.dp
+        }
+        SkillSwapButtonSize.L -> {
+            height = 48.dp
+            textSize = 16.sp
+            horizontalPadding = 16.dp
+            iconSize = 20.dp
+        }
+        SkillSwapButtonSize.XL -> {
+            height = 56.dp
+            textSize = 18.sp
+            horizontalPadding = 20.dp
+            iconSize = 24.dp
+        }
+    }
+
+    // Define shape
+    val buttonShape: Shape =
+        when (shape) {
+            SkillSwapButtonShape.ROUND -> MaterialTheme.shapes.extraLarge
+            SkillSwapButtonShape.SQUARE -> MaterialTheme.shapes.small
+        }
+
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.height(height).defaultMinSize(minWidth = 80.dp),
+        shape = buttonShape,
+        colors =
+            ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            ),
+        border = ButtonDefaults.outlinedButtonBorder
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = horizontalPadding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(iconSize).padding(end = 6.dp)
+                )
+            }
+            Text(text = labelText, fontSize = textSize, fontWeight = FontWeight.Medium)
+        }
+    }
+}
+
+/**
+ * Preview showcasing different variations of [SkillSwapButtonOutline].
+ *
+ * This preview demonstrates:
+ * - A **default** outlined button.
+ * - A button **with an icon** and larger size.
+ * - A **disabled** medium-sized button.
+ * - A **square extra-large** button for visual contrast.
+ *
+ * The preview uses the [SkillSwapAppTheme] for consistent styling and layout spacing to visualize
+ * how the component adapts to various configurations.
+ *
+ * @author Joey Gugler using chatGPT
+ */
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun PreviewSkillSwapButtonOutline() {
+    SkillSwapAppTheme {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            SkillSwapButtonOutline(
+                labelText = "Default",
+                onClick = {},
+            )
+
+            SkillSwapButtonOutline(
+                labelText = "With Icon",
+                onClick = {},
+                icon = Icons.Default.Favorite,
+                size = SkillSwapButtonSize.L
+            )
+
+            SkillSwapButtonOutline(
+                labelText = "Disabled",
+                onClick = {},
+                enabled = false,
+                size = SkillSwapButtonSize.M
+            )
+
+            SkillSwapButtonOutline(
+                labelText = "Square XL",
+                onClick = {},
+                shape = SkillSwapButtonShape.SQUARE,
+                size = SkillSwapButtonSize.XL
+            )
+        }
+    }
+}
