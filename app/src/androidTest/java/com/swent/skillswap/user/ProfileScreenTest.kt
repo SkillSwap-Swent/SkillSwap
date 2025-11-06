@@ -1,8 +1,11 @@
 package com.swent.skillswap.user
 
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
@@ -115,7 +118,6 @@ class ProfileScreenTest : TestCase() {
         }
     }
 
-    /*
     @Test
     fun profileScreen_displaysAllElements() = run {
         step("Display ProfileScreen") {
@@ -137,6 +139,7 @@ class ProfileScreenTest : TestCase() {
 
             tags.forEach { tag ->
                 waitForNodeToExist(tag)
+                composeTestRule.onNodeWithTag(tag).performScrollTo()
                 composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
             }
 
@@ -146,29 +149,33 @@ class ProfileScreenTest : TestCase() {
         step("Expand and verify email section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
             waitForNodeToExist(ProfileTestTags.EMAIL_VALUE)
+            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).performScrollTo()
             composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify username section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
             waitForNodeToExist(ProfileTestTags.USERNAME_VALUE)
+            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).performScrollTo()
             composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertIsDisplayed()
         }
 
         step("Expand and verify skills section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
             waitForNodeToExist(ProfileTestTags.SKILLS_LIST)
+            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).performScrollTo()
             composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
         }
 
         step("Expand and verify preferences section") {
             composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
             waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performScrollTo()
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performScrollTo()
             composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
         }
     }
-     */
 
     @Test
     fun profileScreen_selectingMoneyPreferenceUpdatesViewModel() = run {

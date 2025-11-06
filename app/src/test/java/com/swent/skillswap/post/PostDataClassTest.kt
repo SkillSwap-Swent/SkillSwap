@@ -1,6 +1,7 @@
 package com.swent.skillswap.post
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
@@ -17,6 +18,8 @@ import org.junit.Test
 
 open class PostDataClassTest {
 
+    private val testLocation = GeoPoint(46.5191, 6.5668)
+
     val request1 =
         Request(
             uid = "123",
@@ -28,7 +31,8 @@ open class PostDataClassTest {
             creation = Timestamp(Date(System.currentTimeMillis() - 10)),
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            location = testLocation
         )
 
     @Test
@@ -47,7 +51,8 @@ open class PostDataClassTest {
                 creation = creationDate,
                 status = PostStatus.POSTED,
                 media = listOf("media_url_1", "media_url_2"),
-                paymentMethod = PaymentMethod.SKILLSANDCASH
+                paymentMethod = PaymentMethod.SKILLSANDCASH,
+                location = testLocation
             )
 
         assertEquals("request123", request.uid)
@@ -61,6 +66,7 @@ open class PostDataClassTest {
         assertEquals(listOf("media_url_1", "media_url_2"), request.media)
         assertEquals(PaymentMethod.SKILLSANDCASH, request.paymentMethod)
         assertEquals(PostType.REQUEST, request.type)
+        assertEquals(testLocation, request.location)
     }
 
     @Test
