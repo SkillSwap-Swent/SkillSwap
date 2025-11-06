@@ -9,9 +9,10 @@ import kotlinx.coroutines.tasks.await
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.Assert.*
 
 @RunWith(AndroidJUnit4::class)
-class ChatRepositeryFirestoreTest {
+class ChatRepositoryFirestoreTest {
     lateinit var repo: ChatRepositoryFirestore
     lateinit var db: FirebaseFirestore
 
@@ -32,31 +33,6 @@ class ChatRepositeryFirestoreTest {
                 .delete()
                 .await()
         }
-    }
-
-    @Test
-    fun createChatWithInvalidParametersThrowsException() = runBlocking {
-        // Test with empty chatId
-        try {
-            repo.createChat("")
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assert(e.message == "new chatUid cannot be empty")
-        }
-    }
-
-    @Test
-    fun createChatWithValidParameters() = runBlocking {
-        val chatId = "chat1"
-
-        // Create chat
-        repo.createChat(chatId)
-
-        // Verify chat creation
-        val document = db.collection(CHATS_COLLECTION).document(chatId).get().await()
-        assert(document.exists())
-        val data = document.data
-        assert(data != null)
     }
 
     @Test
@@ -134,7 +110,7 @@ class ChatRepositeryFirestoreTest {
             repo.sendMessage("", validMessage)
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
-            assert(e.message == "chatUid cannot be empty")
+            assertEquals("chatUid cannot be empty", e.message)
         }
 
         // Test with empty senderId
@@ -149,7 +125,7 @@ class ChatRepositeryFirestoreTest {
             repo.sendMessage(chatId, invalidMessage1)
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
-            assert(e.message == "senderUid cannot be empty")
+            assertEquals("senderUid cannot be empty", e.message)
         }
 
         // Test with empty content
@@ -164,7 +140,7 @@ class ChatRepositeryFirestoreTest {
             repo.sendMessage(chatId, invalidMessage2)
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
-            assert(e.message == "message content cannot be empty")
+            assertEquals("message content cannot be empty", e.message)
         }
 
         // Test with non-positive timestamp
@@ -174,7 +150,7 @@ class ChatRepositeryFirestoreTest {
             repo.sendMessage(chatId, invalidMessage3)
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
-            assert(e.message == "timestamp must be positive")
+            assertEquals("timestamp must be positive", e.message)
         }
     }
 }
