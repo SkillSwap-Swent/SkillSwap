@@ -201,16 +201,25 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                 ?: error("Missing or invalid 'creation' in post reply: $map")
         val postTypeStr =
             map["postType"] as? String ?: error("Missing or invalid 'postType' in post reply: $map")
+        val replyStatusStr =
+            map["replyStatus"] as? String
+                ?: error("Missing or invalid 'replyStatus' in post reply: $map")
         val postType =
             runCatching { PostType.valueOf(postTypeStr) }
                 .getOrElse { error("Invalid postType value: '$postTypeStr' in post reply: $map") }
+        val replyStatus =
+            runCatching { ReplyStatus.valueOf(replyStatusStr) }
+                .getOrElse {
+                    error("Invalid replyStatus value: '$replyStatusStr' in post reply: $map")
+                }
 
         return PostReply(
             postId = postId,
             ownerId = ownerId,
             message = message,
             creation = creation,
-            postType = postType
+            postType = postType,
+            replyStatus = replyStatus
         )
     }
 
