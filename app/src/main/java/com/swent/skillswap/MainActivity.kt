@@ -37,7 +37,6 @@ import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
-import com.swent.skillswap.ui.offerScreen.OfferScreen
 import com.swent.skillswap.ui.signIn.PasswordRecoveryScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen

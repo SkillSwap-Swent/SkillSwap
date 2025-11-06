@@ -20,13 +20,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.model.offer.FeedOffer
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
@@ -264,11 +262,4 @@ class FakeFeedScreenViewModel : FeedScreenViewModel() {
 
     override val uiState: StateFlow<FeedScreenUiState>
         get() = _fakeState
-}
-
-/** Preview of the FeedScreen composable using a mock ViewModel and theme. */
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewFeedScreen() {
-    SkillSwapAppTheme { FeedScreen(vm = FakeFeedScreenViewModel()) }
 }
