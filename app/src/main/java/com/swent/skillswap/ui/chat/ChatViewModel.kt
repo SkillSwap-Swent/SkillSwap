@@ -33,17 +33,15 @@ class ChatViewModel(
 
             try {
                 chatRepository.streamMessages(chatId).collect { messages ->
-                    _uiState.value = _uiState.value.copy(
-                        messages = messages.sortedBy { it.timestamp },
-                        isLoading = false,
-                        error = null
-                    )
+                    _uiState.value =
+                        _uiState.value.copy(
+                            messages = messages.sortedBy { it.timestamp },
+                            isLoading = false,
+                            error = null
+                        )
                 }
             } catch (exception: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = exception.message
-                )
+                _uiState.value = _uiState.value.copy(isLoading = false, error = exception.message)
             }
         }
     }
@@ -54,10 +52,7 @@ class ChatViewModel(
             try {
                 chatRepository.sendMessage(chatId, currentUserId, content)
             } catch (exception: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = exception.message,
-                    isLoading = false
-                )
+                _uiState.value = _uiState.value.copy(error = exception.message, isLoading = false)
             }
         }
     }
