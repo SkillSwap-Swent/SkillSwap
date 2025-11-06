@@ -7,7 +7,7 @@
  */
 package com.swent.skillswap.model.post
 
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.EveryTag
 
 /**
@@ -47,7 +47,7 @@ interface PostRepository {
         paymentMethod: PaymentMethod = PaymentMethod.SKILLSANDCASH,
         tags: Set<EveryTag> = emptySet(),
         status: PostStatus? = null,
-        userLocation: Location? = null,
+        userLocation: GeoPoint? = null,
         maxDistanceKm: Double? = null
     ): List<Post>
 

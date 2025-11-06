@@ -5,7 +5,7 @@
 package com.swent.skillswap.ui.chat
 
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
@@ -17,8 +17,7 @@ import com.swent.skillswap.model.user.User
 /** Sample data provider for chat screen demonstration */
 object ChatScreenData {
 
-    private val defaultLocation =
-        Location(46.5191, 6.5668, "École Polytechnique Fédérale de Lausanne (EPFL), Switzerland")
+    private val defaultLocation = GeoPoint(46.5191, 6.5668)
 
     fun getSampleUsers(): Map<String, User> {
         return mapOf(

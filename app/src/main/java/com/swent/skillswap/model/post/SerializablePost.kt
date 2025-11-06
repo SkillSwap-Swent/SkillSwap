@@ -1,7 +1,7 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.EveryTag
 import java.io.Serializable
 
@@ -17,5 +17,5 @@ data class SerializablePost(
     override val status: PostStatus,
     override val media: List<String>,
     override val type: PostType,
-    override val location: Location
+    override val location: GeoPoint
 ) : Post, Serializable

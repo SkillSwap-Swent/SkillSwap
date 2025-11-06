@@ -6,7 +6,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.Offer
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
@@ -30,7 +30,7 @@ class ChatScreenTest {
 
     private fun pastTs() = Timestamp(now() - 10, 0)
 
-    private val testLocation = Location(latitude = 46.5191, longitude = 6.5668, name = "EPFL")
+    private val testLocation = GeoPoint(46.5191, 6.5668)
 
     private fun samplePosts(): List<Post> =
         listOf(

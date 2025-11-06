@@ -3,7 +3,7 @@ package com.swent.skillswap.ui.post
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -34,7 +34,7 @@ data class RequestUIState(
     val tags: Set<EveryTag> = emptySet(),
     val paymentMethod: PaymentMethod = PaymentMethod.SKILLS,
     val expiry: Timestamp = Timestamp.now(),
-    val location: Location = Location(46.5191, 6.5668, "EPFL, Switzerland"), // Default fallback
+    val location: GeoPoint = GeoPoint(46.5191, 6.5668), // Default fallback
 
     // Error fields
     val titleError: String = "",
@@ -135,7 +135,7 @@ class RequestViewModel(
         _uiState.update { current -> current.copy(paymentMethod = methodClicked) }
     }
 
-    fun setLocation(newLocation: Location) {
+    fun setLocation(newLocation: GeoPoint) {
         _uiState.update { it.copy(location = newLocation) }
     }
 

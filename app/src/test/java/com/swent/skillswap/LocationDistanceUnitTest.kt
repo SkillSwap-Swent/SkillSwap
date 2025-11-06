@@ -1,6 +1,6 @@
 package com.swent.skillswap
 
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.user.calculateDistance
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -14,7 +14,7 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_sameLocation_returnsZero() {
-        val epfl = Location(46.5191, 6.5668, "EPFL")
+        val epfl = GeoPoint(46.5191, 6.5668)
 
         val distance = calculateDistance(epfl, epfl)
 
@@ -23,8 +23,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_slightlyDifferentLocation_returnsSmallDistance() {
-        val epfl = Location(46.5191, 6.5668, "EPFL")
-        val nearby = Location(46.5195, 6.5672, "Nearby")
+        val epfl = GeoPoint(46.5191, 6.5668)
+        val nearby = GeoPoint(46.5195, 6.5672)
 
         val distance = calculateDistance(epfl, nearby)
 
@@ -35,8 +35,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_parisToLondon_returnsCorrectDistance() {
-        val paris = Location(48.8566, 2.3522, "Paris")
-        val london = Location(51.5074, -0.1278, "London")
+        val paris = GeoPoint(48.8566, 2.3522)
+        val london = GeoPoint(51.5074, -0.1278)
 
         val distance = calculateDistance(paris, london)
 
@@ -46,8 +46,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_newYorkToLosAngeles_returnsCorrectDistance() {
-        val newYork = Location(40.7128, -74.0060, "New York")
-        val losAngeles = Location(34.0522, -118.2437, "Los Angeles")
+        val newYork = GeoPoint(40.7128, -74.0060)
+        val losAngeles = GeoPoint(34.0522, -118.2437)
 
         val distance = calculateDistance(newYork, losAngeles)
 
@@ -57,8 +57,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_acrossEquator_returnsCorrectDistance() {
-        val northernPoint = Location(10.0, 0.0, "North")
-        val southernPoint = Location(-10.0, 0.0, "South")
+        val northernPoint = GeoPoint(10.0, 0.0)
+        val southernPoint = GeoPoint(-10.0, 0.0)
 
         val distance = calculateDistance(northernPoint, southernPoint)
 
@@ -68,8 +68,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_acrossPrimeMeridian_returnsCorrectDistance() {
-        val western = Location(0.0, -10.0, "West")
-        val eastern = Location(0.0, 10.0, "East")
+        val western = GeoPoint(0.0, -10.0)
+        val eastern = GeoPoint(0.0, 10.0)
 
         val distance = calculateDistance(western, eastern)
 
@@ -79,8 +79,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_acrossDateLine_returnsCorrectDistance() {
-        val western = Location(0.0, 179.0, "West of Date Line")
-        val eastern = Location(0.0, -179.0, "East of Date Line")
+        val western = GeoPoint(0.0, 179.0)
+        val eastern = GeoPoint(0.0, -179.0)
 
         val distance = calculateDistance(western, eastern)
 
@@ -90,8 +90,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_symmetry_returnsEqualDistance() {
-        val loc1 = Location(46.5191, 6.5668, "EPFL")
-        val loc2 = Location(47.3769, 8.5417, "Zurich")
+        val loc1 = GeoPoint(46.5191, 6.5668)
+        val loc2 = GeoPoint(47.3769, 8.5417)
 
         val distance1 = calculateDistance(loc1, loc2)
         val distance2 = calculateDistance(loc2, loc1)
@@ -102,8 +102,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_northPole_returnsCorrectDistance() {
-        val northPole = Location(90.0, 0.0, "North Pole")
-        val equator = Location(0.0, 0.0, "Equator")
+        val northPole = GeoPoint(90.0, 0.0)
+        val equator = GeoPoint(0.0, 0.0)
 
         val distance = calculateDistance(northPole, equator)
 
@@ -113,8 +113,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_southPole_returnsCorrectDistance() {
-        val southPole = Location(-90.0, 0.0, "South Pole")
-        val equator = Location(0.0, 0.0, "Equator")
+        val southPole = GeoPoint(-90.0, 0.0)
+        val equator = GeoPoint(0.0, 0.0)
 
         val distance = calculateDistance(southPole, equator)
 
@@ -124,8 +124,8 @@ class LocationDistanceUnitTest {
 
     @Test
     fun calculateDistance_antipodes_returnsMaxDistance() {
-        val point1 = Location(40.7128, -74.0060, "New York")
-        val point2 = Location(-40.7128, 105.9940, "Antipode")
+        val point1 = GeoPoint(40.7128, -74.0060)
+        val point2 = GeoPoint(-40.7128, 105.9940)
 
         val distance = calculateDistance(point1, point2)
 

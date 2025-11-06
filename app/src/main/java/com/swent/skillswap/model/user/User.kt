@@ -1,6 +1,6 @@
 package com.swent.skillswap.model.user
 
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import java.time.DayOfWeek
 import java.time.LocalTime
 
@@ -19,12 +19,7 @@ data class User(
     val rating: Float = 0f,
     val availability: List<Availability> = emptyList(),
     val preference: Preference = Preference.SKILLS,
-    val location: Location =
-        Location(
-            46.5191,
-            6.5668,
-            "École Polytechnique Fédérale de Lausanne (EPFL), Switzerland"
-        ) // Default location
+    val location: GeoPoint = GeoPoint(46.5191, 6.5668) // EPFL default location
     // val offerSet: Set<Offer>,
     // val favoriteOffers: Set<Offer>
 )

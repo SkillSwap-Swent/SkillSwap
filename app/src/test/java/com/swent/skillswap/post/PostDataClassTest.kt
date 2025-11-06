@@ -1,7 +1,7 @@
 package com.swent.skillswap.post
 
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
@@ -18,7 +18,7 @@ import org.junit.Test
 
 class PostDataClassTest {
 
-    private val testLocation = Location(latitude = 46.5191, longitude = 6.5668, name = "EPFL")
+    private val testLocation = GeoPoint(46.5191, 6.5668)
 
     val request1 =
         Request(

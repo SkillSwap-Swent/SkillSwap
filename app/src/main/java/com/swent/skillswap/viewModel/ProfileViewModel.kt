@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.ktx.Firebase
-import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.user.Availability
 import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
@@ -89,7 +89,7 @@ class ProfileViewModel(
         rating: Float? = null,
         availability: List<Availability>? = null,
         preference: Preference? = null,
-        location: Location? = null
+        location: GeoPoint? = null
     ) {
         val current = _userState.value
         val uid = current.uid.ifEmpty { FirebaseAuth.getInstance().currentUser?.uid }

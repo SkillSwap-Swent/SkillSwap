@@ -2,7 +2,7 @@ package com.swent.skillswap.model.post
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.map.Location
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
@@ -20,9 +20,9 @@ class PostRepositoryInstrumentedTest {
 
     private lateinit var repo: PostRepository
 
-    private val epflLocation = Location(46.5191, 6.5668, "EPFL, Switzerland")
-    private val lausanneLocation = Location(46.5197, 6.6323, "Lausanne, Switzerland")
-    private val genevaLocation = Location(46.2044, 6.1432, "Geneva, Switzerland")
+    private val epflLocation = GeoPoint(46.5191, 6.5668)
+    private val lausanneLocation = GeoPoint(46.5197, 6.6323)
+    private val genevaLocation = GeoPoint(46.2044, 6.1432)
 
     private val request1 =
         Request(
@@ -74,7 +74,7 @@ class PostRepositoryInstrumentedTest {
             assertEquals(PostType.REQUEST, fetched.type)
             assertEquals(req.location.latitude, fetched.location.latitude, 0.0001)
             assertEquals(req.location.longitude, fetched.location.longitude, 0.0001)
-            assertEquals(req.location.name, fetched.location.name)
+            assertEquals(req.location, fetched.location)
         }
     }
 

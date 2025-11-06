@@ -8,11 +8,11 @@ package com.swent.skillswap.model.post
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
-import com.swent.skillswap.model.map.Location
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
@@ -34,7 +34,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         paymentMethod: PaymentMethod,
         tags: Set<EveryTag>,
         status: PostStatus?,
-        userLocation: Location?,
+        userLocation: GeoPoint?,
         maxDistanceKm: Double?
     ): List<Post> {
         val query: Query =
@@ -151,13 +151,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
 
-        val locationMap = document.get("location") as? Map<*, *>
-        val location =
-            Location(
-                latitude = locationMap?.get("latitude") as? Double ?: 0.0,
-                longitude = locationMap?.get("longitude") as? Double ?: 0.0,
-                name = locationMap?.get("name") as? String ?: ""
-            )
+        val location = document.getGeoPoint("location")!!
 
         val post =
             when (postType) {
@@ -189,26 +183,20 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         }
     }
 
-    private fun serializePost(post: Post): Map<String, Any> {
-        return mapOf(
-            "uid" to post.uid,
-            "title" to post.title,
-            "description" to post.description,
-            "ownerId" to post.ownerId,
-            "tags" to post.tags.map { it.toString() },
-            "paymentMethod" to post.paymentMethod.name,
-            "expiry" to post.expiry,
-            "creation" to post.creation,
-            "status" to post.status.name,
-            "media" to post.media,
-            "type" to post.type.name,
-            "location" to
-                mapOf( // Store as nested map instead of JSON string
-                    "latitude" to post.location.latitude,
-                    "longitude" to post.location.longitude,
-                    "name" to post.location.name
-                ),
-            "searchKeys" to buildSearchKeys(post.title, post.tags as Set<EveryTag>)
+    private fun serializePost(post: Post): SerializablePost {
+        return SerializablePost(
+            uid = post.uid,
+            title = post.title,
+            description = post.description,
+            ownerId = post.ownerId,
+            tags = post.tags.toList(),
+            paymentMethod = post.paymentMethod,
+            expiry = post.expiry,
+            creation = post.creation,
+            status = post.status,
+            media = post.media,
+            type = post.type,
+            location = post.location
         )
     }
 }
