@@ -190,6 +190,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                     "Invalid post reply entry: expected Map but got ${item?.javaClass?.simpleName}"
                 )
 
+        val uid = map["uid"] as? String ?: error("Missing or invalid 'uid' in post reply: $map")
         val postId =
             map["postId"] as? String ?: error("Missing or invalid 'postId' in post reply: $map")
         val ownerId =
@@ -214,6 +215,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                 }
 
         return PostReply(
+            uid = uid,
             postId = postId,
             ownerId = ownerId,
             message = message,
