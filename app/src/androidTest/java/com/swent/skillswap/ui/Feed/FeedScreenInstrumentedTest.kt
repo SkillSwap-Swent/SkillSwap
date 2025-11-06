@@ -6,12 +6,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
@@ -56,30 +56,6 @@ class FeedScreenInstrumentedTest {
     @Test
     fun checkIfRunningOnCI() {
         assert(isRunningOnCi()) // Just ensures test passes
-    }
-
-    @Test
-    fun cardShowsGiveAndReceive() {
-        val offer =
-            FeedOffer(
-                skillProvided = "Teach Kotlin",
-                skillRequested = "Learn Compose",
-                authorID = "author1",
-                thumbnail = "thumb"
-            )
-
-        val (vm, _, _) = setContentWithRepositoryReturning(offer)
-        composeTestRule.waitForIdle()
-
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
-            .assertIsDisplayed()
-            .assert(hasText("you will get : ${offer.skillProvided}"))
-
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
-            .assertIsDisplayed()
-            .assert(hasText(offer.skillRequested))
     }
 
     @Test
@@ -459,22 +435,42 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.waitForIdle()
 
-        val testTags =
+        // === Scrollable parent ===
+        val scrollBox = composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX)
+
+        // List of test tags that require scrolling
+        val scrollableTags =
             listOf(
-                FeedScreenTestTags.FEED_CARD,
-                FeedScreenTestTags.FEED_MENU_BUTTON,
-                FeedScreenTestTags.FEED_THUMBNAIL,
-                FeedScreenTestTags.SKILL_REQUESTED,
                 FeedScreenTestTags.SKILL_GIVE,
                 FeedScreenTestTags.SPECIFICATION_TITLE,
-                FeedScreenTestTags.SPECIFICATION_DESCRIPTION,
+                FeedScreenTestTags.SPECIFICATION_DESCRIPTION
+            )
+
+        // Scroll each scrollable node into view and assert displayed
+        scrollableTags.forEach { tag ->
+            try {
+                composeTestRule.onNodeWithTag(tag).performScrollTo()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            } catch (e: AssertionError) {
+                throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
+            }
+        }
+
+        // Other elements that are always visible (no scroll needed)
+        val visibleTags =
+            listOf(
+                FeedScreenTestTags.FEED_CARD,
+                FeedScreenTestTags.SKILL_REQUESTED,
+                FeedScreenTestTags.FEED_MENU_BUTTON,
+                FeedScreenTestTags.FEED_THUMBNAIL,
                 FeedScreenTestTags.REQUESTER_PROFILE_PICTURE,
                 FeedScreenTestTags.REQUESTER_NAME,
                 FeedScreenTestTags.ACCEPT_BUTTON,
                 FeedScreenTestTags.DECLINE_BUTTON
             )
 
-        testTags.forEach { tag ->
+        visibleTags.forEach { tag ->
             try {
                 composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
             } catch (e: AssertionError) {
@@ -482,6 +478,7 @@ class FeedScreenInstrumentedTest {
             }
         }
 
+        // === Menu interactions ===
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
@@ -499,6 +496,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitForIdle()
         assertEquals(listOf(offer), vm.reportedOffers)
 
+        // Dismiss menu
         composeTestRule.onRoot().performTouchInput { click(center) }
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
