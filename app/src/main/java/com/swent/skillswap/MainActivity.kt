@@ -28,8 +28,8 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
-import com.swent.skillswap.ui.chat.ChatScreen
-import com.swent.skillswap.ui.chat.ChatScreenData
+import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.navigation.NavigationActions
@@ -173,9 +173,9 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             composable(Screen.Offers.route) { OfferScreen() }
 
             composable(Screen.Chat.route) {
-                ChatScreen(
-                    posts = ChatScreenData.getSamplePosts(),
-                    users = ChatScreenData.getSampleUsers(),
+                ChatListScreen(
+                    posts = ChatListScreenData.getSamplePosts(),
+                    users = ChatListScreenData.getSampleUsers(),
                     onPostClick = { post ->
                         // TODO: Navigate to individual chat with post
                         println("Clicked on post: ${post.title}")

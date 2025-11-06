@@ -1,5 +1,5 @@
-// AI-Generated: Comprehensive test suite for ChatScreenData
-// This file contains 12 test cases for the ChatScreenData object, covering data validation,
+// AI-Generated: Comprehensive test suite for ChatListScreenData
+// This file contains 12 test cases for the ChatListScreenData object, covering data validation,
 // integrity checks, and relationship validation. Tests ensure sample data is properly structured
 // and maintains consistency with the Post and User models used throughout the application.
 package com.swent.skillswap.ui.chat
@@ -10,17 +10,17 @@ import com.swent.skillswap.model.tags.SkillTag
 import org.junit.Assert.*
 import org.junit.Test
 
-class ChatScreenDataTest {
+class ChatListScreenDataTest {
 
     @Test
     fun getSampleUsers_returnsCorrectNumberOfUsers() {
-        val users = ChatScreenData.getSampleUsers()
+        val users = ChatListScreenData.getSampleUsers()
         assertEquals(4, users.size)
     }
 
     @Test
     fun getSampleUsers_containsExpectedUsers() {
-        val users = ChatScreenData.getSampleUsers()
+        val users = ChatListScreenData.getSampleUsers()
 
         assertTrue(users.containsKey("user1"))
         assertTrue(users.containsKey("user2"))
@@ -30,7 +30,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSampleUsers_hasCorrectUsernames() {
-        val users = ChatScreenData.getSampleUsers()
+        val users = ChatListScreenData.getSampleUsers()
 
         assertEquals("Alex Johnson", users["user1"]?.username)
         assertEquals("Sarah Chen", users["user2"]?.username)
@@ -40,7 +40,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSampleUsers_hasValidUserData() {
-        val users = ChatScreenData.getSampleUsers()
+        val users = ChatListScreenData.getSampleUsers()
         val user = users["user1"]
 
         assertNotNull(user)
@@ -51,13 +51,13 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_returnsCorrectNumberOfPosts() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         assertEquals(5, posts.size)
     }
 
     @Test
     fun getSamplePosts_containsOfferPosts() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val offerPosts = posts.filter { it.type == PostType.OFFER }
 
         assertEquals(3, offerPosts.size)
@@ -65,7 +65,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_containsRequestPosts() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val requestPosts = posts.filter { it.type == PostType.REQUEST }
 
         assertEquals(2, requestPosts.size)
@@ -73,7 +73,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_hasValidPostData() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val post = posts.first()
 
         assertNotNull(post.uid)
@@ -86,7 +86,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_hasValidTimestamps() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val post = posts.first()
 
         assertNotNull(post.creation)
@@ -96,7 +96,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_hasValidSkills() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val post = posts.first()
 
         assertTrue(post.tags.isNotEmpty())
@@ -105,7 +105,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_hasValidPaymentMethods() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val post = posts.first()
 
         assertTrue(post.paymentMethod.name.isNotEmpty())
@@ -113,7 +113,7 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_hasUniqueIds() {
-        val posts = ChatScreenData.getSamplePosts()
+        val posts = ChatListScreenData.getSamplePosts()
         val ids = posts.map { it.uid }
 
         assertEquals(ids.size, ids.distinct().size)
@@ -121,8 +121,8 @@ class ChatScreenDataTest {
 
     @Test
     fun getSamplePosts_hasValidOwnerIds() {
-        val posts = ChatScreenData.getSamplePosts()
-        val users = ChatScreenData.getSampleUsers()
+        val posts = ChatListScreenData.getSamplePosts()
+        val users = ChatListScreenData.getSampleUsers()
 
         posts.forEach { post -> assertTrue(users.containsKey(post.ownerId)) }
     }
