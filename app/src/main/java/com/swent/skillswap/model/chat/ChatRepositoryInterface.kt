@@ -23,5 +23,5 @@ interface ChatRepository {
      * @param senderId The sender's user ID
      * @param content The message content
      */
-    suspend fun sendMessage(chatId: String, senderId: String, content: String)
+    suspend fun sendMessage(chatId: String, message: Message)
 }
