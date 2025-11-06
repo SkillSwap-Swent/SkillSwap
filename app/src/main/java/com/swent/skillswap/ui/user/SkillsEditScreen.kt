@@ -27,7 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object SkillsEditTestTags {
@@ -49,15 +52,16 @@ object SkillsEditTestTags {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun SkillsEditScreen(
-    currentSkills: Set<SkillTag> = emptySet(),
-    onBackClick: () -> Unit = {},
-    onSkillsUpdated: (Set<SkillTag>) -> Unit = {}
-) {
-    var selectedSkills by remember { mutableStateOf(currentSkills) }
+fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Unit = {}) {
+    val userState by vm.uiState.collectAsState()
+    var selectedSkills by remember { mutableStateOf<Set<SkillTag>>(emptySet()) }
     var expanded by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var hasFocus by remember { mutableStateOf(false) }
+
+    LaunchedEffect(userState) {
+        selectedSkills = (userState.editedUser?.skillSet?.map { it.name }?.toSet() ?: emptySet())
+    }
 
     Column(
         modifier =
@@ -235,7 +239,8 @@ fun SkillsEditScreen(
             // Save button
             SkillSwapShadowButton(
                 onClick = {
-                    onSkillsUpdated(selectedSkills)
+                    val updatedSkills = selectedSkills.map { Skill(it, 0f, "") }.toSet()
+                    vm.setSkills(updatedSkills)
                     onBackClick()
                 },
                 modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.SAVE_BUTTON)

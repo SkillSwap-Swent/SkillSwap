@@ -27,7 +27,7 @@ import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.signIn.SignInTags
-import com.swent.skillswap.ui.user.ProfileMainScreen
+import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.utils.FirebaseEmulator
 import com.swent.skillswap.viewModel.CreateAccountViewModel
 import com.swent.skillswap.viewModel.SignInViewModel
@@ -109,7 +109,7 @@ class AuthClassicTest : TestCase() {
                 }
                 composable(Screen.Offers.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatScreen() }
-                composable(Screen.Profile.route) { ProfileMainScreen() }
+                composable(Screen.Profile.route) { ProfileScreen() }
             }
         }
     }
@@ -130,6 +130,14 @@ class AuthClassicTest : TestCase() {
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
         // Go to Create Account screen
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
@@ -146,11 +154,27 @@ class AuthClassicTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // EMAIL
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).performScrollTo()
         composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).performTextInput(email)
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // PASSWORD + CONFIRM
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).performScrollTo()
         composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).performTextInput(password)
         composeTestRule
@@ -159,6 +183,14 @@ class AuthClassicTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // SKILLS
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).performScrollTo()
         composeTestRule
             .onNodeWithTag(
@@ -167,6 +199,7 @@ class AuthClassicTest : TestCase() {
             )
             .performClick()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule

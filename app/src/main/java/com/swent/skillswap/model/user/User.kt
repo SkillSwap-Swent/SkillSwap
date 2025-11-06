@@ -10,15 +10,16 @@ import java.time.LocalTime
  * */
 
 data class User(
-    val uid: String,
-    val username: String,
-    val email: String,
-    val profilePicture: String,
-    val skillSet: Set<Skill>,
-    val rating: Float,
-    val availability: List<Availability>
-    // val offerSet: Set<FeedOffer>,
-    // val favoriteOffers: Set<FeedOffer>
+    val uid: String = "",
+    val username: String = "",
+    val email: String = "",
+    val profilePicture: String = "",
+    val skillSet: Set<Skill> = emptySet(),
+    val rating: Float = 0f,
+    val availability: List<Availability> = emptyList(),
+    val preference: Preference = Preference.SKILLS,
+    // val offerSet: Set<Offer>,
+    // val favoriteOffers: Set<Offer>
 )
 
 /*

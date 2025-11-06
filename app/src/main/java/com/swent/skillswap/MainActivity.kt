@@ -19,14 +19,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.chat.ChatScreen
 import com.swent.skillswap.ui.chat.ChatScreenData
+import com.swent.skillswap.ui.editUser.EditUserScreen
+import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
@@ -35,7 +40,9 @@ import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.user.ProfileMainScreen
+import com.swent.skillswap.ui.user.ProfileScreen
+import com.swent.skillswap.ui.user.SkillsEditScreen
+import com.swent.skillswap.viewModel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,14 +77,18 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             Screen.SignInCreateAccount,
             Screen.Offers,
             Screen.Profile,
+            Screen.EditSkills,
             Screen.Chat
         )
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
-    val startDestination = Screen.SignInMain.route
+
+    val startDestination = Screen.SignInMain.name
+
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
+    val editProfileViewModel = remember { EditUserViewModel() }
     val bottomBarViewModel = remember { BottomBarViewModel() }
 
     val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
@@ -106,21 +117,54 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     .pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }
                     .padding(paddingValues)
         ) {
-            composable(Screen.SignInMain.route) {
-                SignInMainScreen(
-                    goToCreateAccountScreen = {
-                        navigationActions.navigateTo(Screen.SignInCreateAccount)
-                    },
-                    goToMainScreen = { navigationActions.navigateTo(Screen.Profile) }
-                )
+            // SIGN IN / CREATE ACCOUNT SCREENS
+            navigation(startDestination = Screen.SignInMain.route, route = Screen.SignInMain.name) {
+                composable(Screen.SignInMain.route) {
+                    SignInMainScreen(
+                        goToCreateAccountScreen = {
+                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                        },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Profile) }
+                    )
+                }
+                composable(Screen.SignInCreateAccount.route) {
+                    SignInCreateAccountScreen(
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
+                    )
+                }
             }
-            composable(Screen.SignInCreateAccount.route) {
-                SignInCreateAccountScreen(
-                    goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
-                )
+
+            // USER SCREENS
+            navigation(startDestination = Screen.Profile.route, route = Screen.Profile.name) {
+                composable(Screen.Profile.route) {
+                    val profileViewModel: ProfileViewModel = viewModel()
+                    profileViewModel.loadCurrentUser()
+                    ProfileScreen(
+                        vm = profileViewModel,
+                        onLogoutClick = {
+                            FirebaseAuth.getInstance().signOut()
+                            navigationActions.navigateTo(Screen.SignInMain)
+                        },
+                        onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) }
+                    )
+                }
+                composable(Screen.EditProfile.route) {
+                    EditUserScreen(
+                        vm = editProfileViewModel,
+                        onGoBack = { navigationActions.goBack() },
+                        onSkillsPressed = { navigationActions.navigateTo(Screen.EditSkills) }
+                    )
+                }
+                composable(Screen.EditSkills.route) {
+                    SkillsEditScreen(
+                        vm = editProfileViewModel,
+                        onBackClick = { navigationActions.goBack() }
+                    )
+                }
             }
 
             composable(Screen.Offers.route) { FeedScreen() }
+
             composable(Screen.Chat.route) {
                 ChatScreen(
                     posts = ChatScreenData.getSamplePosts(),
@@ -131,7 +175,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     }
                 )
             }
-            composable(Screen.Profile.route) { ProfileMainScreen() }
         }
     }
 }

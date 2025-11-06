@@ -29,7 +29,7 @@ import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.signIn.SignInTags
-import com.swent.skillswap.ui.user.ProfileMainScreen
+import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.utils.FakeCredentialManager
 import com.swent.skillswap.utils.FakeJwtGenerator
 import com.swent.skillswap.utils.FirebaseEmulator
@@ -140,7 +140,7 @@ class AuthGoogleTest : TestCase() {
                 }
                 composable(Screen.Offers.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatScreen() }
-                composable(Screen.Profile.route) { ProfileMainScreen() }
+                composable(Screen.Profile.route) { ProfileScreen() }
             }
         }
     }

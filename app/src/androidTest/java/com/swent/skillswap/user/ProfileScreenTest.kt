@@ -1,149 +1,209 @@
-// AI-Generated: Profile screen tests adapted to use test tags
 package com.swent.skillswap.user
 
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Preference
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.ProfileTestTags
+import com.swent.skillswap.utils.FirebaseEmulator
+import com.swent.skillswap.viewModel.ProfileViewModel
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class ProfileScreenTest {
+class ProfileScreenTest : TestCase() {
 
     @get:Rule val composeTestRule = createComposeRule()
 
-    @Test
-    fun profileScreen_displaysTitle() {
-        composeTestRule.setContent {
-            ProfileScreen(userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING), onSkillsClick = {})
+    private val ctx =
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+    private lateinit var db: FirebaseFirestore
+    private lateinit var repo: UserRepoFirestore
+    private lateinit var viewModel: ProfileViewModel
+
+    private val testUser =
+        User(
+            uid = "test-user-profile",
+            username = "Profile Tester",
+            email = "profiletest@example.com",
+            profilePicture = "",
+            skillSet =
+                setOf(
+                    Skill(name = SkillTag.MACHINE_DESIGN, rank = 4.5f, ""),
+                    Skill(name = SkillTag.ALGORITHMS, rank = 5.0f, "")
+                ),
+            rating = 4.8f,
+            availability = emptyList(),
+            preference = Preference.SKILLS
+        )
+
+    init {
+        FirebaseEmulator.startEmulator()
+        db = FirebaseEmulator.firestore
+        repo = UserRepoFirestore(db)
+    }
+
+    @Before
+    fun setUp() = runBlocking {
+        val users = FirebaseEmulator.firestore.collection("users").get().await()
+        for (doc in users.documents) {
+            FirebaseEmulator.firestore.collection("users").document(doc.id).delete().await()
         }
 
-        composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertExists()
-    }
-
-    @Test
-    fun profileScreen_displaysUserSkills() {
-        val skills = setOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES)
-
-        composeTestRule.setContent { ProfileScreen(userSkills = skills, onSkillsClick = {}) }
-
-        // Open skills accordion first
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertExists()
-    }
-
-    @Test
-    fun profileScreen_displaysEmptySkills() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        // Open skills accordion first
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_EMPTY).assertExists()
-    }
-
-    @Test
-    fun profileScreen_skillsClickTriggersCallback() {
-        var callbackTriggered = false
-
-        composeTestRule.setContent {
-            ProfileScreen(
-                userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING),
-                onSkillsClick = { callbackTriggered = true }
-            )
+        try {
+            if (FirebaseApp.getApps(ctx).isEmpty()) {
+                FirebaseApp.initializeApp(ctx)
+            }
+        } catch (e: Exception) {
+            // Ignore if already initialized
         }
 
-        // Expand skills section and click Edit
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_EDIT).performClick()
-
-        assert(callbackTriggered)
-    }
-
-    @Test
-    fun profileScreen_displaysEmailSection() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).assertExists()
-    }
-
-    @Test
-    fun profileScreen_displaysUsernameSection() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).assertExists()
-    }
-
-    @Test
-    fun profileScreen_displaysPreferencesSection() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).assertExists()
-    }
-
-    @Test
-    fun profileScreen_expandsEmailSection() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertExists()
-        composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_EDIT).assertExists()
-    }
-
-    @Test
-    fun profileScreen_expandsUsernameSection() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertExists()
-        composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_EDIT).assertExists()
-    }
-
-    @Test
-    fun profileScreen_expandsPreferencesSection() {
-        composeTestRule.setContent { ProfileScreen(userSkills = emptySet(), onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertExists()
-        composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertExists()
-    }
-
-    @Test
-    fun profileScreen_handlesLargeSkillSet() {
-        val largeSkillSet =
-            setOf(
-                SkillTag.COMPUTER_PROGRAMMING,
-                SkillTag.DATA_STRUCTURES,
-                SkillTag.ALGORITHMS,
-                SkillTag.DATABASES,
-                SkillTag.PHYSICS_MECHANICS,
-                SkillTag.CALCULUS,
-                SkillTag.LINEAR_ALGEBRA
-            )
-
-        composeTestRule.setContent { ProfileScreen(userSkills = largeSkillSet, onSkillsClick = {}) }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
-    }
-
-    @Test
-    fun profileScreen_skillsSectionExpandsAndCollapses() {
-        composeTestRule.setContent {
-            ProfileScreen(userSkills = setOf(SkillTag.COMPUTER_PROGRAMMING), onSkillsClick = {})
+        val auth = FirebaseAuth.getInstance()
+        val testPassword = "test-password-123"
+        try {
+            auth.createUserWithEmailAndPassword(testUser.email, testPassword).await()
+        } catch (e: Exception) {
+            // Ignore - user may already exist
+        }
+        try {
+            auth.signInWithEmailAndPassword(testUser.email, testPassword).await()
+        } catch (e: Exception) {
+            try {
+                auth.signInAnonymously().await()
+            } catch (_: Exception) {}
         }
 
-        // Expand
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_COUNT).assertExists()
+        val authUid = auth.currentUser?.uid ?: repo.getNewUid()
+        val userToAdd = testUser.copy(uid = authUid)
+        repo.addUser(userToAdd)
 
-        // Collapse
-        composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+        viewModel = ProfileViewModel(repo)
+    }
+
+    private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            try {
+                composeTestRule.onNodeWithTag(tag).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    private fun waitForPreferenceUpdate(
+        expectedPreference: Preference,
+        timeoutMillis: Long = 5000
+    ) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            viewModel.userState.value.preference == expectedPreference
+        }
+    }
+
+    @Test
+    fun profileScreen_displaysAllElements() = run {
+        step("Display ProfileScreen") {
+            composeTestRule.setContent { SkillSwapAppTheme { ProfileScreen(vm = viewModel) } }
+            composeTestRule.waitForIdle()
+        }
+
+        step("Verify all profile elements are displayed") {
+            val tags =
+                listOf(
+                    ProfileTestTags.PROFILE_TITLE,
+                    ProfileTestTags.EMAIL_SECTION,
+                    ProfileTestTags.USERNAME_SECTION,
+                    ProfileTestTags.SKILLS_SECTION,
+                    ProfileTestTags.PREFERENCES_SECTION,
+                    ProfileTestTags.PROFILE_PICTURE,
+                    ProfileTestTags.EDIT_PROFILE
+                )
+
+            tags.forEach { tag ->
+                waitForNodeToExist(tag)
+                composeTestRule.onNodeWithTag(tag).performScrollTo()
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            }
+
+            composeTestRule.onNodeWithTag(ProfileTestTags.EDIT_PROFILE).assertHasClickAction()
+        }
+
+        step("Expand and verify email section") {
+            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
+            waitForNodeToExist(ProfileTestTags.EMAIL_VALUE)
+            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).performScrollTo()
+            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
+        }
+
+        step("Expand and verify username section") {
+            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
+            waitForNodeToExist(ProfileTestTags.USERNAME_VALUE)
+            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).performScrollTo()
+            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertIsDisplayed()
+        }
+
+        step("Expand and verify skills section") {
+            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
+            waitForNodeToExist(ProfileTestTags.SKILLS_LIST)
+            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).performScrollTo()
+            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
+        }
+
+        step("Expand and verify preferences section") {
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
+            waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performScrollTo()
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performScrollTo()
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun profileScreen_selectingMoneyPreferenceUpdatesViewModel() = run {
+        step("Display ProfileScreen") {
+            composeTestRule.setContent { SkillSwapAppTheme { ProfileScreen(vm = viewModel) } }
+            composeTestRule.waitForIdle()
+        }
+
+        step("Expand preferences section and select Money") {
+            waitForNodeToExist(ProfileTestTags.PREFERENCES_SECTION)
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
+
+            waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performClick()
+
+            waitForPreferenceUpdate(Preference.MONEY)
+
+            val updatedPreference = viewModel.userState.value.preference
+            assert(updatedPreference == Preference.MONEY)
+        }
+
+        step("Select Skills preference") {
+            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performClick()
+
+            waitForPreferenceUpdate(Preference.SKILLS)
+
+            val updatedPreference = viewModel.userState.value.preference
+            assert(updatedPreference == Preference.SKILLS)
+        }
     }
 }

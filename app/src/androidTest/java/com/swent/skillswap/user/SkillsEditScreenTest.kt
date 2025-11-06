@@ -1,117 +1,330 @@
-// Kotlin
 package com.swent.skillswap.user
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.ui.editUser.EditUserViewModel
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.ui.user.SkillsEditTestTags
+import com.swent.skillswap.utils.FirebaseEmulator
+import kotlin.ranges.contains
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class SkillsEditScreenTest {
+class SkillsEditScreenTest : TestCase() {
 
     @get:Rule val composeTestRule = createComposeRule()
 
-    @Test
-    fun skillsEditScreen_displaysTitle() {
-        composeTestRule.setContent {
-            SkillsEditScreen(currentSkills = emptySet(), onBackClick = {}, onSkillsUpdated = {})
+    private val ctx =
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
+    private lateinit var db: FirebaseFirestore
+    private lateinit var repo: UserRepoFirestore
+    private lateinit var viewModel: EditUserViewModel
+
+    private val testUser =
+        User(
+            uid = "test-user-123",
+            username = "Chef",
+            email = "test@example.com",
+            profilePicture =
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/She-goat_J1.jpg/500px-She-goat_J1.jpg",
+            skillSet =
+                setOf(
+                    Skill(name = SkillTag.DATABASES, rank = 4F, ""),
+                    Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F, ""),
+                    Skill(name = SkillTag.PHYSICS_MECHANICS, rank = 5F, "")
+                ),
+            rating = 4.5f,
+            availability = emptyList()
+        )
+
+    init {
+        FirebaseEmulator.startEmulator()
+        db = FirebaseEmulator.firestore
+        repo = UserRepoFirestore(db)
+    }
+
+    @Before
+    fun setUp() = runBlocking {
+        // Clean up the "users" collection
+        val users = FirebaseEmulator.firestore.collection("users").get().await()
+        for (doc in users.documents) {
+            FirebaseEmulator.firestore.collection("users").document(doc.id).delete().await()
         }
 
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.TITLE).assertExists()
+        // Initialize FirebaseApp if necessary
+        try {
+            if (FirebaseApp.getApps(ctx).isEmpty()) {
+                FirebaseApp.initializeApp(ctx)
+            }
+        } catch (e: Exception) {
+            // Ignore if already initialized
+        }
+
+        // Auth: create / sign in a user on the emulator
+        val auth = FirebaseAuth.getInstance()
+        val testPassword = "test-password-123"
+        try {
+            auth.createUserWithEmailAndPassword(testUser.email, testPassword).await()
+        } catch (e: Exception) {
+            // Ignore - user may already exist
+        }
+        try {
+            auth.signInWithEmailAndPassword(testUser.email, testPassword).await()
+        } catch (e: Exception) {
+            try {
+                auth.signInAnonymously().await()
+            } catch (_: Exception) {
+                /* ignore */
+            }
+        }
+
+        val authUid = auth.currentUser?.uid ?: repo.getNewUid()
+        val userToAdd = testUser.copy(uid = authUid)
+        repo.addUser(userToAdd)
+
+        viewModel = EditUserViewModel(repo)
+    }
+
+    private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            try {
+                composeTestRule.onNodeWithTag(tag).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    private fun waitForSkillInViewModel(
+        skillTag: SkillTag,
+        shouldExist: Boolean,
+        timeoutMillis: Long = 5000
+    ) {
+        composeTestRule.waitUntil(timeoutMillis) {
+            val updatedUser = viewModel.uiState.value.editedUser
+            val skillNames = updatedUser?.skillSet?.map { it.name } ?: emptyList()
+            if (shouldExist) {
+                skillNames.contains(skillTag)
+            } else {
+                !skillNames.contains(skillTag)
+            }
+        }
+    }
+
+    private fun inputSearchAndWaitForSuggestion(
+        query: String,
+        suggestionIndex: Int = 0,
+        timeoutMillis: Long = 15_000
+    ) {
+        val searchTag = SkillsEditTestTags.SEARCH_FIELD
+        val suggestionTag = "${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_$suggestionIndex"
+
+        composeTestRule.onNodeWithTag(searchTag).performClick()
+        composeTestRule.onNodeWithTag(searchTag).performTextClearance()
+        composeTestRule.onNodeWithTag(searchTag).performTextInput(query)
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis) {
+            try {
+                composeTestRule.onNodeWithTag(suggestionTag).assertExists()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 
     @Test
-    fun skillsEditScreen_displaysCurrentSkills() {
-        val skills = setOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES)
-
-        composeTestRule.setContent {
-            SkillsEditScreen(currentSkills = skills, onBackClick = {}, onSkillsUpdated = {})
+    fun testEditUserScreenDisplayedBasicComponents() = run {
+        step("Display SkillsEditScreen with real repository") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
+            }
+            composeTestRule.waitForIdle()
         }
 
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_COUNT).assertExists()
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_LIST).assertExists()
-        composeTestRule
-            .onNodeWithTag(
-                "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.COMPUTER_PROGRAMMING.name}"
-            )
-            .assertExists()
-        composeTestRule
-            .onNodeWithTag(
-                "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATA_STRUCTURES.name}"
-            )
-            .assertExists()
+        step("Verify Edit User Screen elements are displayed") {
+            // Ensure screen is present first
+            waitForNodeToExist(SkillsEditTestTags.SCREEN_CONTAINER)
+
+            val tags =
+                listOf(
+                    SkillsEditTestTags.TITLE,
+                    SkillsEditTestTags.DROPDOWN,
+                    SkillsEditTestTags.SEARCH_FIELD,
+                    SkillsEditTestTags.SELECTED_COUNT,
+                    SkillsEditTestTags.SELECTED_LIST,
+                    SkillsEditTestTags.CANCEL_BUTTON,
+                    SkillsEditTestTags.SAVE_BUTTON
+                )
+
+            tags.forEach { tag ->
+                waitForNodeToExist(tag)
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            }
+        }
     }
 
     @Test
-    fun skillsEditScreen_displaysEmptySkills() {
-        composeTestRule.setContent {
-            SkillsEditScreen(currentSkills = emptySet(), onBackClick = {}, onSkillsUpdated = {})
+    fun skillsEditScreen_removingSkillUpdatesViewModel() = run {
+        step("Display SkillsEditScreen with real repository") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
+            }
+            composeTestRule.waitForIdle()
         }
 
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.SELECTED_COUNT).assertExists()
+        step("Remove one skill from the user") {
+            // Wait for the skill chip to exist before clicking
+            waitForNodeToExist("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}")
+
+            composeTestRule
+                .onNodeWithTag("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}")
+                .performClick()
+
+            composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
+
+            waitForSkillInViewModel(SkillTag.DATABASES, shouldExist = false)
+
+            val updatedUser = viewModel.uiState.value.editedUser
+            val skillNames = updatedUser?.skillSet?.map { it.name }
+
+            assert(!skillNames?.contains(SkillTag.DATABASES)!!)
+            assert(skillNames.contains(SkillTag.DIGITAL_LOGIC))
+            assert(skillNames.contains(SkillTag.PHYSICS_MECHANICS))
+        }
     }
 
     @Test
-    fun skillsEditScreen_cancelButtonTriggersCallback() {
-        var backClicked = false
-
-        composeTestRule.setContent {
-            SkillsEditScreen(
-                currentSkills = emptySet(),
-                onBackClick = { backClicked = true },
-                onSkillsUpdated = {}
-            )
+    fun skillsEditScreen_addingSkillUpdatesViewModel() = run {
+        step("Display SkillsEditScreen") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
+            }
+            composeTestRule.waitForIdle()
         }
 
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.CANCEL_BUTTON).performClick()
-        assert(backClicked)
+        step("Add a new skill and verify ViewModel state") {
+            inputSearchAndWaitForSuggestion("algorithms", suggestionIndex = 0)
+            composeTestRule
+                .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
+                .performClick()
+
+            composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
+
+            // Wait for ViewModel state to update
+            waitForSkillInViewModel(SkillTag.ALGORITHMS, shouldExist = true)
+
+            val updatedUser = viewModel.uiState.value.editedUser
+            val skillNames = updatedUser?.skillSet?.map { it.name }
+
+            assert(skillNames?.contains(SkillTag.ALGORITHMS)!!)
+            assert(skillNames.contains(SkillTag.DATABASES))
+            assert(skillNames.size == 4)
+        }
     }
 
     @Test
-    fun skillsEditScreen_saveButtonTriggersCallback() {
-        var skillsUpdated = false
-        var updatedSkills: Set<SkillTag>? = null
-
-        composeTestRule.setContent {
-            SkillsEditScreen(
-                currentSkills = setOf(SkillTag.COMPUTER_PROGRAMMING),
-                onBackClick = {},
-                onSkillsUpdated = { skills ->
-                    skillsUpdated = true
-                    updatedSkills = skills
+    fun skillsEditScreen_removeAndAddMultipleSkillsUpdatesViewModel() = run {
+        step("Display SkillsEditScreen") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
+            }
+            // Wait for initial composition
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule
+                        .onNodeWithTag(SkillsEditTestTags.SCREEN_CONTAINER)
+                        .assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
                 }
-            )
+            }
         }
 
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
-        assert(skillsUpdated)
-        assert(updatedSkills != null)
-    }
+        step("Remove and add multiple skills") {
+            // Wait for skill chips to exist before clicking
+            composeTestRule.waitUntil(5000) {
+                try {
+                    composeTestRule
+                        .onNodeWithTag(
+                            "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}"
+                        )
+                        .assertExists()
+                    true
+                } catch (e: Exception) {
+                    false
+                }
+            }
 
-    @Test
-    fun skillsEditScreen_searchFieldAcceptsInput() {
-        composeTestRule.setContent {
-            SkillsEditScreen(currentSkills = emptySet(), onBackClick = {}, onSkillsUpdated = {})
+            // Remove DATABASES and DIGITAL_LOGIC
+            composeTestRule
+                .onNodeWithTag("${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DATABASES.name}")
+                .performClick()
+
+            composeTestRule
+                .onNodeWithTag(
+                    "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${SkillTag.DIGITAL_LOGIC.name}"
+                )
+                .performClick()
+
+            // Add ALGORITHMS
+            inputSearchAndWaitForSuggestion("algorithms", suggestionIndex = 0)
+            composeTestRule
+                .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
+                .performClick()
+            composeTestRule.waitForIdle()
+
+            // Add MACHINE_DESIGN
+            inputSearchAndWaitForSuggestion("machine", suggestionIndex = 0)
+            composeTestRule
+                .onNodeWithTag("${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_0")
+                .performClick()
+
+            composeTestRule.onNodeWithTag(SkillsEditTestTags.SAVE_BUTTON).performClick()
+
+            // Wait for ViewModel state to reflect all changes
+            composeTestRule.waitUntil(5000) {
+                val updatedUser = viewModel.uiState.value.editedUser
+                val skillNames = updatedUser?.skillSet?.map { it.name } ?: emptyList()
+                skillNames.size == 3 &&
+                    !skillNames.contains(SkillTag.DATABASES) &&
+                    !skillNames.contains(SkillTag.DIGITAL_LOGIC) &&
+                    skillNames.contains(SkillTag.ALGORITHMS) &&
+                    skillNames.contains(SkillTag.MACHINE_DESIGN)
+            }
+
+            val updatedUser = viewModel.uiState.value.editedUser
+            val skillNames = updatedUser?.skillSet?.map { it.name }
+
+            assert(!skillNames?.contains(SkillTag.DATABASES)!!)
+            assert(!skillNames.contains(SkillTag.DIGITAL_LOGIC))
+            assert(skillNames.contains(SkillTag.ALGORITHMS))
+            assert(skillNames.contains(SkillTag.MACHINE_DESIGN))
+            assert(skillNames.contains(SkillTag.PHYSICS_MECHANICS))
+            assert(skillNames.size == 3)
         }
-
-        composeTestRule.onNodeWithTag(SkillsEditTestTags.SEARCH_FIELD).performTextInput("prog")
-    }
-
-    @Test
-    fun skillsEditScreen_displaysAddSkillsSection() {
-        composeTestRule.setContent {
-            SkillsEditScreen(currentSkills = emptySet(), onBackClick = {}, onSkillsUpdated = {})
-        }
-
-        // no dedicated tag for the section label; keep text lookup
-        composeTestRule.onNodeWithText("Add Skills").assertExists()
     }
 }

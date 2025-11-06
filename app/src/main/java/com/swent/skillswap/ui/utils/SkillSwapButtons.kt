@@ -74,6 +74,7 @@ enum class SkillSwapButtonSize {
 fun GradientButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     gradient: List<Color> =
         listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
@@ -90,6 +91,7 @@ fun GradientButton(
                 disabledContainerColor = Color.Transparent,
                 disabledContentColor = disableContentColor
             ),
+        enabled = enabled,
         border = null,
         modifier =
             modifier
@@ -144,7 +146,7 @@ fun SkillSwapShadowButton(
                 )
             else null,
         shape = shape,
-        modifier = modifier /*.outerShadow(shape)*/
+        modifier = modifier
     ) {
         content()
     }
