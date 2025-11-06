@@ -12,8 +12,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -31,7 +29,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -282,9 +279,8 @@ fun SkillSwapButtonOutline(
         }
     }
 }
-
 /**
- * Preview showcasing different variations of [SkillSwapButtonOutline].
+ * /** Preview showcasing different variations of [SkillSwapButtonOutline].
  *
  * This preview demonstrates:
  * - A **default** outlined button.
@@ -295,41 +291,18 @@ fun SkillSwapButtonOutline(
  * The preview uses the [SkillSwapAppTheme] for consistent styling and layout spacing to visualize
  * how the component adapts to various configurations.
  *
- * @author Joey Gugler using chatGPT
+ * @author Joey Gugler using chatGPT /
+ * @Preview(showBackground = true, showSystemUi = true)
+ * @Composable fun PreviewSkillSwapButtonOutline() { SkillSwapAppTheme { Column( modifier =
+ *   Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp), ) {
+ *   SkillSwapButtonOutline( labelText = "Default", onClick = {}, )
+ *
+ * SkillSwapButtonOutline( labelText = "With Icon", onClick = {}, icon = Icons.Default.Favorite,
+ * size = SkillSwapButtonSize.L )
+ *
+ * SkillSwapButtonOutline( labelText = "Disabled", onClick = {}, enabled = false, size =
+ * SkillSwapButtonSize.M )
+ *
+ * SkillSwapButtonOutline( labelText = "Square XL", onClick = {}, shape =
+ * SkillSwapButtonShape.SQUARE, size = SkillSwapButtonSize.XL ) } } }
  */
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewSkillSwapButtonOutline() {
-    SkillSwapAppTheme {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            SkillSwapButtonOutline(
-                labelText = "Default",
-                onClick = {},
-            )
-
-            SkillSwapButtonOutline(
-                labelText = "With Icon",
-                onClick = {},
-                icon = Icons.Default.Favorite,
-                size = SkillSwapButtonSize.L
-            )
-
-            SkillSwapButtonOutline(
-                labelText = "Disabled",
-                onClick = {},
-                enabled = false,
-                size = SkillSwapButtonSize.M
-            )
-
-            SkillSwapButtonOutline(
-                labelText = "Square XL",
-                onClick = {},
-                shape = SkillSwapButtonShape.SQUARE,
-                size = SkillSwapButtonSize.XL
-            )
-        }
-    }
-}
