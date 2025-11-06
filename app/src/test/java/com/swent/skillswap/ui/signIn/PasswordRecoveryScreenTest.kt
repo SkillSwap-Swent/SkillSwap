@@ -1,27 +1,28 @@
 /** @author Younes Belgroune - Password recovery screen UI tests Made with the help of AI */
 package com.swent.skillswap.ui.signIn
 
-import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.core.app.ApplicationProvider
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
+@Config(sdk = [34])
 class PasswordRecoveryScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
     // Use real ViewModel for UI tests - it's testable through public API
     private fun createViewModel(): PasswordRecoveryViewModel {
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        val context = RuntimeEnvironment.getApplication()
         // Initialize Firebase if not already initialized
         try {
             FirebaseApp.getInstance()

@@ -1,8 +1,6 @@
 /** @author Younes Belgroune - Password recovery ViewModel tests Made with the help of AI */
 package com.swent.skillswap.viewModel
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import org.robolectric.RuntimeEnvironment
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PasswordRecoveryViewModelTest {
@@ -24,7 +23,7 @@ class PasswordRecoveryViewModelTest {
 
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        val context = RuntimeEnvironment.getApplication()
         // Initialize Firebase if not already initialized
         try {
             FirebaseApp.getInstance()
