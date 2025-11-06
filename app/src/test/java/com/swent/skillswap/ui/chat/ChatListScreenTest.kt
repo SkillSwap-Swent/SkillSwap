@@ -20,7 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class ChatScreenTest {
+class ChatListScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
@@ -71,7 +71,7 @@ class ChatScreenTest {
     @Test
     fun shows_title_and_filters_and_list() {
         composeRule.setContent {
-            MaterialTheme { ChatScreen(posts = samplePosts(), users = users()) }
+            MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
         }
 
         composeRule.onNodeWithText("Chat").assertExists()
@@ -84,7 +84,7 @@ class ChatScreenTest {
     @Test
     fun clicking_request_filter_shows_request_posts() {
         composeRule.setContent {
-            MaterialTheme { ChatScreen(posts = samplePosts(), users = users()) }
+            MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
         }
 
         composeRule.onNodeWithText("Request").performClick()
@@ -94,7 +94,9 @@ class ChatScreenTest {
     @Test
     fun empty_state_when_no_posts_for_filter() {
         val onlyOffers = samplePosts().filter { it.type == PostType.OFFER }
-        composeRule.setContent { MaterialTheme { ChatScreen(posts = onlyOffers, users = users()) } }
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(posts = onlyOffers, users = users()) }
+        }
 
         // Switch to Request to force empty state
         composeRule.onNodeWithText("Request").performClick()
@@ -105,7 +107,7 @@ class ChatScreenTest {
     fun unknown_user_fallback_is_displayed() {
         val posts = samplePosts()
         val noUsers = emptyMap<String, User>()
-        composeRule.setContent { MaterialTheme { ChatScreen(posts = posts, users = noUsers) } }
+        composeRule.setContent { MaterialTheme { ChatListScreen(posts = posts, users = noUsers) } }
         composeRule.onNodeWithText("Unknown User").assertExists()
     }
 
@@ -114,7 +116,7 @@ class ChatScreenTest {
         var clicks = 0
         composeRule.setContent {
             MaterialTheme {
-                ChatScreen(posts = samplePosts(), users = users(), onPostClick = { clicks++ })
+                ChatListScreen(posts = samplePosts(), users = users(), onPostClick = { clicks++ })
             }
         }
         // Default screen shows offer "Graphic Design Help"
@@ -125,7 +127,7 @@ class ChatScreenTest {
     @Test
     fun toggling_filters_multiple_times_updates_list() {
         composeRule.setContent {
-            MaterialTheme { ChatScreen(posts = samplePosts(), users = users()) }
+            MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
         }
 
         // Offer visible first
@@ -141,7 +143,7 @@ class ChatScreenTest {
         var clicks = 0
         composeRule.setContent {
             MaterialTheme {
-                ChatScreen(posts = samplePosts(), users = users(), onPostClick = { clicks++ })
+                ChatListScreen(posts = samplePosts(), users = users(), onPostClick = { clicks++ })
             }
         }
         composeRule.onNodeWithText("Request").performClick()
@@ -153,7 +155,7 @@ class ChatScreenTest {
     fun empty_state_when_no_offers() {
         val onlyRequests = samplePosts().filter { it.type == PostType.REQUEST }
         composeRule.setContent {
-            MaterialTheme { ChatScreen(posts = onlyRequests, users = users()) }
+            MaterialTheme { ChatListScreen(posts = onlyRequests, users = users()) }
         }
         // Offer tab is default; should show empty for offers
         composeRule.onNodeWithText("No offer posts available").assertExists()
@@ -165,7 +167,7 @@ class ChatScreenTest {
         val partialUsers =
             mapOf("u1" to User("u1", "Alex Johnson", "", "", emptySet(), 4.5f, emptyList()))
         composeRule.setContent {
-            MaterialTheme { ChatScreen(posts = samplePosts(), users = partialUsers) }
+            MaterialTheme { ChatListScreen(posts = samplePosts(), users = partialUsers) }
         }
         // Offer owner is u2 (unknown) → shows Unknown User
         composeRule.onNodeWithText("Unknown User").assertExists()
