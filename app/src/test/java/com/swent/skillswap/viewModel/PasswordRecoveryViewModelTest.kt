@@ -1,7 +1,4 @@
-/**
- * @author Younes Belgroune - Password recovery ViewModel tests
- * Made with the help of AI
- */
+/** @author Younes Belgroune - Password recovery ViewModel tests Made with the help of AI */
 package com.swent.skillswap.viewModel
 
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +39,6 @@ class PasswordRecoveryViewModelTest {
 
     @Test
     fun onEmailChange_validEmail_updatesEmailAndClearsErrors() = runTest {
-
         viewModel.onEmailChange("test@example.com")
 
         val state = viewModel.uiState.value
@@ -220,4 +216,3 @@ class MainDispatcherRule(private val testDispatcher: TestDispatcher = Unconfined
         Dispatchers.resetMain()
     }
 }
-

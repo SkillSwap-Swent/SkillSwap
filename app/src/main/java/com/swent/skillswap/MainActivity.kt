@@ -137,11 +137,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     )
                 }
                 composable(Screen.PasswordRecovery.route) {
-                    PasswordRecoveryScreen(
-                        goBackToSignIn = {
-                            navigationActions.goBack()
-                        }
-                    )
+                    PasswordRecoveryScreen(goBackToSignIn = { navigationActions.goBack() })
                 }
             }
 

@@ -1,7 +1,6 @@
 /**
- * @author Younes Belgroune - Password recovery screen
- * Follows the same design patterns as SignInMainScreen
- * Made with the help of AI
+ * @author Younes Belgroune - Password recovery screen Follows the same design patterns as
+ *   SignInMainScreen Made with the help of AI
  */
 package com.swent.skillswap.ui.signIn
 
@@ -155,7 +154,8 @@ fun PasswordRecoveryScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors =
                         CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+                            containerColor =
+                                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
                         )
                 ) {
                     Text(
@@ -185,11 +185,7 @@ fun PasswordRecoveryScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(
-                        text = "Send Reset Link",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text(text = "Send Reset Link", fontSize = 18.sp, fontWeight = FontWeight.Medium)
                 }
             }
 
@@ -202,7 +198,8 @@ fun PasswordRecoveryScreen(
                         containerColor = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         disabledContainerColor = Color.Transparent,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        disabledContentColor =
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 modifier =
@@ -215,4 +212,3 @@ fun PasswordRecoveryScreen(
         }
     }
 }
-
