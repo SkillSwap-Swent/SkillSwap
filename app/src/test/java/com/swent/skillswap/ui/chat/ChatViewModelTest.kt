@@ -40,9 +40,7 @@ class ChatViewModelTest {
 
     @Test
     fun startListeningGetsMessages() = runTest {
-        fakeRepo.addMessages(listOf(
-            Message("1", "user1", "Hello", 1000L)
-        ))
+        fakeRepo.addMessages(listOf(Message("1", "user1", "Hello", 1000L)))
 
         advanceUntilIdle()
 
@@ -52,10 +50,9 @@ class ChatViewModelTest {
 
     @Test
     fun messagesAreSortedByTime() = runTest {
-        fakeRepo.addMessages(listOf(
-            Message("2", "u2", "Second", 2000L),
-            Message("1", "u1", "First", 1000L)
-        ))
+        fakeRepo.addMessages(
+            listOf(Message("2", "u2", "Second", 2000L), Message("1", "u1", "First", 1000L))
+        )
 
         advanceUntilIdle()
 
