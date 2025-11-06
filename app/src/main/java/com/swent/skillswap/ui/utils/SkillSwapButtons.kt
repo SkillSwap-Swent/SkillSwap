@@ -304,5 +304,5 @@ fun SkillSwapButtonOutline(
  * SkillSwapButtonSize.M )
  *
  * SkillSwapButtonOutline( labelText = "Square XL", onClick = {}, shape =
- * SkillSwapButtonShape.SQUARE, size = SkillSwapButtonSize.XL ) } } }
+ * SkillSwapButtonShape.SQUARE, size = SkillSwapButtonSize.XL ) } } } /
  */
