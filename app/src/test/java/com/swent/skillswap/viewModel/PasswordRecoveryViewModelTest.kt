@@ -1,11 +1,16 @@
 /** @author Younes Belgroune - Password recovery ViewModel tests Made with the help of AI */
 package com.swent.skillswap.viewModel
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
@@ -20,6 +25,18 @@ class PasswordRecoveryViewModelTest {
 
     @Before
     fun setUp() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        try {
+            val options =
+                FirebaseOptions.Builder()
+                    .setApplicationId("test-app-id")
+                    .setApiKey("test-api-key")
+                    .setProjectId("test-project")
+                    .build()
+            FirebaseApp.initializeApp(context, options)
+        } catch (e: Exception) {
+            // Firebase might already be initialized or other error, ignore
+        }
         viewModel = PasswordRecoveryViewModel()
     }
 
