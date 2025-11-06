@@ -28,7 +28,7 @@ class ChatViewModel(
         startListening(chatId)
     }
 
-    fun startListening(chatId: String) {
+    private fun startListening(chatId: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
