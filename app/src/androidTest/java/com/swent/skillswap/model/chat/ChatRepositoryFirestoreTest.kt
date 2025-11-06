@@ -6,10 +6,10 @@ import com.swent.skillswap.firebase.FirestorePaths.CHATS_COLLECTION
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.Assert.*
 
 @RunWith(AndroidJUnit4::class)
 class ChatRepositoryFirestoreTest {

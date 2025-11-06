@@ -20,4 +20,3 @@ fun deserializeMessage(data: String): Message {
         throw Exception("Error deserializing message: ${e.message}")
     }
 }
-
