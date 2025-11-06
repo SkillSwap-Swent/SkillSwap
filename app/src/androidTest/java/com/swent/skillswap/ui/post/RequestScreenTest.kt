@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -28,6 +29,8 @@ class RequestScreenTest {
     private var backButtonClicked = false
     private var postCreatedCalled = false
 
+    private val defaultLocation = GeoPoint(46.5191, 6.5668)
+
     private val sampleRequest =
         Request(
             uid = "existing-request-1",
@@ -39,7 +42,8 @@ class RequestScreenTest {
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
-            media = emptyList()
+            media = emptyList(),
+            location = defaultLocation
         )
 
     @Before
