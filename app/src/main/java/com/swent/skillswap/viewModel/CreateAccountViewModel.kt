@@ -15,6 +15,7 @@ import com.swent.skillswap.model.SignIn.SignInClassicModel
 import com.swent.skillswap.model.SignIn.SignInGoogleModel
 import com.swent.skillswap.model.SignIn.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.resources.ValidationConfig
 import com.swent.skillswap.ui.signIn.CreateAccountRoutes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -128,8 +129,8 @@ class CreateAccountViewModel(
 
     // ---------- Validation Section ----------
 
-    // Regular expression for validating email formats (simple pattern) can be change easily
-    private val emailRegex by lazy { "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex() }
+    // Use shared email validation regex from ValidationConfig
+    private val emailRegex = ValidationConfig.EMAIL_REGEX
 
     /** Validates that username is not blank. */
     private fun validateUsername(): Boolean {

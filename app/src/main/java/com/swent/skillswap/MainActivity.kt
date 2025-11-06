@@ -37,6 +37,8 @@ import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
+import com.swent.skillswap.ui.offerScreen.OfferScreen
+import com.swent.skillswap.ui.signIn.PasswordRecoveryScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
@@ -124,13 +126,19 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         goToCreateAccountScreen = {
                             navigationActions.navigateTo(Screen.SignInCreateAccount)
                         },
-                        goToMainScreen = { navigationActions.navigateTo(Screen.Profile) }
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
+                        goToPasswordRecovery = {
+                            navigationActions.navigateTo(Screen.PasswordRecovery)
+                        }
                     )
                 }
                 composable(Screen.SignInCreateAccount.route) {
                     SignInCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
                     )
+                }
+                composable(Screen.PasswordRecovery.route) {
+                    PasswordRecoveryScreen(goBackToSignIn = { navigationActions.goBack() })
                 }
             }
 
