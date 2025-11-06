@@ -34,7 +34,7 @@ class PostConversationItemTest {
             creation = Timestamp(Timestamp.now().seconds - 10, 0),
             status = PostStatus.POSTED,
             media = emptyList(),
-            testLocation
+            location = testLocation
         )
 
     @Test

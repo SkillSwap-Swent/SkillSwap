@@ -45,7 +45,7 @@ class ChatScreenTest {
                 pastTs(),
                 PostStatus.POSTED,
                 emptyList(),
-                testLocation
+                location = testLocation
             ),
             Request(
                 "r1",
@@ -58,7 +58,7 @@ class ChatScreenTest {
                 pastTs(),
                 PostStatus.POSTED,
                 emptyList(),
-                testLocation
+                location = testLocation
             )
         )
 

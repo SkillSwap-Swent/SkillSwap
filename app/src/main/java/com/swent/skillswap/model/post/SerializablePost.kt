@@ -17,5 +17,6 @@ data class SerializablePost(
     override val status: PostStatus,
     override val media: List<String>,
     override val type: PostType,
+    override val postReplies: List<PostReply>,
     override val location: GeoPoint
 ) : Post, Serializable

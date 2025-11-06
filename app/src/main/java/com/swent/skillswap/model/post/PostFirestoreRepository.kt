@@ -5,6 +5,7 @@
  */
 package com.swent.skillswap.model.post
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -153,6 +154,11 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
 
         val location = document.getGeoPoint("location")!!
 
+        val postReplies: Set<PostReply> =
+            (document.get("postReplies") as? List<*>)
+                ?.map { item -> documentToPostReply(item) }
+                ?.toSet() ?: emptySet()
+
         val post =
             when (postType) {
                 PostType.REQUEST ->
@@ -167,6 +173,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         creation,
                         status,
                         media,
+                        postReplies,
                         location
                     )
                 // TODO("Replace with Offer when it's implemented")
@@ -174,6 +181,48 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             }
         require(post.validate()) { "Post was not validated successfully" }
         return post
+    }
+
+    private fun documentToPostReply(item: Any?): PostReply {
+        val map =
+            item as? Map<*, *>
+                ?: error(
+                    "Invalid post reply entry: expected Map but got ${item?.javaClass?.simpleName}"
+                )
+
+        val uid = map["uid"] as? String ?: error("Missing or invalid 'uid' in post reply: $map")
+        val postId =
+            map["postId"] as? String ?: error("Missing or invalid 'postId' in post reply: $map")
+        val ownerId =
+            map["ownerId"] as? String ?: error("Missing or invalid 'ownerId' in post reply: $map")
+        val message =
+            map["message"] as? String ?: error("Missing or invalid 'message' in post reply: $map")
+        val creation =
+            map["creation"] as? Timestamp
+                ?: error("Missing or invalid 'creation' in post reply: $map")
+        val postTypeStr =
+            map["postType"] as? String ?: error("Missing or invalid 'postType' in post reply: $map")
+        val replyStatusStr =
+            map["replyStatus"] as? String
+                ?: error("Missing or invalid 'replyStatus' in post reply: $map")
+        val postType =
+            runCatching { PostType.valueOf(postTypeStr) }
+                .getOrElse { error("Invalid postType value: '$postTypeStr' in post reply: $map") }
+        val replyStatus =
+            runCatching { ReplyStatus.valueOf(replyStatusStr) }
+                .getOrElse {
+                    error("Invalid replyStatus value: '$replyStatusStr' in post reply: $map")
+                }
+
+        return PostReply(
+            uid = uid,
+            postId = postId,
+            ownerId = ownerId,
+            message = message,
+            creation = creation,
+            postType = postType,
+            replyStatus = replyStatus
+        )
     }
 
     private fun getCollectionPath(type: PostType): CollectionReference {
@@ -196,7 +245,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             status = post.status,
             media = post.media,
             type = post.type,
-            location = post.location
+            location = post.location,
+            postReplies = post.postReplies.toList()
         )
     }
 }
