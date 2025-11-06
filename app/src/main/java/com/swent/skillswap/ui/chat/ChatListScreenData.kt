@@ -1,5 +1,5 @@
-// AI-Generated: Sample data for chat screen demonstration
-// This file provides mock data for testing and demonstrating the chat screen functionality.
+// AI-Generated: Sample data for chat list screen demonstration
+// This file provides mock data for testing and demonstrating the chat list screen functionality.
 // It includes sample users and posts with realistic data that matches the Post and User models,
 // enabling comprehensive testing of the chat interface without requiring Firebase integration.
 package com.swent.skillswap.ui.chat
@@ -14,8 +14,8 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
 
-/** Sample data provider for chat screen demonstration */
-object ChatScreenData {
+/** Sample data provider for chat list screen demonstration */
+object ChatListScreenData {
 
     private val defaultLocation = GeoPoint(46.5191, 6.5668)
 
