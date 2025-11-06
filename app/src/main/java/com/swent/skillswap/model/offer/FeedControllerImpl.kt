@@ -7,6 +7,7 @@ import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
 
 const val NUMB_POSTS_TO_FETCH = 10L
@@ -41,7 +42,7 @@ private class FeedControllerImpl(
         val post =
             when (_currentPost.value) {
                 is Request -> _currentPost.value as Request
-                else -> throw Exception("A post is not currently selected")
+                else -> return
             }
 
         val postReply =
@@ -50,7 +51,8 @@ private class FeedControllerImpl(
                 ownerId = userIdPerformingActions,
                 creation = Timestamp.now(),
                 message = message,
-                postType = feedType
+                postType = feedType,
+                replyStatus = ReplyStatus.PROPOSED
             )
 
         postRepository.editPost(post.uid, post.copy(postReplies = post.postReplies + postReply))
