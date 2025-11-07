@@ -3,6 +3,8 @@ package com.swent.skillswap.model.chat
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
+import java.util.UUID
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
@@ -30,29 +32,28 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
     }
 
     /**
-     * override fun getChat(chatUid: String): Chat { /** Preconditions */
-     * require(chatUid.isNotEmpty()) { "chatUid cannot be empty" }
+     * Generates a unique message ID.
      *
-     * /** Get chat */ return try { val document =
-     * db.collection(FirestorePaths.CHATS_COLLECTION).document(chatUid).get().await()
-     * document.toObject(Chat::class.java) //TODO deserialization ?: throw Exception("Chat not found
-     * with uid: $chatUid")
-     *
-     * } catch (e: Exception) { throw Exception("Error while getting chat in getChat: ${e.message}")
-     * } }
+     * @return A unique message ID as a String
      */
-    override suspend fun sendMessage(chatId: String, content: String) {
+    fun getMessageId(): String {
+        return UUID.randomUUID().toString()
+    }
+
+    override suspend fun sendMessage(chatId: String, senderId: String, content: String) {
         /** Preconditions */
         require(chatId.isNotEmpty()) { "chatUid cannot be empty" }
+        require(senderId.isNotEmpty()) { "senderId cannot be empty" }
         require(content.isNotEmpty()) { "content cannot be empty" }
 
         /** Send message */
-        val message = Message(
-            id = getMessageId(),
-            senderId = getCurrentUserId(),
-            content = content,
-            timestamp = System.currentTimeMillis()
-        )
+        val message =
+            Message(
+                id = getMessageId(),
+                senderId = senderId,
+                content = content,
+                timestamp = System.currentTimeMillis()
+            )
         try {
             val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId)
             if (!document.get().await().exists()) {
@@ -65,30 +66,33 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         }
     }
 
-
-    override fun streamMessages(chatId: String) = callbackFlow {
+    override fun streamMessages(chatId: String): Flow<List<Message>> = callbackFlow {
+        require(chatId.isNotEmpty()) { "chatUid cannot be empty" }
         val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId)
-        document.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                return@addSnapshotListener
-            }
 
-            if (snapshot != null && snapshot.exists()) {
-                snapshot.get("messages")?.let { data ->
-                    val messagesList = (data as? List<*>)?.mapNotNull {
-                        deserializeMessage(
-                            (it as? String) ?: return@mapNotNull null
-                        )
-                    } ?: return@addSnapshotListener
-
-                    /** send the fetched messages list to the flow */
-                    trySend(messagesList)
+        val registration =
+            document.addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
                 }
-            } else {
-                /** Chat document does not exist */
-                return@addSnapshotListener
-            }
 
-        }
+                if (snapshot != null && snapshot.exists()) {
+                    snapshot.get("messages")?.let { data ->
+                        val messagesList =
+                            (data as? List<*>)?.mapNotNull {
+                                deserializeMessage((it as? String) ?: return@mapNotNull null)
+                            } ?: return@addSnapshotListener
+
+                        /** send the fetched messages list to the flow */
+                        trySend(messagesList)
+                    }
+                } else {
+                    /** Chat document does not exist */
+                    trySend(emptyList())
+                }
+            }
+        /** Clean up listener on flow cancellation */
+        awaitClose { registration.remove() }
     }
 }
