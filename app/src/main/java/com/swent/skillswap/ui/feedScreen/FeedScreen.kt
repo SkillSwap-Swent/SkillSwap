@@ -39,10 +39,10 @@ import com.swent.skillswap.ui.utils.SkillSwapButtonSize
  */
 @Composable
 fun FeedScreen(
+    swipeThreshold: Float = 50f,
     vm: FeedScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
-    val swipeThreshold = 50f
     val offer = uiState.current
     var showMenu by remember { mutableStateOf(false) }
 
@@ -52,8 +52,8 @@ fun FeedScreen(
 
     val horizontalPadding = screenWidthDp * 0.05f
     val verticalPadding = screenHeightDp * 0.03f
-    val avatarSize = min(screenWidthDp * 0.12f, 40.dp) // max 60.dp
-    val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp) // max 40% of screen or 250.dp
+    val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
+    val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
 
     Box(
         modifier =
@@ -61,150 +61,165 @@ fun FeedScreen(
                 .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         contentAlignment = Alignment.Center
     ) {
-        Card(
-            modifier =
-                Modifier.testTag(FeedScreenTestTags.FEED_CARD)
-                    .widthIn(max = screenWidthDp * 0.9f)
-                    .heightIn(max = screenHeightDp * 0.9f)
-                    .aspectRatio(0.8f)
-                    .pointerInput(Unit) {
-                        detectDragGestures { _, dragAmount ->
-                            val (x, y) = dragAmount
-                            when {
-                                y > swipeThreshold -> vm.next() // swipe down
-                                y < -swipeThreshold -> vm.previous() // swipe up
-                                x < -swipeThreshold -> vm.goToProfile(offer.authorID) // swipe left
-                                x > swipeThreshold -> vm.accept(offer) // swipe right
+        if (offer == null) {
+            // === No Offer Available ===
+            Text(
+                text = "No offer available",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.testTag(FeedScreenTestTags.NO_OFFER_TEXT)
+            )
+        } else {
+            // === Offer Card ===
+            Card(
+                modifier =
+                    Modifier.testTag(FeedScreenTestTags.FEED_CARD)
+                        .widthIn(max = screenWidthDp * 0.9f)
+                        .heightIn(max = screenHeightDp * 0.9f)
+                        .aspectRatio(0.8f)
+                        .pointerInput(Unit) {
+                            detectDragGestures { _, dragAmount ->
+                                val (x, y) = dragAmount
+                                when {
+                                    y > swipeThreshold -> vm.next() // swipe down
+                                    y < -swipeThreshold -> vm.previous() // swipe up
+                                    x < -swipeThreshold ->
+                                        vm.goToProfile(offer.authorID) // swipe left
+                                    x > swipeThreshold -> vm.accept(offer) // swipe right
+                                }
                             }
-                        }
-                    },
-            elevation = CardDefaults.cardElevation(8.dp),
-            colors =
-                CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-        ) {
-            Column(modifier = Modifier.fillMaxSize().padding(vertical = 12.dp)) {
-                // === Header ===
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AsyncImage(
-                        model = offer.requesterAvatar,
-                        contentDescription = "Requester Avatar",
-                        modifier =
-                            Modifier.size(avatarSize)
-                                .clip(CircleShape)
-                                .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
+                        },
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
                     )
-
-                    Spacer(Modifier.width(12.dp))
-
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            text = offer.authorName,
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.testTag(FeedScreenTestTags.REQUESTER_NAME)
+            ) {
+                Column(modifier = Modifier.fillMaxSize().padding(vertical = 12.dp)) {
+                    // === Header ===
+                    Row(
+                        modifier =
+                            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = offer.requesterAvatar,
+                            contentDescription = "Requester Avatar",
+                            modifier =
+                                Modifier.size(avatarSize)
+                                    .clip(CircleShape)
+                                    .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
                         )
-                        Text(
-                            text = offer.skillRequested,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.testTag(FeedScreenTestTags.SKILL_REQUESTED)
-                        )
-                    }
 
-                    Box {
-                        IconButton(
-                            onClick = { showMenu = true },
-                            modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
-                        ) {
-                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu")
-                        }
+                        Spacer(Modifier.width(12.dp))
 
-                        if (showMenu) {
-                            FeedOfferMenu(
-                                onBlockUser = { vm.blockUser(offer.authorID) },
-                                onReportOffer = { vm.reportOffer(offer) },
-                                onDismiss = { showMenu = false }
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = offer.authorName,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.testTag(FeedScreenTestTags.REQUESTER_NAME)
+                            )
+                            Text(
+                                text = offer.skillRequested,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.testTag(FeedScreenTestTags.SKILL_REQUESTED)
                             )
                         }
+
+                        Box {
+                            IconButton(
+                                onClick = { showMenu = true },
+                                modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "Menu"
+                                )
+                            }
+
+                            if (showMenu) {
+                                FeedOfferMenu(
+                                    onBlockUser = { vm.blockUser(offer.authorID) },
+                                    onReportOffer = { vm.reportOffer(offer) },
+                                    onDismiss = { showMenu = false }
+                                )
+                            }
+                        }
                     }
-                }
 
-                // === Thumbnail ===
-                AsyncImage(
-                    model = offer.thumbnail,
-                    contentDescription = "FeedOffer Thumbnail",
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .heightIn(max = maxThumbnailHeight) // cap height
-                            .aspectRatio(16f / 9f)
-                            .testTag(FeedScreenTestTags.FEED_THUMBNAIL)
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                // === FeedOffer Info with scroll ===
-                Column(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .weight(1f) // takes remaining space inside card
-                            .padding(horizontal = 10.dp)
-                ) {
-                    Column(
+                    // === Thumbnail ===
+                    AsyncImage(
+                        model = offer.thumbnail,
+                        contentDescription = "FeedOffer Thumbnail",
                         modifier =
                             Modifier.fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                                .weight(1f)
-                                .testTag(FeedScreenTestTags.SCROLL_BOX)
+                                .heightIn(max = maxThumbnailHeight)
+                                .aspectRatio(16f / 9f)
+                                .testTag(FeedScreenTestTags.FEED_THUMBNAIL)
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    // === Info + Actions ===
+                    Column(
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp)
                     ) {
-                        Text(
-                            text = "you will get : ${offer.skillProvided}",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.testTag(FeedScreenTestTags.SKILL_GIVE)
-                        )
-
-                        Text(
-                            text = offer.specification,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.testTag(FeedScreenTestTags.SPECIFICATION_TITLE)
-                        )
-
-                        Spacer(Modifier.height(12.dp))
-
-                        Text(
-                            text = offer.description,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyLarge,
+                        Column(
                             modifier =
-                                Modifier.testTag(FeedScreenTestTags.SPECIFICATION_DESCRIPTION)
-                        )
-                    }
+                                Modifier.fillMaxWidth()
+                                    .verticalScroll(rememberScrollState())
+                                    .weight(1f)
+                                    .testTag(FeedScreenTestTags.SCROLL_BOX)
+                        ) {
+                            Text(
+                                text = "You will get: ${offer.skillProvided}",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.testTag(FeedScreenTestTags.SKILL_GIVE)
+                            )
 
-                    // Action Buttons: always visible at bottom
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        SkillSwapButtonOutline(
-                            labelText = "",
-                            onClick = { vm.decline(offer) },
-                            icon = Icons.Default.Close,
-                            shape = SkillSwapButtonShape.ROUND,
-                            size = SkillSwapButtonSize.S,
-                            modifier = Modifier.testTag(FeedScreenTestTags.DECLINE_BUTTON)
-                        )
+                            Text(
+                                text = offer.specification,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.testTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                            )
 
-                        SkillSwapButtonOutline(
-                            labelText = "",
-                            onClick = { vm.accept(offer) },
-                            icon = Icons.Default.Check,
-                            shape = SkillSwapButtonShape.ROUND,
-                            size = SkillSwapButtonSize.S,
-                            modifier = Modifier.testTag(FeedScreenTestTags.ACCEPT_BUTTON)
-                        )
+                            Spacer(Modifier.height(12.dp))
+
+                            Text(
+                                text = offer.description,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier =
+                                    Modifier.testTag(FeedScreenTestTags.SPECIFICATION_DESCRIPTION)
+                            )
+                        }
+
+                        // === Buttons ===
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            SkillSwapButtonOutline(
+                                labelText = "",
+                                onClick = { vm.decline(offer) },
+                                icon = Icons.Default.Close,
+                                shape = SkillSwapButtonShape.ROUND,
+                                size = SkillSwapButtonSize.S,
+                                modifier = Modifier.testTag(FeedScreenTestTags.DECLINE_BUTTON)
+                            )
+
+                            SkillSwapButtonOutline(
+                                labelText = "",
+                                onClick = { vm.accept(offer) },
+                                icon = Icons.Default.Check,
+                                shape = SkillSwapButtonShape.ROUND,
+                                size = SkillSwapButtonSize.S,
+                                modifier = Modifier.testTag(FeedScreenTestTags.ACCEPT_BUTTON)
+                            )
+                        }
                     }
                 }
             }
