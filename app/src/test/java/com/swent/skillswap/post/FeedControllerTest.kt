@@ -60,8 +60,7 @@ open class FeedControllerTest : PostDataClassTest() {
     fun controllerSkip() {
         runTest {
             val (_, ctrl) = initController()
-            assertNotNull(ctrl.currentPost.value)
-            val firstPostUid = ctrl.currentPost.value!!.uid // assert non null after assert non null
+            val firstPostUid = requireNotNull(ctrl.currentPost.value).uid
 
             ctrl.skipPost()
             assertNotEquals(firstPostUid, ctrl.currentPost.value?.uid)
