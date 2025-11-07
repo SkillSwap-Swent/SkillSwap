@@ -1,11 +1,14 @@
+/* Written with copilot to complete repetitive stuff and test skeleton */
 package com.swent.skillswap.model.chat
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths.CHATS_COLLECTION
 import com.swent.skillswap.utils.FirebaseEmulator
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -38,126 +41,120 @@ class ChatRepositoryFirestoreTest {
     @Test
     fun sendFirstMessageCreatesChat() = runBlocking {
         val chatId = "chat2"
-        val message =
+        val senderId = "boubi"
+        val refMessage =
             Message(
-                id = "msg1",
-                senderId = "user1",
+                id = "USELESS_ID",
+                senderId = senderId,
                 content = "Hello, this is the first message!",
-                timestamp = System.currentTimeMillis()
+                timestamp = 0L // USELESS
             )
         // verify chat does not exist
         val preDocument = db.collection(CHATS_COLLECTION).document(chatId).get().await()
         assert(!preDocument.exists())
 
         // Send message (should create chat)
-        repo.sendMessage(chatId, message)
+        repo.sendMessage(chatId, senderId, refMessage.content)
 
         // Verify chat and message
         val document = db.collection(CHATS_COLLECTION).document(chatId).get().await()
         assert(document.exists())
         val messages = document.get("messages") as? List<*>
-        assert(messages != null && messages[0] == serializeMessage(message))
+        val deserialized = deserializeMessage(messages!!.first() as String)
+        assertEquals(refMessage.senderId, deserialized.senderId)
+        assertEquals(refMessage.content, deserialized.content)
+        assertTrue(deserialized.timestamp > 0L)
     }
 
     @Test
     fun sendNonFirstMessageUpdateChat() = runBlocking {
         val chatId = "chat3"
-        val firstMessage =
-            Message(
-                id = "msg1",
-                senderId = "user1",
-                content = "First message",
-                timestamp = System.currentTimeMillis()
-            )
-        val secondMessage =
-            Message(
-                id = "msg2",
-                senderId = "user2",
-                content = "Second message",
-                timestamp = System.currentTimeMillis()
-            )
+        val senderId1 = "user1"
+        val content1 = "First message"
+        val senderId2 = "user2"
+        val content2 = "Second message"
 
         // Create chat and send first message
-        repo.sendMessage(chatId, firstMessage)
+        repo.sendMessage(chatId, senderId1, content1)
 
         // Send second message
-        repo.sendMessage(chatId, secondMessage)
+        repo.sendMessage(chatId, senderId2, content2)
 
         // Verify both messages are in chat
         val document = db.collection(CHATS_COLLECTION).document(chatId).get().await()
         assert(document.exists())
-        val messages = document.get("messages") as? List<*> // todo tester serialization
-        assert(
-            messages != null &&
-                messages[0] == serializeMessage(firstMessage) &&
-                messages[1] == serializeMessage(secondMessage)
-        )
+        val messages = document.get("messages") as? List<*>
+        assertNotNull(messages)
+        assertEquals(2, messages!!.size)
+
+        val firstMessage = deserializeMessage(messages[0] as String)
+        assertEquals(senderId1, firstMessage.senderId)
+        assertEquals(content1, firstMessage.content)
+        assertTrue(firstMessage.timestamp > 0L)
+
+        val secondMessage = deserializeMessage(messages[1] as String)
+        assertEquals(senderId2, secondMessage.senderId)
+        assertEquals(content2, secondMessage.content)
+        assertTrue(secondMessage.timestamp > 0L)
     }
 
     @Test
     fun sendMessageWithInvalidParametersThrowsException() = runBlocking {
         val chatId = "chat4"
-        val validMessage =
-            Message(
-                id = "msg1",
-                senderId = "user1",
-                content = "Valid message",
-                timestamp = System.currentTimeMillis()
-            )
+        val validSenderId = "user1"
+        val validContent = "Valid message"
 
         // Test with empty chatId
         try {
-            repo.sendMessage("", validMessage)
+            repo.sendMessage("", validSenderId, validContent)
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
             assertEquals("chatUid cannot be empty", e.message)
         }
 
         // Test with empty senderId
-        val invalidMessage1 =
-            Message(
-                id = "msg2",
-                senderId = "",
-                content = "Invalid senderId",
-                timestamp = System.currentTimeMillis()
-            )
         try {
-            repo.sendMessage(chatId, invalidMessage1)
+            repo.sendMessage(chatId, "", validContent)
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
-            assertEquals("senderUid cannot be empty", e.message)
+            assertEquals("senderId cannot be empty", e.message)
         }
 
         // Test with empty content
-        val invalidMessage2 =
-            Message(
-                id = "msg3",
-                senderId = "user2",
-                content = "",
-                timestamp = System.currentTimeMillis()
-            )
         try {
-            repo.sendMessage(chatId, invalidMessage2)
+            repo.sendMessage(chatId, validSenderId, "")
             assert(false) // Should not reach here
         } catch (e: IllegalArgumentException) {
-            assertEquals("message content cannot be empty", e.message)
-        }
-
-        // Test with non-positive timestamp
-        val invalidMessage3 =
-            Message(id = "msg4", senderId = "user3", content = "Invalid timestamp", timestamp = 0L)
-        try {
-            repo.sendMessage(chatId, invalidMessage3)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("timestamp must be positive", e.message)
+            assertEquals("content cannot be empty", e.message)
         }
     }
 
     @Test
-    fun streamMessagesDoNothingToMakeHappyTestCoverage() {
-        // This is just a placeholder test to satisfy coverage requirements.
-        // The actual implementation of streamMessages is commented out in the repository.
-        assertTrue(true)
+    fun streamMessageReactAtNewMessages() = runTest {
+        val chatId = "chat5"
+        val senderId1 = "user1"
+        val content1 = "First streamed message"
+        val senderId2 = "user2"
+        val content2 = "Second streamed message"
+
+        val messagesReceived = mutableListOf<List<Message>>()
+        val job = launch {
+            repo.streamMessages(chatId).collect { messages -> messagesReceived.add(messages) }
+        }
+
+        kotlinx.coroutines.delay(500) // wait for flow to start
+
+        // Send first message
+        repo.sendMessage(chatId, senderId1, content1)
+        kotlinx.coroutines.delay(500) // wait for flow to collect
+
+        // Send second message
+        repo.sendMessage(chatId, senderId2, content2)
+        kotlinx.coroutines.delay(500) // wait for flow to collect
+
+        job.cancel()
+
+        // Verify received messages
+        assertTrue(messagesReceived.size >= 2)
     }
 }
