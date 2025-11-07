@@ -37,12 +37,12 @@ class FeedScreenInstrumentedTest {
 
     /** Helper to set up screen with fake repository returning specified offers. */
     private fun setContentWithRepositoryReturning(
-        vararg returnedOffers: FeedOffer?
+        vararg returnedOffers: FeedOffer
     ): Triple<FeedScreenViewModel, FakeFeedRepository, FakeFeedNavigation> {
         val repository = FakeFeedRepository()
         val navigation = FakeFeedNavigation()
 
-        repository.preloadOffers(*returnedOffers.filterNotNull().toTypedArray())
+        repository.preloadOffers(*returnedOffers)
 
         val vm = FeedScreenViewModel(navigation, repository)
         composeTestRule.setContent {
@@ -503,7 +503,6 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
     }
 
-    /*
     @Test
     fun displayNoOfferMessageWhenNoOfferAvailable() {
         // Arrange: set up repository returning null offer
@@ -527,5 +526,5 @@ class FeedScreenInstrumentedTest {
             )
 
         cardRelatedTags.forEach { tag -> composeTestRule.onNodeWithTag(tag).assertDoesNotExist() }
-    } */
+    }
 }

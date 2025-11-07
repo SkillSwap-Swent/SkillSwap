@@ -18,11 +18,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.chat.ChatScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.offerScreen.OfferScreen
-import com.swent.skillswap.ui.offerScreen.OfferScreenTestTags
 import com.swent.skillswap.ui.signIn.CreateAccountTags
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
@@ -107,8 +107,8 @@ class AuthClassicTest : TestCase() {
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Offers.route) { OfferScreen() }
-                composable(Screen.Chat.route) { ChatListScreen() }
+                composable(Screen.Offers.route) { FeedScreen() }
+                composable(Screen.Chat.route) { ChatScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
         }
@@ -203,11 +203,11 @@ class AuthClassicTest : TestCase() {
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
     }
 
     /**
@@ -251,11 +251,11 @@ class AuthClassicTest : TestCase() {
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
         auth.signOut()
     }
 }

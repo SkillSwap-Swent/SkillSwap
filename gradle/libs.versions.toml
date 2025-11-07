@@ -21,8 +21,6 @@ lifecycleRuntimeKtx = "2.7.0"
 kaspresso = "1.5.5"
 robolectric = "4.11.1"
 sonar = "4.4.1.3373"
-coil = "2.5.0"
-
 mockk = "1.13.12"
 # Firebase
 firebaseAuth = "23.0.0"
