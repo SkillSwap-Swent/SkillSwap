@@ -1,6 +1,7 @@
-// AI-Generated: Chat screen with post-based conversations and filtering
-// This file implements a chat interface that displays conversations with posts instead of users.
-// Features include filtering by FeedOffer/Request post types, stable UI with proper component
+// AI-Generated: Chat list screen with post-based conversations and filtering
+// This file implements a chat list interface that displays conversations with posts instead of
+// users.
+// Features include filtering by Offer/Request post types, stable UI with proper component
 // architecture,
 // and integration with existing Post and User models from the codebase.
 package com.swent.skillswap.ui.chat
@@ -24,11 +25,12 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
 
 /**
- * Chat screen that displays conversations with posts instead of users. Shows posts in rectangles
- * with username on left and skill on right. Includes filtering by FeedOffer/Request post types.
+ * Chat list screen that displays conversations with posts instead of users. Shows posts in
+ * rectangles with username on left and skill on right. Includes filtering by Offer/Request post
+ * types.
  */
 @Composable
-fun ChatScreen(
+fun ChatListScreen(
     posts: List<Post> = emptyList(),
     users: Map<String, User> = emptyMap(),
     onPostClick: (Post) -> Unit = {}
@@ -51,7 +53,7 @@ fun ChatScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             PostTypeFilterButton(
-                text = "FeedOffer",
+                text = "Offer",
                 isSelected = selectedPostType == PostType.OFFER,
                 onClick = { selectedPostType = PostType.OFFER },
                 modifier = Modifier.weight(1f)
@@ -93,7 +95,7 @@ fun ChatScreen(
     }
 }
 
-/** Filter button for post types (FeedOffer/Request) */
+/** Filter button for post types (Offer/Request) */
 @Composable
 fun PostTypeFilterButton(
     text: String,
