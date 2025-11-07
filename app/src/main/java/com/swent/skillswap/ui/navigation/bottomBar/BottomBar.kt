@@ -38,7 +38,7 @@ object BottomBarTestTag {
     /** Test tag for the Chat button in the bottom bar. */
     const val CHAT_BUTTON = "CHAT_BUTTON"
 
-    /** Test tag for the Offer Screen button in the bottom bar. */
+    /** Test tag for the FeedOffer Screen button in the bottom bar. */
     const val OFFER_SCREEN_BUTTON = "OFFER_SCREEN_BUTTON"
 
     /** Test tag for the bottom bar container (Row). */

@@ -13,7 +13,7 @@ class NavigationBottomBarModel(private val navigationActions: NavigationActions)
         navigationActions.navigateTo(Screen.Chat)
     }
 
-    override fun goToOfferScreen() {
+    override fun goToFeedScreen() {
         navigationActions.navigateTo(Screen.Offers)
     }
 }
