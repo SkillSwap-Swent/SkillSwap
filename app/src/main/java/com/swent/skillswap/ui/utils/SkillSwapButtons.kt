@@ -270,7 +270,7 @@ fun SkillSwapButtonOutline(
             if (icon != null) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = null,
+                    contentDescription = "$labelText icon",
                     modifier = Modifier.size(iconSize).padding(end = 6.dp)
                 )
             }
