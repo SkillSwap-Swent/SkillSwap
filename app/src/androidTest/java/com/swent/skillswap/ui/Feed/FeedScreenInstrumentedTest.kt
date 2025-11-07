@@ -502,4 +502,29 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
         composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
     }
+
+    @Test
+    fun displayNoOfferMessageWhenNoOfferAvailable() {
+        // Arrange: set up repository returning null offer
+        val (vm, _, _) = setContentWithRepositoryReturning(null)
+
+        composeTestRule.waitForIdle()
+
+        // Assert: "No offer available" text is displayed
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
+
+        // Assert: card and its elements do NOT exist
+        val cardRelatedTags =
+            listOf(
+                FeedScreenTestTags.FEED_CARD,
+                FeedScreenTestTags.REQUESTER_PROFILE_PICTURE,
+                FeedScreenTestTags.REQUESTER_NAME,
+                FeedScreenTestTags.FEED_THUMBNAIL,
+                FeedScreenTestTags.FEED_MENU_BUTTON,
+                FeedScreenTestTags.ACCEPT_BUTTON,
+                FeedScreenTestTags.DECLINE_BUTTON
+            )
+
+        cardRelatedTags.forEach { tag -> composeTestRule.onNodeWithTag(tag).assertDoesNotExist() }
+    }
 }

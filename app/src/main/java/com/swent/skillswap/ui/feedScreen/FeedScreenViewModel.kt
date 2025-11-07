@@ -35,6 +35,7 @@ open class FeedScreenViewModel(
     private val navigation: FeedScreenNavigation = FakeFeedNavigation(),
     private val repository: FeedRepository = FakeFeedRepository()
 ) : ViewModel() {
+    var feedScreenLogTag = "FeedScreen"
 
     /**
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
@@ -48,8 +49,7 @@ open class FeedScreenViewModel(
     open val uiState: StateFlow<FeedScreenUiState> = _uiState.asStateFlow()
 
     init {
-        runCatching { next() }
-            .onFailure { Log.e("OfferScreen", "Failed to load initial offer", it) }
+        runCatching { next() }.onFailure { Log.e("FeedScreen", "Failed to load initial offer", it) }
     }
 
     /** Advances to the next offer in the list or fetches a new one. */
@@ -62,13 +62,13 @@ open class FeedScreenViewModel(
                     val offer = repository.getPost(uid)
                     _uiState.value = FeedScreenUiState(offers = listOf(offer), current = offer)
                 }
-                .onFailure { Log.e("OfferScreen", "Failed to fetch first offer", it) }
+                .onFailure { Log.e(feedScreenLogTag, "Failed to fetch first offer", it) }
             return
         }
 
         val currentIndex = offers.indexOf(state.current)
         if (currentIndex == -1) {
-            Log.w("OfferScreen", "Current offer not found in list; resetting to first.")
+            Log.w(feedScreenLogTag, "Current offer not found in list; resetting to first.")
             _uiState.value = state.copy(current = offers.first())
             return
         }
@@ -80,7 +80,7 @@ open class FeedScreenViewModel(
                     val newOffer = repository.getPost(uid)
                     _uiState.value = state.copy(offers = offers + newOffer, current = newOffer)
                 }
-                .onFailure { Log.e("OfferScreen", "Failed to fetch new offer", it) }
+                .onFailure { Log.e(feedScreenLogTag, "Failed to fetch new offer", it) }
         }
     }
 
@@ -101,7 +101,7 @@ open class FeedScreenViewModel(
 
     /** Declines (skips) the specified offer and loads the next one. */
     fun decline(offer: FeedOffer) {
-        Log.d("OfferScreen", "Declined offer: ${offer.authorID}")
+        Log.d(feedScreenLogTag, "Declined offer: ${offer.authorID}")
         repository.skip(offer, uid)
         next()
     }
@@ -115,7 +115,7 @@ open class FeedScreenViewModel(
         if (currentIndex > 0 && currentIndex < offers.size) {
             _uiState.value = state.copy(current = offers[currentIndex - 1])
         } else {
-            Log.e("OfferScreen", "Index out of bound for previous()")
+            Log.e(feedScreenLogTag, "Index out of bound for previous()")
         }
     }
 
