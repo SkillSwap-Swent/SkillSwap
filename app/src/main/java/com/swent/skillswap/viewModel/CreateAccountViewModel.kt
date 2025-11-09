@@ -15,8 +15,8 @@ import com.swent.skillswap.model.Auth.CreateAccountClassicParams
 import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
 import com.swent.skillswap.model.Auth.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.Auth.CreateAccountRoutes
 import com.swent.skillswap.resources.ValidationConfig
+import com.swent.skillswap.ui.Auth.CreateAccountRoutes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
