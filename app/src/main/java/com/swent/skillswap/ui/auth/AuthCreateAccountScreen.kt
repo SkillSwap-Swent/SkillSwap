@@ -2,7 +2,7 @@
  * @author Topaze17 (Eliott) Used ChatGPT for tagging the composables and commenting, but all tags
  *   and comments were checked manually.
  */
-package com.swent.skillswap.ui.Auth
+package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

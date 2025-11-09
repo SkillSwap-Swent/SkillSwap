@@ -2,7 +2,7 @@
  * @author Younes Belgroune - Password recovery screen Follows the same design patterns as
  *   SignInMainScreen Made with the help of AI
  */
-package com.swent.skillswap.ui.signIn
+package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

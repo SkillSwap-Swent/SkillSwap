@@ -1,4 +1,4 @@
-package com.swent.skillswap.Auth
+package com.swent.skillswap.auth
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -15,8 +15,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.Auth.AuthCreateAccountScreen
-import com.swent.skillswap.ui.Auth.CreateAccountTags
+import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.viewModel.CreateAccountViewModel
 import org.junit.Before
 import org.junit.Rule
