@@ -39,21 +39,25 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         userLocation: GeoPoint?,
         maxDistanceKm: Double?
     ): List<Post> {
-        val query: Query =
-            buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
+        return try {
+            // Build query and get posts
+            val query: Query =
+                buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
+            var posts = query.get().await().map { documentToPost(it) }
 
-        var posts = query.get().await().map { documentToPost(it) }
+            if (userLocation != null && maxDistanceKm != null) {
+                val epsilon = 0.05
+                posts =
+                    posts.filter {
+                        calculateDistance(userLocation, it.location) <= maxDistanceKm + epsilon
+                    }
+            }
 
-        if (userLocation != null && maxDistanceKm != null) {
-
-            val epsilon = 0.05 // small tolerance for floating-point errors
-            posts =
-                posts.filter { post ->
-                    calculateDistance(userLocation, post.location) <= maxDistanceKm + epsilon
-                }
+            // To fulfil contracted requirements sort by creation date
+            posts.sortedByDescending { it.creation }
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to fetch posts", e)
         }
-
-        return posts.sortedByDescending { it.creation }
     }
 
     private fun buildQuery(
@@ -74,10 +78,12 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         if (status != null) {
             query = query.whereEqualTo("status", status)
         }
+        // PaymentMethod is an exhaustive list, always use whereEqualTo
         query = query.whereEqualTo("paymentMethod", paymentMethod)
 
         // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
-        // query
+        // query, current implementation is limited to using the first 10 search keys, the rest are
+        // ignored
         val searchKeys = buildSearchKeys(titleContains, tags)
         if (searchKeys.isNotEmpty()) {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
@@ -105,31 +111,47 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {
-        val document = getCollectionPath(type).document(postId).get().await()
-        return documentToPost(document)
+        return try {
+            val document = getCollectionPath(type).document(postId).get().await()
+            documentToPost(document)
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to get post $postId", e)
+        }
     }
 
     override suspend fun addPost(post: Post) {
-        require(post.validate()) { "Post fields are invalid" }
+        try {
+            require(post.validate()) { "Post fields are invalid" }
+            val docRef = getCollectionPath(post.type).document(post.uid)
+            val snapshot = docRef.get().await()
 
-        val docRef = getCollectionPath(post.type).document(post.uid)
-        val snapshot = docRef.get().await()
-
-        require(!snapshot.exists()) { "Post with UID ${post.uid} already exists" }
-        docRef.set(serializePost(post)).await()
+            // ensure addPost isn't being used to overwrite
+            require(!snapshot.exists()) { "Post with UID ${post.uid} already exists" }
+            docRef.set(serializePost(post)).await()
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to add post ${post.uid}", e)
+        }
     }
 
     override suspend fun editPost(postId: String, newPost: Post) {
-        require(newPost.validate()) { "Post fields are invalid" }
+        try {
+            require(newPost.validate()) { "Post fields are invalid" }
 
-        getCollectionPath(newPost.type)
-            .document(postId)
-            .set(serializePost(newPost), SetOptions.merge())
-            .await()
+            getCollectionPath(newPost.type)
+                .document(postId)
+                .set(serializePost(newPost), SetOptions.merge())
+                .await()
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to edit post $postId", e)
+        }
     }
 
     override suspend fun deletePost(type: PostType, postId: String) {
-        getCollectionPath(type).document(postId).delete().await()
+        try {
+            getCollectionPath(type).document(postId).delete().await()
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to delete post $postId", e)
+        }
     }
 
     fun <T> requireField(name: String, value: T?): T =
@@ -277,3 +299,5 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         )
     }
 }
+
+class RepositoryException(message: String, cause: Throwable) : Exception(message, cause)
