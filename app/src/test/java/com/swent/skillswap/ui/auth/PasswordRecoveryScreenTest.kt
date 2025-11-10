@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.viewModel.PasswordRecoveryEvent
 import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -57,6 +59,25 @@ class PasswordRecoveryScreenTest {
             throw AssertionError("Failed to initialize Firebase for tests", e)
         }
         return PasswordRecoveryViewModel()
+    }
+
+    @After
+    fun tearDown() {
+        // Clean up Firebase Auth state after each test to ensure test isolation
+        cleanFirebaseAuth()
+    }
+
+    /**
+     * Cleans Firebase Auth state by signing out any authenticated users.
+     * This ensures test isolation between test runs.
+     */
+    private fun cleanFirebaseAuth() {
+        try {
+            val auth = FirebaseAuth.getInstance()
+            auth.signOut()
+        } catch (e: Exception) {
+            // Ignore if signOut fails (e.g., no user signed in or Firebase not initialized)
+        }
     }
 
     @Test
