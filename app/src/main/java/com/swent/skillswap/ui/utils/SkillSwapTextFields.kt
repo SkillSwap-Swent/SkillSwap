@@ -104,6 +104,11 @@ fun SkillSwapTextField(
                     MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
                 disabledContainerColor =
                     MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
+                focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
         trailingIcon = {
             val image =
