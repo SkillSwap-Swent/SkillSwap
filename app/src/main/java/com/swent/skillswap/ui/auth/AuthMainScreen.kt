@@ -2,7 +2,7 @@
  * @author Topaze17 (Eliott) Used ChatGPT for tagging the composables and commenting, but all tags
  *   and comments were checked manually.
  */
-package com.swent.skillswap.ui.signIn
+package com.swent.skillswap.ui.auth
 
 // ----- Imports -----
 import android.app.Activity
@@ -22,7 +22,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
@@ -61,9 +60,8 @@ val signInButtonStroke = BorderStroke(1.dp, Color.White)
  * The ViewModel emits navigation events via a SharedFlow (SignInEvent), which are collected here
  * using LaunchedEffect.
  */
-@Preview(showBackground = true)
 @Composable
-fun SignInMainScreen(
+fun AuthMainScreen(
     goToMainScreen: () -> Unit = {},
     goToCreateAccountScreen: () -> Unit = {},
     goToPasswordRecovery: () -> Unit = {},
@@ -102,6 +100,10 @@ fun SignInMainScreen(
                         .align(Alignment.CenterHorizontally)
                         .testTag(SignInTags.LOGO)
             )
+            // ------------------------------------------------------------
+            // Email and Password Input Fields
+            // ------------------------------------------------------------
+            // ----- Email Field -----
             SkillSwapTextField(
                 value = uiState.email,
                 supportText = uiState.emailError,
@@ -117,6 +119,7 @@ fun SignInMainScreen(
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.EMAIL_FIELD)
             )
+            // ----- Password Field -----
             SkillSwapPasswordTextField(
                 value = uiState.password,
                 supportText = uiState.passwordError,
@@ -139,8 +142,11 @@ fun SignInMainScreen(
                     textAlign = TextAlign.Center
                 )
             }
-            // ----- Google Sign-In button -----
             Spacer(modifier = Modifier.height(50.dp))
+            // ------------------------------------------------------------
+            // Sign-In Buttons (Google + Classic)
+            // ------------------------------------------------------------
+            // ----- Google Sign-In button -----
             OutlinedButton(
                 onClick = { vm.googleSignIn(credentialManager, context as Activity) },
                 colors = signInButtonColor,
@@ -175,7 +181,9 @@ fun SignInMainScreen(
                 Text(text = "SIGN IN")
             }
 
-            // ----- Create Account button -----
+            // ------------------------------------------------------------
+            // Create Account Button
+            // ------------------------------------------------------------
             Spacer(modifier = Modifier.height(40.dp))
             SkillSwapShadowButton(
                 onClick = { vm.createAccount() },

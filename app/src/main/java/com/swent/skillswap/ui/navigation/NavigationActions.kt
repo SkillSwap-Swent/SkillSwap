@@ -10,9 +10,9 @@ sealed class Screen(
     val name: String,
     val isTopLevelDestination: Boolean = false,
 ) {
-    object SignInMain : Screen(route = "signIn", name = "Sign In", isTopLevelDestination = false)
+    object AuthMain : Screen(route = "signIn", name = "Sign In", isTopLevelDestination = false)
 
-    object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
+    object CreateAccount : Screen(route = "create_account", name = "Create account")
 
     object PasswordRecovery : Screen(route = "password_recovery", name = "Password Recovery")
 

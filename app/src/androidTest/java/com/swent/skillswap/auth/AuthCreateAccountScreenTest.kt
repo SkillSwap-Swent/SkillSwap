@@ -1,9 +1,8 @@
-package com.swent.skillswap.signIn
+package com.swent.skillswap.auth
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
-import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -16,8 +15,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
+import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.viewModel.CreateAccountViewModel
 import org.junit.Before
 import org.junit.Rule
@@ -35,7 +34,7 @@ class SignInCreateAccountScreenTest : TestCase() {
 
     @Before
     fun setUp() {
-        composeTestRule.setContent { SignInCreateAccountScreen(vm = vm, googleAccount = false) }
+        composeTestRule.setContent { AuthCreateAccountScreen(vm = vm, googleAccount = false) }
     }
 
     // --- Helpers ---

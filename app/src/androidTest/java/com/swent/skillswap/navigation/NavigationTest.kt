@@ -47,7 +47,7 @@ class NavigationTest {
         val navigationActions = setupNavigation()
 
         // Navigate programmatically
-        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInCreateAccount) }
+        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.CreateAccount) }
 
         // Verify route changed
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "create_account") }
@@ -58,7 +58,7 @@ class NavigationTest {
         val navigationActions = setupNavigation()
 
         // Navigate to Create Account screen
-        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInCreateAccount) }
+        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.CreateAccount) }
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "create_account") }
 
         // Navigate back to Sign In screen
@@ -74,7 +74,7 @@ class NavigationTest {
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "signIn") }
 
         // Navigate and check new route
-        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInCreateAccount) }
+        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.CreateAccount) }
 
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "create_account") }
     }
@@ -83,10 +83,10 @@ class NavigationTest {
     fun testNavigateBackToSignInMain() {
         val navigationActions = setupNavigation()
 
-        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInCreateAccount) }
+        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.CreateAccount) }
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "create_account") }
 
-        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.SignInMain) }
+        composeTestRule.runOnIdle { navigationActions.navigateTo(Screen.AuthMain) }
         composeTestRule.runOnIdle { assert(navigationActions.currentRoute() == "signIn") }
     }
 
