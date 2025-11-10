@@ -28,18 +28,18 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.resources.C
+import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.auth.AuthMainScreen
+import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
+import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
-import com.swent.skillswap.ui.offerScreen.OfferScreen
-import com.swent.skillswap.ui.signIn.PasswordRecoveryScreen
-import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
-import com.swent.skillswap.ui.signIn.SignInMainScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
@@ -74,8 +74,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val focusManager = LocalFocusManager.current
     val screens =
         listOf(
-            Screen.SignInMain,
-            Screen.SignInCreateAccount,
+            Screen.AuthMain,
+            Screen.CreateAccount,
             Screen.Offers,
             Screen.Profile,
             Screen.EditSkills,
@@ -84,7 +84,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
 
-    val startDestination = Screen.SignInMain.name
+    val startDestination = Screen.AuthMain.name
 
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
@@ -119,11 +119,11 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     .padding(paddingValues)
         ) {
             // SIGN IN / CREATE ACCOUNT SCREENS
-            navigation(startDestination = Screen.SignInMain.route, route = Screen.SignInMain.name) {
-                composable(Screen.SignInMain.route) {
-                    SignInMainScreen(
+            navigation(startDestination = Screen.AuthMain.route, route = Screen.AuthMain.name) {
+                composable(Screen.AuthMain.route) {
+                    AuthMainScreen(
                         goToCreateAccountScreen = {
-                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                            navigationActions.navigateTo(Screen.CreateAccount)
                         },
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
                         goToPasswordRecovery = {
@@ -131,8 +131,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         }
                     )
                 }
-                composable(Screen.SignInCreateAccount.route) {
-                    SignInCreateAccountScreen(
+                composable(Screen.CreateAccount.route) {
+                    AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
                     )
                 }
@@ -150,7 +150,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         vm = profileViewModel,
                         onLogoutClick = {
                             FirebaseAuth.getInstance().signOut()
-                            navigationActions.navigateTo(Screen.SignInMain)
+                            navigationActions.navigateTo(Screen.AuthMain)
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) }
                     )
@@ -170,7 +170,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Offers.route) { OfferScreen() }
+            composable(Screen.Offers.route) { FeedScreen() }
 
             composable(Screen.Chat.route) {
                 ChatListScreen(

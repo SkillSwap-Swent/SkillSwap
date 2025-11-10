@@ -20,7 +20,7 @@ enum class BottomBarScreen {
     /** Profile screen. */
     PROFILE,
 
-    /** Offer screen. */
+    /** FeedOffer screen. */
     OFFER,
 
     /** Chat screen. */

@@ -1,5 +1,5 @@
 /** @author Topaze17(ELiott) huge help from chatGPT to make it work correctly */
-package com.swent.skillswap.signIn
+package com.swent.skillswap.auth
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,15 +18,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.auth.AuthMainScreen
+import com.swent.skillswap.ui.auth.CreateAccountTags
+import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.offerScreen.OfferScreen
-import com.swent.skillswap.ui.offerScreen.OfferScreenTestTags
-import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
-import com.swent.skillswap.ui.signIn.SignInMainScreen
-import com.swent.skillswap.ui.signIn.SignInTags
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.utils.FirebaseEmulator
 import com.swent.skillswap.viewModel.CreateAccountViewModel
@@ -68,6 +68,7 @@ class AuthClassicTest : TestCase() {
         @AfterClass
         @JvmStatic
         fun globalTearDown() {
+            auth.signOut()
             FirebaseEmulator.clearAuthEmulator()
             FirebaseEmulator.clearFirestoreEmulator()
         }
@@ -87,27 +88,27 @@ class AuthClassicTest : TestCase() {
 
             NavHost(
                 navController = navController,
-                startDestination = Screen.SignInMain.route,
+                startDestination = Screen.AuthMain.route,
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable(Screen.SignInMain.route) {
-                    SignInMainScreen(
+                composable(Screen.AuthMain.route) {
+                    AuthMainScreen(
                         goToCreateAccountScreen = {
-                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                            navigationActions.navigateTo(Screen.CreateAccount)
                         },
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         vm = vmSignIn
                     )
                 }
-                composable(Screen.SignInCreateAccount.route) {
+                composable(Screen.CreateAccount.route) {
                     // Classic flow (isGoogleAccount = false)
-                    SignInCreateAccountScreen(
+                    AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         googleAccount = false,
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Offers.route) { OfferScreen() }
+                composable(Screen.Offers.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatListScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
@@ -203,11 +204,11 @@ class AuthClassicTest : TestCase() {
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
     }
 
     /**
@@ -251,11 +252,11 @@ class AuthClassicTest : TestCase() {
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
         auth.signOut()
     }
 }

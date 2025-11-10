@@ -1,5 +1,5 @@
 /** @author Topaze17(ELiott) huge help from chatGPT to make it work correctly */
-package com.swent.skillswap.signIn
+package com.swent.skillswap.auth
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,15 +20,15 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
+import com.swent.skillswap.ui.auth.AuthMainScreen
+import com.swent.skillswap.ui.auth.CreateAccountTags
+import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.offerScreen.OfferScreen
-import com.swent.skillswap.ui.offerScreen.OfferScreenTestTags
-import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
-import com.swent.skillswap.ui.signIn.SignInMainScreen
-import com.swent.skillswap.ui.signIn.SignInTags
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.utils.FakeCredentialManager
 import com.swent.skillswap.utils.FakeJwtGenerator
@@ -74,6 +74,7 @@ class AuthGoogleTest : TestCase() {
         @AfterClass
         @JvmStatic
         fun globalTearDown() {
+            auth.signOut()
             FirebaseEmulator.clearAuthEmulator()
             FirebaseEmulator.clearFirestoreEmulator()
         }
@@ -119,26 +120,26 @@ class AuthGoogleTest : TestCase() {
 
             NavHost(
                 navController = navController,
-                startDestination = Screen.SignInMain.route,
+                startDestination = Screen.AuthMain.route,
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable(Screen.SignInMain.route) {
-                    SignInMainScreen(
+                composable(Screen.AuthMain.route) {
+                    AuthMainScreen(
                         goToCreateAccountScreen = {
-                            navigationActions.navigateTo(Screen.SignInCreateAccount)
+                            navigationActions.navigateTo(Screen.CreateAccount)
                         },
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         vm = vmSignIn,
                         credentialManager = credential
                     )
                 }
-                composable(Screen.SignInCreateAccount.route) {
-                    SignInCreateAccountScreen(
+                composable(Screen.CreateAccount.route) {
+                    AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Offers.route) { OfferScreen() }
+                composable(Screen.Offers.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatListScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
@@ -181,11 +182,11 @@ class AuthGoogleTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
     }
 
     /** Returning Google user (profile already exists) → straight to Offers after sign-in. */
@@ -197,10 +198,10 @@ class AuthGoogleTest : TestCase() {
 
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(OfferScreenTestTags.OFFER_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(OfferScreenTestTags.OFFER_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
     }
 }

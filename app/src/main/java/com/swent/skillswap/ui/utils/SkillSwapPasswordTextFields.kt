@@ -53,7 +53,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.swent.skillswap.R
-import com.swent.skillswap.ui.signIn.CreateAccountTags
+import com.swent.skillswap.ui.auth.CreateAccountTags
 
 // Shared keyboard options for all password fields
 val PasswordKeyboardOptions =

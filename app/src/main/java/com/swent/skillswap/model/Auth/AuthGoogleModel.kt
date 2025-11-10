@@ -1,5 +1,5 @@
 /** @author Topaze17 used ChatGPT for comment. */
-package com.swent.skillswap.model.SignIn
+package com.swent.skillswap.model.Auth
 
 import android.app.Activity
 import androidx.credentials.CredentialManager
@@ -23,10 +23,10 @@ import kotlinx.coroutines.tasks.await
  * This class provides methods for requesting an ID token from Google, signing in with Firebase, and
  * later verifying whether a user's account information has been stored in Firestore.
  */
-class SignInGoogleModel(
+class AuthGoogleModel(
     auth: FirebaseAuth = FirebaseAuth.getInstance(),
     firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
-) : SignInAbstractClass(auth, firestore) {
+) : AuthAbstractClass(auth, firestore) {
     /**
      * Requests a Google ID token using the Android Credential Manager API.
      *

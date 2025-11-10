@@ -22,14 +22,14 @@ class PostTypeFilterButtonTest {
         composeRule.setContent {
             MaterialTheme {
                 PostTypeFilterButton(
-                    text = "Offer",
+                    text = "FeedOffer",
                     isSelected = false,
                     onClick = { clicks.incrementAndGet() }
                 )
             }
         }
 
-        composeRule.onNodeWithText("Offer").assertExists().performClick()
+        composeRule.onNodeWithText("FeedOffer").assertExists().performClick()
         assert(clicks.get() == 1)
     }
 

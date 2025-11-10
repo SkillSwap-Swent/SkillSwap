@@ -1,5 +1,5 @@
 /** @author Topaze17 used ChatGPT for comment. */
-package com.swent.skillswap.model.SignIn
+package com.swent.skillswap.model.Auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,10 +14,10 @@ import kotlinx.coroutines.tasks.await
  * This class implements the sign-in and account creation logic for users who register or log in via
  * email/password instead of third-party providers like Google.
  */
-class SignInClassicModel(
+class AuthClassicModel(
     auth: FirebaseAuth = FirebaseAuth.getInstance(),
     firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
-) : SignInAbstractClass(auth, firestore) {
+) : AuthAbstractClass(auth, firestore) {
 
     override suspend fun signIn(params: SignInParams) {
 

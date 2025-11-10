@@ -69,7 +69,7 @@ object ChatListScreenData {
         val future = Timestamp(now.seconds + 86400, 0) // 1 day from now
 
         return listOf(
-            // Offer posts (3)
+            // FeedOffer posts (3)
             Offer(
                 uid = "post1",
                 title = "Spanish Tutoring",

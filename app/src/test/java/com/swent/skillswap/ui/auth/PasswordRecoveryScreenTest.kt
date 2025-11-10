@@ -1,5 +1,5 @@
 /** @author Younes Belgroune - Password recovery screen UI tests Made with the help of AI */
-package com.swent.skillswap.ui.signIn
+package com.swent.skillswap.ui.auth
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -13,7 +13,6 @@ import com.swent.skillswap.viewModel.PasswordRecoveryEvent
 import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher

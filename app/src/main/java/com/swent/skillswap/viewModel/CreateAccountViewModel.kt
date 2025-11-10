@@ -9,14 +9,14 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.swent.skillswap.model.SignIn.CreateAccountClassicParams
-import com.swent.skillswap.model.SignIn.CreateAccountGoogleParams
-import com.swent.skillswap.model.SignIn.SignInClassicModel
-import com.swent.skillswap.model.SignIn.SignInGoogleModel
-import com.swent.skillswap.model.SignIn.SignInInterface
+import com.swent.skillswap.model.Auth.AuthClassicModel
+import com.swent.skillswap.model.Auth.AuthGoogleModel
+import com.swent.skillswap.model.Auth.CreateAccountClassicParams
+import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
+import com.swent.skillswap.model.Auth.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.ValidationConfig
-import com.swent.skillswap.ui.signIn.CreateAccountRoutes
+import com.swent.skillswap.ui.auth.CreateAccountRoutes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -54,8 +54,17 @@ data class CreateAccountUIState(
 )
 
 /**
- * ViewModel responsible for handling all logic and state updates for the Create Account flow (both
- * Google and Classic sign-in types).
+ * ViewModel responsible for managing all logic and UI state during the Create Account flow.
+ *
+ * Supports both:
+ * - **Google account creation**, where email/password are already known
+ * - **Classic account creation**, where the user provides credentials manually
+ *
+ * Responsibilities:
+ * - Maintain [CreateAccountUIState] for reactive updates.
+ * - Validate user input fields.
+ * - Interact with [AuthGoogleModel] or [AuthClassicModel] to persist data.
+ * - Emit [CreateAccountEvent]s for one-time navigation actions.
  */
 class CreateAccountViewModel(
     private val isGoogleAccount: Boolean,
@@ -63,19 +72,25 @@ class CreateAccountViewModel(
     val firestore: FirebaseFirestore = Firebase.firestore
 ) : ViewModel() {
     private val model: SignInInterface =
-        if (isGoogleAccount) SignInGoogleModel(auth, firestore)
-        else SignInClassicModel(auth, firestore)
+        if (isGoogleAccount) AuthGoogleModel(auth, firestore) else AuthClassicModel(auth, firestore)
 
     private val _uiState: MutableStateFlow<CreateAccountUIState> =
         MutableStateFlow<CreateAccountUIState>(CreateAccountUIState())
+    // SharedFlow used to emit one-time navigation events to the UI layer.
     private val _eventFlow = MutableSharedFlow<CreateAccountEvent>()
     val eventFlow: SharedFlow<CreateAccountEvent> = _eventFlow
 
     val uiState: StateFlow<CreateAccountUIState> = _uiState
 
-    /** check if the user is meant to be there */
+    /**
+     * Checks whether the current user already has a valid account record in Firestore. If so,
+     * automatically navigates to the main screen.
+     *
+     * This is primarily used when returning to the Create Account screen to skip redundant account
+     * creation for existing users.
+     */
     fun check() {
-        if (isGoogleAccount && model is SignInGoogleModel) {
+        if (isGoogleAccount && model is AuthGoogleModel) {
             viewModelScope.launch {
                 if (model.googleAccountInfoAreSavedInFirestore()) {
                     _eventFlow.emit(CreateAccountEvent.NavigateToMainScreen)
@@ -210,7 +225,12 @@ class CreateAccountViewModel(
         return results.all { it }
     }
 
-    /** Validates only the inputs relevant to a specific route (screen step). */
+    /**
+     * Validates only the fields relevant to the current screen or step of the Create Account flow.
+     *
+     * @param route One of the [CreateAccountRoutes] constants.
+     * @return True if the inputs for that step are valid; false otherwise.
+     */
     fun validateByRoute(route: String): Boolean {
         return when (route) {
             CreateAccountRoutes.USERNAME -> validateUsername()
