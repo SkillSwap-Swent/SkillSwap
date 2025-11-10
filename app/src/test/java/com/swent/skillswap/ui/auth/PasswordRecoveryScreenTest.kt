@@ -68,8 +68,8 @@ class PasswordRecoveryScreenTest {
     }
 
     /**
-     * Cleans Firebase Auth state by signing out any authenticated users.
-     * This ensures test isolation between test runs.
+     * Cleans Firebase Auth state by signing out any authenticated users. This ensures test
+     * isolation between test runs.
      */
     private fun cleanFirebaseAuth() {
         try {
