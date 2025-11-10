@@ -15,6 +15,7 @@ import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
 
@@ -134,6 +135,15 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     fun <T> requireField(name: String, value: T?): T =
         value ?: throw IllegalArgumentException("Missing or invalid field: $name")
 
+    inline fun <reified T : Enum<T>> safeEnum(raw: String?): T {
+        val value = raw ?: throw IllegalArgumentException("Missing ${T::class.simpleName} value")
+        try {
+            return enumValueOf(value)
+        } catch (_: IllegalArgumentException) {
+            throw IllegalArgumentException("Invalid ${T::class.simpleName} value: $value")
+        }
+    }
+
     private fun documentToPost(document: DocumentSnapshot): Post {
         val uid = document.id
         val title = requireField("title", document.getString("title"))
@@ -147,51 +157,31 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             requireField(
                 "tags",
                 (document.get("tags") as? List<*>)
-                    ?.map {
-                        runCatching { EveryTag.valueOf(it.toString()) }
-                            .getOrElse { throw IllegalArgumentException("Invalid tag value: $it") }
-                    }
+                    ?.map { safeEnum<PostTag>(it.toString()) }
                     ?.toSet()
             )
         val paymentMethod =
-            requireField(
-                "paymentMethod",
-                document.getString("paymentMethod")?.let {
-                    runCatching { PaymentMethod.valueOf(it) }
-                        .getOrElse {
-                            throw IllegalArgumentException("Invalid paymentMethod value: $it")
-                        }
-                }
+            safeEnum<PaymentMethod>(
+                requireField("paymentMethod", document.getString("paymentMethod"))
             )
-        val status =
-            requireField(
-                "status",
-                document.getString("status")?.let {
-                    runCatching { PostStatus.valueOf(it) }
-                        .getOrElse { throw IllegalArgumentException("Invalid status value: $it") }
-                }
-            )
-        val postType =
-            requireField(
-                "type",
-                document.getString("type")?.let {
-                    runCatching { PostType.valueOf(it) }
-                        .getOrElse {
-                            throw IllegalArgumentException("Invalid post type value: $it")
-                        }
-                }
-            )
+
+        val status = safeEnum<PostStatus>(requireField("status", document.getString("status")))
+        val postType = safeEnum<PostType>(requireField("type", document.getString("type")))
         val media =
             requireField("media", (document.get("media") as? List<*>)?.map { it.toString() })
         val postReplies: Set<PostReply> =
             requireField(
-                "tags",
+                "postReplies",
                 (document.get("postReplies") as? List<*>)
                     ?.map {
-                        runCatching { documentToPostReply(it) }
-                            .getOrElse {
-                                throw IllegalArgumentException("Invalid postReply entry: $it")
-                            }
+                        try {
+                            documentToPostReply(it)
+                        } catch (e: Exception) {
+                            throw IllegalArgumentException(
+                                "Invalid postReply entry: $it — ${e.message}",
+                                e
+                            )
+                        }
                     }
                     ?.toSet()
             )
@@ -213,7 +203,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         postReplies,
                         location
                     )
-                // TODO("Replace with FeedOffer when it's implemented")
+                // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("FeedOffer posts are not supported yet")
             }
         require(post.validate()) { "Post was not validated successfully" }
