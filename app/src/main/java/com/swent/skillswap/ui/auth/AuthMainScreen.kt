@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -112,6 +113,12 @@ fun AuthMainScreen(
                 onValueChange = { vm.onEmailChange(it) },
                 label = "Email",
                 placeholder = "your.email@gmail.com",
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = "Email Icon"
+                    )
+                },
                 keyboardOptions =
                     KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -126,7 +133,7 @@ fun AuthMainScreen(
                 value = uiState.password,
                 supportText = uiState.passwordError,
                 label = "Password",
-                placeholder = "enter password",
+                placeholder = "Type your password",
                 onValueChange = { vm.onPasswordChange(it) },
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.PASSWORD_FIELD)
