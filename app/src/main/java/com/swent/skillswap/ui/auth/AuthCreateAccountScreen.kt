@@ -2,7 +2,7 @@
  * @author Topaze17 (Eliott) Used ChatGPT for tagging the composables and commenting, but all tags
  *   and comments were checked manually.
  */
-package com.swent.skillswap.ui.signIn
+package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,7 +50,14 @@ object CreateAccountTags {
     const val NEXT_BUTTON = "NEXT_BUTTON"
 }
 
-// ----- Route definitions for the multi-step sign-up process -----
+/**
+ * Defines all route constants and utility functions used for the multi-step Create Account
+ * navigation flow.
+ *
+ * Each step of the sign-up process corresponds to one route in the [NavHost]. Includes helpers to:
+ * - Determine the next step based on the current route.
+ * - Compute progress bar fill percentage.
+ */
 object CreateAccountRoutes {
     const val USERNAME = "username"
     const val EMAIL = "email"
@@ -95,7 +102,7 @@ object CreateAccountRoutes {
  * - an event collector for ViewModel navigation events
  */
 @Composable
-fun SignInCreateAccountScreen(
+fun AuthCreateAccountScreen(
     goToMainScreen: () -> Unit = {},
     googleAccount: Boolean = FirebaseAuth.getInstance().currentUser != null,
     vm: CreateAccountViewModel = viewModel(factory = CreateAccountVmFactory(googleAccount))
@@ -108,7 +115,10 @@ fun SignInCreateAccountScreen(
             }
         }
     }
-    LaunchedEffect(Unit) { vm.check() }
+    LaunchedEffect(Unit) {
+        // Immediately verify if the user should skip account creation (already signed in)
+        vm.check()
+    }
 
     val scroll = rememberScrollState()
     val navController = rememberNavController()
@@ -126,9 +136,13 @@ fun SignInCreateAccountScreen(
                 navController = navController,
                 startDestination = CreateAccountRoutes.USERNAME,
             ) {
+                // Step 1: Username entry screen
                 composable(CreateAccountRoutes.USERNAME) { UsernameScreen(vm) }
+                // Step 2: Email entry screen (skipped for Google sign-ins)
                 composable(CreateAccountRoutes.EMAIL) { EmailScreen(vm) }
+                // Step 3: Password creation screen (skipped for Google sign-ins)
                 composable(CreateAccountRoutes.PASSWORD) { PasswordScreen(vm) }
+                // Step 4: Skill selection screen (final step before account creation)
                 composable(CreateAccountRoutes.SKILLS) { SkillScreen(vm) }
             }
         }
