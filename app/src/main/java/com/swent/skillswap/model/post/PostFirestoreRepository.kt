@@ -131,33 +131,70 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         getCollectionPath(type).document(postId).delete().await()
     }
 
+    fun <T> requireField(name: String, value: T?): T =
+        value ?: throw IllegalArgumentException("Missing or invalid field: $name")
+
     private fun documentToPost(document: DocumentSnapshot): Post {
         val uid = document.id
-        val title: String = document.getString("title")!!
-        val description: String = document.getString("description")!!
-        val ownerId: String = document.getString("ownerId")!!
+        val title = requireField("title", document.getString("title"))
+        val description = requireField("description", document.getString("description"))
+        val ownerId = requireField("ownerId", document.getString("ownerId"))
+        val expiry = requireField("expiry", document.getTimestamp("expiry"))
+        val creation = requireField("creation", document.getTimestamp("creation"))
+        val location = requireField("location", document.getGeoPoint("location"))
 
-        @Suppress("UNCHECKED_CAST")
-        val tags = (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }!!.toSet()
-
-        @Suppress("UNCHECKED_CAST")
-        val paymentMethod = PaymentMethod.valueOf(document.getString("paymentMethod")!!)
-
-        val expiry = document.getTimestamp("expiry")!!
-        val creation = document.getTimestamp("creation")!!
-
-        val status = document.getString("status")?.let { PostStatus.valueOf(it) }!!
-
-        @Suppress("UNCHECKED_CAST") val media = (document.get("media") as? List<String>)!!
-
-        val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
-
-        val location = document.getGeoPoint("location")!!
-
+        val tags =
+            requireField(
+                "tags",
+                (document.get("tags") as? List<*>)
+                    ?.map {
+                        runCatching { EveryTag.valueOf(it.toString()) }
+                            .getOrElse { throw IllegalArgumentException("Invalid tag value: $it") }
+                    }
+                    ?.toSet()
+            )
+        val paymentMethod =
+            requireField(
+                "paymentMethod",
+                document.getString("paymentMethod")?.let {
+                    runCatching { PaymentMethod.valueOf(it) }
+                        .getOrElse {
+                            throw IllegalArgumentException("Invalid paymentMethod value: $it")
+                        }
+                }
+            )
+        val status =
+            requireField(
+                "status",
+                document.getString("status")?.let {
+                    runCatching { PostStatus.valueOf(it) }
+                        .getOrElse { throw IllegalArgumentException("Invalid status value: $it") }
+                }
+            )
+        val postType =
+            requireField(
+                "type",
+                document.getString("type")?.let {
+                    runCatching { PostType.valueOf(it) }
+                        .getOrElse {
+                            throw IllegalArgumentException("Invalid post type value: $it")
+                        }
+                }
+            )
+        val media =
+            requireField("media", (document.get("media") as? List<*>)?.map { it.toString() })
         val postReplies: Set<PostReply> =
-            (document.get("postReplies") as? List<*>)
-                ?.map { item -> documentToPostReply(item) }
-                ?.toSet() ?: emptySet()
+            requireField(
+                "tags",
+                (document.get("postReplies") as? List<*>)
+                    ?.map {
+                        runCatching { documentToPostReply(it) }
+                            .getOrElse {
+                                throw IllegalArgumentException("Invalid postReply entry: $it")
+                            }
+                    }
+                    ?.toSet()
+            )
 
         val post =
             when (postType) {
