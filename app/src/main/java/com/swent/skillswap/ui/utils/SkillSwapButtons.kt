@@ -10,7 +10,9 @@ package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.*
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
@@ -18,14 +20,36 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.swent.skillswap.ui.theme.BrushDirection
 import com.swent.skillswap.ui.theme.getLinearBrush
+
+enum class SkillSwapButtonShape {
+    ROUND,
+    SQUARE
+}
+
+enum class SkillSwapButtonSize {
+    XS,
+    S,
+    M,
+    L,
+    XL
+}
 
 /**
  * A reusable gradient-filled button built on top of [OutlinedButton].
@@ -120,5 +144,140 @@ fun SkillSwapShadowButton(
         modifier = modifier
     ) {
         content()
+    }
+}
+/**
+ * @author chatGPT a function to make an outer only shadow only while the button is still
+ *   transparent
+ */
+fun Modifier.outerShadow(
+    shape: Shape,
+    blur: Dp = 4.dp,
+    offsetY: Dp = 2.dp,
+): Modifier =
+    this.then(
+        Modifier.drawBehind {
+            // Build the pill/path for this size
+            val outline = shape.createOutline(size, layoutDirection, this)
+            val rr =
+                when (outline) {
+                    is Outline.Rounded -> outline.roundRect
+                    is Outline.Generic -> return@drawBehind // not supported here
+                    is Outline.Rectangle ->
+                        RoundRect(0f, 0f, size.width, size.height, CornerRadius.Zero)
+                }
+            val path = Path().apply { addRoundRect(rr) }
+
+            val frameworkPaint =
+                Paint().asFrameworkPaint().apply {
+                    isAntiAlias = true
+                    alpha = 120
+                    // Blur for the soft shadow
+                    maskFilter =
+                        android.graphics.BlurMaskFilter(
+                            blur.toPx(),
+                            android.graphics.BlurMaskFilter.Blur.NORMAL
+                        )
+                }
+
+            drawIntoCanvas { canvas ->
+                // Clip OUTSIDE the pill so shadow is only outside, not under the fill
+                canvas.save()
+                canvas.clipPath(path, clipOp = ClipOp.Difference)
+                canvas.nativeCanvas.drawRoundRect(
+                    rr.left,
+                    rr.top + offsetY.toPx(),
+                    rr.right,
+                    rr.bottom + offsetY.toPx(),
+                    rr.topLeftCornerRadius.x,
+                    rr.topLeftCornerRadius.y,
+                    frameworkPaint
+                )
+                canvas.restore()
+            }
+        }
+    )
+
+@Composable
+fun SkillSwapButtonOutline(
+    labelText: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    shape: SkillSwapButtonShape = SkillSwapButtonShape.ROUND,
+    size: SkillSwapButtonSize = SkillSwapButtonSize.M
+) {
+    val height: Dp
+    val textSize: androidx.compose.ui.unit.TextUnit
+    val horizontalPadding: Dp
+    val iconSize: Dp
+
+    when (size) {
+        SkillSwapButtonSize.XS -> {
+            height = 28.dp
+            textSize = 12.sp
+            horizontalPadding = 8.dp
+            iconSize = 14.dp
+        }
+        SkillSwapButtonSize.S -> {
+            height = 32.dp
+            textSize = 13.sp
+            horizontalPadding = 10.dp
+            iconSize = 16.dp
+        }
+        SkillSwapButtonSize.M -> {
+            height = 40.dp
+            textSize = 14.sp
+            horizontalPadding = 12.dp
+            iconSize = 18.dp
+        }
+        SkillSwapButtonSize.L -> {
+            height = 48.dp
+            textSize = 16.sp
+            horizontalPadding = 16.dp
+            iconSize = 20.dp
+        }
+        SkillSwapButtonSize.XL -> {
+            height = 56.dp
+            textSize = 18.sp
+            horizontalPadding = 20.dp
+            iconSize = 24.dp
+        }
+    }
+
+    // Define shape
+    val buttonShape: Shape =
+        when (shape) {
+            SkillSwapButtonShape.ROUND -> MaterialTheme.shapes.extraLarge
+            SkillSwapButtonShape.SQUARE -> MaterialTheme.shapes.small
+        }
+
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.height(height).defaultMinSize(minWidth = 80.dp),
+        shape = buttonShape,
+        colors =
+            ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            ),
+        border = ButtonDefaults.outlinedButtonBorder
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = horizontalPadding),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "$labelText icon",
+                    modifier = Modifier.size(iconSize).padding(end = 6.dp)
+                )
+            }
+            Text(text = labelText, fontSize = textSize, fontWeight = FontWeight.Medium)
+        }
     }
 }

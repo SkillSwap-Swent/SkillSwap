@@ -32,11 +32,11 @@ class BottomBarEventIntegrationTest {
         composeTestRule.onNodeWithTag(BottomBarTestTag.OFFER_SCREEN_BUTTON).assertIsEnabled()
         composeTestRule.onNodeWithTag(BottomBarTestTag.CHAT_BUTTON).assertIsEnabled()
 
-        // Click Offer
+        // Click FeedOffer
         composeTestRule.onNodeWithTag(BottomBarTestTag.OFFER_SCREEN_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
-        // Verify new state: Offer is selected
+        // Verify new state: FeedOffer is selected
         composeTestRule.onNodeWithTag(BottomBarTestTag.PROFILE_BUTTON).assertIsEnabled()
         composeTestRule.onNodeWithTag(BottomBarTestTag.OFFER_SCREEN_BUTTON).assertIsNotEnabled()
         composeTestRule.onNodeWithTag(BottomBarTestTag.CHAT_BUTTON).assertIsEnabled()

@@ -1,4 +1,4 @@
-package com.swent.skillswap.ui.offerScreen
+package com.swent.skillswap.ui.feedScreen
 
 /**
  * Defines the navigation actions related to offers.
@@ -6,7 +6,7 @@ package com.swent.skillswap.ui.offerScreen
  * Implementations handle navigation events such as moving to a user's profile when interacting with
  * an offer.
  */
-interface OfferNavigation {
+interface FeedScreenNavigation {
 
     /**
      * Navigates to the profile view of the specified user.

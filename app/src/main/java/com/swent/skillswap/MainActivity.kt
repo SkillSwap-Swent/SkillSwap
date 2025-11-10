@@ -32,11 +32,11 @@ import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
+import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
-import com.swent.skillswap.ui.offerScreen.OfferScreen
 import com.swent.skillswap.ui.signIn.PasswordRecoveryScreen
 import com.swent.skillswap.ui.signIn.SignInCreateAccountScreen
 import com.swent.skillswap.ui.signIn.SignInMainScreen
@@ -170,7 +170,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Offers.route) { OfferScreen() }
+            composable(Screen.Offers.route) { FeedScreen() }
 
             composable(Screen.Chat.route) {
                 ChatListScreen(
