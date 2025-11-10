@@ -4,7 +4,11 @@ package com.swent.skillswap.viewModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import com.google.firebase.Firebase
 import kotlinx.coroutines.Dispatchers
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
 import org.junit.After
@@ -71,15 +75,56 @@ class PasswordRecoveryViewModelTest {
     }
 
     /**
-     * Cleans Firebase Auth state by signing out any authenticated users. This ensures test
-     * isolation between test runs.
+     * Cleans Firebase Auth state by signing out any authenticated users and clearing the Auth
+     * emulator. This ensures test isolation between test runs by deleting all users created during
+     * tests. Uses the same helper functions as FirebaseEmulator to ensure consistency.
      */
     private fun cleanFirebaseAuth() {
         try {
-            val auth = FirebaseAuth.getInstance()
-            auth.signOut()
+            // Sign out any authenticated users
+            Firebase.auth.signOut()
+            // Clear the Auth emulator to delete all users created during tests
+            if (isEmulatorRunning()) {
+                clearAuthEmulator()
+            }
         } catch (e: Exception) {
-            // Ignore if signOut fails (e.g., no user signed in or Firebase not initialized)
+            // Ignore if cleanup fails (e.g., no user signed in, Firebase not initialized, or
+            // emulator not running)
+        }
+    }
+
+    /**
+     * Checks if the Firebase emulator is running by attempting to connect to the emulator endpoint.
+     * Uses the same logic as FirebaseEmulator for consistency.
+     */
+    private fun isEmulatorRunning(): Boolean {
+        return runCatching {
+            val client = OkHttpClient()
+            val request =
+                Request.Builder()
+                    .url("http://10.0.2.2:4400/emulators")
+                    .build()
+            client.newCall(request).execute().isSuccessful
+        }.getOrNull() == true
+    }
+
+    /**
+     * Clears the Firebase Auth emulator by sending a DELETE request to the emulator endpoint.
+     * Uses the same logic as FirebaseEmulator.clearAuthEmulator() for consistency.
+     */
+    private fun clearAuthEmulator() {
+        try {
+            val projectId = FirebaseApp.getInstance().options.projectId
+            val authEndpoint =
+                "http://10.0.2.2:9099/emulator/v1/projects/$projectId/accounts"
+            val client = OkHttpClient()
+            val request = Request.Builder().url(authEndpoint).delete().build()
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) {
+                // Log but don't throw - emulator might not be running in unit tests
+            }
+        } catch (e: Exception) {
+            // Ignore if emulator is not running or not accessible
         }
     }
 
