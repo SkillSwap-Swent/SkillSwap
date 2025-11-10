@@ -14,12 +14,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
@@ -41,7 +39,7 @@ fun ChatListScreen(
         // Title
         Text(
             text = "Chat",
-            fontSize = 24.sp,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
@@ -76,8 +74,8 @@ fun ChatListScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "No ${selectedPostType.name.lowercase()} posts available",
-                    fontSize = 16.sp,
-                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center
                 )
             }
@@ -108,14 +106,24 @@ fun PostTypeFilterButton(
         modifier = modifier.height(40.dp),
         colors =
             ButtonDefaults.buttonColors(
-                containerColor = if (isSelected) Color(0xFF0F3F66) else Color.Transparent
+                containerColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    }
             ),
         shape = RoundedCornerShape(8.dp)
     ) {
         Text(
             text = text,
-            color = if (isSelected) Color.White else Color(0xFF0F3F66),
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodyMedium,
+            color =
+                if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
             fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
         )
     }
@@ -128,7 +136,7 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F3F66)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -139,14 +147,14 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = user?.username ?: "Unknown User",
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     text = post.title,
-                    fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -154,7 +162,11 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
 
             // Right side - Skill/Tags
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                Text(text = "Skills:", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                Text(
+                    text = "Skills:",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                )
                 Text(
                     text =
                         if (post.tags.isEmpty()) {
@@ -167,9 +179,9 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
                                 }
                             }
                         },
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.End
