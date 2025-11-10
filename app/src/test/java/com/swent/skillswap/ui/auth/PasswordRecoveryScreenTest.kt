@@ -7,14 +7,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.google.firebase.Firebase
 import com.swent.skillswap.viewModel.PasswordRecoveryEvent
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,6 +22,8 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -96,24 +95,21 @@ class PasswordRecoveryScreenTest {
      */
     private fun isEmulatorRunning(): Boolean {
         return runCatching {
-            val client = OkHttpClient()
-            val request =
-                Request.Builder()
-                    .url("http://10.0.2.2:4400/emulators")
-                    .build()
-            client.newCall(request).execute().isSuccessful
-        }.getOrNull() == true
+                val client = OkHttpClient()
+                val request = Request.Builder().url("http://10.0.2.2:4400/emulators").build()
+                client.newCall(request).execute().isSuccessful
+            }
+            .getOrNull() == true
     }
 
     /**
-     * Clears the Firebase Auth emulator by sending a DELETE request to the emulator endpoint.
-     * Uses the same logic as FirebaseEmulator.clearAuthEmulator() for consistency.
+     * Clears the Firebase Auth emulator by sending a DELETE request to the emulator endpoint. Uses
+     * the same logic as FirebaseEmulator.clearAuthEmulator() for consistency.
      */
     private fun clearAuthEmulator() {
         try {
             val projectId = FirebaseApp.getInstance().options.projectId
-            val authEndpoint =
-                "http://10.0.2.2:9099/emulator/v1/projects/$projectId/accounts"
+            val authEndpoint = "http://10.0.2.2:9099/emulator/v1/projects/$projectId/accounts"
             val client = OkHttpClient()
             val request = Request.Builder().url(authEndpoint).delete().build()
             val response = client.newCall(request).execute()

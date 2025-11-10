@@ -1,16 +1,15 @@
 /** @author Younes Belgroune - Password recovery ViewModel tests Made with the help of AI */
 package com.swent.skillswap.viewModel
 
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
-import com.google.firebase.Firebase
 import kotlinx.coroutines.Dispatchers
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Assert.assertNotNull
@@ -99,24 +98,21 @@ class PasswordRecoveryViewModelTest {
      */
     private fun isEmulatorRunning(): Boolean {
         return runCatching {
-            val client = OkHttpClient()
-            val request =
-                Request.Builder()
-                    .url("http://10.0.2.2:4400/emulators")
-                    .build()
-            client.newCall(request).execute().isSuccessful
-        }.getOrNull() == true
+                val client = OkHttpClient()
+                val request = Request.Builder().url("http://10.0.2.2:4400/emulators").build()
+                client.newCall(request).execute().isSuccessful
+            }
+            .getOrNull() == true
     }
 
     /**
-     * Clears the Firebase Auth emulator by sending a DELETE request to the emulator endpoint.
-     * Uses the same logic as FirebaseEmulator.clearAuthEmulator() for consistency.
+     * Clears the Firebase Auth emulator by sending a DELETE request to the emulator endpoint. Uses
+     * the same logic as FirebaseEmulator.clearAuthEmulator() for consistency.
      */
     private fun clearAuthEmulator() {
         try {
             val projectId = FirebaseApp.getInstance().options.projectId
-            val authEndpoint =
-                "http://10.0.2.2:9099/emulator/v1/projects/$projectId/accounts"
+            val authEndpoint = "http://10.0.2.2:9099/emulator/v1/projects/$projectId/accounts"
             val client = OkHttpClient()
             val request = Request.Builder().url(authEndpoint).delete().build()
             val response = client.newCall(request).execute()
