@@ -8,7 +8,6 @@
  */
 package com.swent.skillswap.ui.utils
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.RowScope
@@ -122,12 +121,7 @@ fun SkillSwapShadowButton(
         MaterialTheme.colorScheme.onSurface.copy(text_disable_button_alpha),
     content: @Composable (RowScope.() -> Unit) = { Text(text = "test         test") },
 ) {
-    ElevatedButton(
-        enabled = enable,
-        onClick = onClick,
-        shape = shape,
-        modifier = modifier
-    ) {
+    ElevatedButton(enabled = enable, onClick = onClick, shape = shape, modifier = modifier) {
         content()
     }
 }

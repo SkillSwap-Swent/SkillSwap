@@ -126,9 +126,7 @@ fun AuthCreateAccountScreen(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
-    LaunchedEffect(route) {
-        vm.onRouteChanged(route)
-    }
+    LaunchedEffect(route) { vm.onRouteChanged(route) }
 
     // Scaffold provides consistent layout (top/bottom bars)
     Scaffold(
@@ -168,9 +166,7 @@ fun CreateAccountBottomBar(
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.12f)) {
         SkillSwapShadowButton(
             onClick = {
-                if (
-                    currRoute != CreateAccountRoutes.SKILLS
-                ) {
+                if (currRoute != CreateAccountRoutes.SKILLS) {
                     navController.navigate(
                         CreateAccountRoutes.next(currRoute ?: "", isGoogleAccount)
                     )

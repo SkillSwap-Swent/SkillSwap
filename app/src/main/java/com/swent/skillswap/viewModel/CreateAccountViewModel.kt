@@ -168,31 +168,34 @@ class CreateAccountViewModel(
     private fun validateEmailResult(): Pair<Boolean, String> {
         if (isGoogleAccount) return true to ""
         val e = _uiState.value.email
-        val cause = when {
-            e.isBlank() -> "Email cannot be empty"
-            !emailRegex.matches(e) -> "Invalid email format"
-            else -> ""
-        }
+        val cause =
+            when {
+                e.isBlank() -> "Email cannot be empty"
+                !emailRegex.matches(e) -> "Invalid email format"
+                else -> ""
+            }
         return (cause.isEmpty()) to cause
     }
 
     /**
-     * Returns (ok, cause). The single 'cause' is the first failing reason.
-     * We'll route it to passwordError or confirmPasswordError below.
+     * Returns (ok, cause). The single 'cause' is the first failing reason. We'll route it to
+     * passwordError or confirmPasswordError below.
      */
     private fun validatePasswordsResult(): Pair<Boolean, String> {
         if (isGoogleAccount) return true to ""
         val pwd = _uiState.value.password
         val confirm = _uiState.value.confirmPassword
 
-        val cause = when {
-            pwd.isBlank() -> "Password cannot be empty"
-            pwd.length < 8 -> "Password must be at least 8 characters long"
-            !pwd.any { it.isUpperCase() } -> "Password must contain at least one uppercase letter"
-            confirm.isBlank() -> "Please confirm your password"
-            confirm != pwd -> "Passwords do not match"
-            else -> ""
-        }
+        val cause =
+            when {
+                pwd.isBlank() -> "Password cannot be empty"
+                pwd.length < 8 -> "Password must be at least 8 characters long"
+                !pwd.any { it.isUpperCase() } ->
+                    "Password must contain at least one uppercase letter"
+                confirm.isBlank() -> "Please confirm your password"
+                confirm != pwd -> "Passwords do not match"
+                else -> ""
+            }
         return (cause.isEmpty()) to cause
     }
 
@@ -222,15 +225,18 @@ class CreateAccountViewModel(
         val (ok, cause) = validatePasswordsResult()
         _uiState.update {
             it.copy(
-                passwordError = when {
-                    cause.startsWith("Password") -> cause   // password-related cause
-                    cause.isEmpty() -> ""
-                    else -> ""                              // cause belongs to confirm
-                },
-                confirmPasswordError = when {
-                    cause.startsWith("Please confirm") || cause.startsWith("Passwords do not match") -> cause
-                    else -> ""
-                }
+                passwordError =
+                    when {
+                        cause.startsWith("Password") -> cause // password-related cause
+                        cause.isEmpty() -> ""
+                        else -> "" // cause belongs to confirm
+                    },
+                confirmPasswordError =
+                    when {
+                        cause.startsWith("Please confirm") ||
+                            cause.startsWith("Passwords do not match") -> cause
+                        else -> ""
+                    }
             )
         }
         return ok
@@ -243,22 +249,22 @@ class CreateAccountViewModel(
         return ok
     }
 
-
     // ---------- Button enabled? section -----------
     /**
-     * Determines if the "Next" or "Done" button should be enabled for a given route.
-     * This function uses the `validate*Result()` methods directly, as they provide validation
-     * status without triggering UI state changes (i.e., updating error messages).
+     * Determines if the "Next" or "Done" button should be enabled for a given route. This function
+     * uses the `validate*Result()` methods directly, as they provide validation status without
+     * triggering UI state changes (i.e., updating error messages).
      *
      * @param route The current route in the creation flow.
      */
-    fun computeEnabledFor(route: String?): Boolean = when (route) {
-        CreateAccountRoutes.USERNAME  -> validateUsernameResult().first
-        CreateAccountRoutes.EMAIL     -> validateEmailResult().first
-        CreateAccountRoutes.PASSWORD  -> validatePasswordsResult().first
-        CreateAccountRoutes.SKILLS    -> validateSkillsResult().first
-        else -> false
-    }
+    fun computeEnabledFor(route: String?): Boolean =
+        when (route) {
+            CreateAccountRoutes.USERNAME -> validateUsernameResult().first
+            CreateAccountRoutes.EMAIL -> validateEmailResult().first
+            CreateAccountRoutes.PASSWORD -> validatePasswordsResult().first
+            CreateAccountRoutes.SKILLS -> validateSkillsResult().first
+            else -> false
+        }
 
     private fun refreshEnabled() {
         val r = _uiState.value.currentRoute
