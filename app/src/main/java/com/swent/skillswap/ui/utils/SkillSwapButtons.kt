@@ -117,7 +117,7 @@ fun SkillSwapShadowButton(
     enable: Boolean = true,
     modifier: Modifier = Modifier,
     shape: Shape = pill_shape,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
     disableContentColor: Color =
         MaterialTheme.colorScheme.onSurface.copy(text_disable_button_alpha),
     content: @Composable (RowScope.() -> Unit) = { Text(text = "test         test") },
@@ -125,14 +125,6 @@ fun SkillSwapShadowButton(
     ElevatedButton(
         enabled = enable,
         onClick = onClick,
-        colors =
-            ButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = contentColor,
-                disabledContainerColor =
-                    MaterialTheme.colorScheme.onSurface.copy(container_disable_button_alpha),
-                disabledContentColor = disableContentColor
-            ),
         border =
             if (!enable)
                 BorderStroke(
