@@ -38,8 +38,6 @@ import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
-import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
@@ -76,7 +74,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         listOf(
             Screen.AuthMain,
             Screen.CreateAccount,
-            Screen.Offers,
+            Screen.Feed,
             Screen.Profile,
             Screen.EditSkills,
             Screen.Chat
@@ -90,7 +88,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val currentRoute = navBackStackEntry.value?.destination?.route
 
     val editProfileViewModel = remember { EditUserViewModel() }
-    val bottomBarViewModel = remember { BottomBarViewModel() }
 
     val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
 
@@ -98,18 +95,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         BackHandler { activity?.finish() }
     }
 
-    Scaffold(
-        bottomBar = {
-            if (isTopLevel) {
-                BottomBar(
-                    vm = bottomBarViewModel,
-                    onProfileClick = { navController.navigate(Screen.Profile.route) },
-                    onOfferClick = { navController.navigate(Screen.Offers.route) },
-                    onChatClick = { navController.navigate(Screen.Chat.route) }
-                )
-            }
-        }
-    ) { paddingValues ->
+    Scaffold() { paddingValues ->
         NavHost(
             navController = navController,
             startDestination = startDestination,
@@ -152,7 +138,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                             FirebaseAuth.getInstance().signOut()
                             navigationActions.navigateTo(Screen.AuthMain)
                         },
-                        onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) }
+                        onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
+                        navigationActions = navigationActions
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -170,7 +157,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Offers.route) { FeedScreen() }
+            composable(Screen.Feed.route) { FeedScreen(navigationActions = navigationActions) }
 
             composable(Screen.Chat.route) {
                 ChatListScreen(
@@ -179,7 +166,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     onPostClick = { post ->
                         // TODO: Navigate to individual chat with post
                         println("Clicked on post: ${post.title}")
-                    }
+                    },
+                    navigationActions = navigationActions
                 )
             }
         }

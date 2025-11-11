@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.model.user.Preference
+import com.swent.skillswap.ui.navigation.BottomNavigationMenu
+import com.swent.skillswap.ui.navigation.NavigationActions
+import com.swent.skillswap.ui.navigation.NavigationTestTags
+import com.swent.skillswap.ui.navigation.Tab
 import com.swent.skillswap.ui.utils.AccordionSection
 import com.swent.skillswap.ui.utils.ProfileDivider
 import com.swent.skillswap.viewModel.ProfileViewModel
@@ -54,6 +58,7 @@ object ProfileTestTags {
 fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
+    navigationActions: NavigationActions? = null,
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -64,199 +69,212 @@ fun ProfileScreen(
 
     val uiState by vm.userState.collectAsState()
     val scroll = rememberScrollState()
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(scroll),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Profile",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 24.dp).testTag(ProfileTestTags.PROFILE_TITLE)
-        )
 
-        // Profile picture Section
-        Box(
+    Scaffold(
+        bottomBar = {
+            BottomNavigationMenu(
+                selectedTab = Tab.Profile,
+                onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
+                modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+            )
+        }
+    ) { paddingValues ->
+        Column(
             modifier =
-                Modifier.align(Alignment.CenterHorizontally)
-                    .size(140.dp)
-                    .padding(8.dp)
-                    .testTag(ProfileTestTags.PROFILE_PICTURE)
+                Modifier.fillMaxSize().padding(paddingValues).padding(16.dp).verticalScroll(scroll),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (uiState.profilePicture.isNotEmpty()) {
-                AsyncImage(
-                    model = uiState.profilePicture,
-                    contentDescription = "Profile picture",
-                    modifier = Modifier.size(140.dp).clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
+            Text(
+                text = "Profile",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 24.dp).testTag(ProfileTestTags.PROFILE_TITLE)
+            )
+
+            // Profile picture Section
+            Box(
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .size(140.dp)
+                        .padding(8.dp)
+                        .testTag(ProfileTestTags.PROFILE_PICTURE)
+            ) {
+                if (uiState.profilePicture.isNotEmpty()) {
+                    AsyncImage(
+                        model = uiState.profilePicture,
+                        contentDescription = "Profile picture",
+                        modifier = Modifier.size(140.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier =
+                            Modifier.size(120.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile picture placeholder",
+                            modifier = Modifier.size(60.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                // Edit button overlay
                 Box(
                     modifier =
-                        Modifier.size(120.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                        Modifier.align(Alignment.BottomEnd)
+                            .size(40.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .clickable { onEditProfileClick() }
+                            .testTag(ProfileTestTags.EDIT_PROFILE),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile picture placeholder",
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit profile picture",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
-            // Edit button overlay
+
             Box(
                 modifier =
-                    Modifier.align(Alignment.BottomEnd)
-                        .size(40.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .clickable { onEditProfileClick() }
-                        .testTag(ProfileTestTags.EDIT_PROFILE),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit profile picture",
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
-
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        brush =
-                            Brush.verticalGradient(
-                                colors =
-                                    listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    )
-                            )
-                    )
-                    .padding(16.dp)
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                AccordionSection(
-                    title = "My email",
-                    isExpanded = expandedEmail,
-                    onToggle = { expandedEmail = !expandedEmail },
-                    modifier = Modifier.testTag(ProfileTestTags.EMAIL_SECTION),
-                    content = {
-                        EditableField(
-                            value = uiState.email,
-                            valueTestTag = ProfileTestTags.EMAIL_VALUE,
-                        )
-                    }
-                )
-                ProfileDivider()
-
-                AccordionSection(
-                    title = "My username",
-                    isExpanded = expandedUsername,
-                    onToggle = { expandedUsername = !expandedUsername },
-                    modifier = Modifier.testTag(ProfileTestTags.USERNAME_SECTION),
-                    content = {
-                        EditableField(
-                            value = uiState.username,
-                            valueTestTag = ProfileTestTags.USERNAME_VALUE,
-                        )
-                    }
-                )
-                ProfileDivider()
-
-                AccordionSection(
-                    title = "Skills",
-                    isExpanded = expandedSkills,
-                    onToggle = { expandedSkills = !expandedSkills },
-                    modifier = Modifier.testTag(ProfileTestTags.SKILLS_SECTION),
-                    content = {
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(
-                                text = "Current skills (${uiState.skillSet.size}):",
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.6f),
-                                modifier =
-                                    Modifier.padding(bottom = 4.dp)
-                                        .testTag(ProfileTestTags.SKILLS_COUNT)
-                            )
-                            if (uiState.skillSet.isNotEmpty()) {
-                                Text(
-                                    text =
-                                        uiState.skillSet.joinToString(", ") { skill ->
-                                            skill.name.name
-                                                .replace("_", " ")
-                                                .lowercase()
-                                                .replaceFirstChar { it.titlecase() }
-                                        },
-                                    fontSize = 14.sp,
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    modifier =
-                                        Modifier.padding(bottom = 8.dp)
-                                            .testTag(ProfileTestTags.SKILLS_LIST)
+                    Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(
+                            brush =
+                                Brush.verticalGradient(
+                                    colors =
+                                        listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        )
                                 )
-                            } else {
+                        )
+                        .padding(16.dp)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    AccordionSection(
+                        title = "My email",
+                        isExpanded = expandedEmail,
+                        onToggle = { expandedEmail = !expandedEmail },
+                        modifier = Modifier.testTag(ProfileTestTags.EMAIL_SECTION),
+                        content = {
+                            EditableField(
+                                value = uiState.email,
+                                valueTestTag = ProfileTestTags.EMAIL_VALUE,
+                            )
+                        }
+                    )
+                    ProfileDivider()
+
+                    AccordionSection(
+                        title = "My username",
+                        isExpanded = expandedUsername,
+                        onToggle = { expandedUsername = !expandedUsername },
+                        modifier = Modifier.testTag(ProfileTestTags.USERNAME_SECTION),
+                        content = {
+                            EditableField(
+                                value = uiState.username,
+                                valueTestTag = ProfileTestTags.USERNAME_VALUE,
+                            )
+                        }
+                    )
+                    ProfileDivider()
+
+                    AccordionSection(
+                        title = "Skills",
+                        isExpanded = expandedSkills,
+                        onToggle = { expandedSkills = !expandedSkills },
+                        modifier = Modifier.testTag(ProfileTestTags.SKILLS_SECTION),
+                        content = {
+                            Column(modifier = Modifier.padding(vertical = 8.dp)) {
                                 Text(
-                                    text = "No skills selected",
-                                    fontSize = 14.sp,
-                                    color = Color.White.copy(alpha = 0.5f),
+                                    text = "Current skills (${uiState.skillSet.size}):",
+                                    fontSize = 12.sp,
+                                    color = Color.White.copy(alpha = 0.6f),
                                     modifier =
-                                        Modifier.padding(bottom = 8.dp)
-                                            .testTag(ProfileTestTags.SKILLS_EMPTY)
+                                        Modifier.padding(bottom = 4.dp)
+                                            .testTag(ProfileTestTags.SKILLS_COUNT)
+                                )
+                                if (uiState.skillSet.isNotEmpty()) {
+                                    Text(
+                                        text =
+                                            uiState.skillSet.joinToString(", ") { skill ->
+                                                skill.name.name
+                                                    .replace("_", " ")
+                                                    .lowercase()
+                                                    .replaceFirstChar { it.titlecase() }
+                                            },
+                                        fontSize = 14.sp,
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        modifier =
+                                            Modifier.padding(bottom = 8.dp)
+                                                .testTag(ProfileTestTags.SKILLS_LIST)
+                                    )
+                                } else {
+                                    Text(
+                                        text = "No skills selected",
+                                        fontSize = 14.sp,
+                                        color = Color.White.copy(alpha = 0.5f),
+                                        modifier =
+                                            Modifier.padding(bottom = 8.dp)
+                                                .testTag(ProfileTestTags.SKILLS_EMPTY)
+                                    )
+                                }
+                            }
+                        }
+                    )
+                    ProfileDivider()
+
+                    AccordionSection(
+                        title = "My preferences",
+                        isExpanded = expandedPreferences,
+                        onToggle = { expandedPreferences = !expandedPreferences },
+                        modifier = Modifier.testTag(ProfileTestTags.PREFERENCES_SECTION),
+                        content = {
+                            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                                PreferenceOption(
+                                    label = "Money",
+                                    isSelected = uiState.preference == Preference.MONEY,
+                                    onClick = {
+                                        vm.updateUserAttributes(preference = Preference.MONEY)
+                                    },
+                                    testTag = ProfileTestTags.PREF_OPTION_MONEY
+                                )
+                                PreferenceOption(
+                                    label = "Skills",
+                                    isSelected = uiState.preference == Preference.SKILLS,
+                                    onClick = {
+                                        vm.updateUserAttributes(preference = Preference.SKILLS)
+                                    },
+                                    testTag = ProfileTestTags.PREF_OPTION_SKILLS
                                 )
                             }
                         }
-                    }
-                )
-                ProfileDivider()
+                    )
+                }
+            }
 
-                AccordionSection(
-                    title = "My preferences",
-                    isExpanded = expandedPreferences,
-                    onToggle = { expandedPreferences = !expandedPreferences },
-                    modifier = Modifier.testTag(ProfileTestTags.PREFERENCES_SECTION),
-                    content = {
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            PreferenceOption(
-                                label = "Money",
-                                isSelected = uiState.preference == Preference.MONEY,
-                                onClick = {
-                                    vm.updateUserAttributes(preference = Preference.MONEY)
-                                },
-                                testTag = ProfileTestTags.PREF_OPTION_MONEY
-                            )
-                            PreferenceOption(
-                                label = "Skills",
-                                isSelected = uiState.preference == Preference.SKILLS,
-                                onClick = {
-                                    vm.updateUserAttributes(preference = Preference.SKILLS)
-                                },
-                                testTag = ProfileTestTags.PREF_OPTION_SKILLS
-                            )
-                        }
-                    }
+            Spacer(modifier = Modifier.weight(1f))
+
+            Button(
+                onClick = { onLogoutClick() },
+                modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                colors =
+                    ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text(
+                    text = "Logout",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onError
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Button(
-            onClick = { onLogoutClick() },
-            modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-        ) {
-            Text(
-                text = "Logout",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onError
-            )
         }
     }
 }
