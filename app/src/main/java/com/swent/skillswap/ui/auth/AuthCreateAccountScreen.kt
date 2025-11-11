@@ -169,14 +169,12 @@ fun CreateAccountBottomBar(
         SkillSwapShadowButton(
             onClick = {
                 if (
-                    currRoute != CreateAccountRoutes.SKILLS && vm.validateByRoute(currRoute ?: "")
+                    currRoute != CreateAccountRoutes.SKILLS
                 ) {
-                    // Go to next step if validation passes
                     navController.navigate(
                         CreateAccountRoutes.next(currRoute ?: "", isGoogleAccount)
                     )
-                } else if (currRoute == CreateAccountRoutes.SKILLS) {
-                    // Last step — create the account
+                } else {
                     vm.done()
                 }
             },

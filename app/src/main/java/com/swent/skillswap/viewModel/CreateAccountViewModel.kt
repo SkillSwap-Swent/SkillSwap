@@ -110,24 +110,28 @@ class CreateAccountViewModel(
     fun onEmailChange(newEmail: String) {
         _uiState.update { current -> current.copy(email = newEmail) }
         refreshEnabled()
+        refreshError()
     }
 
     /** Updates the username without affecting any error fields. */
     fun onUsernameChange(newUsername: String) {
         _uiState.update { current -> current.copy(username = newUsername) }
         refreshEnabled()
+        refreshError()
     }
 
     /** Updates the password without affecting any error fields. */
     fun onPasswordChange(newPassword: String) {
         _uiState.update { current -> current.copy(password = newPassword) }
         refreshEnabled()
+        refreshError()
     }
 
     /** Updates the confirm password field without affecting any error fields. */
     fun onConfirmPasswordChange(newConfirmPassword: String) {
         _uiState.update { current -> current.copy(confirmPassword = newConfirmPassword) }
         refreshEnabled()
+        refreshError()
     }
 
     /** Adds a single skill to the selected skills set. */
@@ -146,85 +150,113 @@ class CreateAccountViewModel(
      */
     fun clickSkill(skill: SkillTag) {
         if (_uiState.value.skills.contains(skill)) removeSkill(skill) else addSkill(skill)
+        refreshEnabled()
+        refreshError()
     }
 
     // ---------- Validation Section ----------
 
-    // Use shared email validation regex from ValidationConfig
+    // ---------- VALIDATORS (return ok + cause, and can update UI) ----------
     private val emailRegex = ValidationConfig.EMAIL_REGEX
 
-    /** Validates that username is not blank. */
-    private fun validateUsername(): Boolean {
+    private fun validateUsernameResult(): Pair<Boolean, String> {
         val ok = _uiState.value.username.isNotBlank()
-        _uiState.update { it.copy(usernameError = if (ok) "" else "Username cannot be empty") }
-        return ok
+        val cause = if (ok) "" else "Username cannot be empty"
+        return ok to cause
     }
 
-    /** Validates email format (skips if Google account). */
-    private fun validateEmail(): Boolean {
-        if (isGoogleAccount) {
-            _uiState.update { it.copy(emailError = "") }
-            return true
+    private fun validateEmailResult(): Pair<Boolean, String> {
+        if (isGoogleAccount) return true to ""
+        val e = _uiState.value.email
+        val cause = when {
+            e.isBlank() -> "Email cannot be empty"
+            !emailRegex.matches(e) -> "Invalid email format"
+            else -> ""
         }
-        val email = _uiState.value.email
-        val msg =
-            when {
-                email.isBlank() -> "Email cannot be empty"
-                !emailRegex.matches(email) -> "Invalid email format"
-                else -> ""
-            }
-        _uiState.update { it.copy(emailError = msg) }
-        return msg.isEmpty()
+        return (cause.isEmpty()) to cause
     }
 
-    /** Validates password rules and confirmation (skips if Google account). */
-    private fun validatePasswords(): Boolean {
-        if (isGoogleAccount) {
-            _uiState.update { it.copy(passwordError = "", confirmPasswordError = "") }
-            return true
-        }
-
+    /**
+     * Returns (ok, cause). The single 'cause' is the first failing reason.
+     * We'll route it to passwordError or confirmPasswordError below.
+     */
+    private fun validatePasswordsResult(): Pair<Boolean, String> {
+        if (isGoogleAccount) return true to ""
         val pwd = _uiState.value.password
         val confirm = _uiState.value.confirmPassword
 
-        val passwordError =
-            when {
-                pwd.isBlank() -> "Password cannot be empty"
-                pwd.length < 8 -> "Password must be at least 8 characters long"
-                !pwd.any { it.isUpperCase() } ->
-                    "Password must contain at least one uppercase letter"
-                else -> ""
-            }
-
-        val confirmError =
-            when {
-                confirm.isBlank() -> "Please confirm your password"
-                confirm != pwd -> "Passwords do not match"
-                else -> ""
-            }
-
-        _uiState.update {
-            it.copy(passwordError = passwordError, confirmPasswordError = confirmError)
+        val cause = when {
+            pwd.isBlank() -> "Password cannot be empty"
+            pwd.length < 8 -> "Password must be at least 8 characters long"
+            !pwd.any { it.isUpperCase() } -> "Password must contain at least one uppercase letter"
+            confirm.isBlank() -> "Please confirm your password"
+            confirm != pwd -> "Passwords do not match"
+            else -> ""
         }
-
-        return passwordError.isEmpty() && confirmError.isEmpty()
+        return (cause.isEmpty()) to cause
     }
 
-    /** Validates that the user has selected at least one skill. */
-    private fun validateSkills(): Boolean {
+    private fun validateSkillsResult(): Pair<Boolean, String> {
         val ok = _uiState.value.skills.isNotEmpty()
+        val cause = if (ok) "" else "At least one skill must be selected"
+        return ok to cause
+    }
+
+    // ---------- Existing validate* wrappers now use the result + update UI ----------
+    private fun validateUsername(): Boolean {
+        if (_uiState.value.username.isEmpty()) return true
+        val (ok, cause) = validateUsernameResult()
+        _uiState.update { it.copy(usernameError = cause) }
+        return ok
+    }
+
+    private fun validateEmail(): Boolean {
+        if (_uiState.value.email.isEmpty()) return true
+        val (ok, cause) = validateEmailResult()
+        _uiState.update { it.copy(emailError = cause) }
+        return ok
+    }
+
+    private fun validatePasswords(): Boolean {
+        if (_uiState.value.password.isEmpty()) return true
+        val (ok, cause) = validatePasswordsResult()
         _uiState.update {
-            it.copy(skillsError = if (ok) "" else "At least one skill must be selected")
+            it.copy(
+                passwordError = when {
+                    cause.startsWith("Password") -> cause   // password-related cause
+                    cause.isEmpty() -> ""
+                    else -> ""                              // cause belongs to confirm
+                },
+                confirmPasswordError = when {
+                    cause.startsWith("Please confirm") || cause.startsWith("Passwords do not match") -> cause
+                    else -> ""
+                }
+            )
         }
         return ok
     }
 
-    // button enabled?
-    private fun computeEnabledFor(route: String?): Boolean = when (route) {
-        CreateAccountRoutes.USERNAME  -> validateUsername()
-        CreateAccountRoutes.EMAIL     -> if (isGoogleAccount) false else validateEmail()
-        CreateAccountRoutes.PASSWORD  -> if (isGoogleAccount) false else validatePasswords()
-        CreateAccountRoutes.SKILLS    -> validateSkills()
+    private fun validateSkills(): Boolean {
+        if (_uiState.value.skills.isEmpty()) return true
+        val (ok, cause) = validateSkillsResult()
+        _uiState.update { it.copy(skillsError = cause) }
+        return ok
+    }
+
+
+    // ---------- Button enabled? section -----------
+    /**
+     * Determines if the "Next" or "Done" button should be enabled for a given route.
+     * This function uses the `validate*Result()` methods directly, as they provide validation
+     * status without triggering UI state changes (i.e., updating error messages).
+     *
+     * @param route The current route in the creation flow.
+     */
+    fun computeEnabledFor(route: String?): Boolean = when (route) {
+        CreateAccountRoutes.USERNAME  -> validateUsernameResult().first
+        CreateAccountRoutes.EMAIL     -> validateEmailResult().first
+        CreateAccountRoutes.PASSWORD  -> validatePasswordsResult().first
+        CreateAccountRoutes.SKILLS    -> validateSkillsResult().first
         else -> false
     }
 
@@ -240,11 +272,16 @@ class CreateAccountViewModel(
 
     // ---------- Aggregate Validators ----------
 
+    private fun refreshError() {
+        val r = _uiState.value.currentRoute
+        validateByRoute(r)
+    }
+
     /**
      * Runs all validation functions (username, email, password, skills) and returns true only if
      * all are valid.
      */
-    fun validateInputs(): Boolean {
+    private fun validateInputs(): Boolean {
         val results =
             listOf(validateUsername(), validateEmail(), validatePasswords(), validateSkills())
         return results.all { it }
@@ -256,7 +293,7 @@ class CreateAccountViewModel(
      * @param route One of the [CreateAccountRoutes] constants.
      * @return True if the inputs for that step are valid; false otherwise.
      */
-    fun validateByRoute(route: String): Boolean {
+    private fun validateByRoute(route: String): Boolean {
         return when (route) {
             CreateAccountRoutes.USERNAME -> validateUsername()
             CreateAccountRoutes.EMAIL -> validateEmail()
