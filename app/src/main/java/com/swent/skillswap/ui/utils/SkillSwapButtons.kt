@@ -125,13 +125,6 @@ fun SkillSwapShadowButton(
     ElevatedButton(
         enabled = enable,
         onClick = onClick,
-        border =
-            if (!enable)
-                BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline.copy(stroke_disable_button_alpha)
-                )
-            else null,
         shape = shape,
         modifier = modifier
     ) {
