@@ -163,7 +163,8 @@ fun SkillSwapPasswordTextField(
                     MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
                 disabledContainerColor =
                     MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
-                errorContainerColor = MaterialTheme.colorScheme.errorContainer.copy(container_field_alpha),
+                errorContainerColor =
+                    MaterialTheme.colorScheme.errorContainer.copy(container_field_alpha),
                 focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 errorTextColor = MaterialTheme.colorScheme.error,

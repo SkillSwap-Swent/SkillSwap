@@ -95,12 +95,7 @@ fun AuthMainScreen(
     val uiState by vm.uiState.collectAsState()
     // Scaffold gives a top-level layout structure (with padding, backgrounds, etc.)
     Scaffold { padding ->
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .fillMaxSize()
-                    .verticalScroll(scroll)
-        ) {
+        Column(modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(scroll)) {
             // ----- App logo -----
             Spacer(modifier = Modifier.height(50.dp))
             Image(
@@ -164,11 +159,7 @@ fun AuthMainScreen(
                 onClick = goToPasswordRecovery,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text(
-                    text = "Forgot Password?",
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center
-                )
+                Text(text = "Forgot Password?", fontSize = 14.sp, textAlign = TextAlign.Center)
             }
             Spacer(modifier = Modifier.height(50.dp))
             // ------------------------------------------------------------
