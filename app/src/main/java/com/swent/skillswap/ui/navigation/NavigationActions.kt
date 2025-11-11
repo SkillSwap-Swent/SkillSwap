@@ -46,7 +46,7 @@ open class NavigationActions(
         if (screen.isTopLevelDestination) {
             navOptionsBuilder.setPopUpTo(
                 navController.graph.findStartDestination().id,
-                inclusive = true,
+                inclusive = false,
                 saveState = true
             )
         }
