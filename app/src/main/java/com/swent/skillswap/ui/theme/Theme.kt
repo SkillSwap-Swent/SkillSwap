@@ -28,12 +28,6 @@ fun SkillSwapAppTheme(content: @Composable () -> Unit) {
             surface = colorResource(id = R.color.md_theme_surface),
             onSurface = colorResource(id = R.color.md_theme_onSurface)
         )
-    val view = LocalView.current
-    SideEffect {
-        val window = (view.context as Activity).window
-        window.statusBarColor = appColorScheme.primary.toArgb()
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
-    }
 
     MaterialTheme(colorScheme = appColorScheme, typography = Typography, content = content)
 }
