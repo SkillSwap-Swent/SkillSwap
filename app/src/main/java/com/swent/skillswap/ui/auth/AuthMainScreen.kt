@@ -18,7 +18,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -31,8 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
-import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 import com.swent.skillswap.ui.utils.SkillSwapTextField
@@ -115,10 +112,7 @@ fun AuthMainScreen(
                 label = "Email",
                 placeholder = "your.email@gmail.com",
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = "Email Icon"
-                    )
+                    Icon(imageVector = Icons.Outlined.Person, contentDescription = "Email Icon")
                 },
                 keyboardOptions =
                     KeyboardOptions(
@@ -187,10 +181,7 @@ fun AuthMainScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        "Sign up with Google",
-                        fontSize = 14.sp
-                    )
+                    Text("Sign up with Google", fontSize = 14.sp)
                 }
             }
 
@@ -213,10 +204,7 @@ fun AuthMainScreen(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        "Sign up with email",
-                        fontSize = 14.sp
-                    )
+                    Text("Sign up with email", fontSize = 14.sp)
                 }
             }
         }
