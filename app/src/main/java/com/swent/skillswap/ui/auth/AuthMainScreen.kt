@@ -7,17 +7,32 @@ package com.swent.skillswap.ui.auth
 // ----- Imports -----
 import android.app.Activity
 import android.content.Context
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -45,10 +60,6 @@ object SignInTags {
     const val PASSWORD_FIELD = "PASSWORD_FIELD"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
 }
-
-// ----- Default styles for Sign-In buttons -----
-val signInButtonColor = ButtonColors(Color.Transparent, Color.White, Color.White, Color.Black)
-val signInButtonStroke = BorderStroke(1.dp, Color.White)
 
 /**
  * Main Sign-In screen of the app.
@@ -87,7 +98,6 @@ fun AuthMainScreen(
         Column(
             modifier =
                 Modifier.padding(padding)
-                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
                     .verticalScroll(scroll)
         ) {
@@ -156,7 +166,6 @@ fun AuthMainScreen(
             ) {
                 Text(
                     text = "Forgot Password?",
-                    color = Color.White,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center
                 )
