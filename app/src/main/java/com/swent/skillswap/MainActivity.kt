@@ -27,6 +27,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.swent.skillswap.model.offer.ChatRepository
+import com.swent.skillswap.model.offer.FeedControllerFactory
+import com.swent.skillswap.model.offer.RecommendationEngine
+import com.swent.skillswap.model.offer.ThumbnailRepository
+import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
@@ -36,6 +44,8 @@ import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
+import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
@@ -44,6 +54,7 @@ import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.viewModel.ProfileViewModel
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,6 +104,20 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val bottomBarViewModel = remember { BottomBarViewModel() }
 
     val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
+
+    val controller = remember {
+        runBlocking {
+            FeedControllerFactory(
+                recommendationEngine = RecommendationEngine(),
+                thumbnailRepository = ThumbnailRepository(),
+                postRepository = PostFirestoreRepository(Firebase.firestore),
+                chatRepository = ChatRepository()
+            ).create(
+                userIdPerformingActions = "user123",
+                feedType = PostType.REQUEST
+            )
+        }
+    }
 
     if (isTopLevel) {
         BackHandler { activity?.finish() }
@@ -170,7 +195,15 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Offers.route) { FeedScreen() }
+            composable(Screen.Offers.route) { FeedScreen(
+                vm = FeedScreenViewModel(
+                    navigation = { uid ->
+                        navController.navigate("profile/$uid")
+                    },
+                    controller = controller
+                )
+            )
+            }
 
             composable(Screen.Chat.route) {
                 ChatListScreen(

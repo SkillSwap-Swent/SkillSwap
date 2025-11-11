@@ -43,7 +43,7 @@ fun FeedScreen(
     vm: FeedScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
-    val offer = uiState.current
+    val offer = uiState
     var showMenu by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
@@ -81,8 +81,8 @@ fun FeedScreen(
                             detectDragGestures { _, dragAmount ->
                                 val (x, y) = dragAmount
                                 when {
-                                    y > swipeThreshold -> vm.next() // swipe down
-                                    y < -swipeThreshold -> vm.previous() // swipe up
+                                    y > swipeThreshold -> vm.skip() // swipe down
+                                    // y < -swipeThreshold -> vm.previous() // swipe up
                                     x < -swipeThreshold ->
                                         vm.goToProfile(offer.authorID) // swipe left
                                     x > swipeThreshold -> vm.accept(offer) // swipe right
