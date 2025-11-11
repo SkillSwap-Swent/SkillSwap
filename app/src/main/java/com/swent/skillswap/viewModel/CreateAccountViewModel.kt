@@ -50,7 +50,9 @@ data class CreateAccountUIState(
     val usernameError: String = "",
     val passwordError: String = "",
     val confirmPasswordError: String = "",
-    val skillsError: String = ""
+    val skillsError: String = "",
+    val buttonEnabled: Boolean = false,
+    val currentRoute: String = CreateAccountRoutes.USERNAME
 )
 
 /**
@@ -107,21 +109,25 @@ class CreateAccountViewModel(
     /** Updates the email without affecting any error fields. */
     fun onEmailChange(newEmail: String) {
         _uiState.update { current -> current.copy(email = newEmail) }
+        refreshEnabled()
     }
 
     /** Updates the username without affecting any error fields. */
     fun onUsernameChange(newUsername: String) {
         _uiState.update { current -> current.copy(username = newUsername) }
+        refreshEnabled()
     }
 
     /** Updates the password without affecting any error fields. */
     fun onPasswordChange(newPassword: String) {
         _uiState.update { current -> current.copy(password = newPassword) }
+        refreshEnabled()
     }
 
     /** Updates the confirm password field without affecting any error fields. */
     fun onConfirmPasswordChange(newConfirmPassword: String) {
         _uiState.update { current -> current.copy(confirmPassword = newConfirmPassword) }
+        refreshEnabled()
     }
 
     /** Adds a single skill to the selected skills set. */
@@ -211,6 +217,25 @@ class CreateAccountViewModel(
             it.copy(skillsError = if (ok) "" else "At least one skill must be selected")
         }
         return ok
+    }
+
+    // button enabled?
+    private fun computeEnabledFor(route: String?): Boolean = when (route) {
+        CreateAccountRoutes.USERNAME  -> validateUsername()
+        CreateAccountRoutes.EMAIL     -> if (isGoogleAccount) false else validateEmail()
+        CreateAccountRoutes.PASSWORD  -> if (isGoogleAccount) false else validatePasswords()
+        CreateAccountRoutes.SKILLS    -> validateSkills()
+        else -> false
+    }
+
+    private fun refreshEnabled() {
+        val r = _uiState.value.currentRoute
+        _uiState.update { it.copy(buttonEnabled = computeEnabledFor(r)) }
+    }
+
+    fun onRouteChanged(route: String?) {
+        _uiState.update { it.copy(currentRoute = route ?: CreateAccountRoutes.USERNAME) }
+        refreshEnabled()
     }
 
     // ---------- Aggregate Validators ----------

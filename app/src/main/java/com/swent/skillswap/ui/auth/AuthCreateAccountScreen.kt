@@ -12,6 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -124,6 +126,9 @@ fun AuthCreateAccountScreen(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
+    LaunchedEffect(route) {
+        vm.onRouteChanged(route)
+    }
 
     // Scaffold provides consistent layout (top/bottom bars)
     Scaffold(
@@ -158,7 +163,7 @@ fun CreateAccountBottomBar(
     currRoute: String?,
     navController: NavController,
     isGoogleAccount: Boolean,
-    vm: CreateAccountViewModel
+    vm: CreateAccountViewModel,
 ) {
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.12f)) {
         SkillSwapShadowButton(
@@ -175,12 +180,18 @@ fun CreateAccountBottomBar(
                     vm.done()
                 }
             },
+            enable = vm.uiState.collectAsState().value.buttonEnabled,
             modifier =
                 Modifier.align(Alignment.TopCenter)
                     .testTag(CreateAccountTags.NEXT_BUTTON)
                     .fillMaxWidth(0.4f)
+                    .height(55.dp)
         ) {
-            Text(text = "Next", fontSize = 24.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.AutoMirrored.Filled.NavigateNext, contentDescription = "Next")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Next", fontSize = 24.sp)
+            }
         }
     }
 }
