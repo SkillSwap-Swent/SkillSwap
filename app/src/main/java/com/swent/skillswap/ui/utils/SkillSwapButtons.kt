@@ -117,7 +117,7 @@ fun SkillSwapShadowButton(
     enable: Boolean = true,
     modifier: Modifier = Modifier,
     shape: Shape = pill_shape,
-    contentColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     disableContentColor: Color =
         MaterialTheme.colorScheme.onSurface.copy(text_disable_button_alpha),
     content: @Composable (RowScope.() -> Unit) = { Text(text = "test         test") },
@@ -127,7 +127,7 @@ fun SkillSwapShadowButton(
         onClick = onClick,
         colors =
             ButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface.copy(container_field_alpha),
+                containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = contentColor,
                 disabledContainerColor =
                     MaterialTheme.colorScheme.onSurface.copy(container_disable_button_alpha),
