@@ -89,8 +89,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
-    val editProfileViewModel = remember { EditUserViewModel() }
-    val bottomBarViewModel = remember { BottomBarViewModel() }
+    val editProfileViewModel: EditUserViewModel = viewModel()
+    val bottomBarViewModel: BottomBarViewModel = viewModel()
 
     val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
 

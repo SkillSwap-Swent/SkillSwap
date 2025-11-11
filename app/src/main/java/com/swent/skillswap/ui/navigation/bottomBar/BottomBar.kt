@@ -66,7 +66,7 @@ fun BottomBar(
     onOfferClick: () -> Unit = {},
     onChatClick: () -> Unit = {},
 ) {
-    val state by vm.uiState.collectAsState(initial = BottomBarUiState())
+    val state by vm.uiState.collectAsState()
 
     // Collect one-time navigation events and delegate to the appropriate lambda
     LaunchedEffect(Unit) {
