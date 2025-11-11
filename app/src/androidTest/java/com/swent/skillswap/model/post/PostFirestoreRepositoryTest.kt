@@ -17,7 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class PostRepositoryInstrumentedTest {
+class PostFirestoreRepositoryTest {
 
     private lateinit var repo: PostRepository
 
@@ -96,7 +96,9 @@ class PostRepositoryInstrumentedTest {
         val badId: String = repo.getNewUid(PostType.REQUEST)
         val badTitle: Request = request1.copy(uid = badId, title = "")
 
-        assertThrows(IllegalArgumentException::class.java) { runTest { repo.addPost(badTitle) } }
+        val exception =
+            assertThrows(RepositoryException::class.java) { runTest { repo.addPost(badTitle) } }
+        assertEquals("Post fields are invalid", exception.cause?.message)
     }
 
     @Test
@@ -107,7 +109,9 @@ class PostRepositoryInstrumentedTest {
             repo.addPost(original)
             val bad: Request = original.copy(title = "")
 
-            assertThrows(IllegalStateException::class.java) { runTest { repo.editPost(id, bad) } }
+            val exception =
+                assertThrows(RepositoryException::class.java) { runTest { repo.editPost(id, bad) } }
+            assertEquals("Post fields are invalid", exception.cause?.message)
         }
     }
 
@@ -143,9 +147,12 @@ class PostRepositoryInstrumentedTest {
 
             repo.deletePost(PostType.REQUEST, id)
 
-            assertThrows(IllegalStateException::class.java) {
-                runTest { repo.getPost(PostType.REQUEST, id) }
-            }
+            val exception =
+                assertThrows(RepositoryException::class.java) {
+                    runTest { repo.getPost(PostType.REQUEST, id) }
+                }
+
+            assertTrue(exception.cause is IllegalStateException)
         }
     }
 
@@ -324,9 +331,11 @@ class PostRepositoryInstrumentedTest {
             val req = request1.copy(uid = id)
             repo.addPost(req)
 
-            assertThrows(IllegalStateException::class.java) {
-                runTest { repo.getPost(PostType.OFFER, id) }
-            }
+            val exception =
+                assertThrows(RepositoryException::class.java) {
+                    runTest { repo.getPost(PostType.OFFER, id) }
+                }
+            assertTrue(exception.cause is IllegalStateException)
         }
     }
 
