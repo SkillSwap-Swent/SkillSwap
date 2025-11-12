@@ -96,19 +96,19 @@ class AuthClassicTest : TestCase() {
                         goToCreateAccountScreen = {
                             navigationActions.navigateTo(Screen.CreateAccount)
                         },
-                        goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Feed) },
                         vm = vmSignIn
                     )
                 }
                 composable(Screen.CreateAccount.route) {
                     // Classic flow (isGoogleAccount = false)
                     AuthCreateAccountScreen(
-                        goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Feed) },
                         googleAccount = false,
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Offers.route) { FeedScreen() }
+                composable(Screen.Feed.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatListScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
