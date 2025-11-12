@@ -102,6 +102,7 @@ class SkillsEditScreenTest : TestCase() {
         repo.addUser(userToAdd)
 
         viewModel = EditUserViewModel(repo)
+        viewModel.loadCurrentUser()
     }
 
     private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 10_000) {
