@@ -136,7 +136,7 @@ fun AuthCreateAccountScreen(
             // Navigation between form steps
             NavHost(
                 navController = navController,
-                startDestination = CreateAccountRoutes.SKILLS,
+                startDestination = CreateAccountRoutes.USERNAME,
             ) {
                 // Step 1: Username entry screen
                 composable(CreateAccountRoutes.USERNAME) { UsernameScreen(vm) }
