@@ -10,14 +10,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
-import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
-import junit.framework.TestCase.assertNotNull
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -26,9 +22,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
-/**
- * End-to-end tests for Milestone 2 Tests complete user flows
- */
+/** End-to-end tests for Milestone 2 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) // Be careful, tests order matters !
 class End2EndM2 {
