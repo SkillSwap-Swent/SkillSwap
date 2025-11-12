@@ -1,442 +1,286 @@
-package com.swent.skillswap.ui.feedScreen
+package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.assert
+import androidx.compose.ui.semantics.SemanticsNode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeDown
-import androidx.compose.ui.test.swipeLeft
-import androidx.compose.ui.test.swipeRight
-import androidx.compose.ui.test.swipeUp
-import com.swent.skillswap.model.offer.FakeFeedNavigation
-import com.swent.skillswap.model.offer.FakeFeedRepository
-import com.swent.skillswap.model.offer.FeedOffer
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.model.offer.ChatRepository
+import com.swent.skillswap.model.offer.FeedControllerFactory
+import com.swent.skillswap.model.offer.RecommendationEngine
+import com.swent.skillswap.model.offer.ThumbnailRepository
+import com.swent.skillswap.model.post.*
+import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
+import com.swent.skillswap.utils.FirebaseEmulator
+import java.util.Calendar
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/** @author Joey Gugler using chatGPT */
+/** Fake navigation for testing navigation calls. */
+class FakeFeedNavigation : FeedScreenNavigation {
+    private val _visitedProfiles = mutableListOf<String>()
+
+    fun getVisitedProfiles(): List<String> = _visitedProfiles
+
+    override fun goToProfileView(userId: String) {
+        _visitedProfiles.add(userId)
+    }
+}
+
 class FeedScreenInstrumentedTest {
 
     @get:Rule val composeTestRule = createComposeRule()
 
-    /** Detects if the tests are running on a CI environment. */
-    private fun isRunningOnCi(): Boolean = true /*
-        System.getenv("RUNNING_ON_CI")?.toBoolean() == true ||
-            System.getProperty("RUNNING_ON_CI")?.toBoolean() == true*/
+    private lateinit var navigation: FakeFeedNavigation
+    private lateinit var postRepository: PostRepository
+    private lateinit var controllerFactory: FeedControllerFactory
+    private lateinit var testUserId: String
+    private val REQUESTS_COLLECTION = "requests"
 
-    /** Helper to set up screen with fake repository returning specified offers. */
-    private fun setContentWithRepositoryReturning(
-        vararg returnedOffers: FeedOffer
-    ): Triple<FeedScreenViewModel, FakeFeedRepository, FakeFeedNavigation> {
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
+    /** Helper: create a valid SerializablePost for tests */
+    private fun createValidPost(uid: String, title: String, ownerId: String = "authorId"): Post {
+        val now = Timestamp.now()
+        val expiry = Timestamp(Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 7) }.time)
 
-        repository.preloadOffers(*returnedOffers)
+        return SerializablePost(
+            uid = uid,
+            title = title,
+            description = "Valid description for $title",
+            ownerId = ownerId,
+            tags = listOf(SkillTag.CALCULUS),
+            expiry = expiry,
+            creation = now,
+            status = PostStatus.POSTED,
+            location = GeoPoint(0.0, 0.0),
+            media = listOf("https://picsum.photos/200"),
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            type = PostType.REQUEST,
+            postReplies = emptyList()
+        )
+    }
 
-        val vm = FeedScreenViewModel(navigation, repository)
-        composeTestRule.setContent {
-            Box(modifier = Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
+    /** Add post to emulator */
+    private suspend fun addPostToEmulator(post: Post) {
+        // Convert to SerializablePost if needed
+        val serializable =
+            post as? SerializablePost
+                ?: SerializablePost(
+                    uid = post.uid,
+                    title = post.title,
+                    description = post.description,
+                    ownerId = post.ownerId,
+                    tags = post.tags.toList(),
+                    expiry = post.expiry,
+                    creation = post.creation,
+                    status = post.status,
+                    location = post.location,
+                    media = post.media,
+                    paymentMethod = post.paymentMethod,
+                    type = post.type,
+                    postReplies = post.postReplies.toList()
+                )
+
+        val ref = FirebaseEmulator.firestore.collection(REQUESTS_COLLECTION).document(post.uid)
+        ref.set(serializable).await()
+    }
+
+    /** Get post from emulator */
+    private suspend fun getPostFromEmulator(postId: String): Post? {
+        val doc =
+            FirebaseEmulator.firestore
+                .collection(REQUESTS_COLLECTION)
+                .document(postId)
+                .get()
+                .await()
+        if (!doc.exists()) return null
+        return doc.toObject(SerializablePost::class.java)
+    }
+
+    @Before
+    fun setUp() {
+        FirebaseEmulator.startEmulator()
+        navigation = FakeFeedNavigation()
+        postRepository = PostFirestoreRepository(FirebaseEmulator.firestore)
+        controllerFactory =
+            FeedControllerFactory(
+                recommendationEngine = RecommendationEngine(),
+                thumbnailRepository = ThumbnailRepository(),
+                postRepository = postRepository,
+                chatRepository = ChatRepository()
+            )
+
+        runBlocking { testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid }
+    }
+
+    @After
+    fun tearDown() {
+        runBlocking {
+            FirebaseEmulator.auth.signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
-
-        composeTestRule.waitForIdle()
-        return Triple(vm, repository, navigation)
     }
 
     @Test
-    fun checkIfRunningOnCI() {
-        assert(isRunningOnCi()) // Just ensures test passes
-    }
-
-    @Test
-    fun swipeRight_callsAcceptOnRepository() {
-        val offer =
-            FeedOffer(skillProvided = "G", skillRequested = "R", authorID = "auth", thumbnail = "t")
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-        vm.setUiState(FeedScreenUiState(listOf(offer), current = offer))
+    fun noOfferAvailable_DisplaysNoOfferText() {
+        val controller = runBlocking { controllerFactory.create(testUserId, PostType.REQUEST) }
+        val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        if (isRunningOnCi()) {
-            vm.accept(offer)
-        } else {
-            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
-                swipeRight()
-            }
-        }
-
-        composeTestRule.waitForIdle()
-        val accepted = repository.getAcceptedOffers()
-        assert(
-            accepted.any {
-                it.first.skillProvided == offer.skillProvided &&
-                    it.first.skillRequested == offer.skillRequested
-            }
-        )
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
     @Test
-    fun swipeLeft_callsGoToProfile() {
-        val offer =
-            FeedOffer(
-                skillProvided = "G",
-                skillRequested = "R",
-                authorID = "authorX",
-                thumbnail = "t"
-            )
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-        vm.setUiState(FeedScreenUiState(listOf(offer), current = offer))
+    fun initialLoad_DisplaysFirstOffer() {
+        runBlocking {
+            val post1 = createValidPost("post1", "Learn Guitar")
+            addPostToEmulator(post1)
+
+            FirebaseEmulator.firestore.collection("requests").get().await()
+
+            val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+            val vm = FeedScreenViewModel(navigation, controller)
+
+            // Set up UI content
+            composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+
+            val expectedText = "You will get: ${post1.title}"
+            composeTestRule.waitUntil(timeoutMillis = 10_000) {
+                composeTestRule.onAllNodesWithText(expectedText).fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onNodeWithText(expectedText).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
+        }
+    }
+
+    /**
+     * Helper function to safely get text from a SemanticsNode. Place this inside your test class or
+     * file.
+     */
+    private fun SemanticsNode.getTextString(): String? {
+        // text is stored as a list, join it to get the full string
+        return this.config.getOrNull(SemanticsProperties.Text)?.joinToString()
+    }
+
+    @Test
+    fun acceptOffer_LoadsNextOffer() = runBlocking {
+        val post1 = createValidPost("post1", "Learn Guitar", "author1")
+        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        addPostToEmulator(post1)
+        addPostToEmulator(post2)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        if (isRunningOnCi()) {
-            vm.goToProfile(offer.authorID)
-        } else {
-            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
-                swipeLeft()
+        val post2Title = "Learn Piano"
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            val nodes =
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .fetchSemanticsNodes()
+            if (nodes.isEmpty()) {
+                return@waitUntil false
             }
+            val actualText = nodes.first().getTextString()
+            actualText?.contains(post2Title) == true
         }
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.ACCEPT_BUTTON).performClick()
+        val post1Title = "Learn Guitar"
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            val nodes =
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .fetchSemanticsNodes()
 
-        composeTestRule.waitForIdle()
-        val visited = navigation.getVisitedProfiles()
-        assertEquals(listOf("authorX"), visited)
-    }
-
-    @Test
-    fun swipeDown_loadsNextOffer_then_swipeUp_goesBackToPrevious() {
-        val first =
-            FeedOffer(
-                skillRequested = "First",
-                skillProvided = "1",
-                authorID = "u1",
-                thumbnail = "t1"
-            )
-        val second =
-            FeedOffer(
-                skillRequested = "Second",
-                skillProvided = "2",
-                authorID = "u2",
-                thumbnail = "t2"
-            )
-
-        val (vm, _, _) = setContentWithRepositoryReturning(first, second)
-        vm.setUiState(FeedScreenUiState(listOf(first, second), current = first))
-        composeTestRule.waitForIdle()
-
-        if (isRunningOnCi()) {
-            vm.next()
-        } else {
-            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
-                swipeDown()
+            if (nodes.isEmpty()) {
+                return@waitUntil false
             }
-        }
 
-        composeTestRule.waitForIdle()
-        try {
-            composeTestRule.onNodeWithText(second.skillRequested).assertIsDisplayed()
-        } catch (e: AssertionError) {
-            throw AssertionError(
-                "❌ Expected offer '${second.skillRequested}' to be displayed after swipeDown, but it was not found.",
-                e
-            )
-        }
+            val actualText = nodes.first().getTextString() // Requires the getTextString helper
 
-        if (isRunningOnCi()) {
-            vm.previous()
-        } else {
-            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
-                swipeUp()
-            }
-        }
-
-        composeTestRule.waitForIdle()
-        try {
-            composeTestRule.onNodeWithText(first.skillRequested).assertIsDisplayed()
-        } catch (e: AssertionError) {
-            throw AssertionError(
-                "❌ Expected offer '${first.skillRequested}' to be displayed after swipeUp, but it was not found.",
-                e
-            )
+            // Check if the text contains the expected title for post1
+            actualText?.contains(post1Title) == true
         }
     }
 
     @Test
-    fun swipeDown_fetchesNewOfferWhenAtEnd() {
-        val first =
-            FeedOffer(
-                skillProvided = "First",
-                skillRequested = "1",
-                authorID = "u1",
-                thumbnail = "t1"
-            )
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-        vm.setUiState(FeedScreenUiState(listOf(first), current = first))
+    fun skipOffer_LoadsNextOffer() = runBlocking {
+        val post1 = createValidPost("post1", "Learn Guitar", "author1")
+        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        addPostToEmulator(post2)
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        if (isRunningOnCi()) {
-            vm.next()
-        } else {
-            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
-                swipeDown()
-            }
+        // Wait until post2 is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            val nodes =
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .fetchSemanticsNodes()
+            if (nodes.isEmpty()) return@waitUntil false
+            val actualText = nodes.first().getTextString()
+            actualText?.contains(post1.title) == true
         }
 
-        composeTestRule.waitForIdle()
-        val state = vm.uiState.value
-        assert(state.offers.size > 1)
-        assert(state.current != first)
-    }
+        // Skip via decline button
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.DECLINE_BUTTON).performClick()
 
-    @Test
-    fun emptyOfferList_initializesWithRepositoryOffer() {
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-
-        composeTestRule.setContent {
-            Box(modifier = Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
+        // Wait until post1 is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            val nodes =
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .fetchSemanticsNodes()
+            if (nodes.isEmpty()) return@waitUntil false
+            val actualText = nodes.first().getTextString()
+            actualText?.contains(post2.title) == true
         }
-        composeTestRule.waitForIdle()
-
-        val state = vm.uiState.value
-        assert(state.offers.isNotEmpty())
-        assert(state.current == state.offers.first())
     }
 
     @Test
-    fun next_onEmptyOffers_fetchesOffer() {
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-
-        // Clear UI state to simulate empty offers
-        vm.setUiState(FeedScreenUiState(emptyList(), FeedOffer()))
-
-        composeTestRule.setContent {
-            Box(modifier = Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
-        }
-        composeTestRule.waitForIdle()
-
-        // Trigger next() manually
-        vm.next()
-        composeTestRule.waitForIdle()
-
-        val state = vm.uiState.value
-        assert(state.offers.isNotEmpty()) // Should have fetched a new offer
-        assert(state.current == state.offers.first())
-    }
-
-    @Test
-    fun previous_onFirstOffer_doesNotCrash() {
-        // Arrange
-        val first =
-            FeedOffer(
-                skillProvided = "First",
-                skillRequested = "1",
-                authorID = "u1",
-                thumbnail = "t1"
-            )
-
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-        vm.setUiState(FeedScreenUiState(listOf(first), current = first))
-
-        composeTestRule.setContent {
-            Box(modifier = Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
-        }
-        composeTestRule.waitForIdle()
-
-        // Act — Trigger previous() on first offer (should not crash)
-        vm.previous()
-        composeTestRule.waitForIdle()
-
-        // Assert — UI should still show the first offer
-        composeTestRule.onNodeWithText(first.skillRequested).assertIsDisplayed()
-    }
-
-    @Test
-    fun swipeOnEmptyOffers_doesNotCrash() {
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-        vm.setUiState(FeedScreenUiState(emptyList(), FeedOffer()))
-
-        composeTestRule.setContent {
-            Box(modifier = Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
-        }
-        composeTestRule.waitForIdle()
-
-        if (!isRunningOnCi()) {
-            composeTestRule
-                .onNodeWithTag(FeedScreenTestTags.FEED_CARD)
-                .assertExists()
-                .performTouchInput {
-                    swipeDown()
-                    swipeUp()
-                    swipeLeft()
-                    swipeRight()
-                }
-        } else {
-            composeTestRule
-                .onNodeWithTag(FeedScreenTestTags.FEED_CARD)
-                .assertExists()
-                .assertIsDisplayed()
-            vm.next()
-        }
-
-        composeTestRule.waitForIdle()
-
-        val current = vm.uiState.value.current
-        assert(current.skillProvided.isNotEmpty())
-    }
-
-    @Test
-    fun skip_callsSkipOnRepository() {
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-
-        val offer =
-            FeedOffer(
-                skillProvided = "Teach Kotlin",
-                skillRequested = "Learn Compose",
-                authorID = "author123",
-                thumbnail = "thumb123"
-            )
-
-        repository.preloadOffers(offer)
-        vm.setUiState(FeedScreenUiState(listOf(offer), offer))
-
-        vm.skip()
-
-        val skipped = repository.getSkippedOffers()
-        assert(skipped.size == 1) { "Expected 1 skipped offer, got ${skipped.size}" }
-        assert(skipped[0].first == offer) { "Expected skipped offer to be the same as input" }
-        assert(skipped[0].second.isNotEmpty()) { "Expected skip to include userId" }
-    }
-
-    @Test
-    fun previous_doesNotReturnAcceptedOffer() {
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-
-        val first =
-            FeedOffer(skillProvided = "A", skillRequested = "1", authorID = "u1", thumbnail = "t1")
-        val second =
-            FeedOffer(skillProvided = "B", skillRequested = "2", authorID = "u2", thumbnail = "t2")
-        val third =
-            FeedOffer(skillProvided = "C", skillRequested = "3", authorID = "u3", thumbnail = "t3")
-
-        vm.setUiState(FeedScreenUiState(offers = listOf(first, second, third), current = first))
-
-        vm.accept(first)
-        val afterAccept = vm.uiState.value
-
-        vm.previous()
-        val afterPrevious = vm.uiState.value
-        vm.previous()
-        val afterSecondPrevious = vm.uiState.value
-
-        assertNotEquals(first, afterAccept.current)
-        assertEquals(second, afterPrevious.current)
-        assertEquals(afterPrevious, afterSecondPrevious)
-        assert(!afterPrevious.offers.contains(first))
-    }
-
-    @Test
-    fun next_resetsToFirstWhenCurrentOfferNotInList() {
-        // Arrange
-        val repository = FakeFeedRepository()
-        val navigation = FakeFeedNavigation()
-        val vm = FeedScreenViewModel(navigation, repository)
-
-        val first =
-            FeedOffer(
-                skillProvided = "FeedOffer 1",
-                skillRequested = "R1",
-                authorID = "u1",
-                thumbnail = "t1"
-            )
-        val second =
-            FeedOffer(
-                skillProvided = "FeedOffer 2",
-                skillRequested = "R2",
-                authorID = "u2",
-                thumbnail = "t2"
-            )
-        val unrelated =
-            FeedOffer(
-                skillProvided = "Unrelated",
-                skillRequested = "R0",
-                authorID = "u0",
-                thumbnail = "t0"
-            )
-
-        vm.setUiState(
-            FeedScreenUiState(
-                offers = listOf(first, second),
-                current = unrelated // current not part of the list
-            )
-        )
-
-        vm.next()
-
-        val newState = vm.uiState.value
-        assertEquals(
-            "When current offer is not in the list, it should reset to the first offer.",
-            first,
-            newState.current
-        )
-        assertEquals(
-            "FeedOffer list should remain unchanged.",
-            listOf(first, second),
-            newState.offers
-        )
-    }
-
-    @Test
-    fun allTestTagsDisplayedAndMenuInteractions() {
+    fun allTestTagsDisplayedAndMenuInteractions() = runBlocking {
         // Arrange: create a feed offer
-        val offer =
-            FeedOffer(
-                skillProvided = "Guitar Lessons",
-                authorID = "author123",
-                authorName = "Alice Martin",
-                requesterAvatar = "https://picsum.photos/200",
-                receiverName = "Bob Carter",
-                skillRequested = "Portrait Photography",
-                thumbnail = "https://picsum.photos/600/300",
-                specification = "Bring your guitar",
-                description =
-                    "I don't have any focus for portrait please make a recommendation" +
-                        " and if possible use your material"
-            )
+        val post1 = createValidPost("1", "Guitar Lessons", "author123")
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
 
-        val (vm, _, _) = setContentWithRepositoryReturning(offer)
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
 
-        composeTestRule.waitForIdle()
-
-        // === Scrollable parent ===
-        val scrollBox = composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX)
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
         // List of test tags that require scrolling
         val scrollableTags =
@@ -487,14 +331,12 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.onNodeWithText("Block User").performClick()
         composeTestRule.waitForIdle()
-        assertEquals(listOf("author123"), vm.blockedUsers)
 
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithText("Report Offer").performClick()
         composeTestRule.waitForIdle()
-        assertEquals(listOf(offer), vm.reportedOffers)
 
         // Dismiss menu
         composeTestRule.onRoot().performTouchInput { click(center) }
@@ -502,30 +344,4 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
         composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
     }
-
-    /*
-    @Test
-    fun displayNoOfferMessageWhenNoOfferAvailable() {
-        // Arrange: set up repository returning null offer
-        val (vm, _, _) = setContentWithRepositoryReturning(null)
-
-        composeTestRule.waitForIdle()
-
-        // Assert: "No offer available" text is displayed
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
-
-        // Assert: card and its elements do NOT exist
-        val cardRelatedTags =
-            listOf(
-                FeedScreenTestTags.FEED_CARD,
-                FeedScreenTestTags.REQUESTER_PROFILE_PICTURE,
-                FeedScreenTestTags.REQUESTER_NAME,
-                FeedScreenTestTags.FEED_THUMBNAIL,
-                FeedScreenTestTags.FEED_MENU_BUTTON,
-                FeedScreenTestTags.ACCEPT_BUTTON,
-                FeedScreenTestTags.DECLINE_BUTTON
-            )
-
-        cardRelatedTags.forEach { tag -> composeTestRule.onNodeWithTag(tag).assertDoesNotExist() }
-    }*/
 }

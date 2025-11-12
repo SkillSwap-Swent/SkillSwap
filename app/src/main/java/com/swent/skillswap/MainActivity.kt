@@ -44,7 +44,6 @@ import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
-import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
 import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
@@ -108,14 +107,12 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val controller = remember {
         runBlocking {
             FeedControllerFactory(
-                recommendationEngine = RecommendationEngine(),
-                thumbnailRepository = ThumbnailRepository(),
-                postRepository = PostFirestoreRepository(Firebase.firestore),
-                chatRepository = ChatRepository()
-            ).create(
-                userIdPerformingActions = "user123",
-                feedType = PostType.REQUEST
-            )
+                    recommendationEngine = RecommendationEngine(),
+                    thumbnailRepository = ThumbnailRepository(),
+                    postRepository = PostFirestoreRepository(Firebase.firestore),
+                    chatRepository = ChatRepository()
+                )
+                .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
         }
     }
 
@@ -195,14 +192,14 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Offers.route) { FeedScreen(
-                vm = FeedScreenViewModel(
-                    navigation = { uid ->
-                        navController.navigate("profile/$uid")
-                    },
-                    controller = controller
+            composable(Screen.Offers.route) {
+                FeedScreen(
+                    vm =
+                        FeedScreenViewModel(
+                            navigation = { uid -> navController.navigate("profile/$uid") },
+                            controller = controller
+                        )
                 )
-            )
             }
 
             composable(Screen.Chat.route) {

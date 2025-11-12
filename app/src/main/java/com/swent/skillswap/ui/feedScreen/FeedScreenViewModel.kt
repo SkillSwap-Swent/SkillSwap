@@ -1,7 +1,5 @@
 package com.swent.skillswap.ui.feedScreen
 
-import android.util.Log
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,8 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import okhttp3.internal.wait
 
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -33,8 +29,6 @@ open class FeedScreenViewModel(
     private val controller: FeedController
 ) : ViewModel() {
 
-    private val feedScreenLogTag = "FeedScreen"
-
     /**
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
      */
@@ -48,24 +42,18 @@ open class FeedScreenViewModel(
 
     init {
         viewModelScope.launch {
-            controller.currentPost.value?.let { post ->
-                _uiState.value = toFeedOffer(post, uid)
-            }
+            controller.currentPost.value?.let { post -> _uiState.value = toFeedOffer(post, uid) }
 
             // Observe future post changes
             snapshotFlow { controller.currentPost.value }
                 .filterNotNull()
-                .collect { post ->
-                    _uiState.value = toFeedOffer(post, uid)
-                }
+                .collect { post -> _uiState.value = toFeedOffer(post, uid) }
         }
     }
 
     /** Accepts the specified offer on behalf of the current user. */
     fun accept(offer: FeedOffer) {
-        viewModelScope.launch {
-            controller.acceptPost("")
-        }
+        viewModelScope.launch { controller.acceptPost("") }
     }
 
     /** Declines the specified offer, removes it from the feed, and loads the next one. */
@@ -81,9 +69,7 @@ open class FeedScreenViewModel(
 
     /** Skips the current offer and moves to the next one. */
     fun skip() {
-        viewModelScope.launch {
-            controller.skipPost()
-        }
+        viewModelScope.launch { controller.skipPost() }
     }
     /** Temporarily blocks a user by adding their ID to an in-memory list. */
     fun blockUser(userId: String) {
@@ -106,14 +92,16 @@ open class FeedScreenViewModel(
         return FeedOffer(
             skillProvided = post.title,
             authorID = post.ownerId,
-            authorName = "",
-            requesterAvatar = "",
-            receiverName = "",
-            skillRequested = "",
+            authorName = "ANO_USER",
+            // TODO Need to modify the post structure to handle this or use external object
+            //  (decrease duplicate data)
+            requesterAvatar = "https://picsum.photos/200",
+            receiverName = userId,
+            skillRequested =
+                "TODO : Implement", // TODO this should be provided by the recommendation algo
             thumbnail = post.media.firstOrNull() ?: "",
             specification = post.description,
             description = post.description
         )
     }
 }
-
