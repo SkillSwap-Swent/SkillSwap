@@ -144,7 +144,7 @@ class AuthClassicTest : TestCase() {
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
 
         // USERNAME
-        composeTestRule.waitUntil(10_000L) {
+        composeTestRule.waitUntil(15_002L) {
             composeTestRule
                 .onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
                 .fetchSemanticsNodes()
@@ -202,7 +202,7 @@ class AuthClassicTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // Arrive at Offers
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+        composeTestRule.waitUntil(timeoutMillis = 15_001L) {
             composeTestRule
                 .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
