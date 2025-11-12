@@ -28,7 +28,10 @@ fun SkillSwapAppTheme(content: @Composable () -> Unit) {
                 background = colorResource(id = R.color.md_theme_background),
                 onBackground = colorResource(id = R.color.md_theme_onBackground),
                 surface = colorResource(id = R.color.md_theme_surface),
-                onSurface = colorResource(id = R.color.md_theme_onSurface)
+                onSurface = colorResource(id = R.color.md_theme_onSurface),
+                surfaceContainerHighest = colorResource(R.color.md_theme_surfaceContainerHighest),
+                onSurfaceVariant = colorResource(R.color.md_theme_onSurfaceVariant),
+                errorContainer = colorResource(R.color.md_theme_errorContainer)
             )
         } else {
             lightColorScheme(
@@ -45,7 +48,10 @@ fun SkillSwapAppTheme(content: @Composable () -> Unit) {
                 background = colorResource(id = R.color.md_theme_background),
                 onBackground = colorResource(id = R.color.md_theme_onBackground),
                 surface = colorResource(id = R.color.md_theme_surface),
-                onSurface = colorResource(id = R.color.md_theme_onSurface)
+                onSurface = colorResource(id = R.color.md_theme_onSurface),
+                surfaceContainerHighest = colorResource(R.color.md_theme_surfaceContainerHighest),
+                onSurfaceVariant = colorResource(R.color.md_theme_onSurfaceVariant),
+                errorContainer = colorResource(R.color.md_theme_errorContainer)
             )
         }
 
