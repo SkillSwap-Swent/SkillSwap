@@ -45,6 +45,7 @@ import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
+import com.swent.skillswap.ui.feedScreen.FeedScreenViewModelFactory
 import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
@@ -197,13 +198,15 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.Feed.route) {
-                FeedScreen(
-                    vm =
-                        FeedScreenViewModel(
-                            navigation = { uid -> navController.navigate("profile/$uid") },
-                            controller = controller
-                        )
-                )
+                val factory =
+                    FeedScreenViewModelFactory(
+                        navigation = { uid -> navController.navigate("profile/$uid") },
+                        controller = controller
+                    )
+
+                val vm: FeedScreenViewModel = viewModel(factory = factory)
+
+                FeedScreen(vm = vm)
             }
 
             composable(Screen.Chat.route) {

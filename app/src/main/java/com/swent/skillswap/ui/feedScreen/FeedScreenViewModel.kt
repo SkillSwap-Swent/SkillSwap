@@ -2,6 +2,7 @@ package com.swent.skillswap.ui.feedScreen
 
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -103,5 +104,24 @@ open class FeedScreenViewModel(
             specification = post.description,
             description = post.description
         )
+    }
+}
+/**
+ * Factory for creating [FeedScreenViewModel] with parameters.
+ *
+ * @param navigation The navigation handler for the feed screen.
+ * @param controller The controller handling feed data.
+ */
+class FeedScreenViewModelFactory(
+    private val navigation: FeedScreenNavigation,
+    private val controller: FeedController
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(FeedScreenViewModel::class.java)) {
+            return FeedScreenViewModel(navigation, controller) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }
