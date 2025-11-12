@@ -5,7 +5,6 @@
 package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -330,23 +329,25 @@ fun SkillScreen(vm: CreateAccountViewModel) {
             // Loop through all skill tags and render as selectable chips
             for (skill in SkillTag.entries) {
                 val isSelected = uiState.skills.contains(skill)
-                val backgroundColor = if (isSelected) {
-                    MaterialTheme.colorScheme.secondary
-                } else {
-                    MaterialTheme.colorScheme.secondaryContainer
-                }
-                val textColor = if (isSelected) {
-                    MaterialTheme.colorScheme.onSecondary
-                } else {
-                    MaterialTheme.colorScheme.onSecondaryContainer
-                }
+                val backgroundColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
+                val textColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.onSecondary
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    }
 
                 Box(
-                    modifier = Modifier
-                        .background(backgroundColor, shape = RoundedCornerShape(50))
-                        .clickable { vm.clickSkill(skill) }
-                        .padding(horizontal = 11.dp, vertical = 6.dp)
-                        .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
+                    modifier =
+                        Modifier.background(backgroundColor, shape = RoundedCornerShape(50))
+                            .clickable { vm.clickSkill(skill) }
+                            .padding(horizontal = 11.dp, vertical = 6.dp)
+                            .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
                 ) {
                     Text(
                         text = skill.name, // TODO: make enum names user-friendly
