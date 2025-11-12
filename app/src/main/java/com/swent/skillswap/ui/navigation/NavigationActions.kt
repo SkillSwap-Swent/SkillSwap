@@ -41,14 +41,16 @@ open class NavigationActions(
             return // Prevent re-navigating to the same screen
         }
 
-        val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true).setRestoreState(true)
+        val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true)
 
         if (screen.isTopLevelDestination) {
-            navOptionsBuilder.setPopUpTo(
-                navController.graph.findStartDestination().id,
-                inclusive = false,
-                saveState = true
-            )
+            navOptionsBuilder
+                .setRestoreState(true)
+                .setPopUpTo(
+                    navController.graph.findStartDestination().id,
+                    inclusive = true,
+                    saveState = true
+                )
         }
         navController.navigate(screen.route, navOptionsBuilder.build())
     }

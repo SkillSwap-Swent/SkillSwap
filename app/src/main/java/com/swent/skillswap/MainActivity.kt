@@ -3,7 +3,6 @@ package com.swent.skillswap
 import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -91,31 +90,23 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
     val editProfileViewModel: EditUserViewModel = viewModel()
 
-    val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
-
-    if (isTopLevel) {
-        BackHandler { activity?.finish() }
-    }
-
     Scaffold(
         bottomBar = {
-            if (isTopLevel) {
-                val currentTab =
-                    when (currentRoute) {
-                        Screen.Profile.route -> Tab.Profile
-                        Screen.Feed.route -> Tab.Feed
-                        Screen.Chat.route -> Tab.Chat
-                        else -> null
-                    }
-
-                currentTab?.let { tab ->
-                    BottomNavigationMenu(
-                        selectedTab = tab,
-                        onTabSelected = { selectedTab ->
-                            navigationActions.navigateTo(selectedTab.destination)
-                        }
-                    )
+            val currentTab =
+                when (currentRoute) {
+                    Screen.Profile.route -> Tab.Profile
+                    Screen.Feed.route -> Tab.Feed
+                    Screen.Chat.route -> Tab.Chat
+                    else -> null
                 }
+
+            currentTab?.let { tab ->
+                BottomNavigationMenu(
+                    selectedTab = tab,
+                    onTabSelected = { selectedTab ->
+                        navigationActions.navigateTo(selectedTab.destination)
+                    }
+                )
             }
         }
     ) { paddingValues ->
