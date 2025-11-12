@@ -5,7 +5,6 @@
 package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -344,12 +343,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
                     }
                 Box(
                     modifier =
-                        Modifier.border(
-                                width = 1.dp,
-                                color = backgroundColor,
-                                shape = RoundedCornerShape(50)
-                            )
-                            .background(backgroundColor, shape = RoundedCornerShape(50))
+                        Modifier.background(backgroundColor, shape = RoundedCornerShape(50))
                             .clickable { vm.clickSkill(skill) }
                             .padding(horizontal = 11.dp, vertical = 6.dp)
                             .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
