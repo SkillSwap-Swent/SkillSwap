@@ -1,3 +1,4 @@
+runs-on: self-hosted
 name: CI - Test Runner
 
 # Run the workflow when commits are pushed on main or when a PR is modified
