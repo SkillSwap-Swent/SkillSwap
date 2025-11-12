@@ -6,7 +6,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
-import kotlin.String
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -17,7 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class PostRepositoryInstrumentedTest {
+class PostFirestoreRepositoryTest {
 
     private lateinit var repo: PostRepository
 
@@ -96,7 +96,9 @@ class PostRepositoryInstrumentedTest {
         val badId: String = repo.getNewUid(PostType.REQUEST)
         val badTitle: Request = request1.copy(uid = badId, title = "")
 
-        assertThrows(IllegalArgumentException::class.java) { runTest { repo.addPost(badTitle) } }
+        val exception =
+            assertThrows(RepositoryException::class.java) { runTest { repo.addPost(badTitle) } }
+        assertEquals("Post fields are invalid", exception.cause?.message)
     }
 
     @Test
@@ -107,7 +109,11 @@ class PostRepositoryInstrumentedTest {
             repo.addPost(original)
             val bad: Request = original.copy(title = "")
 
-            assertThrows(IllegalStateException::class.java) { runTest { repo.editPost(id, bad) } }
+            val exception =
+                assertThrows(RepositoryException::class.java) {
+                    runBlocking { repo.editPost(id, bad) }
+                }
+            assertEquals("Post fields are invalid", exception.cause?.message)
         }
     }
 
@@ -140,12 +146,14 @@ class PostRepositoryInstrumentedTest {
             val id: String = repo.getNewUid(PostType.REQUEST)
             val req: Request = request1.copy(uid = id)
             repo.addPost(req)
-
             repo.deletePost(PostType.REQUEST, id)
 
-            assertThrows(IllegalStateException::class.java) {
-                runTest { repo.getPost(PostType.REQUEST, id) }
-            }
+            val exception =
+                assertThrows(RepositoryException::class.java) {
+                    runBlocking { repo.getPost(PostType.REQUEST, id) }
+                }
+
+            assertTrue(exception.cause?.message == "Post $id does not exist")
         }
     }
 
@@ -324,8 +332,8 @@ class PostRepositoryInstrumentedTest {
             val req = request1.copy(uid = id)
             repo.addPost(req)
 
-            assertThrows(IllegalStateException::class.java) {
-                runTest { repo.getPost(PostType.OFFER, id) }
+            assertThrows(NotImplementedError::class.java) {
+                runBlocking { repo.getPost(PostType.OFFER, id) }
             }
         }
     }
