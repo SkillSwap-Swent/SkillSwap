@@ -35,7 +35,7 @@ import junit.framework.TestCase.assertNotNull
  * Tests complete user flows from authentication to profile editing
  */
 @RunWith(AndroidJUnit4::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING) //Be careful, tests order matters !
 class End2EndM1 {
 
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
@@ -68,6 +68,9 @@ class End2EndM1 {
 
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
+
+
+
 
     @OptIn(InternalTestApi::class)
     @Test
@@ -147,6 +150,7 @@ class End2EndM1 {
 
     @Test
     fun completeUserFlow1_AutoSignInAndNavigate() {
+        /** The User is already sign in, hence the app should open directly on Profile Screen */
         composeTestRule.waitForIdle()
 
         /** Wait until the previous test is done a the app is set up again */
