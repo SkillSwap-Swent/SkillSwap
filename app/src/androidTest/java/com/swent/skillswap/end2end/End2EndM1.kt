@@ -22,11 +22,11 @@ import java.net.URL
 import org.junit.Assert.assertEquals
 
 /** Test Tags */
-import com.swent.skillswap.ui.signIn.SignInTags
-import com.swent.skillswap.ui.signIn.CreateAccountTags
-import com.swent.skillswap.ui.navigation.bottomBar.BottomBarTestTag
+import com.swent.skillswap.ui.auth.SignInTags
+import com.swent.skillswap.ui.auth.CreateAccountTags
+import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.user.ProfileTestTags
-import com.swent.skillswap.ui.offerScreen.OfferScreenTestTags
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import junit.framework.TestCase.assertNotNull
 
 
@@ -180,16 +180,19 @@ class End2EndM1 {
         )
 
         val visibleComposableBotBar = listOf(
-            BottomBarTestTag.BOTTOM_BAR,
-            BottomBarTestTag.PROFILE_BUTTON,
-            BottomBarTestTag.OFFER_SCREEN_BUTTON,
-            BottomBarTestTag.CHAT_BUTTON
+            NavigationTestTags.BOTTOM_NAVIGATION_MENU,
+            NavigationTestTags.PROFILE_TAB,
+            NavigationTestTags.FEED_TAB,
+            NavigationTestTags.CHAT_TAB
         )
 
-        val visibleComposableOfferScreen = listOf(
-            OfferScreenTestTags.OFFER_CARD,
-            OfferScreenTestTags.OFFER_GIVE,
-            OfferScreenTestTags.OFFER_RECEIVE
+        val visibleComposableFeedScreen = listOf(
+            FeedScreenTestTags.FEED_CARD,
+            FeedScreenTestTags.FEED_THUMBNAIL,
+            FeedScreenTestTags.SKILL_REQUESTED,
+            FeedScreenTestTags.SKILL_GIVE,
+            FeedScreenTestTags.ACCEPT_BUTTON,
+            FeedScreenTestTags.DECLINE_BUTTON,
         )
 
         val visibleComposableChatScreen = emptyList<String>() //No tests tags defined yet
@@ -205,10 +208,10 @@ class End2EndM1 {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
 
-        /** Navigate to Offer Screen */
-        composeTestRule.onNodeWithTag(BottomBarTestTag.OFFER_SCREEN_BUTTON).performClick()
+        /** Navigate to Feed Screen */
+        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
 
-        for (testTag in visibleComposableOfferScreen) {
+        for (testTag in visibleComposableFeedScreen) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
 
@@ -217,7 +220,7 @@ class End2EndM1 {
         }
 
         /** Navigate to Chat Screen */
-        composeTestRule.onNodeWithTag(BottomBarTestTag.CHAT_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
 
         for (testTag in visibleComposableChatScreen) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
