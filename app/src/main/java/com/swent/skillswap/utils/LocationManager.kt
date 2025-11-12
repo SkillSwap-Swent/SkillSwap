@@ -169,7 +169,7 @@ class LocationManager(private val context: Context) {
      * @param location Android Location object
      * @return Firebase GeoPoint with latitude and longitude
      */
-    private fun locationToGeoPoint(location: Location): GeoPoint {
+    internal fun locationToGeoPoint(location: Location): GeoPoint {
         return GeoPoint(location.latitude, location.longitude)
     }
 }
