@@ -37,13 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import kotlinx.coroutines.flow.flowOf
 
 object ChatScreenTags {
     const val SCREEN = "chat_screen"
@@ -178,6 +174,7 @@ fun MessageInput(text: String, onTextChange: (String) -> Unit, onSend: () -> Uni
 }
 
 // Written by Sonnet 4.5
+/*
 @Preview(showBackground = true)
 @Composable
 fun ChatScreenPreview() {
@@ -283,3 +280,4 @@ fun ChatScreenPreview() {
         )
     }
 }
+*/
