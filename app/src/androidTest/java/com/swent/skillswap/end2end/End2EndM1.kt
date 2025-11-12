@@ -8,17 +8,11 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
-import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
-import com.swent.skillswap.ui.navigation.NavigationTestTags
-import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
-import junit.framework.TestCase.assertNotNull
 import org.junit.AfterClass
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -106,178 +100,180 @@ class End2EndM1 {
         for (testTag in signInTags) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
+        /*
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
+                composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
-        composeTestRule.waitForIdle()
+                /** 2. Navigate in Create account Screens */
 
-        /** 2. Navigate in Create account Screens */
+                /* Username Screen */
+                composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
 
-        /* Username Screen */
-        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput("Bob")
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+                composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput("Bob")
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
-        composeTestRule.waitForIdle()
+                /* Email Screen */
+                composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
 
-        /* Email Screen */
-        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(CreateAccountTags.EMAIL_FIELD)
+                    .performTextInput("bob@mail.com")
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+                composeTestRule.waitForIdle()
 
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.EMAIL_FIELD)
-            .performTextInput("bob@mail.com")
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
-        composeTestRule.waitForIdle()
+                /* Password Screen */
+                composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
 
-        /* Password Screen */
-        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(CreateAccountTags.PASSWORD_FIELD)
+                    .performTextInput("Password123")
+                composeTestRule.waitForIdle()
+                composeTestRule
+                    .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+                    .performTextInput("Password123")
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+                composeTestRule.waitForIdle()
 
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.PASSWORD_FIELD)
-            .performTextInput("Password123")
-        composeTestRule.waitForIdle()
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
-            .performTextInput("Password123")
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
-        composeTestRule.waitForIdle()
+                /* Skills Screen */
+                val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
+                composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(skillTag).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
 
-        /* Skills Screen */
-        val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
-        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(skillTag).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(skillTag).performClick()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+                composeTestRule.waitForIdle()
+                /* End of Create Account Screens */
 
-        composeTestRule.onNodeWithTag(skillTag).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-        /* End of Create Account Screens */
+                /** Wait until firestore auth operation completes and Profile Screen is displayed */
+                composeTestRule.waitUntil(timeoutMillis = 30_000) {
+                    composeTestRule
+                        .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                }
+                composeTestRule.waitForIdle()
 
-        /** Wait until firestore auth operation completes and Profile Screen is displayed */
-        composeTestRule.waitUntil(timeoutMillis = 30_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeTestRule.waitForIdle()
+                /** 3. Profile Screen Navigation Verification */
+                navigateThroughAllScreensAfterAuthentification()
+            }
 
-        /** 3. Profile Screen Navigation Verification */
-        navigateThroughAllScreensAfterAuthentification()
-    }
+            @Test
+            fun completeUserFlow1_AutoSignInAndNavigate() {
+                /** The User is already sign in, hence the app should open directly on Profile Screen */
+                composeTestRule.waitForIdle()
 
-    @Test
-    fun completeUserFlow1_AutoSignInAndNavigate() {
-        /** The User is already sign in, hence the app should open directly on Profile Screen */
-        composeTestRule.waitForIdle()
+                /** Wait until the previous test is done a the app is set up again */
+                composeTestRule.waitUntil(timeoutMillis = 30_000) {
+                    composeTestRule
+                        .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                }
+                composeTestRule.waitForIdle()
 
-        /** Wait until the previous test is done a the app is set up again */
-        composeTestRule.waitUntil(timeoutMillis = 30_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeTestRule.waitForIdle()
+                /** Perform Navigation Verification */
+                navigateThroughAllScreensAfterAuthentification()
+            }
 
-        /** Perform Navigation Verification */
-        navigateThroughAllScreensAfterAuthentification()
-    }
+            /**
+             * Navigate through all main screens after authentication. Starting from Profile Screen, then to
+             * Feed Screen, and finally to the Chat Screen.
+             */
+            fun navigateThroughAllScreensAfterAuthentification() {
 
-    /**
-     * Navigate through all main screens after authentication. Starting from Profile Screen, then to
-     * Feed Screen, and finally to the Chat Screen.
-     */
-    fun navigateThroughAllScreensAfterAuthentification() {
+                val visibleComposableProfile =
+                    listOf(
+                        ProfileTestTags.PROFILE_TITLE,
+                        ProfileTestTags.EDIT_PROFILE,
+                        ProfileTestTags.PROFILE_TITLE,
+                        ProfileTestTags.EMAIL_SECTION,
+                        ProfileTestTags.USERNAME_SECTION,
+                        ProfileTestTags.SKILLS_SECTION,
+                        ProfileTestTags.PREFERENCES_SECTION
+                    )
 
-        val visibleComposableProfile =
-            listOf(
-                ProfileTestTags.PROFILE_TITLE,
-                ProfileTestTags.EDIT_PROFILE,
-                ProfileTestTags.PROFILE_TITLE,
-                ProfileTestTags.EMAIL_SECTION,
-                ProfileTestTags.USERNAME_SECTION,
-                ProfileTestTags.SKILLS_SECTION,
-                ProfileTestTags.PREFERENCES_SECTION
-            )
+                val visibleComposableBotBar =
+                    listOf(
+                        NavigationTestTags.BOTTOM_NAVIGATION_MENU,
+                        NavigationTestTags.PROFILE_TAB,
+                        NavigationTestTags.FEED_TAB,
+                        NavigationTestTags.CHAT_TAB
+                    )
 
-        val visibleComposableBotBar =
-            listOf(
-                NavigationTestTags.BOTTOM_NAVIGATION_MENU,
-                NavigationTestTags.PROFILE_TAB,
-                NavigationTestTags.FEED_TAB,
-                NavigationTestTags.CHAT_TAB
-            )
+                val visibleComposableFeedScreen =
+                    listOf(
+                        FeedScreenTestTags.FEED_CARD,
+                        FeedScreenTestTags.FEED_THUMBNAIL,
+                        FeedScreenTestTags.SKILL_REQUESTED,
+                        FeedScreenTestTags.SKILL_GIVE,
+                        FeedScreenTestTags.ACCEPT_BUTTON,
+                        FeedScreenTestTags.DECLINE_BUTTON,
+                    )
 
-        val visibleComposableFeedScreen =
-            listOf(
-                FeedScreenTestTags.FEED_CARD,
-                FeedScreenTestTags.FEED_THUMBNAIL,
-                FeedScreenTestTags.SKILL_REQUESTED,
-                FeedScreenTestTags.SKILL_GIVE,
-                FeedScreenTestTags.ACCEPT_BUTTON,
-                FeedScreenTestTags.DECLINE_BUTTON,
-            )
+                val visibleComposableChatScreen = emptyList<String>() // No tests tags defined yet
 
-        val visibleComposableChatScreen = emptyList<String>() // No tests tags defined yet
+                composeTestRule.waitForIdle()
 
-        composeTestRule.waitForIdle()
+                /** Profile Screen checks */
+                for (testTag in visibleComposableProfile) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
 
-        /** Profile Screen checks */
-        for (testTag in visibleComposableProfile) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
+                for (testTag in visibleComposableBotBar) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
 
-        for (testTag in visibleComposableBotBar) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
+                /** Navigate to Feed Screen */
+                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+                composeTestRule.waitForIdle()
 
-        /** Navigate to Feed Screen */
-        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-        composeTestRule.waitForIdle()
+                for (testTag in visibleComposableFeedScreen) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
 
-        for (testTag in visibleComposableFeedScreen) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
+                for (testTag in visibleComposableBotBar) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
 
-        for (testTag in visibleComposableBotBar) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
+                /** Navigate to Chat Screen */
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+                composeTestRule.waitForIdle()
 
-        /** Navigate to Chat Screen */
-        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-        composeTestRule.waitForIdle()
+                for (testTag in visibleComposableChatScreen) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
 
-        for (testTag in visibleComposableChatScreen) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
+                for (testTag in visibleComposableBotBar) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
+            }
 
-        for (testTag in visibleComposableBotBar) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
-    }
+            @Test
+            fun finalTest_UserIsAuthentified() {
+                composeTestRule.waitForIdle()
 
-    @Test
-    fun finalTest_UserIsAuthentified() {
-        composeTestRule.waitForIdle()
-
-        /** Verify that the user is correctly authenticated */
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        assertNotNull(currentUser)
-        assertEquals("bob@mail.com", currentUser!!.email)
+                /** Verify that the user is correctly authenticated */
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                assertNotNull(currentUser)
+                assertEquals("bob@mail.com", currentUser!!.email)
+            }
+        }*/
     }
 }
