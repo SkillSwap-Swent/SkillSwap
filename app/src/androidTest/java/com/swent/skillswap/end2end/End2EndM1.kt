@@ -39,17 +39,37 @@ class End2EndM1 {
         private const val EMULATOR_URL = "http://10.0.2.2:9099"
         private const val PROJECT_ID = "skillswap-93276"
 
+
         @BeforeClass
         @JvmStatic
-        fun clearAuthEmulator() {
+        fun setupEmulatorAndClearAuth() {
+            FirebaseEmulator.startEmulator()
+
             val url = URL("$EMULATOR_URL/emulator/v1/projects/$PROJECT_ID/accounts")
-            with(url.openConnection() as HttpURLConnection) {
-                requestMethod = "DELETE"
-                val responseCode = responseCode
-                if (responseCode != 200) {
-                    throw Exception("Failed to clear Auth emulator: $responseCode")
+            val maxAttempts = 20
+            var attempt = 0
+            var cleared = false
+
+            while (attempt < maxAttempts && !cleared) {
+                try {
+                    with(url.openConnection() as HttpURLConnection) {
+                        connectTimeout = 2000
+                        readTimeout = 2000
+                        requestMethod = "DELETE"
+                        val responseCode = responseCode
+                        if (responseCode == HttpURLConnection.HTTP_OK) {
+                            cleared = true
+                        }
+                        disconnect()
+                    }
+                } catch (e: Exception) {
+                    attempt++
+                    Thread.sleep(1000)
                 }
-                disconnect()
+            }
+
+            if (!cleared) {
+                throw Exception("Failed to clear Auth emulator after $maxAttempts attempts")
             }
         }
     }
