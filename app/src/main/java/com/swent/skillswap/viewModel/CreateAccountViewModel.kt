@@ -160,20 +160,16 @@ class CreateAccountViewModel(
     private val emailRegex = ValidationConfig.EMAIL_REGEX
     val usernameRegex = ValidationConfig.USERNAME_REGEX
 
-//    private fun validateUsernameResult(): Pair<Boolean, String> {
-//        val ok = _uiState.value.username.isNotBlank()
-//        val cause = if (ok) "" else "Username cannot be empty"
-//        return ok to cause
-//    }
-
     private fun validateUsernameResult(): Pair<Boolean, String> {
         val username = _uiState.value.username
 
-        val cause = when {
-            username.isBlank() -> "Username cannot be empty"
-            !usernameRegex.matches(username) -> "Username must be 3–20 characters and contain only letters, numbers, or underscores"
-            else -> ""
-        }
+        val cause =
+            when {
+                username.isBlank() -> "Username cannot be empty"
+                !usernameRegex.matches(username) ->
+                    "Username must be 3–20 characters and contain only letters, numbers, or underscores"
+                else -> ""
+            }
 
         return (cause.isEmpty()) to cause
     }
