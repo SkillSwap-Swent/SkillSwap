@@ -20,10 +20,16 @@ class ChatScreenTest {
 
     private fun createFakeViewModel(messages: List<Message> = emptyList()): ChatViewModel {
         return ChatViewModel(
-            chatRepository = object : ChatRepository {
-                override fun streamMessages(chatId: String) = flowOf(messages)
-                override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
-            },
+            chatRepository =
+                object : ChatRepository {
+                    override fun streamMessages(chatId: String) = flowOf(messages)
+
+                    override suspend fun sendMessage(
+                        chatId: String,
+                        senderId: String,
+                        content: String
+                    ) {}
+                },
             currentUserId = "user1",
             chatId = "chat1"
         )
@@ -31,10 +37,11 @@ class ChatScreenTest {
 
     @Test
     fun chatScreen_displays_messages() {
-        val messages = listOf(
-            Message("1", "user1", "Hello!", 1000L),
-            Message("2", "user2", "Hi there!", 2000L)
-        )
+        val messages =
+            listOf(
+                Message("1", "user1", "Hello!", 1000L),
+                Message("2", "user2", "Hi there!", 2000L)
+            )
 
         composeRule.setContent {
             MaterialTheme { ChatScreen(viewModel = createFakeViewModel(messages)) }
@@ -46,9 +53,7 @@ class ChatScreenTest {
 
     @Test
     fun chatScreen_shows_message_input_and_send_button() {
-        composeRule.setContent {
-            MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) }
-        }
+        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).assertExists()
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).assertExists()
@@ -56,18 +61,14 @@ class ChatScreenTest {
 
     @Test
     fun send_button_disabled_when_input_is_empty() {
-        composeRule.setContent {
-            MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) }
-        }
+        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
 
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).assertIsNotEnabled()
     }
 
     @Test
     fun send_button_enabled_when_input_has_text() {
-        composeRule.setContent {
-            MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) }
-        }
+        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("Test message")
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).assertIsEnabled()
@@ -75,9 +76,7 @@ class ChatScreenTest {
 
     @Test
     fun input_text_can_be_typed() {
-        composeRule.setContent {
-            MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) }
-        }
+        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("Hello world")
         composeRule.onNodeWithText("Hello world").assertExists()
@@ -89,10 +88,7 @@ class ChatScreenTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatScreen(
-                    viewModel = createFakeViewModel(),
-                    onGoBack = { backPressed = true }
-                )
+                ChatScreen(viewModel = createFakeViewModel(), onGoBack = { backPressed = true })
             }
         }
 

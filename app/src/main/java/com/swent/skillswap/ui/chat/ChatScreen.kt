@@ -91,7 +91,10 @@ fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: (
         )
 
         LazyColumn(
-            modifier = Modifier.weight(1f).padding(horizontal = 16.dp).testTag(ChatScreenTags.MESSAGE_LIST),
+            modifier =
+                Modifier.weight(1f)
+                    .padding(horizontal = 16.dp)
+                    .testTag(ChatScreenTags.MESSAGE_LIST),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
@@ -124,7 +127,9 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean) {
             color =
                 if (isCurrentUser) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.widthIn(max = 280.dp).testTag("${ChatScreenTags.MESSAGE_BUBBLE}_${message.id}")
+            modifier =
+                Modifier.widthIn(max = 280.dp)
+                    .testTag("${ChatScreenTags.MESSAGE_BUBBLE}_${message.id}")
         ) {
             Text(
                 text = message.content,
