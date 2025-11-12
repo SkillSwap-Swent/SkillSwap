@@ -116,7 +116,16 @@ fun SkillSwapShadowButton(
     shape: Shape = pill_shape,
     content: @Composable (RowScope.() -> Unit) = { Text(text = "test         test") },
 ) {
-    ElevatedButton(enabled = enable, onClick = onClick, shape = shape, modifier = modifier) {
+    ElevatedButton(
+        enabled = enable,
+        onClick = onClick,
+        shape = shape,
+        modifier = modifier,
+        elevation =
+            ButtonDefaults.elevatedButtonElevation(
+                defaultElevation = 3.dp,
+            ),
+    ) {
         content()
     }
 }
