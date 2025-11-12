@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.swent.skillswap.model.chat.Message
 
+// Encapsulating object for test tags
 object ChatScreenTags {
     const val SCREEN = "chat_screen"
     const val BACK_BUTTON = "chat_back_button"
@@ -51,6 +52,11 @@ object ChatScreenTags {
     const val SEND_BUTTON = "chat_send_button"
 }
 
+/*
+    Composable function representing the chat screen UI.
+    It displays a list of messages, an input field for new messages, and a send button.
+    The screen also includes a top app bar with a title and a back button.
+*/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: () -> Unit = {}) {
@@ -112,6 +118,10 @@ fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: (
     }
 }
 
+/*
+    Composable function representing a single message bubble in the chat.
+    It styles the bubble differently based on whether the message is from the current user or another user.
+*/
 @Composable
 fun MessageBubble(message: Message, isCurrentUser: Boolean) {
     Row(
@@ -138,6 +148,12 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean) {
     }
 }
 
+/*
+   Composable function for the message input area at the bottom of the chat screen.
+   It includes a text field for typing messages and a send button, which is enabled only when there is text to send.
+   onTextChange: Callback for when the text input changes.
+   onSend: Callback for when the send button is pressed.
+*/
 @Composable
 fun MessageInput(text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
     Surface(shadowElevation = 8.dp) {
