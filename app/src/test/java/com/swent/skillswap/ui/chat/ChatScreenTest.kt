@@ -95,4 +95,46 @@ class ChatScreenTest {
         composeRule.onNodeWithTag(ChatScreenTags.BACK_BUTTON).performClick()
         assert(backPressed)
     }
+
+    @Test
+    fun send_button_click_clears_input_and_sends_message() {
+        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
+
+        composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("Test message")
+        composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).performClick()
+
+        // Input should be cleared after sending
+        composeRule
+            .onNodeWithTag(ChatScreenTags.MESSAGE_INPUT)
+            .assertTextEquals("", includeEditableText = true)
+
+        // Whitespace-only input should not clear (message not sent)
+        composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("   ")
+        composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).performClick()
+        composeRule.onNodeWithText("   ").assertExists() // Input still there
+    }
+
+    @Test
+    fun messageBubble_displays_correctly_for_current_user() {
+        val message = Message("1", "user1", "My message", 1000L)
+
+        composeRule.setContent {
+            MaterialTheme { MessageBubble(message = message, isCurrentUser = true) }
+        }
+
+        composeRule.onNodeWithText("My message").assertExists()
+        composeRule.onNodeWithTag("${ChatScreenTags.MESSAGE_BUBBLE}_1").assertExists()
+    }
+
+    @Test
+    fun messageBubble_displays_correctly_for_other_user() {
+        val message = Message("2", "user2", "Their message", 2000L)
+
+        composeRule.setContent {
+            MaterialTheme { MessageBubble(message = message, isCurrentUser = false) }
+        }
+
+        composeRule.onNodeWithText("Their message").assertExists()
+        composeRule.onNodeWithTag("${ChatScreenTags.MESSAGE_BUBBLE}_2").assertExists()
+    }
 }
