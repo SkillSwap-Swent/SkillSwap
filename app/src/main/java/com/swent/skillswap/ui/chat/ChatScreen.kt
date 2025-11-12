@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,20 +45,31 @@ import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import kotlinx.coroutines.flow.flowOf
 
+object ChatScreenTags {
+    const val SCREEN = "chat_screen"
+    const val BACK_BUTTON = "chat_back_button"
+    const val TITLE = "chat_title"
+    const val MESSAGE_LIST = "chat_message_list"
+    const val MESSAGE_BUBBLE = "chat_message_bubble"
+    const val MESSAGE_INPUT = "chat_message_input"
+    const val SEND_BUTTON = "chat_send_button"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: () -> Unit = {}) {
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().testTag(ChatScreenTags.SCREEN)) {
         TopAppBar(
             title = {
                 Text(
                     text = chatTitle,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag(ChatScreenTags.TITLE)
                 )
             },
             colors =
@@ -65,7 +77,10 @@ fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: (
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
             navigationIcon = {
-                IconButton(onClick = onGoBack) {
+                IconButton(
+                    onClick = onGoBack,
+                    modifier = Modifier.testTag(ChatScreenTags.BACK_BUTTON)
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back",
@@ -76,7 +91,7 @@ fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: (
         )
 
         LazyColumn(
-            modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+            modifier = Modifier.weight(1f).padding(horizontal = 16.dp).testTag(ChatScreenTags.MESSAGE_LIST),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
@@ -109,7 +124,7 @@ fun MessageBubble(message: Message, isCurrentUser: Boolean) {
             color =
                 if (isCurrentUser) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.widthIn(max = 280.dp)
+            modifier = Modifier.widthIn(max = 280.dp).testTag("${ChatScreenTags.MESSAGE_BUBBLE}_${message.id}")
         ) {
             Text(
                 text = message.content,
@@ -132,7 +147,7 @@ fun MessageInput(text: String, onTextChange: (String) -> Unit, onSend: () -> Uni
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).testTag(ChatScreenTags.MESSAGE_INPUT),
                 placeholder = { Text("Message") },
                 colors =
                     TextFieldDefaults.colors(
@@ -144,6 +159,7 @@ fun MessageInput(text: String, onTextChange: (String) -> Unit, onSend: () -> Uni
             IconButton(
                 onClick = onSend,
                 enabled = text.isNotBlank(),
+                modifier = Modifier.testTag(ChatScreenTags.SEND_BUTTON),
                 colors =
                     IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
