@@ -39,7 +39,6 @@ class End2EndM1 {
         private const val EMULATOR_URL = "http://10.0.2.2:9099"
         private const val PROJECT_ID = "skillswap-93276"
 
-
         @BeforeClass
         @JvmStatic
         fun setupEmulatorAndClearAuth() {
