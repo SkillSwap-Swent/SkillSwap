@@ -329,12 +329,24 @@ fun SkillScreen(vm: CreateAccountViewModel) {
         ) {
             // Loop through all skill tags and render as selectable chips
             for (skill in SkillTag.entries) {
-                val skillColor = if (uiState.skills.contains(skill)) Color.Red else Color.Black
+                val isSelected = uiState.skills.contains(skill)
+                val backgroundColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
+                val textColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.onSecondary
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    }
                 Box(
                     modifier =
                         Modifier.border(
                                 width = 1.dp,
-                                color = skillColor,
+                                color = backgroundColor,
                                 shape = RoundedCornerShape(50)
                             )
                             .clickable { vm.clickSkill(skill) }
@@ -345,7 +357,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
                         text = skill.name, // TODO: make enum names user-friendly
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp,
-                        color = skillColor,
+                        color = textColor,
                     )
                 }
             }
