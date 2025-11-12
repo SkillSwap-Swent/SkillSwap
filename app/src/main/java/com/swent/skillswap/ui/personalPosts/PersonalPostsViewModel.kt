@@ -8,7 +8,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostRepository
-import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +25,7 @@ import kotlinx.coroutines.launch
  */
 data class PersonalPostsUiState(
     val posts: List<Post> = emptyList(),
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val error: String? = null,
     val selectedPostType: PostTypeFilter = PostTypeFilter.ALL
 )
@@ -97,14 +96,14 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
                                 numberOfPosts = 100,
                                 type = PostType.OFFER,
                                 ownerId = userId,
-                                status = PostStatus.POSTED
+                                status = null
                             )
                         val requests =
                             postRepository.getMultiplePosts(
                                 numberOfPosts = 100,
                                 type = PostType.REQUEST,
                                 ownerId = userId,
-                                status = PostStatus.POSTED
+                                status = null
                             )
                         allPosts.addAll(offers)
                         allPosts.addAll(requests)
@@ -115,7 +114,7 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
                                 numberOfPosts = 100,
                                 type = PostType.OFFER,
                                 ownerId = userId,
-                                status = PostStatus.POSTED
+                                status = null
                             )
                         allPosts.addAll(offers)
                     }
@@ -125,16 +124,14 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
                                 numberOfPosts = 100,
                                 type = PostType.REQUEST,
                                 ownerId = userId,
-                                status = PostStatus.POSTED
+                                status = null
                             )
                         allPosts.addAll(requests)
                     }
                 }
 
-                // Sort by creation date (newest first)
-                val sortedPosts = allPosts.sortedByDescending { it.creation.toDate().time }
-
-                _uiState.update { it.copy(posts = sortedPosts, isLoading = false, error = null) }
+                // Repository already sorts by creation date, so we can use posts directly
+                _uiState.update { it.copy(posts = allPosts, isLoading = false, error = null) }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading personal posts", e)
                 _uiState.update {

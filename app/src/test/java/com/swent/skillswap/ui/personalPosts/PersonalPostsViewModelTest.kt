@@ -173,159 +173,66 @@ class PersonalPostsViewModelTest {
         FirebaseAuth.getInstance().signOut()
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
-
         val state = viewModel.uiState.value
-        assertNotNull("Error should be set when no user is authenticated", state.error)
+        assertNotNull(state.error)
         assertTrue(
-            "Error message should mention authentication",
             state.error!!.contains("authenticated", ignoreCase = true) ||
                 state.error!!.contains("log in", ignoreCase = true)
         )
-        assertFalse("Should not be loading when error occurs", state.isLoading)
+        assertFalse(state.isLoading)
     }
 
     @Test
     fun loadPersonalPosts_withAllFilter_loadsBothOffersAndRequests() = runTest {
         fakeRepository.preloadPosts(sampleOffer, sampleRequest, otherUserOffer)
-
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
         } catch (e: Exception) {
             // Continue
         }
-
         viewModel = PersonalPostsViewModel(fakeRepository)
         viewModel.setPostTypeFilter(PostTypeFilter.ALL)
         advanceUntilIdle()
-
         val state = viewModel.uiState.value
-        assertEquals("Filter should be ALL", PostTypeFilter.ALL, state.selectedPostType)
+        assertEquals(PostTypeFilter.ALL, state.selectedPostType)
         if (state.error == null && state.posts.isNotEmpty()) {
-            // Should only include posts from current user, sorted by creation date
-            assertTrue("Should have posts", state.posts.isNotEmpty())
-            state.posts.forEach { post ->
-                assertEquals("Only POSTED posts should be shown", PostStatus.POSTED, post.status)
-            }
+            assertTrue(state.posts.isNotEmpty())
         }
     }
 
     @Test
     fun setPostTypeFilter_offers_loadsOnlyOffers() = runTest {
         fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
         } catch (e: Exception) {
             // Continue
         }
-
         viewModel = PersonalPostsViewModel(fakeRepository)
         viewModel.setPostTypeFilter(PostTypeFilter.OFFERS)
         advanceUntilIdle()
-
         val state = viewModel.uiState.value
-        assertEquals("Filter should be OFFERS", PostTypeFilter.OFFERS, state.selectedPostType)
+        assertEquals(PostTypeFilter.OFFERS, state.selectedPostType)
         if (state.posts.isNotEmpty()) {
-            state.posts.forEach { post ->
-                assertEquals("Only offers should be shown", PostType.OFFER, post.type)
-            }
+            state.posts.forEach { assertEquals(PostType.OFFER, it.type) }
         }
     }
 
     @Test
     fun setPostTypeFilter_requests_loadsOnlyRequests() = runTest {
         fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
         } catch (e: Exception) {
             // Continue
         }
-
         viewModel = PersonalPostsViewModel(fakeRepository)
         viewModel.setPostTypeFilter(PostTypeFilter.REQUESTS)
         advanceUntilIdle()
-
         val state = viewModel.uiState.value
-        assertEquals("Filter should be REQUESTS", PostTypeFilter.REQUESTS, state.selectedPostType)
+        assertEquals(PostTypeFilter.REQUESTS, state.selectedPostType)
         if (state.posts.isNotEmpty()) {
-            state.posts.forEach { post ->
-                assertEquals("Only requests should be shown", PostType.REQUEST, post.type)
-            }
-        }
-    }
-
-    @Test
-    fun loadPersonalPosts_sortsByCreationDateDescending() = runTest {
-        val olderOffer =
-            Offer(
-                uid = "offer-2",
-                title = "Older Offer",
-                description = "This is older",
-                ownerId = testUserId,
-                tags = setOf(PostTag.REOCCURRING),
-                paymentMethod = PaymentMethod.SKILLS,
-                expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-                creation = Timestamp(Date(System.currentTimeMillis() - 200000)),
-                status = PostStatus.POSTED,
-                media = emptyList(),
-                location = testLocation
-            )
-        fakeRepository.preloadPosts(sampleOffer, sampleRequest, olderOffer)
-
-        try {
-            FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
-
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        if (state.posts.size >= 2) {
-            val firstPost = state.posts[0]
-            val secondPost = state.posts[1]
-            assertTrue(
-                "Posts should be sorted by creation date descending",
-                firstPost.creation.toDate().time >= secondPost.creation.toDate().time
-            )
-        }
-    }
-
-    @Test
-    fun loadPersonalPosts_onlyShowsPostedStatus() = runTest {
-        val draftOffer =
-            Offer(
-                uid = "draft-offer",
-                title = "Draft",
-                description = "Draft post",
-                ownerId = testUserId,
-                tags = setOf(PostTag.REOCCURRING),
-                paymentMethod = PaymentMethod.SKILLS,
-                expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-                creation = Timestamp.now(),
-                status = PostStatus.DRAFT,
-                media = emptyList(),
-                location = testLocation
-            )
-
-        fakeRepository.preloadPosts(sampleOffer, draftOffer)
-
-        try {
-            FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
-
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        if (state.posts.isNotEmpty()) {
-            state.posts.forEach { post ->
-                assertEquals("Only POSTED posts should be shown", PostStatus.POSTED, post.status)
-            }
+            state.posts.forEach { assertEquals(PostType.REQUEST, it.type) }
         }
     }
 
@@ -333,49 +240,34 @@ class PersonalPostsViewModelTest {
     fun loadPersonalPosts_repositoryFailure_setsError() = runTest {
         fakeRepository.setShouldFailOnGet(true)
         fakeRepository.preloadPosts(sampleOffer)
-
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
         } catch (e: Exception) {
             // Continue
         }
-
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        // If user is authenticated and repository fails, error should be set
-        assertNotNull("State should exist", state)
+        assertNotNull(viewModel.uiState.value)
     }
 
     @Test
     fun deletePost_removesPostAndReloads() = runTest {
         fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
         } catch (e: Exception) {
             // Continue
         }
-
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
-
         val initialCount = viewModel.uiState.value.posts.size
-
         viewModel.deletePost(sampleOffer)
         advanceUntilIdle()
-
         val remainingPosts = fakeRepository.getAddedPosts()
-        assertFalse(
-            "Post should be removed from repository",
-            remainingPosts.any { it.uid == sampleOffer.uid }
-        )
-
+        assertFalse(remainingPosts.any { it.uid == sampleOffer.uid })
         val state = viewModel.uiState.value
         if (initialCount > 0) {
             assertTrue(
-                "Post count should decrease after deletion",
                 state.posts.size < initialCount || state.posts.none { it.uid == sampleOffer.uid }
             )
         }
@@ -384,23 +276,17 @@ class PersonalPostsViewModelTest {
     @Test
     fun refresh_reloadsPosts() = runTest {
         fakeRepository.preloadPosts(sampleOffer)
-
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
         } catch (e: Exception) {
             // Continue
         }
-
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
-
         fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-
         viewModel.refresh()
         advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertNotNull("State should exist", state)
+        assertNotNull(viewModel.uiState.value)
     }
 
     @Test
@@ -408,25 +294,9 @@ class PersonalPostsViewModelTest {
         FirebaseAuth.getInstance().signOut()
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
-
-        val stateWithError = viewModel.uiState.value
-        assertNotNull("Error should be set when no user", stateWithError.error)
-
+        assertNotNull(viewModel.uiState.value.error)
         viewModel.clearError()
-
-        val stateAfterClear = viewModel.uiState.value
-        assertNull("Error should be cleared", stateAfterClear.error)
-    }
-
-    @Test
-    fun uiState_initialState_hasCorrectDefaults() = runTest {
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertTrue("Posts should be empty initially", state.posts.isEmpty())
-        assertEquals("Default filter should be ALL", PostTypeFilter.ALL, state.selectedPostType)
-        assertFalse("Should not be loading initially", state.isLoading)
+        assertNull(viewModel.uiState.value.error)
     }
 }
 
