@@ -26,9 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
-/**
- * End-to-end tests for Milestone 1 Tests complete user flows
- */
+/** End-to-end tests for Milestone 1 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) // Be careful, tests order matters !
 class End2EndM1 {
