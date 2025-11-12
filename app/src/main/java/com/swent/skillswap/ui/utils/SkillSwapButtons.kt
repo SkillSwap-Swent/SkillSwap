@@ -106,19 +106,14 @@ fun GradientButton(
  * @param enable whether the button is enabled.
  * @param modifier optional [Modifier] for layout or styling adjustments.
  * @param shape defines the button’s outline shape (default is pill-shaped).
- * @param contentColor color applied to text and icons when enabled.
- * @param disableContentColor color applied when the button is disabled.
  * @param content composable lambda defining the button’s inner content.
  */
 @Composable
 fun SkillSwapShadowButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     enable: Boolean = true,
-    modifier: Modifier = Modifier,
     shape: Shape = pill_shape,
-    contentColor: Color = MaterialTheme.colorScheme.primary,
-    disableContentColor: Color =
-        MaterialTheme.colorScheme.onSurface.copy(text_disable_button_alpha),
     content: @Composable (RowScope.() -> Unit) = { Text(text = "test         test") },
 ) {
     ElevatedButton(enabled = enable, onClick = onClick, shape = shape, modifier = modifier) {
