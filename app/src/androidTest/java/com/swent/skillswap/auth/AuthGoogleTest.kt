@@ -128,18 +128,18 @@ class AuthGoogleTest : TestCase() {
                         goToCreateAccountScreen = {
                             navigationActions.navigateTo(Screen.CreateAccount)
                         },
-                        goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Feed) },
                         vm = vmSignIn,
                         credentialManager = credential
                     )
                 }
                 composable(Screen.CreateAccount.route) {
                     AuthCreateAccountScreen(
-                        goToMainScreen = { navigationActions.navigateTo(Screen.Offers) },
+                        goToMainScreen = { navigationActions.navigateTo(Screen.Feed) },
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Offers.route) { FeedScreen() }
+                composable(Screen.Feed.route) { FeedScreen() }
                 composable(Screen.Chat.route) { ChatListScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }

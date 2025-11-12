@@ -3,7 +3,6 @@ package com.swent.skillswap
 import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,10 +35,10 @@ import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
-import com.swent.skillswap.ui.navigation.bottomBar.BottomBar
-import com.swent.skillswap.ui.navigation.bottomBar.BottomBarViewModel
+import com.swent.skillswap.ui.navigation.Tab
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
@@ -76,7 +75,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         listOf(
             Screen.AuthMain,
             Screen.CreateAccount,
-            Screen.Offers,
+            Screen.Feed,
             Screen.Profile,
             Screen.EditSkills,
             Screen.Chat
@@ -90,22 +89,23 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val currentRoute = navBackStackEntry.value?.destination?.route
 
     val editProfileViewModel: EditUserViewModel = viewModel()
-    val bottomBarViewModel: BottomBarViewModel = viewModel()
-
-    val isTopLevel = screens.firstOrNull { it.route == currentRoute }?.isTopLevelDestination == true
-
-    if (isTopLevel) {
-        BackHandler { activity?.finish() }
-    }
 
     Scaffold(
         bottomBar = {
-            if (isTopLevel) {
-                BottomBar(
-                    vm = bottomBarViewModel,
-                    onProfileClick = { navController.navigate(Screen.Profile.route) },
-                    onOfferClick = { navController.navigate(Screen.Offers.route) },
-                    onChatClick = { navController.navigate(Screen.Chat.route) }
+            val currentTab =
+                when (currentRoute) {
+                    Screen.Profile.route -> Tab.Profile
+                    Screen.Feed.route -> Tab.Feed
+                    Screen.Chat.route -> Tab.Chat
+                    else -> null
+                }
+
+            currentTab?.let { tab ->
+                BottomNavigationMenu(
+                    selectedTab = tab,
+                    onTabSelected = { selectedTab ->
+                        navigationActions.navigateTo(selectedTab.destination)
+                    }
                 )
             }
         }
@@ -152,7 +152,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                             FirebaseAuth.getInstance().signOut()
                             navigationActions.navigateTo(Screen.AuthMain)
                         },
-                        onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) }
+                        onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -170,7 +170,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Offers.route) { FeedScreen() }
+            composable(Screen.Feed.route) { FeedScreen() }
 
             composable(Screen.Chat.route) {
                 ChatListScreen(
@@ -179,7 +179,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     onPostClick = { post ->
                         // TODO: Navigate to individual chat with post
                         println("Clicked on post: ${post.title}")
-                    }
+                    },
                 )
             }
         }
