@@ -65,4 +65,79 @@ class End2EndM2 {
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun test1_createAccount() {assert(true)}
+    fun t0_createAccount() {
+        /** 1. Launch app and verify sign in screen */
+        composeTestRule.waitForIdle()
+
+        /** Verify Sign-In screen is displayed */
+        val signInTags =
+            listOf(
+                SignInTags.LOGO,
+                SignInTags.SIGN_IN_BUTTON,
+                SignInTags.GOOGLE_BUTTON,
+                SignInTags.EMAIL_FIELD,
+                SignInTags.PASSWORD_FIELD
+            )
+
+        for (testTag in signInTags) {
+            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        }
+
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
+
+        /** 2. Navigate in Create account Screens */
+
+        /* Username Screen */
+        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+
+        composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput("Bob")
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
+        /* Email Screen */
+        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.EMAIL_FIELD)
+            .performTextInput("bob@mail.com")
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
+        /* Password Screen */
+        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.PASSWORD_FIELD)
+            .performTextInput("Password123")
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+            .performTextInput("Password123")
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+
+        /* Skills Screen */
+        val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
+        composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(skillTag).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
+
+        composeTestRule.onNodeWithTag(skillTag).performClick()
+        composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        /* End of Create Account Screens */
+
+        /** Wait until firestore auth operation completes and Profile Screen is displayed */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+}
