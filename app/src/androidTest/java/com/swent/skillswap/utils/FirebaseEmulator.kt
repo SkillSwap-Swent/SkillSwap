@@ -25,7 +25,7 @@ object FirebaseEmulator {
     val firestore
         get() = Firebase.firestore
 
-    const val HOST = "10.0.2.2"
+    const val HOST = "127.0.0.1"
     const val EMULATORS_PORT = 4400
     const val FIRESTORE_PORT = 8080
     const val AUTH_PORT = 9099
@@ -73,6 +73,17 @@ object FirebaseEmulator {
         val response = client.newCall(request).execute()
 
         assert(response.isSuccessful) { "Failed to clear emulator at $endpoint" }
+    }
+
+    private fun clearAuthEmulator() {
+        val client = httpClient
+        val request = Request.Builder()
+            .url("http://localhost:9099/emulator/v1/projects/YOUR_PROJECT_ID/accounts")
+            .delete()
+            .build()
+        val response = client.newCall(request).execute()
+
+        assert(response.isSuccessful) { "Failed to clear Auth emulator: ${response.code}" }
     }
 
     fun clearAuthEmulator() {
