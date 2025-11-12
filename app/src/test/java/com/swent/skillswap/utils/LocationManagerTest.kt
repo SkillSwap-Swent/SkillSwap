@@ -3,11 +3,9 @@ package com.swent.skillswap.utils
 
 import android.Manifest
 import android.location.Location
-import com.google.android.gms.location.LocationResult
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -504,9 +502,7 @@ class LocationManagerTest {
 
         // Collect from the flow - this will trigger the callback if location updates arrive
         var receivedLocation: GeoPoint? = null
-        locationManager.getCurrentLocation().collect { geoPoint ->
-            receivedLocation = geoPoint
-        }
+        locationManager.getCurrentLocation().collect { geoPoint -> receivedLocation = geoPoint }
 
         // Verify we received a location
         // Note: In Robolectric, the actual callback may not be triggered,
