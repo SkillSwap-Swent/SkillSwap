@@ -5,7 +5,6 @@
 package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -305,7 +304,7 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
 @Composable
 fun SkillScreen(vm: CreateAccountViewModel) {
     val uiState by vm.uiState.collectAsState()
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().padding(bottom = 150.dp)) {
         Spacer(modifier = Modifier.height(30.dp))
         Text(
             text = "Pick your \n\nmain skills !",
@@ -313,7 +312,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = uiState.skillsError,
             color = Color.Red,
@@ -329,23 +328,32 @@ fun SkillScreen(vm: CreateAccountViewModel) {
         ) {
             // Loop through all skill tags and render as selectable chips
             for (skill in SkillTag.entries) {
-                val skillColor = if (uiState.skills.contains(skill)) Color.Red else Color.Black
+                val isSelected = uiState.skills.contains(skill)
+                val backgroundColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
+                val textColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.onSecondary
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    }
+
                 Box(
                     modifier =
-                        Modifier.border(
-                                width = 1.dp,
-                                color = skillColor,
-                                shape = RoundedCornerShape(50)
-                            )
+                        Modifier.background(backgroundColor, shape = RoundedCornerShape(50))
                             .clickable { vm.clickSkill(skill) }
-                            .padding(horizontal = 10.dp, vertical = 3.dp)
+                            .padding(horizontal = 11.dp, vertical = 6.dp)
                             .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
                 ) {
                     Text(
                         text = skill.name, // TODO: make enum names user-friendly
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp,
-                        color = skillColor,
+                        color = textColor,
                     )
                 }
             }

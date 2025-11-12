@@ -14,6 +14,8 @@ fun SkillSwapAppTheme(content: @Composable () -> Unit) {
             onPrimary = colorResource(id = R.color.md_theme_onPrimary),
             primaryContainer = colorResource(id = R.color.md_theme_primaryContainer),
             onPrimaryContainer = colorResource(id = R.color.md_theme_onPrimaryContainer),
+            secondaryContainer = colorResource(id = R.color.md_theme_secondaryContainer),
+            onSecondaryContainer = colorResource(id = R.color.md_theme_onSecondaryContainer),
             secondary = colorResource(id = R.color.md_theme_secondary),
             onSecondary = colorResource(id = R.color.md_theme_onSecondary),
             tertiary = colorResource(id = R.color.md_theme_tertiary),
