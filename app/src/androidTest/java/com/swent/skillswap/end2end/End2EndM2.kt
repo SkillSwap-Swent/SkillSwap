@@ -11,6 +11,8 @@ import com.swent.skillswap.MainActivity
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.user.ProfileTestTags
+import com.swent.skillswap.ui.editUser.EditUserTags
+import com.swent.skillswap.ui.editUser.EditUserUiState
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
@@ -37,7 +39,7 @@ class End2EndM2 {
 
         @BeforeClass
         @JvmStatic
-        fun clearAuthEmulator() {
+        fun clearAuthEmulatorAndFirestoreEmulators() {
             val url = URL("$EMULATOR_URL/emulator/v1/projects/$PROJECT_ID/accounts")
             with(url.openConnection() as HttpURLConnection) {
                 requestMethod = "DELETE"
@@ -47,6 +49,8 @@ class End2EndM2 {
                 }
                 disconnect()
             }
+
+            FirebaseEmulator.clearFirestoreEmulator()
         }
     }
 
@@ -133,5 +137,55 @@ class End2EndM2 {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+
+        val visibleComposableProfile =
+            listOf(
+                ProfileTestTags.PROFILE_TITLE,
+                ProfileTestTags.EDIT_PROFILE,
+                ProfileTestTags.PROFILE_TITLE,
+                ProfileTestTags.EMAIL_SECTION,
+                ProfileTestTags.USERNAME_SECTION,
+                ProfileTestTags.SKILLS_SECTION,
+                ProfileTestTags.PREFERENCES_SECTION
+            )
+
+        for (testTag in visibleComposableProfile) {
+            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun t1_canModifyProfile(){
+        /** Assumes user is already signed in from previous test */
+        composeTestRule.onNodeWithTag(ProfileTestTags.EDIT_PROFILE).performClick()
+
+        /** Edit Profile Screen */
+        val visibleComposablesEditScreen = listOf(
+            EditUserTags.GO_BACK_BUTTON,
+            EditUserTags.USERNAME_TEXTFIELD,
+            EditUserTags.EMAIL_TEXTFIELD,
+            EditUserTags.VALIDATE_BUTTON,
+            EditUserTags.PROFILE_PICTURE,
+            EditUserTags.SKILLSET_SECTION
+        )
+
+        for (testTag in visibleComposablesEditScreen) {
+            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        }
+
+        /** Modify username */
+        composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).performTextClearance()
+        composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).performTextInput("Bobby")
+        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performClick()
+
+        /** Check that change is stored in firestore */
+        composeTestRule.waitUntil(timeoutMillis = 10_000){
+            db.collection("users").document(auth.currentUser!!.uid)
+                .get()
+                .result
+                ?.getString("username") == "Bobby"
+        }
+
+
     }
 }
