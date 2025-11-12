@@ -16,6 +16,7 @@ data class Offer(
     override val creation: Timestamp,
     override val status: PostStatus,
     override val media: List<String>,
+    override val postReplies: Set<PostReply> = emptySet(),
     override val location: GeoPoint
 ) : Post {
     override val type: PostType = PostType.OFFER

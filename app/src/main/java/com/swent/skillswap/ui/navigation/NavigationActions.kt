@@ -10,13 +10,13 @@ sealed class Screen(
     val name: String,
     val isTopLevelDestination: Boolean = false,
 ) {
-    object SignInMain : Screen(route = "signIn", name = "Sign In", isTopLevelDestination = false)
+    object AuthMain : Screen(route = "signIn", name = "Sign In", isTopLevelDestination = false)
 
-    object SignInCreateAccount : Screen(route = "create_account", name = "Create account")
+    object CreateAccount : Screen(route = "create_account", name = "Create account")
 
     object PasswordRecovery : Screen(route = "password_recovery", name = "Password Recovery")
 
-    object Offers : Screen(route = "offers", name = "Offers", isTopLevelDestination = true)
+    object Feed : Screen(route = "feed", name = "Feed", isTopLevelDestination = true)
 
     object Profile : Screen(route = "profile", name = "Profile", isTopLevelDestination = true)
 
@@ -37,14 +37,20 @@ open class NavigationActions(
      */
     open fun navigateTo(screen: Screen) {
 
-        val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true).setRestoreState(true)
+        if (screen.isTopLevelDestination && currentRoute() == screen.route) {
+            return // Prevent re-navigating to the same screen
+        }
+
+        val navOptionsBuilder = NavOptions.Builder().setLaunchSingleTop(true)
 
         if (screen.isTopLevelDestination) {
-            navOptionsBuilder.setPopUpTo(
-                navController.graph.findStartDestination().id,
-                inclusive = false,
-                saveState = true
-            )
+            navOptionsBuilder
+                .setRestoreState(true)
+                .setPopUpTo(
+                    navController.graph.findStartDestination().id,
+                    inclusive = true,
+                    saveState = true
+                )
         }
         navController.navigate(screen.route, navOptionsBuilder.build())
     }

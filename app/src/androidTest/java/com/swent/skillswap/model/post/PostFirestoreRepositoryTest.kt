@@ -6,6 +6,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
+import kotlin.String
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -24,7 +25,7 @@ class PostRepositoryInstrumentedTest {
     private val lausanneLocation = GeoPoint(46.5197, 6.6323)
     private val genevaLocation = GeoPoint(46.2044, 6.1432)
 
-    private val request1 =
+    val request1 =
         Request(
             uid = "123",
             title = "Need help with Kotlin",
@@ -36,7 +37,18 @@ class PostRepositoryInstrumentedTest {
             status = PostStatus.POSTED,
             media = listOf("media_url_1", "media_url_2"),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
-            location = epflLocation
+            location = epflLocation,
+            postReplies =
+                setOf(
+                    PostReply(
+                        postId = "123",
+                        ownerId = "replier123",
+                        creation = Timestamp.now(),
+                        message = "I want to help!",
+                        postType = PostType.REQUEST,
+                        replyStatus = ReplyStatus.PROPOSED
+                    )
+                )
         )
 
     @Before
@@ -75,6 +87,7 @@ class PostRepositoryInstrumentedTest {
             assertEquals(req.location.latitude, fetched.location.latitude, 0.0001)
             assertEquals(req.location.longitude, fetched.location.longitude, 0.0001)
             assertEquals(req.location, fetched.location)
+            assertEquals(req.postReplies, fetched.postReplies)
         }
     }
 
