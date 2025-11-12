@@ -313,7 +313,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = uiState.skillsError,
             color = Color.Red,
