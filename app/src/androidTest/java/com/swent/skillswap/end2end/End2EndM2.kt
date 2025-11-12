@@ -23,6 +23,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import kotlin.text.get
 
 /** End-to-end tests for Milestone 2 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
@@ -58,6 +59,7 @@ class End2EndM2 {
     fun setup() {
         FirebaseEmulator.startEmulator()
         db = FirebaseEmulator.firestore
+        auth = FirebaseAuth.getInstance()
     }
 
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
@@ -179,13 +181,34 @@ class End2EndM2 {
         composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performClick()
 
         /** Check that change is stored in firestore */
-        composeTestRule.waitUntil(timeoutMillis = 10_000){
-            db.collection("users").document(auth.currentUser!!.uid)
+        var usernameUpdated = false
+
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            db.collection("users")
+                .document(auth.currentUser!!.uid)
                 .get()
-                .result
-                ?.getString("username") == "Bobby"
+                .addOnSuccessListener { document ->
+                    usernameUpdated = document.getString("username") == "Bobby"
+                }
+                .addOnFailureListener {
+                    usernameUpdated = false
+                }
+
+            // Vérifier le résultat
+            usernameUpdated
         }
+    }
 
+    @Test
+    fun t2_canScrollOnFeedScreen(){
+        /** Assumes user is already signed in from previous test */
+        val feedListTag = "FeedLazyColumn"
+        composeTestRule.onNodeWithTag(feedListTag).assertIsDisplayed()
 
+        /** Scroll down */
+        composeTestRule.onNodeWithTag(feedListTag).performScrollToIndex(10)
+
+        /** Scroll up */
+        composeTestRule.onNodeWithTag(feedListTag).performScrollToIndex(0)
     }
 }
