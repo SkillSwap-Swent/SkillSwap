@@ -108,8 +108,10 @@ class End2EndM1 {
         }
 
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
+        composeTestRule.waitForIdle()
 
         /** 2. Navigate in Create account Screens */
 
@@ -119,7 +121,9 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
 
         composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput("Bob")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        composeTestRule.waitForIdle()
 
         /* Email Screen */
         composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
@@ -129,7 +133,9 @@ class End2EndM1 {
         composeTestRule
             .onNodeWithTag(CreateAccountTags.EMAIL_FIELD)
             .performTextInput("bob@mail.com")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        composeTestRule.waitForIdle()
 
         /* Password Screen */
         composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
@@ -140,10 +146,13 @@ class End2EndM1 {
         composeTestRule
             .onNodeWithTag(CreateAccountTags.PASSWORD_FIELD)
             .performTextInput("Password123")
+        composeTestRule.waitForIdle()
         composeTestRule
             .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
             .performTextInput("Password123")
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        composeTestRule.waitForIdle()
 
         /* Skills Screen */
         val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
@@ -153,16 +162,19 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
 
         composeTestRule.onNodeWithTag(skillTag).performClick()
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
+        composeTestRule.waitForIdle()
         /* End of Create Account Screens */
 
         /** Wait until firestore auth operation completes and Profile Screen is displayed */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 30_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        composeTestRule.waitForIdle()
 
         /** 3. Profile Screen Navigation Verification */
         navigateThroughAllScreensAfterAuthentification()
@@ -174,12 +186,13 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /** Wait until the previous test is done a the app is set up again */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 30_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        composeTestRule.waitForIdle()
 
         /** Perform Navigation Verification */
         navigateThroughAllScreensAfterAuthentification()
@@ -235,6 +248,7 @@ class End2EndM1 {
 
         /** Navigate to Feed Screen */
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+        composeTestRule.waitForIdle()
 
         for (testTag in visibleComposableFeedScreen) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -246,6 +260,7 @@ class End2EndM1 {
 
         /** Navigate to Chat Screen */
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+        composeTestRule.waitForIdle()
 
         for (testTag in visibleComposableChatScreen) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
