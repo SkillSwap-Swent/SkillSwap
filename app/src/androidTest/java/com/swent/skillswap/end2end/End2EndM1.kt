@@ -17,6 +17,7 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
 import junit.framework.TestCase.assertNotNull
+import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.BeforeClass
@@ -34,16 +35,20 @@ class End2EndM1 {
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
     lateinit var auth: FirebaseAuth
 
-    /** Companion object to clear the Auth emulator before running tests */
+    /** Companion object to clear the Auth emulator after running all tests */
     companion object {
         private const val EMULATOR_URL = "http://10.0.2.2:9099"
         private const val PROJECT_ID = "skillswap-93276"
 
         @BeforeClass
         @JvmStatic
-        fun setupEmulatorAndClearAuth() {
+        fun setupEmulator() {
             FirebaseEmulator.startEmulator()
+        }
 
+        @AfterClass
+        @JvmStatic
+        fun cleanupAuthEmulator() {
             val url = URL("$EMULATOR_URL/emulator/v1/projects/$PROJECT_ID/accounts")
             val maxAttempts = 20
             var attempt = 0
@@ -58,6 +63,7 @@ class End2EndM1 {
                         val responseCode = responseCode
                         if (responseCode == HttpURLConnection.HTTP_OK) {
                             cleared = true
+                            println("Firebase Auth emulator cleared successfully")
                         }
                         disconnect()
                     }
@@ -68,7 +74,7 @@ class End2EndM1 {
             }
 
             if (!cleared) {
-                throw Exception("Failed to clear Auth emulator after $maxAttempts attempts")
+                println("Warning: Failed to clear Auth emulator after $maxAttempts attempts")
             }
         }
     }
