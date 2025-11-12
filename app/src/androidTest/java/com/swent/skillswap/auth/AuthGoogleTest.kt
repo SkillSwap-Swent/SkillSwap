@@ -160,7 +160,7 @@ class AuthGoogleTest : TestCase() {
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performClick()
 
-        composeTestRule.waitUntil(10_005) {
+        composeTestRule.waitUntil(15_001L) {
             composeTestRule
                 .onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
                 .fetchSemanticsNodes()
@@ -180,7 +180,7 @@ class AuthGoogleTest : TestCase() {
             .performClick()
 
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
-        composeTestRule.waitUntil(timeoutMillis = 20_002L) {
+        composeTestRule.waitUntil(timeoutMillis = 15_002L) {
             composeTestRule
                 .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
