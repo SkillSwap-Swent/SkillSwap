@@ -7,9 +7,9 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -17,6 +17,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.offer.ChatRepository
@@ -29,6 +30,7 @@ import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
+import com.swent.skillswap.ui.feedScreen.FeedScreenViewModelFactory
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Calendar
 import kotlinx.coroutines.runBlocking
@@ -191,83 +193,129 @@ class FeedScreenInstrumentedTest {
     fun acceptOffer_LoadsNextOffer() = runBlocking {
         val post1 = createValidPost("post1", "Learn Guitar", "author1")
         val post2 = createValidPost("post2", "Learn Piano", "author2")
+
+        // Add posts (order in emulator is non-deterministic)
         addPostToEmulator(post1)
         addPostToEmulator(post2)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
-        val vm = FeedScreenViewModel(navigation, controller)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
 
-        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
-
-        val post2Title = "Learn Piano"
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            val nodes =
-                composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
-                    .fetchSemanticsNodes()
-            if (nodes.isEmpty()) {
-                return@waitUntil false
-            }
-            val actualText = nodes.first().getTextString()
-            actualText?.contains(post2Title) == true
+        composeTestRule.setContent {
+            val vm: FeedScreenViewModel = viewModel(factory = factory)
+            Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
         }
+
+        // Wait until a skill title appears (either post1 or post2)
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Determine which post is shown first
+        val shownIsPost1 =
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .assertTextContains(post1.title, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+
+        val expectedNextTitle = if (shownIsPost1) post2.title else post1.title
+
+        // Accept the currently visible offer
         composeTestRule.onNodeWithTag(FeedScreenTestTags.ACCEPT_BUTTON).performClick()
-        val post1Title = "Learn Guitar"
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            val nodes =
+
+        // Wait until the other post is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
                 composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
-                    .fetchSemanticsNodes()
-
-            if (nodes.isEmpty()) {
-                return@waitUntil false
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
             }
-
-            val actualText = nodes.first().getTextString() // Requires the getTextString helper
-
-            // Check if the text contains the expected title for post1
-            actualText?.contains(post1Title) == true
         }
+
+        // Final explicit check
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+        return@runBlocking
     }
 
     @Test
     fun skipOffer_LoadsNextOffer() = runBlocking {
         val post1 = createValidPost("post1", "Learn Guitar", "author1")
         val post2 = createValidPost("post2", "Learn Piano", "author2")
-        addPostToEmulator(post2)
+
+        // Add posts (order may not be deterministic)
         addPostToEmulator(post1)
+        addPostToEmulator(post2)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
+        // Create controller and ViewModel via factory
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
-        val vm = FeedScreenViewModel(navigation, controller)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
 
-        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
-
-        // Wait until post2 is displayed
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            val nodes =
-                composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
-                    .fetchSemanticsNodes()
-            if (nodes.isEmpty()) return@waitUntil false
-            val actualText = nodes.first().getTextString()
-            actualText?.contains(post1.title) == true
+        composeTestRule.setContent {
+            Box(Modifier.fillMaxSize()) {
+                val vm: FeedScreenViewModel = viewModel(factory = factory)
+                FeedScreen(vm = vm)
+            }
         }
 
-        // Skip via decline button
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Determine which post is shown first
+        val shownIsPost1 =
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .assertTextContains(post1.title, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+
+        val expectedNextTitle = if (shownIsPost1) post2.title else post1.title
+
+        // Skip current offer (decline button)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.DECLINE_BUTTON).performClick()
 
-        // Wait until post1 is displayed
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            val nodes =
+        // Wait until the next post is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
                 composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
-                    .fetchSemanticsNodes()
-            if (nodes.isEmpty()) return@waitUntil false
-            val actualText = nodes.first().getTextString()
-            actualText?.contains(post2.title) == true
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
+
+        // Final explicit check
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+        return@runBlocking
     }
 
     @Test
