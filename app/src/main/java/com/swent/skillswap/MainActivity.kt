@@ -26,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.offer.ChatRepository
@@ -99,6 +100,21 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val currentRoute = navBackStackEntry.value?.destination?.route
 
     val editProfileViewModel: EditUserViewModel = viewModel()
+
+    val controller = remember {
+        runBlocking {
+            FeedControllerFactory(
+                    recommendationEngine = RecommendationEngine(),
+                    thumbnailRepository = ThumbnailRepository(),
+                    postRepository = PostFirestoreRepository(Firebase.firestore),
+                    chatRepository = ChatRepository()
+                )
+                .create(
+                    userIdPerformingActions = Firebase.auth.uid ?: "AnoUser",
+                    feedType = PostType.REQUEST
+                )
+        }
+    }
 
     Scaffold(
         bottomBar = {
