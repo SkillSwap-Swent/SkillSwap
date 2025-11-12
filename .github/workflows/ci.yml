@@ -1,3 +1,4 @@
+runs-on: self-hosted
 name: CI - Test Runner
 
 # Run the workflow when commits are pushed on main or when a PR is modified
@@ -16,7 +17,7 @@ jobs:
   ci:
     name: CI
     # Execute the CI on the course's runners
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       # First step : Checkout the repository on the runner
