@@ -14,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,10 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
-import com.swent.skillswap.ui.navigation.BottomNavigationMenu
-import com.swent.skillswap.ui.navigation.NavigationActions
-import com.swent.skillswap.ui.navigation.NavigationTestTags
-import com.swent.skillswap.ui.navigation.Tab
 
 /**
  * Chat list screen that displays conversations with posts instead of users. Shows posts in
@@ -37,72 +32,61 @@ fun ChatListScreen(
     posts: List<Post> = emptyList(),
     users: Map<String, User> = emptyMap(),
     onPostClick: (Post) -> Unit = {},
-    navigationActions: NavigationActions? = null
 ) {
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigationMenu(
-                selectedTab = Tab.Chat,
-                onTabSelected = { tab -> navigationActions?.navigateTo(tab.destination) },
-                modifier = Modifier.testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        // Title
+        Text(
+            text = "Chat",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+        )
+
+        // Post Type Filter Buttons
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            PostTypeFilterButton(
+                text = "Offer",
+                isSelected = selectedPostType == PostType.OFFER,
+                onClick = { selectedPostType = PostType.OFFER },
+                modifier = Modifier.weight(1f)
+            )
+
+            PostTypeFilterButton(
+                text = "Request",
+                isSelected = selectedPostType == PostType.REQUEST,
+                onClick = { selectedPostType = PostType.REQUEST },
+                modifier = Modifier.weight(1f)
             )
         }
-    ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp)) {
-            // Title
-            Text(
-                text = "Chat",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
-            )
 
-            // Post Type Filter Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                PostTypeFilterButton(
-                    text = "Offer",
-                    isSelected = selectedPostType == PostType.OFFER,
-                    onClick = { selectedPostType = PostType.OFFER },
-                    modifier = Modifier.weight(1f)
-                )
+        // Posts List
+        val filteredPosts =
+            remember(posts, selectedPostType) { posts.filter { it.type == selectedPostType } }
 
-                PostTypeFilterButton(
-                    text = "Request",
-                    isSelected = selectedPostType == PostType.REQUEST,
-                    onClick = { selectedPostType = PostType.REQUEST },
-                    modifier = Modifier.weight(1f)
+        if (filteredPosts.isEmpty()) {
+            // Empty state
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "No ${selectedPostType.name.lowercase()} posts available",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center
                 )
             }
-
-            // Posts List
-            val filteredPosts =
-                remember(posts, selectedPostType) { posts.filter { it.type == selectedPostType } }
-
-            if (filteredPosts.isEmpty()) {
-                // Empty state
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "No ${selectedPostType.name.lowercase()} posts available",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(filteredPosts) { post ->
+                    PostConversationItem(
+                        post = post,
+                        user = users[post.ownerId],
+                        onClick = { onPostClick(post) }
                     )
-                }
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(filteredPosts) { post ->
-                        PostConversationItem(
-                            post = post,
-                            user = users[post.ownerId],
-                            onClick = { onPostClick(post) }
-                        )
-                    }
                 }
             }
         }

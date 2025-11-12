@@ -3,16 +3,12 @@ package com.swent.skillswap.navigation
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.swent.skillswap.ui.chat.ChatListScreen
-import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.SkillSwapApp
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.*
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.ProfileTestTags
 import org.junit.Before
 import org.junit.Rule
@@ -25,26 +21,20 @@ class BottomBarNavigationTest {
     @get:Rule val composeTestRule = createComposeRule()
 
     private lateinit var navController: NavHostController
-    private lateinit var navigationActions: NavigationActions
 
     @Before
     fun setUp() {
         composeTestRule.setContent {
             navController = rememberNavController()
-            navigationActions = NavigationActions(navController)
 
-            SkillSwapAppTheme {
-                NavHost(navController = navController, startDestination = Screen.Profile.route) {
-                    composable(Screen.Profile.route) {
-                        ProfileScreen(navigationActions = navigationActions)
-                    }
-                    composable(Screen.Feed.route) {
-                        FeedScreen(navigationActions = navigationActions)
-                    }
-                    composable(Screen.Chat.route) {
-                        ChatListScreen(navigationActions = navigationActions)
-                    }
-                }
+            SkillSwapAppTheme { SkillSwapApp(navController = navController) }
+        }
+        composeTestRule.waitForIdle()
+
+        // Navigate to the Profile screen
+        composeTestRule.runOnUiThread {
+            navController.navigate(Screen.Profile.route) {
+                popUpTo(Screen.AuthMain.route) { inclusive = true }
             }
         }
         composeTestRule.waitForIdle()

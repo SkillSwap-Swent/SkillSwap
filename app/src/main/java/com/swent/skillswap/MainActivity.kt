@@ -36,8 +36,10 @@ import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
+import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
+import com.swent.skillswap.ui.navigation.Tab
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
@@ -95,7 +97,28 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         BackHandler { activity?.finish() }
     }
 
-    Scaffold() { paddingValues ->
+    Scaffold(
+        bottomBar = {
+            if (isTopLevel) {
+                val currentTab =
+                    when (currentRoute) {
+                        Screen.Profile.route -> Tab.Profile
+                        Screen.Feed.route -> Tab.Feed
+                        Screen.Chat.route -> Tab.Chat
+                        else -> null
+                    }
+
+                currentTab?.let { tab ->
+                    BottomNavigationMenu(
+                        selectedTab = tab,
+                        onTabSelected = { selectedTab ->
+                            navigationActions.navigateTo(selectedTab.destination)
+                        }
+                    )
+                }
+            }
+        }
+    ) { paddingValues ->
         NavHost(
             navController = navController,
             startDestination = startDestination,
@@ -139,7 +162,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                             navigationActions.navigateTo(Screen.AuthMain)
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
-                        navigationActions = navigationActions
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -157,7 +179,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.Feed.route) { FeedScreen(navigationActions = navigationActions) }
+            composable(Screen.Feed.route) { FeedScreen() }
 
             composable(Screen.Chat.route) {
                 ChatListScreen(
@@ -167,7 +189,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         // TODO: Navigate to individual chat with post
                         println("Clicked on post: ${post.title}")
                     },
-                    navigationActions = navigationActions
                 )
             }
         }
