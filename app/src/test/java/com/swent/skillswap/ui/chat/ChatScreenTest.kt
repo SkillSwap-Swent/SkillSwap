@@ -104,13 +104,13 @@ class ChatScreenTest {
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).performClick()
 
         // Input should be cleared after sending
-        composeRule
-            .onNodeWithTag(ChatScreenTags.MESSAGE_INPUT)
-            .assertTextEquals("", includeEditableText = true)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Test message").assertDoesNotExist()
 
         // Whitespace-only input should not clear (message not sent)
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("   ")
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).performClick()
+        composeRule.waitForIdle()
         composeRule.onNodeWithText("   ").assertExists() // Input still there
     }
 
