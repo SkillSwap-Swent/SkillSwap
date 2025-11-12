@@ -304,7 +304,7 @@ fun PasswordScreen(vm: CreateAccountViewModel) {
 @Composable
 fun SkillScreen(vm: CreateAccountViewModel) {
     val uiState by vm.uiState.collectAsState()
-    Column(modifier = Modifier.fillMaxSize().padding(bottom = 150.dp)) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(30.dp))
         Text(
             text = "Pick your \n\nmain skills !",
