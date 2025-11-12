@@ -84,7 +84,10 @@ class End2EndM1 {
     @OptIn(InternalTestApi::class)
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
-        /** 1. Launch app and verify sign in screen */
+        /** 1. Launch app and wait for setup */
+        composeTestRule.waitUntil(timeoutMillis = 30_000) {
+            composeTestRule.onAllNodesWithTag(SignInTags.LOGO).fetchSemanticsNodes().isNotEmpty()
+        }
         composeTestRule.waitForIdle()
 
         /** Verify Sign-In screen is displayed */
