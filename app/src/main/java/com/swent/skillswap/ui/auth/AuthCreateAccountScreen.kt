@@ -346,7 +346,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
                     modifier =
                         Modifier.background(backgroundColor, shape = RoundedCornerShape(50))
                             .clickable { vm.clickSkill(skill) }
-                            .padding(horizontal = 11.dp, vertical = 6.dp)
+                            .padding(horizontal = 10.dp, vertical = 3.dp)
                             .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
                 ) {
                     Text(
