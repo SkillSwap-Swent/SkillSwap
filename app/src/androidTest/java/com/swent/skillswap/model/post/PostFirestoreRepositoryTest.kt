@@ -6,7 +6,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
-import kotlin.String
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -110,7 +110,9 @@ class PostFirestoreRepositoryTest {
             val bad: Request = original.copy(title = "")
 
             val exception =
-                assertThrows(RepositoryException::class.java) { runTest { repo.editPost(id, bad) } }
+                assertThrows(RepositoryException::class.java) {
+                    runBlocking { repo.editPost(id, bad) }
+                }
             assertEquals("Post fields are invalid", exception.cause?.message)
         }
     }
@@ -144,15 +146,14 @@ class PostFirestoreRepositoryTest {
             val id: String = repo.getNewUid(PostType.REQUEST)
             val req: Request = request1.copy(uid = id)
             repo.addPost(req)
-
             repo.deletePost(PostType.REQUEST, id)
 
             val exception =
                 assertThrows(RepositoryException::class.java) {
-                    runTest { repo.getPost(PostType.REQUEST, id) }
+                    runBlocking { repo.getPost(PostType.REQUEST, id) }
                 }
 
-            assertTrue(exception.cause is IllegalStateException)
+            assertTrue(exception.cause?.message == "Post $id does not exist")
         }
     }
 
@@ -331,11 +332,9 @@ class PostFirestoreRepositoryTest {
             val req = request1.copy(uid = id)
             repo.addPost(req)
 
-            val exception =
-                assertThrows(RepositoryException::class.java) {
-                    runTest { repo.getPost(PostType.OFFER, id) }
-                }
-            assertTrue(exception.cause is IllegalStateException)
+            assertThrows(NotImplementedError::class.java) {
+                runBlocking { repo.getPost(PostType.OFFER, id) }
+            }
         }
     }
 

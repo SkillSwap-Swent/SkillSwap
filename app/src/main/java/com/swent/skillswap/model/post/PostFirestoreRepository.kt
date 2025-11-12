@@ -113,6 +113,9 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     override suspend fun getPost(type: PostType, postId: String): Post {
         return try {
             val document = getCollectionPath(type).document(postId).get().await()
+            if (!document.exists()) {
+                throw RepositoryException("Post $postId does not exist", null)
+            }
             documentToPost(document)
         } catch (e: Exception) {
             throw RepositoryException("Failed to get post $postId", e)
@@ -300,4 +303,4 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     }
 }
 
-class RepositoryException(message: String, cause: Throwable) : Exception(message, cause)
+class RepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)
