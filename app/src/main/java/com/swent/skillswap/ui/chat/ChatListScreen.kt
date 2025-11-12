@@ -31,7 +31,7 @@ import com.swent.skillswap.model.user.User
 fun ChatListScreen(
     posts: List<Post> = emptyList(),
     users: Map<String, User> = emptyMap(),
-    onPostClick: (Post) -> Unit = {},
+    onPostClick: (Post) -> Unit = {}
 ) {
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 

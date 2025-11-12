@@ -64,7 +64,6 @@ fun ProfileScreen(
 
     val uiState by vm.userState.collectAsState()
     val scroll = rememberScrollState()
-
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(scroll),
         horizontalAlignment = Alignment.CenterHorizontally
