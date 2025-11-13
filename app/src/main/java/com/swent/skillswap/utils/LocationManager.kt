@@ -4,19 +4,15 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.Looper
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.firebase.firestore.GeoPoint
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -38,8 +34,8 @@ class LocationManager(private val context: Context) {
         /** Default fallback location (EPFL, Lausanne) */
         val DEFAULT_LOCATION = GeoPoint(46.5191, 6.5668)
 
-        /** Timeout for location requests in milliseconds */
-        private const val LOCATION_TIMEOUT_MS = 10_000L
+        /** Maximum age of location data to accept (5 minutes) */
+        private const val MAX_LOCATION_AGE_MS = 5 * 60 * 1000L
 
         /** Priority for location requests */
         private const val LOCATION_PRIORITY = Priority.PRIORITY_HIGH_ACCURACY
@@ -64,90 +60,44 @@ class LocationManager(private val context: Context) {
     /**
      * Gets the current location as a Flow that emits a single GeoPoint.
      *
-     * This function:
+     * This function uses the recommended getCurrentLocation() API which is safer and more efficient
+     * than managing location updates manually. It:
      * - Checks for permissions first
-     * - Requests location with high accuracy
+     * - Requests a single fresh location with high accuracy
+     * - Uses CurrentLocationRequest to request a fresh location update
      * - Emits the location as a GeoPoint
      * - Falls back to DEFAULT_LOCATION if permission denied or location unavailable
-     * - Times out after LOCATION_TIMEOUT_MS
      *
      * @return Flow that emits a single GeoPoint (current location or default)
      */
-    fun getCurrentLocation(): Flow<GeoPoint> = callbackFlow {
-        // Helper function to send default location and close flow
-        fun sendDefaultAndClose() {
-            trySend(DEFAULT_LOCATION)
-            close()
-        }
-
-        // Helper function to send location and close flow
-        fun sendLocationAndClose(location: Location) {
-            trySend(locationToGeoPoint(location))
-            close()
-        }
-
+    fun getCurrentLocation(): Flow<GeoPoint> = flow {
         if (!hasLocationPermission()) {
-            sendDefaultAndClose()
-            return@callbackFlow
+            emit(DEFAULT_LOCATION)
+            return@flow
         }
-
-        val locationRequest =
-            LocationRequest.Builder(LOCATION_PRIORITY, LOCATION_TIMEOUT_MS)
-                .setMaxUpdateDelayMillis(LOCATION_TIMEOUT_MS)
-                .build()
-
-        val locationCallback =
-            object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    val location = locationResult.lastLocation
-                    if (location != null) {
-                        sendLocationAndClose(location)
-                    } else {
-                        sendDefaultAndClose()
-                    }
-                }
-            }
 
         try {
-            // Try to get last known location first (faster)
-            val lastLocation = fusedLocationClient.lastLocation.await()
-            if (lastLocation != null) {
-                sendLocationAndClose(lastLocation)
-                return@callbackFlow
+            // Use CurrentLocationRequest for getCurrentLocation() API
+            // This requests a single fresh location update (not a stream)
+            val currentLocationRequest =
+                CurrentLocationRequest.Builder().setPriority(LOCATION_PRIORITY).build()
+
+            // Use getCurrentLocation() API - recommended way to get a fresh location
+            // This is safer than requestLocationUpdates() and doesn't waste battery
+            val location = fusedLocationClient.getCurrentLocation(currentLocationRequest).await()
+
+            if (location != null) {
+                emit(locationToGeoPoint(location))
+            } else {
+                // Location unavailable, use default
+                emit(DEFAULT_LOCATION)
             }
-
-            // If no last location, request updates
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-
-            // Set up timeout
-            android.os
-                .Handler(Looper.getMainLooper())
-                .postDelayed(
-                    {
-                        fusedLocationClient.removeLocationUpdates(locationCallback)
-                        sendDefaultAndClose()
-                    },
-                    LOCATION_TIMEOUT_MS
-                )
         } catch (e: SecurityException) {
             // Permission was revoked between check and request
-            sendDefaultAndClose()
+            emit(DEFAULT_LOCATION)
         } catch (e: Exception) {
             // Any other error (location unavailable, etc.)
-            sendDefaultAndClose()
-        }
-
-        awaitClose {
-            // Cleanup: remove location updates when flow is cancelled
-            try {
-                fusedLocationClient.removeLocationUpdates(locationCallback)
-            } catch (e: Exception) {
-                // Ignore errors during cleanup
-            }
+            emit(DEFAULT_LOCATION)
         }
     }
 
