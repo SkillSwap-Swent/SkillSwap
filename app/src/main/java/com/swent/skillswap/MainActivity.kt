@@ -180,7 +180,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddPost) }
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -215,7 +215,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 }
             }
 
-            composable(Screen.AddPost.route) {
+            composable(Screen.AddRequest.route) {
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                 if (currentUserId == null) {
                     Log.d("MainActivity", "AddPost screen skipped: currentUserId is null")
