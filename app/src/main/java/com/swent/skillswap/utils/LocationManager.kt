@@ -10,7 +10,9 @@ import com.google.android.gms.location.LastLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.firebase.firestore.GeoPoint
+import kotlinx.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
@@ -79,41 +81,50 @@ class LocationManager(private val context: Context) {
      *
      * @return Flow that emits a single GeoPoint (current location or default)
      */
-    fun getCurrentLocation(): Flow<GeoPoint> = flow {
-        if (!hasLocationPermission()) {
-            emit(DEFAULT_LOCATION)
-            return@flow
-        }
+    fun getCurrentLocation(): Flow<GeoPoint> =
+        flow {
+                if (!hasLocationPermission()) {
+                    emit(DEFAULT_LOCATION)
+                    return@flow
+                }
 
-        try {
-            // First try getLastLocation() with LastLocationRequest for efficiency
-            // This uses cached location if it's fresh enough (within MAX_LOCATION_AGE_MS)
-            val lastLocationRequest =
-                LastLocationRequest.Builder().setMaxUpdateAgeMillis(MAX_LOCATION_AGE_MS).build()
+                try {
+                    // First try getLastLocation() with LastLocationRequest for efficiency
+                    // This uses cached location if it's fresh enough (within MAX_LOCATION_AGE_MS)
+                    val lastLocationRequest =
+                        LastLocationRequest.Builder()
+                            .setMaxUpdateAgeMillis(MAX_LOCATION_AGE_MS)
+                            .build()
 
-            var location = fusedLocationClient.getLastLocation(lastLocationRequest).await()
+                    var location = fusedLocationClient.getLastLocation(lastLocationRequest).await()
 
-            // If no cached location or it's too old (getLastLocation returns null if too old),
-            // request a fresh location using getCurrentLocation()
-            if (location == null) {
-                // Use priority constant directly (getCurrentLocation accepts Int priority)
-                location = fusedLocationClient.getCurrentLocation(LOCATION_PRIORITY, null).await()
+                    // If no cached location or it's too old (getLastLocation returns null if too
+                    // old),
+                    // request a fresh location using getCurrentLocation()
+                    if (location == null) {
+                        // Use priority constant directly (getCurrentLocation accepts Int priority)
+                        location =
+                            fusedLocationClient.getCurrentLocation(LOCATION_PRIORITY, null).await()
+                    }
+
+                    if (location != null) {
+                        emit(locationToGeoPoint(location))
+                    } else {
+                        // Location unavailable, use default
+                        emit(DEFAULT_LOCATION)
+                    }
+                } catch (e: SecurityException) {
+                    // Permission was revoked between check and request
+                    emit(DEFAULT_LOCATION)
+                } catch (e: CancellationException) {
+                    // Re-throw cancellation to maintain flow transparency
+                    throw e
+                } catch (e: Exception) {
+                    // Any other error (location unavailable, etc.)
+                    emit(DEFAULT_LOCATION)
+                }
             }
-
-            if (location != null) {
-                emit(locationToGeoPoint(location))
-            } else {
-                // Location unavailable, use default
-                emit(DEFAULT_LOCATION)
-            }
-        } catch (e: SecurityException) {
-            // Permission was revoked between check and request
-            emit(DEFAULT_LOCATION)
-        } catch (e: Exception) {
-            // Any other error (location unavailable, etc.)
-            emit(DEFAULT_LOCATION)
-        }
-    }
+            .cancellable()
 
     /**
      * Gets the current location synchronously (blocking).
