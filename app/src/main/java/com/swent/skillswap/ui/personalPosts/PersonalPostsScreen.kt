@@ -67,13 +67,8 @@ fun PersonalPostsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Show error snackbar
-    var showErrorSnackbar by remember { mutableStateOf(false) }
-    LaunchedEffect(uiState.error) {
-        if (uiState.error != null) {
-            showErrorSnackbar = true
-        }
-    }
+    // Show error snackbar when error exists
+    val showErrorSnackbar = uiState.error != null
 
     Scaffold(
         topBar = {
@@ -183,18 +178,18 @@ fun PersonalPostsScreen(
         }
 
         // Error Snackbar
-        if (showErrorSnackbar && uiState.error != null) {
+        if (showErrorSnackbar) {
             LaunchedEffect(uiState.error) {
-                kotlinx.coroutines.delay(3000)
-                showErrorSnackbar = false
-                viewModel.clearError()
+                if (uiState.error != null) {
+                    kotlinx.coroutines.delay(3000)
+                    viewModel.clearError()
+                }
             }
             Snackbar(
                 modifier = Modifier.padding(16.dp),
                 action = {
                     TextButton(
                         onClick = {
-                            showErrorSnackbar = false
                             viewModel.clearError()
                         }
                     ) {

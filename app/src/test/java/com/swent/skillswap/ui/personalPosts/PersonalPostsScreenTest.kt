@@ -131,6 +131,7 @@ class PersonalPostsScreenTest {
     fun displays_error_message_and_retry_button() {
         val viewModel = TestViewModel(PersonalPostsUiState(error = "Test error", isLoading = false))
         composeRule.setContent { MaterialTheme { PersonalPostsScreen(viewModel = viewModel) } }
+        composeRule.waitForIdle()
         composeRule.onNodeWithTag(PersonalPostsScreenTags.ERROR_MESSAGE).assertExists()
         composeRule.onNodeWithText("Test error").assertExists()
         composeRule.onNodeWithText("Retry").performClick()
