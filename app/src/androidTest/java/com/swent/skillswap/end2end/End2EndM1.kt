@@ -244,12 +244,14 @@ class End2EndM1 {
         val visibleComposableProfile =
             listOf(
                 ProfileTestTags.PROFILE_TITLE,
-                ProfileTestTags.EDIT_PROFILE,
-                ProfileTestTags.PROFILE_TITLE,
-                ProfileTestTags.EMAIL_SECTION,
-                ProfileTestTags.USERNAME_SECTION,
-                ProfileTestTags.SKILLS_SECTION,
-                ProfileTestTags.PREFERENCES_SECTION
+                ProfileTestTags.PROFILE_PICTURE_BOX,
+                ProfileTestTags.EDIT_PROFILE_BUTTON,
+                ProfileTestTags.INFO_CARD,
+                ProfileTestTags.EMAIL_VALUE,
+                ProfileTestTags.USERNAME_VALUE,
+                ProfileTestTags.PREFERENCE_SWITCH,
+                ProfileTestTags.SKILLS_BUTTON,
+                ProfileTestTags.LOGOUT_BUTTON
             )
 
         val visibleComposableBotBar =
