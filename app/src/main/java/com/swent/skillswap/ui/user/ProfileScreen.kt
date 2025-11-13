@@ -32,6 +32,7 @@ import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
 import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
 import com.swent.skillswap.ui.user.ProfileTestTags.LOGOUT_BUTTON
+import com.swent.skillswap.ui.user.ProfileTestTags.MY_POSTS_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.PREFERENCE_SWITCH
 import com.swent.skillswap.ui.user.ProfileTestTags.PROFILE_PICTURE_IMAGE
 import com.swent.skillswap.ui.user.ProfileTestTags.SKILLS_BUTTON
