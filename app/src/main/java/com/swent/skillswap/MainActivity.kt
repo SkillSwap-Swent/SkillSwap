@@ -1,6 +1,7 @@
 package com.swent.skillswap
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -56,6 +57,8 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.post.PostOperation
+import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
@@ -166,7 +169,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             // USER SCREENS
             navigation(startDestination = Screen.Profile.route, route = Screen.Profile.name) {
                 composable(Screen.Profile.route) {
-                    LaunchedEffect(Unit) { editProfileViewModel.loadCurrentUser() }
+                    editProfileViewModel.loadCurrentUser()
                     profileViewModel.loadCurrentUser()
                     ProfileScreen(
                         vm = profileViewModel,
@@ -176,13 +179,14 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                             navigationActions.navigateTo(Screen.AuthMain)
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
+                        onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
                     EditUserScreen(
                         vm = editProfileViewModel,
                         onGoBack = { navigationActions.goBack() },
-                        onSkillsPressed = { navigationActions.navigateTo(Screen.EditSkills) }
                     )
                 }
                 composable(Screen.EditSkills.route) {
@@ -209,6 +213,22 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     val vm: FeedScreenViewModel = viewModel(factory = factory)
                     FeedScreen(vm = vm)
                 }
+            }
+
+            composable(Screen.AddRequest.route) {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUserId == null) {
+                    Log.d("MainActivity", "AddPost screen skipped: currentUserId is null")
+                    return@composable
+                }
+                RequestScreen(
+                    postRepository = PostFirestoreRepository(Firebase.firestore),
+                    currentUserId = currentUserId,
+                    uid = null,
+                    onGoBack = { navigationActions.goBack() },
+                    onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
+                    postOperation = PostOperation.ADD,
+                )
             }
 
             composable(Screen.Chat.route) {

@@ -64,6 +64,12 @@ class FakePostRepository : PostRepository {
         userLocation: GeoPoint?,
         maxDistanceKm: Double?
     ): List<Post> {
+        if (delayMillis > 0) {
+            delay(delayMillis)
+        }
+        if (shouldFailOnGet) {
+            throw Exception("Simulated get failure")
+        }
         getMultiplePostsCalls++
         var filteredPosts =
             posts.values

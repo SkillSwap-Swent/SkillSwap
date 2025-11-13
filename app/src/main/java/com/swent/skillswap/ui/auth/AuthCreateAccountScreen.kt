@@ -5,10 +5,8 @@
 package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,6 +30,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.utils.SkillPill
 import com.swent.skillswap.ui.utils.SkillSwapOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapPasswordOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
@@ -334,33 +332,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
             // Loop through all skill tags and render as selectable chips
             for (skill in SkillTag.entries) {
                 val isSelected = uiState.skills.contains(skill)
-                val backgroundColor =
-                    if (isSelected) {
-                        MaterialTheme.colorScheme.secondary
-                    } else {
-                        MaterialTheme.colorScheme.secondaryContainer
-                    }
-                val textColor =
-                    if (isSelected) {
-                        MaterialTheme.colorScheme.onSecondary
-                    } else {
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    }
-
-                Box(
-                    modifier =
-                        Modifier.background(backgroundColor, shape = RoundedCornerShape(50))
-                            .clickable { vm.clickSkill(skill) }
-                            .padding(horizontal = 10.dp, vertical = 3.dp)
-                            .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
-                ) {
-                    Text(
-                        text = skill.name, // TODO: make enum names user-friendly
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp,
-                        color = textColor,
-                    )
-                }
+                SkillPill(skill, isSelected, { skill -> vm.clickSkill(skill) })
             }
         }
     }
