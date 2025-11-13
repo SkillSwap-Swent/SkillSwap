@@ -52,7 +52,8 @@ fun ChatListScreen(
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
+            modifier =
+                Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
         )
 
         // Post Type Filter Buttons
@@ -81,7 +82,10 @@ fun ChatListScreen(
 
         if (filteredPosts.isEmpty()) {
             // Empty state
-            Box(modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = "No ${selectedPostType.name.lowercase()} posts available",
                     style = MaterialTheme.typography.bodyLarge,

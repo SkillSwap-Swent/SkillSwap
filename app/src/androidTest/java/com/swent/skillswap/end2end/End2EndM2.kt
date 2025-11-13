@@ -3,8 +3,6 @@
  */
 package com.swent.skillswap.end2end
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -12,15 +10,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.user.ProfileTestTags
-import com.swent.skillswap.ui.editUser.EditUserTags
-import com.swent.skillswap.ui.editUser.EditUserUiState
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
-import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.chat.ChatListTestTags
+import com.swent.skillswap.ui.editUser.EditUserTags
+import com.swent.skillswap.ui.navigation.NavigationTestTags
+import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.text.get
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -28,7 +25,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import kotlin.text.get
 
 /** End-to-end tests for Milestone 2 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
@@ -161,19 +157,20 @@ class End2EndM2 {
     }
 
     @Test
-    fun t3_canModifyProfile(){
+    fun t3_canModifyProfile() {
         /** Assumes user is already signed in from previous test */
         composeTestRule.onNodeWithTag(ProfileTestTags.EDIT_PROFILE).performClick()
 
         /** Edit Profile Screen */
-        val visibleComposablesEditScreen = listOf(
-            EditUserTags.GO_BACK_BUTTON,
-            EditUserTags.USERNAME_TEXTFIELD,
-            EditUserTags.EMAIL_TEXTFIELD,
-            EditUserTags.VALIDATE_BUTTON,
-            EditUserTags.PROFILE_PICTURE,
-            EditUserTags.SKILLSET_SECTION
-        )
+        val visibleComposablesEditScreen =
+            listOf(
+                EditUserTags.GO_BACK_BUTTON,
+                EditUserTags.USERNAME_TEXTFIELD,
+                EditUserTags.EMAIL_TEXTFIELD,
+                EditUserTags.VALIDATE_BUTTON,
+                EditUserTags.PROFILE_PICTURE,
+                EditUserTags.SKILLSET_SECTION
+            )
 
         for (testTag in visibleComposablesEditScreen) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -194,9 +191,7 @@ class End2EndM2 {
                 .addOnSuccessListener { document ->
                     usernameUpdated = document.getString("username") == "Bobby"
                 }
-                .addOnFailureListener {
-                    usernameUpdated = false
-                }
+                .addOnFailureListener { usernameUpdated = false }
 
             // Vérifier le résultat
             usernameUpdated
@@ -204,51 +199,46 @@ class End2EndM2 {
     }
 
     @Test
-    fun t2_canScrollOnFeedScreenAndClickOnReportBlockUserMenu(){
+    fun t2_canScrollOnFeedScreenAndClickOnReportBlockUserMenu() {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         /* THE ACTUAL FEED SCREEN IS EMPTY
-        /** Assumes user is already signed in from previous test */
-        val visibleComposableFeedScreen =
-            listOf(
-                FeedScreenTestTags.FEED_CARD,
-                FeedScreenTestTags.FEED_THUMBNAIL,
-                FeedScreenTestTags.SKILL_REQUESTED,
-                FeedScreenTestTags.SKILL_GIVE,
-                FeedScreenTestTags.ACCEPT_BUTTON,
-                FeedScreenTestTags.DECLINE_BUTTON,
-            )
-        //composeTestRule.onNodeWithText("Generated 1").assertIsDisplayed()
-        composeTestRule.waitForIdle()
+                /** Assumes user is already signed in from previous test */
+                val visibleComposableFeedScreen =
+                    listOf(
+                        FeedScreenTestTags.FEED_CARD,
+                        FeedScreenTestTags.FEED_THUMBNAIL,
+                        FeedScreenTestTags.SKILL_REQUESTED,
+                        FeedScreenTestTags.SKILL_GIVE,
+                        FeedScreenTestTags.ACCEPT_BUTTON,
+                        FeedScreenTestTags.DECLINE_BUTTON,
+                    )
+                //composeTestRule.onNodeWithText("Generated 1").assertIsDisplayed()
+                composeTestRule.waitForIdle()
 
 
-        /** Scroll down */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeDown() }
-        composeTestRule.onNodeWithText("Looking for Skill 2").assertIsDisplayed()
-        composeTestRule.waitForIdle()
+                /** Scroll down */
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeDown() }
+                composeTestRule.onNodeWithText("Looking for Skill 2").assertIsDisplayed()
+                composeTestRule.waitForIdle()
 
-        /** Scroll up */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeUp() }
-        composeTestRule.onNodeWithText("Looking for Skill 15").assertIsDisplayed()
-        composeTestRule.waitForIdle()
+                /** Scroll up */
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeUp() }
+                composeTestRule.onNodeWithText("Looking for Skill 15").assertIsDisplayed()
+                composeTestRule.waitForIdle()
 
-        /** Open menu */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Report User").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("Report User").performClick()
-        composeTestRule.onNodeWithTag("Block User").performClick()
-*/
-
-
-
-
-
+                /** Open menu */
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithText("Report User").assertIsDisplayed()
+                composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
+                composeTestRule.onNodeWithTag("Report User").performClick()
+                composeTestRule.onNodeWithTag("Block User").performClick()
+        */
 
     }
 
     @Test
-    fun t1_canChatInChatScreen(){
+    fun t1_canChatInChatScreen() {
         /** Assumes user is already signed in from previous test */
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
@@ -259,18 +249,20 @@ class End2EndM2 {
         composeTestRule.onNodeWithTag(ChatListTestTags.OFFER).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ChatListTestTags.REQUEST).assertIsDisplayed()
 
-        val OfferChatsText = listOf(
-            /* Usernames in Offer chat tab */
-            "Alex Johnson",
-            "Sarah Chen",
-            "Mike Rodriguez"
-        )
+        val OfferChatsText =
+            listOf(
+                /* Usernames in Offer chat tab */
+                "Alex Johnson",
+                "Sarah Chen",
+                "Mike Rodriguez"
+            )
 
-        val visibleComposableBottomBar = listOf(
-            NavigationTestTags.FEED_TAB,
-            NavigationTestTags.CHAT_TAB,
-            NavigationTestTags.PROFILE_TAB
-        )
+        val visibleComposableBottomBar =
+            listOf(
+                NavigationTestTags.FEED_TAB,
+                NavigationTestTags.CHAT_TAB,
+                NavigationTestTags.PROFILE_TAB
+            )
 
         for (username in OfferChatsText) {
             composeTestRule.onNodeWithText(username).assertExists()
@@ -284,10 +276,7 @@ class End2EndM2 {
         /** Go to Request chat tab */
         composeTestRule.onNodeWithTag(ChatListTestTags.REQUEST).performClick()
 
-        val requestChatUsernames = listOf(
-            "Emma Wilson",
-            "Alex Johnson"
-        )
+        val requestChatUsernames = listOf("Emma Wilson", "Alex Johnson")
 
         for (username in requestChatUsernames) {
             composeTestRule.onNodeWithText(username).assertIsDisplayed()
