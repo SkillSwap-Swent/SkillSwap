@@ -5,13 +5,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -30,6 +37,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.offer.ChatRepository
+import com.swent.skillswap.model.offer.FeedController
 import com.swent.skillswap.model.offer.FeedControllerFactory
 import com.swent.skillswap.model.offer.RecommendationEngine
 import com.swent.skillswap.model.offer.ThumbnailRepository
@@ -54,7 +62,6 @@ import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.viewModel.ProfileViewModel
-import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +101,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
         )
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
-
     val startDestination = Screen.AuthMain.name
 
     val navBackStackEntry = navController.currentBackStackEntryAsState()
@@ -102,8 +108,10 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
 
     val editProfileViewModel: EditUserViewModel = viewModel()
 
-    val controller = remember {
-        runBlocking {
+    var controller by remember { mutableStateOf<FeedController?>(null) }
+
+    LaunchedEffect(Unit) {
+        controller =
             FeedControllerFactory(
                     recommendationEngine = RecommendationEngine(),
                     thumbnailRepository = ThumbnailRepository(),
@@ -114,7 +122,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     userIdPerformingActions = Firebase.auth.uid ?: "AnoUser",
                     feedType = PostType.REQUEST
                 )
-        }
     }
 
     Scaffold(
@@ -198,15 +205,21 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Screen.Feed.route) {
-                val factory =
-                    FeedScreenViewModelFactory(
-                        navigation = { uid -> navController.navigate("profile/$uid") },
-                        controller = controller
-                    )
-
-                val vm: FeedScreenViewModel = viewModel(factory = factory)
-
-                FeedScreen(vm = vm)
+                if (controller == null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    val factory =
+                        remember(controller) {
+                            FeedScreenViewModelFactory(
+                                navigation = { /* TODO: implement navigation to other user profile */},
+                                controller = controller!!
+                            )
+                        }
+                    val vm: FeedScreenViewModel = viewModel(factory = factory)
+                    FeedScreen(vm = vm)
+                }
             }
 
             composable(Screen.Chat.route) {

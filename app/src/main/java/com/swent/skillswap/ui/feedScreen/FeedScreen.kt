@@ -82,6 +82,8 @@ fun FeedScreen(
                                 val (x, y) = dragAmount
                                 when {
                                     y > swipeThreshold -> vm.skip() // swipe down
+                                    // TODO: previous is disable since the controller don't
+                                    // implement it
                                     // y < -swipeThreshold -> vm.previous() // swipe up
                                     x < -swipeThreshold ->
                                         vm.goToProfile(offer.authorID) // swipe left

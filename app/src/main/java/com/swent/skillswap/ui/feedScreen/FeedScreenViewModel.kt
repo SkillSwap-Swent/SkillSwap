@@ -1,5 +1,6 @@
 package com.swent.skillswap.ui.feedScreen
 
+import android.util.Log
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -33,7 +34,7 @@ open class FeedScreenViewModel(
     /**
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
      */
-    private val uid: String = Firebase.auth.uid ?: "anoUser"
+    private val uid: String = Firebase.auth.uid ?: "AnoUser"
 
     /** Internal state of the FeedOffer screen. */
     private val _uiState = MutableStateFlow<FeedOffer?>(null)
@@ -43,19 +44,26 @@ open class FeedScreenViewModel(
 
     init {
         viewModelScope.launch {
-            controller.currentPost.value?.let { post -> _uiState.value = toFeedOffer(post, uid) }
+            runCatching {
+                    controller.currentPost.value?.let { post ->
+                        _uiState.value = toFeedOffer(post, uid)
+                    }
+                }
+                .onFailure { e -> Log.e("FeedScreenViewModel", "Error loading initial post", e) }
 
-            // Observe future post changes
             snapshotFlow { controller.currentPost.value }
                 .filterNotNull()
-                .collect { post -> _uiState.value = toFeedOffer(post, uid) }
+                .collect { post ->
+                    runCatching { _uiState.value = toFeedOffer(post, uid) }
+                        .onFailure { e -> Log.e("FeedScreenViewModel", "Error updating post", e) }
+                }
         }
     }
 
     /** Accepts the specified offer on behalf of the current user. */
     fun accept(offer: FeedOffer) {
-        viewModelScope.launch { controller.acceptPost("") }
-    }
+        viewModelScope.launch { controller.acceptPost("I'm interested in this offer") }
+    } // TODO: A Pop-up Window with a textField or preFab message to send is a good idea
 
     /** Declines the specified offer, removes it from the feed, and loads the next one. */
     fun decline(offer: FeedOffer) {
@@ -93,7 +101,7 @@ open class FeedScreenViewModel(
         return FeedOffer(
             skillProvided = post.title,
             authorID = post.ownerId,
-            authorName = "ANO_USER",
+            authorName = "AnoUser",
             // TODO Need to modify the post structure to handle this or use external object
             //  (decrease duplicate data)
             requesterAvatar = "https://picsum.photos/200",
