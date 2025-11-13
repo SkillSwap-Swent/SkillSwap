@@ -5,13 +5,14 @@
 package com.swent.skillswap.ui.auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -124,6 +125,7 @@ fun AuthCreateAccountScreen(
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
+    LaunchedEffect(route) { vm.onRouteChanged(route) }
 
     // Scaffold provides consistent layout (top/bottom bars)
     Scaffold(
@@ -158,29 +160,31 @@ fun CreateAccountBottomBar(
     currRoute: String?,
     navController: NavController,
     isGoogleAccount: Boolean,
-    vm: CreateAccountViewModel
+    vm: CreateAccountViewModel,
 ) {
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.12f)) {
         SkillSwapShadowButton(
             onClick = {
-                if (
-                    currRoute != CreateAccountRoutes.SKILLS && vm.validateByRoute(currRoute ?: "")
-                ) {
-                    // Go to next step if validation passes
+                if (currRoute != CreateAccountRoutes.SKILLS) {
                     navController.navigate(
                         CreateAccountRoutes.next(currRoute ?: "", isGoogleAccount)
                     )
-                } else if (currRoute == CreateAccountRoutes.SKILLS) {
-                    // Last step — create the account
+                } else {
                     vm.done()
                 }
             },
+            enable = vm.uiState.collectAsState().value.buttonEnabled,
             modifier =
                 Modifier.align(Alignment.TopCenter)
                     .testTag(CreateAccountTags.NEXT_BUTTON)
                     .fillMaxWidth(0.4f)
+                    .height(55.dp)
         ) {
-            Text(text = "Next", fontSize = 24.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.AutoMirrored.Filled.NavigateNext, contentDescription = "Next")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Next", fontSize = 24.sp)
+            }
         }
     }
 }
@@ -308,7 +312,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
         )
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = uiState.skillsError,
             color = Color.Red,
@@ -324,14 +328,23 @@ fun SkillScreen(vm: CreateAccountViewModel) {
         ) {
             // Loop through all skill tags and render as selectable chips
             for (skill in SkillTag.entries) {
-                val skillColor = if (uiState.skills.contains(skill)) Color.Red else Color.Black
+                val isSelected = uiState.skills.contains(skill)
+                val backgroundColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
+                val textColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.onSecondary
+                    } else {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    }
+
                 Box(
                     modifier =
-                        Modifier.border(
-                                width = 1.dp,
-                                color = skillColor,
-                                shape = RoundedCornerShape(50)
-                            )
+                        Modifier.background(backgroundColor, shape = RoundedCornerShape(50))
                             .clickable { vm.clickSkill(skill) }
                             .padding(horizontal = 10.dp, vertical = 3.dp)
                             .testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
@@ -340,7 +353,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
                         text = skill.name, // TODO: make enum names user-friendly
                         fontWeight = FontWeight.Bold,
                         fontSize = 10.sp,
-                        color = skillColor,
+                        color = textColor,
                     )
                 }
             }
