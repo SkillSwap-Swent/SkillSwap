@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
@@ -59,6 +60,7 @@ object ProfileTestTags {
     // Buttons
     const val SKILLS_BUTTON = "profile_skills_button"
     const val ADD_POST_BUTTON = "profile_add_post_button"
+    const val MY_POSTS_BUTTON = "profile_my_posts_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
 }
 
@@ -68,6 +70,7 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit = {},
     onSkillClick: () -> Unit = {},
     onAddPostClick: () -> Unit = {},
+    onSeeMyPostsClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -226,6 +229,22 @@ fun ProfileScreen(
             )
             Spacer(modifier = Modifier.width(5.dp))
             Text(text = "My skills")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        /** See My Posts Button */
+        Button(
+            onClick = { onSeeMyPostsClick() },
+            shape = RoundedCornerShape(26),
+            contentPadding = PaddingValues(12.dp, 0.dp),
+            modifier = Modifier.testTag(MY_POSTS_BUTTON)
+        ) {
+            Icon(
+                contentDescription = "My Posts",
+                imageVector = Icons.Outlined.List,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = "See my posts")
         }
         Spacer(modifier = Modifier.weight(1f))
 

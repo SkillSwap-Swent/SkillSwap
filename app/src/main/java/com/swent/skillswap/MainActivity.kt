@@ -26,11 +26,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -57,6 +59,7 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.personalPosts.PersonalPostsScreen
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
@@ -180,7 +183,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) },
+                        onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -193,6 +197,39 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     SkillsEditScreen(
                         vm = editProfileViewModel,
                         onBackClick = { navigationActions.goBack() }
+                    )
+                }
+                composable(Screen.PersonalPosts.route) {
+                    val postRepository = PostFirestoreRepository(Firebase.firestore)
+                    PersonalPostsScreen(
+                        onGoBack = { navigationActions.goBack() },
+                        onEditPost = { post ->
+                            // Navigate to edit screen based on post type
+                            if (post.type == PostType.REQUEST) {
+                                navController.navigate(Screen.EditRequest.createRoute(post.uid))
+                            } else {
+                                // TODO: Add navigation to edit offer screen when available
+                            }
+                        }
+                    )
+                }
+                composable(
+                    route = Screen.EditRequest.route,
+                    arguments = listOf(navArgument("postId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val postId = backStackEntry.arguments?.getString("postId") ?: ""
+                    val postRepository = PostFirestoreRepository(Firebase.firestore)
+                    val currentUserId = Firebase.auth.uid ?: ""
+                    RequestScreen(
+                        postRepository = postRepository,
+                        currentUserId = currentUserId,
+                        uid = postId,
+                        postOperation = PostOperation.EDIT,
+                        onGoBack = { navigationActions.goBack() },
+                        onPostCreated = {
+                            // Navigate back to personal posts after successful edit
+                            navigationActions.navigateTo(Screen.PersonalPosts)
+                        }
                     )
                 }
             }
