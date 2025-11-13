@@ -18,7 +18,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
-
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
@@ -164,7 +163,9 @@ class End2EndM1 {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+                    .assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
