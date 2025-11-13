@@ -219,6 +219,7 @@ class End2EndM2 {
             )
 
         /** Scroll down */
+        composeTestRule.on
         composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX).performScrollToIndex(9)
 
         /** Scroll up */
@@ -235,10 +236,13 @@ class End2EndM2 {
             "Chat", //title
             "Offer", //offer tab
             "Request", //request tab
+        )
+
+        val OfferChatsText = listOf(
+            /* Usernames in Offer chat tab */
             "Alex Johnson",
             "Sarah Chen",
             "Mike Rodriguez"
-
         )
 
         val visibleComposableBottomBar = listOf(
@@ -247,10 +251,15 @@ class End2EndM2 {
             NavigationTestTags.PROFILE_TAB
         )
 
-        /*
+
         for (testTag in chatScreenComposablesText) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }*/
+        }
+
+        for (username in OfferChatsText) {
+            composeTestRule.onNodeWithText(username).assertIsDisplayed()
+            composeTestRule.onNodeWithText(username).performClick()
+        }
 
         for (testTag in visibleComposableBottomBar) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -266,6 +275,7 @@ class End2EndM2 {
 
         for (username in RequestChatUsernames) {
             composeTestRule.onNodeWithText(username).assertIsDisplayed()
+            composeTestRule.onNodeWithText(username).performClick()
         }
     }
 }
