@@ -13,6 +13,8 @@ import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.ui.editUser.EditUserTags
 import com.swent.skillswap.ui.editUser.EditUserUiState
+import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
@@ -201,14 +203,23 @@ class End2EndM2 {
 
     @Test
     fun t2_canScrollOnFeedScreen(){
+        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+
         /** Assumes user is already signed in from previous test */
-        val feedListTag = "FeedLazyColumn"
-        composeTestRule.onNodeWithTag(feedListTag).assertIsDisplayed()
+        val visibleComposableFeedScreen =
+            listOf(
+                FeedScreenTestTags.FEED_CARD,
+                FeedScreenTestTags.FEED_THUMBNAIL,
+                FeedScreenTestTags.SKILL_REQUESTED,
+                FeedScreenTestTags.SKILL_GIVE,
+                FeedScreenTestTags.ACCEPT_BUTTON,
+                FeedScreenTestTags.DECLINE_BUTTON,
+            )
 
         /** Scroll down */
-        composeTestRule.onNodeWithTag(feedListTag).performScrollToIndex(10)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performScrollToIndex(10)
 
         /** Scroll up */
-        composeTestRule.onNodeWithTag(feedListTag).performScrollToIndex(0)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performScrollToIndex(0)
     }
 }
