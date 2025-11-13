@@ -122,14 +122,24 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
 
                     TextField(
                         value = query,
-                        onValueChange = { query = it },
+                        onValueChange = {
+                            query = it
+                            if (it.isNotBlank()) {
+                                expanded = true
+                            }
+                        },
                         label = { Text("Search skills", color = Color.White.copy(alpha = 0.7f)) },
                         placeholder = {
                             Text("Type to search...", color = Color.White.copy(alpha = 0.5f))
                         },
                         modifier =
                             Modifier.menuAnchor()
-                                .onFocusChanged { hasFocus = it.isFocused }
+                                .onFocusChanged {
+                                    hasFocus = it.isFocused
+                                    if (it.isFocused && query.isNotBlank()) {
+                                        expanded = true
+                                    }
+                                }
                                 .fillMaxWidth()
                                 .testTag(SkillsEditTestTags.SEARCH_FIELD),
                         colors =
