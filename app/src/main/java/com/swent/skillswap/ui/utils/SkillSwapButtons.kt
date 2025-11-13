@@ -11,6 +11,9 @@ package com.swent.skillswap.ui.utils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -262,5 +265,28 @@ fun SkillSwapButtonOutline(
             }
             Text(text = labelText, fontSize = textSize, fontWeight = FontWeight.Medium)
         }
+    }
+}
+
+@Composable
+fun SkillSwapEditButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    ElevatedButton(
+        onClick = { onClick() },
+        border = null,
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(26),
+        contentPadding = PaddingValues(0.dp, 16.dp, 0.dp, 16.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Edit profile picture",
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     }
 }
