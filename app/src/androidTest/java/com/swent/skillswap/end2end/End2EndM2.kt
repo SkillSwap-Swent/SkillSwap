@@ -3,6 +3,8 @@
  */
 package com.swent.skillswap.end2end
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -217,9 +219,53 @@ class End2EndM2 {
             )
 
         /** Scroll down */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performScrollToIndex(10)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX).performScrollToIndex(9)
 
         /** Scroll up */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performScrollToIndex(0)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX).performScrollToIndex(0)
+    }
+
+    @Test
+    fun t3_canChatInChatScreen(){
+        /** Assumes user is already signed in from previous test */
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+
+        /** Check that chat screen is displayed */
+        val chatScreenComposablesText = listOf(
+            "Chat", //title
+            "Offer", //offer tab
+            "Request", //request tab
+            "Alex Johnson",
+            "Sarah Chen",
+            "Mike Rodriguez"
+
+        )
+
+        val visibleComposableBottomBar = listOf(
+            NavigationTestTags.FEED_TAB,
+            NavigationTestTags.CHAT_TAB,
+            NavigationTestTags.PROFILE_TAB
+        )
+
+        /*
+        for (testTag in chatScreenComposablesText) {
+            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        }*/
+
+        for (testTag in visibleComposableBottomBar) {
+            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        }
+
+        /** Go to Request chat tab */
+        composeTestRule.onNodeWithText("Request").performClick()
+
+        val RequestChatUsernames = listOf(
+            "Emma Wilson",
+            "Alex Johnson"
+        )
+
+        for (username in RequestChatUsernames) {
+            composeTestRule.onNodeWithText(username).assertIsDisplayed()
+        }
     }
 }
