@@ -39,96 +39,31 @@ class LocationManagerInstrumentedTest {
 
     @After
     fun tearDown() {
-        // LocationManager automatically cleans up via awaitClose when flows complete
-        // No explicit cleanup needed as each test creates a new LocationManager instance
-        // and location services don't persist state between tests
+        // No explicit cleanup needed - getCurrentLocation() doesn't require cleanup
     }
 
     @Test
-    fun getCurrentLocation_coversLocationCallback_onLocationResult() = runBlocking {
-        // Covers lines 100-108 (LocationCallback onLocationResult with both branches)
-        // In instrumented tests, we can actually trigger location callbacks
+    fun getCurrentLocation_returnsValidLocation() = runBlocking {
+        // Covers lines 89-90 (location != null path)
         val location = locationManager.getCurrentLocationSync()
-
         assertNotNull("Should receive a location", location)
         assertTrue("Location should be valid", location.latitude.isFinite())
         assertTrue("Location should be valid", location.longitude.isFinite())
     }
 
     @Test
-    fun getCurrentLocation_coversRequestLocationUpdates() = runBlocking {
-        // Covers lines 119-124 (requestLocationUpdates call)
+    fun getCurrentLocation_flowEmitsLocation() = runBlocking {
+        // Covers flow collection and location emission
         var receivedLocation: GeoPoint? = null
-
         locationManager.getCurrentLocation().collect { geoPoint -> receivedLocation = geoPoint }
-
-        assertNotNull("Should receive location from requestLocationUpdates path", receivedLocation)
+        assertNotNull("Should receive location", receivedLocation)
         assertTrue("Location should be valid", receivedLocation!!.latitude.isFinite())
     }
 
     @Test
-    fun getCurrentLocation_coversTimeoutHandler() = runBlocking {
-        // Covers lines 126-135 (timeout handler setup and execution)
-        // The timeout is 10 seconds, but in tests with location available it may complete faster
-        var receivedLocation: GeoPoint? = null
-        var emissionCount = 0
-
-        locationManager.getCurrentLocation().collect { geoPoint ->
-            receivedLocation = geoPoint
-            emissionCount++
-        }
-
-        // Should receive exactly one location (either from callback or timeout)
-        assertEquals("Should emit exactly once", 1, emissionCount)
-        assertNotNull("Should receive a location", receivedLocation)
-    }
-
-    @Test
-    fun getCurrentLocation_coversLastLocationPath() = runBlocking {
-        // Covers lines 113-117 (lastLocation != null path calling sendLocationAndClose)
-        val location = locationManager.getCurrentLocationSync()
-
-        assertNotNull("Should receive location", location)
-        assertTrue("Location should be valid", location.latitude.isFinite())
-    }
-
-    @Test
-    fun getCurrentLocation_coversSendLocationAndClose() = runBlocking {
-        // Covers lines 84-87 (sendLocationAndClose function)
-        // This is called when lastLocation is not null (line 115) or when
-        // onLocationResult receives a non-null location (line 104)
-        val testLocation = Location("test")
-        testLocation.latitude = 40.7128
-        testLocation.longitude = -74.0060
-
-        // Verify locationToGeoPoint works (called by sendLocationAndClose)
-        val convertedGeoPoint = locationManager.locationToGeoPoint(testLocation)
-        assertEquals(40.7128, convertedGeoPoint.latitude, 0.0001)
-        assertEquals(-74.0060, convertedGeoPoint.longitude, 0.0001)
-
-        // Verify full flow uses this conversion - if we get here, sendLocationAndClose was called
-        val location = locationManager.getCurrentLocationSync()
-        assertNotNull("Should receive location", location)
-        assertTrue("Location should be valid", location.latitude.isFinite())
-    }
-
-    @Test
-    fun getCurrentLocation_coversAwaitCloseCleanup() = runBlocking {
-        // Covers lines 144-151 (awaitClose cleanup)
-        var receivedLocation: GeoPoint? = null
-
-        locationManager.getCurrentLocation().collect { geoPoint -> receivedLocation = geoPoint }
-
-        assertNotNull("Should receive location", receivedLocation)
-        // Cleanup should have been called when flow completed
-    }
-
-    @Test
     fun getCurrentLocation_handlesMultipleCalls() = runBlocking {
-        // Test that multiple calls work correctly
         val location1 = locationManager.getCurrentLocationSync()
         val location2 = locationManager.getCurrentLocationSync()
-
         assertNotNull("First location should exist", location1)
         assertNotNull("Second location should exist", location2)
         assertTrue("First location should be valid", location1.latitude.isFinite())
@@ -137,65 +72,19 @@ class LocationManagerInstrumentedTest {
 
     @Test
     fun getCurrentLocation_flowCompletes() = runBlocking {
-        // Verify flow completes properly
         var emissionCount = 0
-
         locationManager.getCurrentLocation().collect { emissionCount++ }
-
         assertEquals("Flow should emit exactly once", 1, emissionCount)
     }
 
     @Test
-    fun getCurrentLocation_coversOnLocationResultWithNullLocation() = runBlocking {
-        // Covers lines 101-108, specifically the else branch (line 106)
-        // when locationResult.lastLocation is null
-        // Note: This is hard to trigger in real tests, but we can verify
-        // the callback structure exists. In practice, if lastLocation is null,
-        // sendDefaultAndClose() is called (line 106)
-        var receivedLocation: GeoPoint? = null
-
-        locationManager.getCurrentLocation().collect { geoPoint -> receivedLocation = geoPoint }
-
-        // Should receive either a location or default location
-        assertNotNull("Should receive a location (or default)", receivedLocation)
-        assertTrue("Location should be valid", receivedLocation!!.latitude.isFinite())
-    }
-
-    @Test
-    fun getCurrentLocation_coversOnLocationResultWithNonNullLocation() = runBlocking {
-        // Covers lines 101-108, specifically the if branch (line 104)
-        // when locationResult.lastLocation is not null
-        // This path calls sendLocationAndClose(location) which covers lines 84-87
-        var receivedLocation: GeoPoint? = null
-
-        locationManager.getCurrentLocation().collect { geoPoint -> receivedLocation = geoPoint }
-
-        assertNotNull("Should receive location from callback", receivedLocation)
-        assertTrue("Location should be valid", receivedLocation!!.latitude.isFinite())
-        // If we got a real location, onLocationResult was called with non-null location
-    }
-
-    @Test
-    fun getCurrentLocation_coversLastLocationNotNullPath() = runBlocking {
-        // Covers lines 114-117 (lastLocation != null path)
-        // This path calls sendLocationAndClose(lastLocation) which covers lines 84-87
-        val location = locationManager.getCurrentLocationSync()
-
-        assertNotNull("Should receive location from lastLocation", location)
-        assertTrue("Location should be valid", location.latitude.isFinite())
-        // If we got here without timeout, lastLocation was likely not null
-    }
-
-    @Test
-    fun getCurrentLocation_coversAwaitCloseException() = runBlocking {
-        // Covers line 148 (exception catch in awaitClose cleanup)
-        // This is hard to test directly, but we can verify the cleanup path exists
-        // by ensuring the flow completes without errors even if cleanup fails
-        var receivedLocation: GeoPoint? = null
-
-        locationManager.getCurrentLocation().collect { geoPoint -> receivedLocation = geoPoint }
-
-        assertNotNull("Should receive location", receivedLocation)
-        // If we got here, awaitClose was called and handled any exceptions (line 148)
+    fun getCurrentLocation_coversLocationToGeoPoint() = runBlocking {
+        // Covers locationToGeoPoint conversion
+        val testLocation = Location("test")
+        testLocation.latitude = 40.7128
+        testLocation.longitude = -74.0060
+        val convertedGeoPoint = locationManager.locationToGeoPoint(testLocation)
+        assertEquals(40.7128, convertedGeoPoint.latitude, 0.0001)
+        assertEquals(-74.0060, convertedGeoPoint.longitude, 0.0001)
     }
 }
