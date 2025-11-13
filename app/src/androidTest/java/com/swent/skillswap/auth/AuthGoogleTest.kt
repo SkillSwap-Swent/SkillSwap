@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,6 +19,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.model.offer.ChatRepository
+import com.swent.skillswap.model.offer.FeedControllerFactory
+import com.swent.skillswap.model.offer.RecommendationEngine
+import com.swent.skillswap.model.offer.ThumbnailRepository
+import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
@@ -27,6 +34,8 @@ import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
+import com.swent.skillswap.ui.feedScreen.FeedScreenViewModelFactory
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.user.ProfileScreen
@@ -93,6 +102,19 @@ class AuthGoogleTest : TestCase() {
         // Ensure the Auth emulator has this Google user registered
         FirebaseEmulator.createGoogleUser(token)
 
+        val controller = runBlocking {
+            FeedControllerFactory(
+                    recommendationEngine = RecommendationEngine(),
+                    thumbnailRepository = ThumbnailRepository(),
+                    postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
+                    chatRepository = ChatRepository()
+                )
+                .create(
+                    userIdPerformingActions = FirebaseEmulator.auth.uid ?: "AnoUser",
+                    feedType = PostType.REQUEST
+                )
+        }
+
         // If this is t2, we simulate "returning user" by pre-seeding the profile in Firestore
         if (testName.methodName == "t2_googleUser_can_log_on") {
             runBlocking {
@@ -139,7 +161,17 @@ class AuthGoogleTest : TestCase() {
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Feed.route) { FeedScreen() }
+                composable(Screen.Feed.route) {
+                    val factory =
+                        FeedScreenViewModelFactory(
+                            navigation = { uid -> navController.navigate("profile/$uid") },
+                            controller = controller
+                        )
+
+                    val vm: FeedScreenViewModel = viewModel(factory = factory)
+
+                    FeedScreen(vm = vm)
+                }
                 composable(Screen.Chat.route) { ChatListScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
@@ -182,11 +214,11 @@ class AuthGoogleTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
     }
 
     /** Returning Google user (profile already exists) → straight to Offers after sign-in. */
@@ -198,10 +230,10 @@ class AuthGoogleTest : TestCase() {
 
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
     }
 }
