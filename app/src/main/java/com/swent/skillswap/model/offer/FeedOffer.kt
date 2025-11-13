@@ -1,7 +1,5 @@
 package com.swent.skillswap.model.offer
 
-import com.google.firebase.firestore.GeoPoint
-
 /**
  * Represents an offer exchanged between users on the feed.
  *
@@ -14,7 +12,6 @@ import com.google.firebase.firestore.GeoPoint
  * @property thumbnail The image URL or resource representing the offer visually.
  * @property specification A short title summarizing the details or purpose of the offer.
  * @property description A longer text providing additional details about the offer.
- * @property location The meeting location of the offer (defaults to EPFL location).
  */
 data class FeedOffer(
     val skillProvided: String = "",
@@ -26,5 +23,4 @@ data class FeedOffer(
     val thumbnail: String = "",
     val specification: String = "",
     val description: String = "",
-    val location: GeoPoint = GeoPoint(46.5191, 6.5668) // EPFL default location
 )
