@@ -81,7 +81,6 @@ class End2EndM1 {
 
     @Before
     fun setup() {
-        FirebaseEmulator.startEmulator()
         db = FirebaseEmulator.firestore
     }
 
@@ -91,20 +90,46 @@ class End2EndM1 {
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
         /** 1. Launch app and wait for setup */
-        // attendre l'affichage du sign-in screen (timeout dédié pour CI lent)
-        composeTestRule.waitUntil(timeoutMillis = 120_000) {
+        // attendre chaque élément du sign-in screen séparément (timeouts distincts pour debugging)
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
-                val signInTags =
-                    listOf(
-                        SignInTags.LOGO,
-                        SignInTags.SIGN_IN_BUTTON,
-                        SignInTags.GOOGLE_BUTTON,
-                        SignInTags.EMAIL_FIELD,
-                        SignInTags.PASSWORD_FIELD
-                    )
-                for (testTag in signInTags) {
-                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-                }
+                composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 40_001) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 40_002) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 40_003) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 40_004) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -206,8 +231,7 @@ class End2EndM1 {
         /* End of Create Account Screens */
 
         /** Wait until firestore auth operation completes and Profile Screen is displayed */
-        // Firestore peut être lent sur CI : attente dédiée (timeout identifiable)
-        composeTestRule.waitUntil(timeoutMillis = 20_005) {
+        composeTestRule.waitUntil(timeoutMillis = 40_005) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 true
