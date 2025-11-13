@@ -34,8 +34,6 @@ class PersonalPostsScreenInstrumentedTest {
 
     private lateinit var testUserId: String
     private val testLocation = GeoPoint(46.5191, 6.5668)
-    private val now = Timestamp.now()
-    private val future = Timestamp(Date(System.currentTimeMillis() + 86400000))
 
     @Before
     fun setUp() {
@@ -66,8 +64,8 @@ class PersonalPostsScreenInstrumentedTest {
             ownerId = testUserId,
             tags = tags,
             paymentMethod = PaymentMethod.SKILLS,
-            expiry = future,
-            creation = now,
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+            creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = emptyList(),
             postReplies = emptySet(),
@@ -86,8 +84,8 @@ class PersonalPostsScreenInstrumentedTest {
             ownerId = testUserId,
             tags = tags,
             paymentMethod = PaymentMethod.SKILLS,
-            expiry = future,
-            creation = now,
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+            creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = emptyList(),
             postReplies = emptySet(),
