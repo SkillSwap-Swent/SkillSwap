@@ -129,12 +129,15 @@ class ProfileScreenTest : TestCase() {
             val tags =
                 listOf(
                     ProfileTestTags.PROFILE_TITLE,
-                    ProfileTestTags.EMAIL_SECTION,
-                    ProfileTestTags.USERNAME_SECTION,
-                    ProfileTestTags.SKILLS_SECTION,
-                    ProfileTestTags.PREFERENCES_SECTION,
-                    ProfileTestTags.PROFILE_PICTURE,
-                    ProfileTestTags.EDIT_PROFILE
+                    ProfileTestTags.PROFILE_PICTURE_BOX,
+                    ProfileTestTags.PROFILE_PICTURE_IMAGE,
+                    ProfileTestTags.EDIT_PROFILE_BUTTON,
+                    ProfileTestTags.INFO_CARD,
+                    ProfileTestTags.EMAIL_VALUE,
+                    ProfileTestTags.USERNAME_VALUE,
+                    ProfileTestTags.PREFERENCE_SWITCH,
+                    ProfileTestTags.SKILLS_BUTTON,
+                    ProfileTestTags.LOGOUT_BUTTON
                 )
 
             tags.forEach { tag ->
@@ -143,37 +146,9 @@ class ProfileScreenTest : TestCase() {
                 composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
             }
 
-            composeTestRule.onNodeWithTag(ProfileTestTags.EDIT_PROFILE).assertHasClickAction()
-        }
-
-        step("Expand and verify email section") {
-            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_SECTION).performClick()
-            waitForNodeToExist(ProfileTestTags.EMAIL_VALUE)
-            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).performScrollTo()
-            composeTestRule.onNodeWithTag(ProfileTestTags.EMAIL_VALUE).assertIsDisplayed()
-        }
-
-        step("Expand and verify username section") {
-            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_SECTION).performClick()
-            waitForNodeToExist(ProfileTestTags.USERNAME_VALUE)
-            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).performScrollTo()
-            composeTestRule.onNodeWithTag(ProfileTestTags.USERNAME_VALUE).assertIsDisplayed()
-        }
-
-        step("Expand and verify skills section") {
-            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_SECTION).performClick()
-            waitForNodeToExist(ProfileTestTags.SKILLS_LIST)
-            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).performScrollTo()
-            composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_LIST).assertIsDisplayed()
-        }
-
-        step("Expand and verify preferences section") {
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
-            waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performScrollTo()
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performScrollTo()
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).assertIsDisplayed()
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.EDIT_PROFILE_BUTTON)
+                .assertHasClickAction()
         }
     }
 
@@ -184,12 +159,13 @@ class ProfileScreenTest : TestCase() {
             composeTestRule.waitForIdle()
         }
 
-        step("Expand preferences section and select Money") {
-            waitForNodeToExist(ProfileTestTags.PREFERENCES_SECTION)
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREFERENCES_SECTION).performClick()
+        step("Toggle preference switch to MONEY") {
+            waitForNodeToExist(ProfileTestTags.PREFERENCE_SWITCH)
 
-            waitForNodeToExist(ProfileTestTags.PREF_OPTION_MONEY)
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_MONEY).performClick()
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.PREFERENCE_SWITCH)
+                .performScrollTo()
+                .performClick() // SKILLS -> MONEY
 
             waitForPreferenceUpdate(Preference.MONEY)
 
@@ -197,13 +173,54 @@ class ProfileScreenTest : TestCase() {
             assert(updatedPreference == Preference.MONEY)
         }
 
-        step("Select Skills preference") {
-            composeTestRule.onNodeWithTag(ProfileTestTags.PREF_OPTION_SKILLS).performClick()
+        step("Toggle preference switch back to SKILLS") {
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.PREFERENCE_SWITCH)
+                .performScrollTo()
+                .performClick() // MONEY -> SKILLS
 
             waitForPreferenceUpdate(Preference.SKILLS)
 
             val updatedPreference = viewModel.userState.value.preference
             assert(updatedPreference == Preference.SKILLS)
+        }
+    }
+
+    @Test
+    fun profileScreen_buttonsAreClickable() = run {
+        step("Display ProfileScreen") {
+            composeTestRule.setContent { SkillSwapAppTheme { ProfileScreen(vm = viewModel) } }
+            composeTestRule.waitForIdle()
+        }
+
+        step("Edit profile button is clickable") {
+            waitForNodeToExist(ProfileTestTags.EDIT_PROFILE_BUTTON)
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.EDIT_PROFILE_BUTTON)
+                .performScrollTo()
+                .assertIsDisplayed()
+                .assertHasClickAction()
+                .performClick()
+        }
+
+        step("Skills button is clickable") {
+            waitForNodeToExist(ProfileTestTags.SKILLS_BUTTON)
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.SKILLS_BUTTON)
+                .performScrollTo()
+                .assertIsDisplayed()
+                .assertHasClickAction()
+                .performClick()
+        }
+
+        step("Logout button is clickable") {
+            waitForNodeToExist(ProfileTestTags.LOGOUT_BUTTON)
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON)
+                .performScrollTo()
+                .assertIsDisplayed()
+                .assertHasClickAction()
+                .performClick()
         }
     }
 }
