@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
@@ -33,6 +34,7 @@ import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
 import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
 import com.swent.skillswap.ui.user.ProfileTestTags.LOGOUT_BUTTON
+import com.swent.skillswap.ui.user.ProfileTestTags.MY_POSTS_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.PREFERENCE_SWITCH
 import com.swent.skillswap.ui.user.ProfileTestTags.PROFILE_PICTURE_IMAGE
 import com.swent.skillswap.ui.user.ProfileTestTags.SKILLS_BUTTON
@@ -58,6 +60,7 @@ object ProfileTestTags {
 
     // Buttons
     const val SKILLS_BUTTON = "profile_skills_button"
+    const val MY_POSTS_BUTTON = "profile_my_posts_button"
     const val ADD_POST_BUTTON = "profile_add_post_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
 }
@@ -67,6 +70,7 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onSkillClick: () -> Unit = {},
+    onSeeMyPostsClick: () -> Unit = {},
     onAddPostClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
@@ -226,6 +230,22 @@ fun ProfileScreen(
             )
             Spacer(modifier = Modifier.width(5.dp))
             Text(text = "My skills")
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        /** See My Posts Button */
+        Button(
+            onClick = { onSeeMyPostsClick() },
+            shape = RoundedCornerShape(26),
+            contentPadding = PaddingValues(12.dp, 0.dp),
+            modifier = Modifier.testTag(MY_POSTS_BUTTON)
+        ) {
+            Icon(
+                contentDescription = "My Posts",
+                imageVector = Icons.Outlined.List,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = "See my posts")
         }
         Spacer(modifier = Modifier.weight(1f))
 
