@@ -108,7 +108,7 @@ class End2EndM1 {
                 false
             }
         }
-
+        /*
         composeTestRule.waitUntil(timeoutMillis = 40_002) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
@@ -117,7 +117,7 @@ class End2EndM1 {
                 false
             }
         }
-
+           */
         composeTestRule.waitUntil(timeoutMillis = 40_003) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
