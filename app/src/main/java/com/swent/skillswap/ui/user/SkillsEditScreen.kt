@@ -127,7 +127,10 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
         Spacer(modifier = Modifier.weight(0.9f))
         /** back button* */
         SkillSwapShadowButton(
-            onClick = { onBackClick() },
+            onClick = {
+                vm.validate()
+                onBackClick()
+            },
             modifier =
                 Modifier.height(56.dp).align(Alignment.CenterHorizontally).testTag(BACK_BUTTON),
         ) {

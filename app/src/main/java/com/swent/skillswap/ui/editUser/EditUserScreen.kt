@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.ui.theme.*
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -179,7 +178,10 @@ fun EditUserScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 /** go back button* */
                 SkillSwapShadowButton(
-                    onClick = { onGoBack() },
+                    onClick = {
+                        vm.clearLoadedState()
+                        onGoBack()
+                    },
                     modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON),
                 ) {
                     Icon(
