@@ -183,7 +183,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
-                        onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) }
+                        onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
                         onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
                     )
                 }
