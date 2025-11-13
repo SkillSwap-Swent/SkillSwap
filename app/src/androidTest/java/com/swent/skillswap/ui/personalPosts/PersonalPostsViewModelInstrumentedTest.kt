@@ -25,16 +25,20 @@ class PersonalPostsViewModelInstrumentedTest {
     private val testLocation = GeoPoint(46.5191, 6.5668)
 
     @Before
-    fun setUp() = runBlocking {
-        FirebaseEmulator.startEmulator()
-        fakeRepository = FakePostRepository()
-        FirebaseAuth.getInstance().signInAnonymously().await()
+    fun setUp() {
+        runBlocking {
+            FirebaseEmulator.startEmulator()
+            fakeRepository = FakePostRepository()
+            FirebaseAuth.getInstance().signInAnonymously().await()
+        }
     }
 
     @After
-    fun tearDown() = runBlocking {
-        FirebaseAuth.getInstance().signOut()
-        FirebaseEmulator.clearAuthEmulator()
+    fun tearDown() {
+        runBlocking {
+            FirebaseAuth.getInstance().signOut()
+            FirebaseEmulator.clearAuthEmulator()
+        }
     }
 
     @Test
