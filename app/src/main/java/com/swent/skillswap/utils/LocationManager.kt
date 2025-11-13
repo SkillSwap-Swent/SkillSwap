@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.core.content.ContextCompat
-import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LastLocationRequest
 import com.google.android.gms.location.LocationServices
@@ -68,7 +67,8 @@ class LocationManager(private val context: Context) {
      * This function uses a two-step approach for efficiency:
      * 1. First tries getLastLocation() with LastLocationRequest to use cached location if it's
      *    fresh enough (within MAX_LOCATION_AGE_MS)
-     * 2. Falls back to getCurrentLocation() if cached location is unavailable or too old
+     * 2. Falls back to getCurrentLocation() with priority if cached location is unavailable or too
+     *    old
      *
      * This approach:
      * - Checks for permissions first
@@ -89,19 +89,15 @@ class LocationManager(private val context: Context) {
             // First try getLastLocation() with LastLocationRequest for efficiency
             // This uses cached location if it's fresh enough (within MAX_LOCATION_AGE_MS)
             val lastLocationRequest =
-                LastLocationRequest.Builder()
-                    .setMaxUpdateAgeMillis(MAX_LOCATION_AGE_MS)
-                    .setPriority(LOCATION_PRIORITY)
-                    .build()
+                LastLocationRequest.Builder().setMaxUpdateAgeMillis(MAX_LOCATION_AGE_MS).build()
 
             var location = fusedLocationClient.getLastLocation(lastLocationRequest).await()
 
             // If no cached location or it's too old (getLastLocation returns null if too old),
             // request a fresh location using getCurrentLocation()
             if (location == null) {
-                val currentLocationRequest =
-                    CurrentLocationRequest.Builder().setPriority(LOCATION_PRIORITY).build()
-                location = fusedLocationClient.getCurrentLocation(currentLocationRequest).await()
+                // Use priority constant directly (getCurrentLocation accepts Int priority)
+                location = fusedLocationClient.getCurrentLocation(LOCATION_PRIORITY, null).await()
             }
 
             if (location != null) {
