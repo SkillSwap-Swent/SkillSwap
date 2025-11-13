@@ -200,6 +200,7 @@ class EditUserViewModel(
 
     /** Updates the edited user in the state with new values. */
     fun validate() {
+
         /** PRECONDITIONS */
         if (
             uiState.value.usernameError != null ||

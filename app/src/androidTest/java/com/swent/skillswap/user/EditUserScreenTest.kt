@@ -1,5 +1,6 @@
 /**
  * @author Léonard MARTI 394185 /!\ Written with help of Copilot /!\
+ * @author Topaze17 used chatGPT to make adjustement with new screen
  * > helped me write the general structure of tests, firebase emulator initialization, commented the
  * > code
  */
@@ -55,7 +56,7 @@ class EditUserScreenTest : TestCase() {
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/She-goat_J1.jpg/500px-She-goat_J1.jpg",
             skillSet =
                 setOf(
-                    Skill(name = com.swent.skillswap.model.tags.SkillTag.DATABASES, rank = 4F, ""),
+                    Skill(name = SkillTag.DATABASES, rank = 4F, ""),
                     Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F, ""),
                     Skill(name = SkillTag.PHYSICS_MECHANICS, rank = 5F, "")
                 ),
@@ -128,14 +129,26 @@ class EditUserScreenTest : TestCase() {
         }
 
         step("Verify Edit User Screen elements are displayed") {
-            composeTestRule.onNodeWithTag(EditUserTags.GO_BACK_BUTTON).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.SKILLSET_SECTION).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.SKILLSET_SECTION).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE).assertIsDisplayed()
+            // Scroll before each assertIsDisplayed
+            composeTestRule
+                .onNodeWithTag(EditUserTags.GO_BACK_BUTTON)
+                .performScrollTo()
+                .assertIsDisplayed()
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.PROFILE_PICTURE)
+                .performScrollTo()
+                .assertIsDisplayed()
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
+                .performScrollTo()
+                .assertIsDisplayed()
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+                .performScrollTo()
+                .assertIsDisplayed()
         }
 
         Thread.sleep(7000)
@@ -155,8 +168,11 @@ class EditUserScreenTest : TestCase() {
                 viewModel.uiState.value.editedUser != null
             }
 
-            // Clear username field
-            composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).performTextClearance()
+            // Make sure the field is visible
+            composeTestRule
+                .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
+                .performScrollTo()
+                .performTextClearance()
 
             // Enter valid username
             composeTestRule
@@ -184,8 +200,11 @@ class EditUserScreenTest : TestCase() {
                 viewModel.uiState.value.editedUser != null
             }
 
-            // Clear username field
-            composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).performTextClearance()
+            // Make sure the field is visible
+            composeTestRule
+                .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
+                .performScrollTo()
+                .performTextClearance()
 
             // Enter invalid username (only spaces)
             composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).performTextInput("   ")
@@ -194,64 +213,6 @@ class EditUserScreenTest : TestCase() {
 
             // Verify error appears
             assertNotNull(viewModel.uiState.value.usernameError)
-        }
-    }
-
-    @Test
-    fun testEmailFieldWithValidEmail() = run {
-        step("Display screen") {
-            composeTestRule.setContent {
-                SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
-            }
-        }
-
-        step("Test email field validation with valid email") {
-            // Wait for user to be loaded
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                viewModel.uiState.value.editedUser != null
-            }
-
-            // Clear email field
-            composeTestRule.onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD).performTextClearance()
-
-            // Enter valid email
-            composeTestRule
-                .onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD)
-                .performTextInput("valid.email@example.com")
-
-            composeTestRule.waitForIdle()
-
-            // Verify error disappears
-            assert(viewModel.uiState.value.emailError == null)
-        }
-    }
-
-    @Test
-    fun testEmailFieldWithInvalidEmail() = run {
-        step("Display screen") {
-            composeTestRule.setContent {
-                SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
-            }
-        }
-
-        step("Test email field validation with invalid email") {
-            // Wait for user to be loaded
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                viewModel.uiState.value.editedUser != null
-            }
-
-            // Clear email field
-            composeTestRule.onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD).performTextClearance()
-
-            // Enter invalid email
-            composeTestRule
-                .onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD)
-                .performTextInput("invalid-email")
-
-            composeTestRule.waitForIdle()
-
-            // Verify error appears
-            assertNotNull(viewModel.uiState.value.emailError)
         }
     }
 
@@ -266,6 +227,7 @@ class EditUserScreenTest : TestCase() {
         step("Test go back button is clickable") {
             composeTestRule
                 .onNodeWithTag(EditUserTags.GO_BACK_BUTTON)
+                .performScrollTo()
                 .assertIsDisplayed()
                 .assertHasClickAction()
                 .performClick()
@@ -273,46 +235,25 @@ class EditUserScreenTest : TestCase() {
     }
 
     @Test
-    fun testProfilePictureIsClickable() = run {
+    fun testProfilePictureIsDisplayed() = run {
         step("Display screen") {
             composeTestRule.setContent {
                 SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
             }
         }
 
-        step("Test profile picture is clickable") {
+        step("Test profile picture container is displayed") {
             // Wait for user to be loaded
             composeTestRule.waitUntil(timeoutMillis = 5000) {
                 viewModel.uiState.value.editedUser != null
             }
 
+            // Box with tag PROFILE_PICTURE is not clickable in current UI, so we only assert
+            // display
             composeTestRule
                 .onNodeWithTag(EditUserTags.PROFILE_PICTURE)
+                .performScrollTo()
                 .assertIsDisplayed()
-                .assertHasClickAction()
-                .performClick()
-        }
-    }
-
-    @Test
-    fun testSkillsetSectionIsClickable() = run {
-        step("Display screen") {
-            composeTestRule.setContent {
-                SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
-            }
-        }
-
-        step("Test skillset section is clickable") {
-            // Wait for user to be loaded
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                viewModel.uiState.value.editedUser != null
-            }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.SKILLSET_SECTION)
-                .assertIsDisplayed()
-                .assertHasClickAction()
-                .performClick()
         }
     }
 
@@ -327,25 +268,21 @@ class EditUserScreenTest : TestCase() {
             viewModel.uiState.value.editedUser != null
         }
 
-        // Update username and email fields
-        composeTestRule.onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD).performTextClearance()
+        // Update username field
+        composeTestRule
+            .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
+            .performScrollTo()
+            .performTextClearance()
 
         composeTestRule
             .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
             .performTextInput("UpdatedChef")
 
-        composeTestRule.onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD).performTextClearance()
-
-        composeTestRule
-            .onNodeWithTag(EditUserTags.EMAIL_TEXTFIELD)
-            .performTextInput("gladal@barbeuc.com")
-
         // Check that UI state is updated
         assert(viewModel.uiState.value.editedUser!!.username == "UpdatedChef")
-        assert(viewModel.uiState.value.editedUser!!.email == "gladal@barbeuc.com")
 
         // Click validate button
-        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
 
         // Wait for save operation to complete
         composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
@@ -355,6 +292,6 @@ class EditUserScreenTest : TestCase() {
         val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
         assert(editedUser.username == "UpdatedChef")
-        assert(editedUser.email == "gladal@barbeuc.com")
+        // Email is no longer editable in EditUserScreen, so we don't assert it here
     }
 }
