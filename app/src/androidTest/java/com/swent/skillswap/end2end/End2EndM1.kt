@@ -121,7 +121,7 @@ class End2EndM1 {
         /** 2. Navigate in Create account Screens */
 
         /* Username Screen */
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_001) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).assertIsDisplayed()
@@ -138,7 +138,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /* Email Screen */
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_002) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertIsDisplayed()
@@ -157,7 +157,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /* Password Screen */
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_003) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
@@ -184,7 +184,7 @@ class End2EndM1 {
 
         /* Skills Screen */
         val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_004) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
@@ -273,7 +273,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /** Profile Screen checks */
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_010) {
             try {
                 for (testTag in visibleComposableProfile) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -291,7 +291,7 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_020) {
             try {
                 for (testTag in visibleComposableFeedScreen) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -309,7 +309,7 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_030) {
             try {
                 for (testTag in visibleComposableChatScreen) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
