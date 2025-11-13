@@ -213,7 +213,7 @@ fun ProfileScreen(
 
         Button(
             onClick = { onLogoutClick() },
-            modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+            modifier = Modifier.fillMaxWidth(0.3f).padding(top = 24.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
             Text(
