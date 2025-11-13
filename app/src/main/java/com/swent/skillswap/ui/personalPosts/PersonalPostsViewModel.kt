@@ -9,6 +9,7 @@ import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,11 +53,19 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
 
     private val TAG = "PersonalPostsViewModel"
 
+    companion object {
+        /** Maximum number of posts to fetch per type. */
+        private const val MAX_POSTS: Long = 100L
+    }
+
     /** Internal state of the Personal Posts screen. */
     private val _uiState = MutableStateFlow(PersonalPostsUiState())
 
     /** Publicly exposed, read-only state of the Personal Posts screen. */
     val uiState: StateFlow<PersonalPostsUiState> = _uiState.asStateFlow()
+
+    /** Job reference for the current load operation to prevent race conditions. */
+    private var loadJob: Job? = null
 
     init {
         loadPersonalPosts()
@@ -66,7 +75,8 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
      * Loads all posts created by the current user.
      *
      * Fetches posts from the repository filtered by the current user's ID and applies the selected
-     * post type filter. Updates the UI state with loading status and results.
+     * post type filter. Updates the UI state with loading status and results. Cancels any previous
+     * load operation to prevent race conditions from rapid toggles.
      */
     fun loadPersonalPosts() {
         val currentUser = Firebase.auth.currentUser
@@ -78,67 +88,71 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
             return
         }
 
+        // Cancel previous load operation to prevent race conditions
+        loadJob?.cancel()
+
         _uiState.update { it.copy(isLoading = true, error = null) }
 
-        viewModelScope.launch {
-            try {
-                val userId = currentUser.uid
-                val filter = _uiState.value.selectedPostType
+        loadJob =
+            viewModelScope.launch {
+                try {
+                    val userId = currentUser.uid
+                    val filter = _uiState.value.selectedPostType
 
-                // Fetch both types and filter based on selection
-                val allPosts = mutableListOf<Post>()
+                    // Fetch both types and filter based on selection
+                    val allPosts = mutableListOf<Post>()
 
-                when (filter) {
-                    PostTypeFilter.ALL -> {
-                        // Fetch both offers and requests
-                        val offers =
-                            postRepository.getMultiplePosts(
-                                numberOfPosts = 100,
-                                type = PostType.OFFER,
-                                ownerId = userId,
-                                status = null
-                            )
-                        val requests =
-                            postRepository.getMultiplePosts(
-                                numberOfPosts = 100,
-                                type = PostType.REQUEST,
-                                ownerId = userId,
-                                status = null
-                            )
-                        allPosts.addAll(offers)
-                        allPosts.addAll(requests)
+                    when (filter) {
+                        PostTypeFilter.ALL -> {
+                            // Fetch both offers and requests
+                            val offers =
+                                postRepository.getMultiplePosts(
+                                    numberOfPosts = MAX_POSTS,
+                                    type = PostType.OFFER,
+                                    ownerId = userId,
+                                    status = null
+                                )
+                            val requests =
+                                postRepository.getMultiplePosts(
+                                    numberOfPosts = MAX_POSTS,
+                                    type = PostType.REQUEST,
+                                    ownerId = userId,
+                                    status = null
+                                )
+                            allPosts.addAll(offers)
+                            allPosts.addAll(requests)
+                        }
+                        PostTypeFilter.OFFERS -> {
+                            val offers =
+                                postRepository.getMultiplePosts(
+                                    numberOfPosts = MAX_POSTS,
+                                    type = PostType.OFFER,
+                                    ownerId = userId,
+                                    status = null
+                                )
+                            allPosts.addAll(offers)
+                        }
+                        PostTypeFilter.REQUESTS -> {
+                            val requests =
+                                postRepository.getMultiplePosts(
+                                    numberOfPosts = MAX_POSTS,
+                                    type = PostType.REQUEST,
+                                    ownerId = userId,
+                                    status = null
+                                )
+                            allPosts.addAll(requests)
+                        }
                     }
-                    PostTypeFilter.OFFERS -> {
-                        val offers =
-                            postRepository.getMultiplePosts(
-                                numberOfPosts = 100,
-                                type = PostType.OFFER,
-                                ownerId = userId,
-                                status = null
-                            )
-                        allPosts.addAll(offers)
-                    }
-                    PostTypeFilter.REQUESTS -> {
-                        val requests =
-                            postRepository.getMultiplePosts(
-                                numberOfPosts = 100,
-                                type = PostType.REQUEST,
-                                ownerId = userId,
-                                status = null
-                            )
-                        allPosts.addAll(requests)
-                    }
-                }
 
-                // Repository already sorts by creation date, so we can use posts directly
-                _uiState.update { it.copy(posts = allPosts, isLoading = false, error = null) }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error loading personal posts", e)
-                _uiState.update {
-                    it.copy(isLoading = false, error = "Failed to load posts: ${e.message}")
+                    // Repository already sorts by creation date, so we can use posts directly
+                    _uiState.update { it.copy(posts = allPosts, isLoading = false, error = null) }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading personal posts", e)
+                    _uiState.update {
+                        it.copy(isLoading = false, error = "Failed to load posts: ${e.message}")
+                    }
                 }
             }
-        }
     }
 
     /**
@@ -154,16 +168,24 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
     /**
      * Deletes a post from the database.
      *
+     * Uses optimistic update to immediately remove the post from the UI, then refreshes the list in
+     * the background. If deletion fails, the error is shown and the post remains in the list.
+     *
      * @param post The post to delete.
      */
     fun deletePost(post: Post) {
+        // Optimistic update: remove post from UI immediately
+        _uiState.update { it.copy(posts = it.posts.filterNot { p -> p.uid == post.uid }) }
+
         viewModelScope.launch {
             try {
                 postRepository.deletePost(post.type, post.uid)
-                // Reload posts after deletion
+                // Refresh to ensure consistency, but don't wait for it
                 loadPersonalPosts()
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting post", e)
+                // On failure, reload to restore the post in the list
+                loadPersonalPosts()
                 _uiState.update { it.copy(error = "Failed to delete post: ${e.message}") }
             }
         }

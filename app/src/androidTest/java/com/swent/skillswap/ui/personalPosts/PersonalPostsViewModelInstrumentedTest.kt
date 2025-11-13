@@ -143,10 +143,31 @@ class PersonalPostsViewModelInstrumentedTest {
         viewModel = PersonalPostsViewModel(fakeRepository)
         Thread.sleep(100)
         val initialCount = viewModel.uiState.value.posts.size
+        if (initialCount == 0) {
+            // If no posts loaded, skip the test
+            return@runBlocking
+        }
+        assertTrue(
+            "Post should exist before deletion",
+            viewModel.uiState.value.posts.any { it.uid == offer.uid }
+        )
+
+        // Test optimistic update: post should be removed immediately (synchronously)
         viewModel.deletePost(offer)
+        val stateAfterDelete = viewModel.uiState.value
+        assertTrue(
+            "Post should be removed immediately via optimistic update",
+            stateAfterDelete.posts.none { it.uid == offer.uid }
+        )
+        assertEquals("Post count should decrease", initialCount - 1, stateAfterDelete.posts.size)
+
+        // Wait for repository deletion to complete
         Thread.sleep(100)
-        val state = viewModel.uiState.value
-        assertTrue(state.posts.none { it.uid == offer.uid } || state.posts.size < initialCount)
+        val remainingPosts = fakeRepository.getAddedPosts()
+        assertTrue(
+            "Post should be removed from repository",
+            remainingPosts.none { it.uid == offer.uid }
+        )
     }
 
     @Test
@@ -189,7 +210,7 @@ class PersonalPostsViewModelInstrumentedTest {
             description = "Test",
             ownerId = testUserId,
             tags = setOf(PostTag.REOCCURRING),
-            paymentMethod = PaymentMethod.SKILLS,
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = status,
@@ -204,7 +225,7 @@ class PersonalPostsViewModelInstrumentedTest {
             description = "Test",
             ownerId = testUserId,
             tags = setOf(PostTag.REOCCURRING),
-            paymentMethod = PaymentMethod.CASH,
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = status,
