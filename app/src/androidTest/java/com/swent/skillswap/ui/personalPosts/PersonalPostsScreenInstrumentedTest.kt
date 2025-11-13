@@ -1,6 +1,8 @@
 /** @author Younes Belgroune - Made with the help of AI */
 package com.swent.skillswap.ui.personalPosts
 
+// Optimized with waitUntil for better CI performance
+
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -8,6 +10,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.waitUntil
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -138,8 +141,9 @@ class PersonalPostsScreenInstrumentedTest {
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
         // Wait for loading to complete - empty state should appear
-        Thread.sleep(2000)
-        composeRule.waitForIdle()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("No posts found").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("No posts found").assertIsDisplayed()
     }
 
@@ -157,8 +161,10 @@ class PersonalPostsScreenInstrumentedTest {
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
         // Wait for posts to load
-        Thread.sleep(2000)
-        composeRule.waitForIdle()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("Test Offer").fetchSemanticsNodes().isNotEmpty() &&
+                composeRule.onAllNodesWithText("Test Request").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("Test Offer").assertIsDisplayed()
         composeRule.onNodeWithText("Test Request").assertIsDisplayed()
     }
@@ -173,8 +179,10 @@ class PersonalPostsScreenInstrumentedTest {
 
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
-        Thread.sleep(2000)
-        composeRule.waitForIdle()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("Test Offer").fetchSemanticsNodes().isNotEmpty() &&
+                composeRule.onAllNodesWithText("Offer").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("Test Offer").assertIsDisplayed()
         composeRule.onNodeWithText("Offer").assertIsDisplayed()
     }
@@ -189,13 +197,15 @@ class PersonalPostsScreenInstrumentedTest {
 
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
-        Thread.sleep(2000)
-        composeRule.waitForIdle()
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("To Delete").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("To Delete").assertIsDisplayed()
         composeRule.onAllNodesWithTag(PersonalPostsScreenTags.DELETE_BUTTON)[0].performClick()
         composeRule.waitForIdle()
         // Post should be removed (optimistic update) - verify it's gone
-        Thread.sleep(500)
-        composeRule.waitForIdle()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("To Delete").fetchSemanticsNodes().isEmpty()
+        }
     }
 }
