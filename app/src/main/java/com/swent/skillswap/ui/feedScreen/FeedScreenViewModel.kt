@@ -1,26 +1,20 @@
 package com.swent.skillswap.ui.feedScreen
 
 import android.util.Log
-import androidx.annotation.VisibleForTesting
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
-import com.swent.skillswap.model.offer.FakeFeedNavigation
-import com.swent.skillswap.model.offer.FakeFeedRepository
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.swent.skillswap.model.offer.FeedController
 import com.swent.skillswap.model.offer.FeedOffer
+import com.swent.skillswap.model.post.Post
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-/**
- * Represents the current state of the FeedOffer screen UI.
- *
- * @property offers List of all available offers currently loaded.
- * @property current The offer currently being displayed.
- */
-data class FeedScreenUiState(
-    val offers: List<FeedOffer> = emptyList(),
-    val current: FeedOffer = FeedOffer(),
-    val isMenuVisible: Boolean = false
-)
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -29,94 +23,52 @@ data class FeedScreenUiState(
  * navigating to another user’s profile.
  *
  * @property navigation The navigation handler for transitioning to other screens.
- * @property repository The data source used to retrieve and update offers.
+ * @property controller The data source used to retrieve and update offers.
+ * @author Joey Gugler using chatGPT
  */
 open class FeedScreenViewModel(
-    private val navigation: FeedScreenNavigation = FakeFeedNavigation(),
-    private val repository: FeedRepository = FakeFeedRepository()
+    private val navigation: FeedScreenNavigation,
+    private val controller: FeedController
 ) : ViewModel() {
-    var feedScreenLogTag = "FeedScreen"
 
     /**
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
      */
-    private val uid: String = "AnoUser"
+    private val uid: String = Firebase.auth.uid ?: "AnoUser"
 
     /** Internal state of the FeedOffer screen. */
-    private val _uiState = MutableStateFlow(FeedScreenUiState())
+    private val _uiState = MutableStateFlow<FeedOffer?>(null)
 
     /** Publicly exposed, read-only state of the FeedOffer screen. */
-    open val uiState: StateFlow<FeedScreenUiState> = _uiState.asStateFlow()
+    open val uiState: StateFlow<FeedOffer?> = _uiState.asStateFlow()
 
     init {
-        runCatching { next() }.onFailure { Log.e("FeedScreen", "Failed to load initial offer", it) }
-    }
-
-    /** Advances to the next offer in the list or fetches a new one. */
-    fun next() {
-        val state = _uiState.value
-        val offers = state.offers
-
-        if (offers.isEmpty()) {
+        viewModelScope.launch {
             runCatching {
-                    val offer = repository.getPost(uid)
-                    _uiState.value = FeedScreenUiState(offers = listOf(offer), current = offer)
+                    controller.currentPost.value?.let { post ->
+                        _uiState.value = toFeedOffer(post, uid)
+                    }
                 }
-                .onFailure { Log.e(feedScreenLogTag, "Failed to fetch first offer", it) }
-            return
-        }
+                .onFailure { e -> Log.e("FeedScreenViewModel", "Error loading initial post", e) }
 
-        val currentIndex = offers.indexOf(state.current)
-        if (currentIndex == -1) {
-            Log.w(feedScreenLogTag, "Current offer not found in list; resetting to first.")
-            _uiState.value = state.copy(current = offers.first())
-            return
-        }
-
-        if (currentIndex < offers.lastIndex) {
-            _uiState.value = state.copy(current = offers[currentIndex + 1])
-        } else {
-            runCatching {
-                    val newOffer = repository.getPost(uid)
-                    _uiState.value = state.copy(offers = offers + newOffer, current = newOffer)
+            snapshotFlow { controller.currentPost.value }
+                .filterNotNull()
+                .collect { post ->
+                    runCatching { _uiState.value = toFeedOffer(post, uid) }
+                        .onFailure { e -> Log.e("FeedScreenViewModel", "Error updating post", e) }
                 }
-                .onFailure { Log.e(feedScreenLogTag, "Failed to fetch new offer", it) }
         }
     }
 
     /** Accepts the specified offer on behalf of the current user. */
     fun accept(offer: FeedOffer) {
-        repository.accept(offer, uid)
+        viewModelScope.launch { controller.acceptPost("I'm interested in this offer") }
+    } // TODO: A Pop-up Window with a textField or preFab message to send is a good idea
 
-        val state = _uiState.value
-        val remainingOffers = state.offers.filterNot { it == offer }
-
-        if (remainingOffers.isNotEmpty()) {
-            _uiState.value = state.copy(offers = remainingOffers, current = remainingOffers.last())
-        } else {
-            _uiState.value = state.copy(offers = emptyList(), current = FeedOffer())
-            next()
-        }
-    }
-
-    /** Declines (skips) the specified offer and loads the next one. */
+    /** Declines the specified offer, removes it from the feed, and loads the next one. */
     fun decline(offer: FeedOffer) {
-        Log.d(feedScreenLogTag, "Declined offer: ${offer.authorID}")
-        repository.skip(offer, uid)
-        next()
-    }
-
-    /** Updates the current offer to the previous one in the list, if available. */
-    fun previous() {
-        val state = _uiState.value
-        val offers = state.offers
-        val currentIndex = offers.indexOf(state.current)
-
-        if (currentIndex > 0 && currentIndex < offers.size) {
-            _uiState.value = state.copy(current = offers[currentIndex - 1])
-        } else {
-            Log.e(feedScreenLogTag, "Index out of bound for previous()")
-        }
+        skip()
+        // TODO: Placeholder for rollback implementation
     }
 
     /** Navigates to the profile screen of the specified user. */
@@ -124,58 +76,60 @@ open class FeedScreenViewModel(
         navigation.goToProfileView(userId)
     }
 
-    /** Shows or hides the menu for the current offer card. */
-    fun showMenu() {
-        _uiState.value = _uiState.value.copy(isMenuVisible = !_uiState.value.isMenuVisible)
-    }
-
-    /** Skips the current offer and moves to the next. */
+    /** Skips the current offer and moves to the next one. */
     fun skip() {
-        val currentOffer = uiState.value.current
-        if (currentOffer.skillProvided.isNotEmpty()) {
-            repository.skip(currentOffer, uid)
-            next()
-        }
+        viewModelScope.launch { controller.skipPost() }
     }
-
-    // --- Track blocked/report actions for tests ---
-    private val _blockedUsers = mutableListOf<String>()
-    val blockedUsers: List<String>
-        get() = _blockedUsers
-
-    private val _reportedOffers = mutableListOf<FeedOffer>()
-    val reportedOffers: List<FeedOffer>
-        get() = _reportedOffers
-
-    /**
-     * Temporarily blocks a user by adding their ID to an in-memory list.
-     *
-     * This implementation is temporary and should later be replaced with a persistent or
-     * server-side blocking mechanism.
-     *
-     * @param userId The unique identifier of the user to block.
-     */
+    /** Temporarily blocks a user by adding their ID to an in-memory list. */
     fun blockUser(userId: String) {
-        _blockedUsers.add(userId)
-        repository.blockUser(userId)
+        // TODO: Replace with persistent backend logic
+    }
+
+    /** Temporarily reports an offer by adding it to an in-memory list. */
+    fun reportOffer(offer: FeedOffer) {
+        // TODO: Replace with backend reporting logic
     }
 
     /**
-     * Temporarily reports an offer by adding it to an in-memory list.
+     * Converts a [Post] object into a [FeedOffer] for display on the feed.
      *
-     * This implementation is temporary and should later be replaced with a proper reporting system
-     * that sends data to a backend service.
-     *
-     * @param offer The [FeedOffer] to report.
+     * @param post The post to convert.
+     * @param userId The ID of the current user.
+     * @return A corresponding [FeedOffer] object.
      */
-    fun reportOffer(offer: FeedOffer) {
-        _reportedOffers.add(offer)
-        repository.reportOffer(offer)
+    private fun toFeedOffer(post: Post, userId: String): FeedOffer {
+        return FeedOffer(
+            skillProvided = post.title,
+            authorID = post.ownerId,
+            authorName = "AnoUser",
+            // TODO Need to modify the post structure to handle this or use external object
+            //  (decrease duplicate data)
+            requesterAvatar = "https://picsum.photos/200",
+            receiverName = userId,
+            skillRequested =
+                "TODO : Implement", // TODO this should be provided by the recommendation algo
+            thumbnail = post.media.firstOrNull() ?: "",
+            specification = post.description,
+            description = post.description
+        )
     }
+}
+/**
+ * Factory for creating [FeedScreenViewModel] with parameters.
+ *
+ * @param navigation The navigation handler for the feed screen.
+ * @param controller The controller handling feed data.
+ */
+class FeedScreenViewModelFactory(
+    private val navigation: FeedScreenNavigation,
+    private val controller: FeedController
+) : ViewModelProvider.Factory {
 
-    /** Test helper: directly sets the UI state. Only use in tests. */
-    @VisibleForTesting
-    fun setUiState(state: FeedScreenUiState) {
-        _uiState.value = state
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(FeedScreenViewModel::class.java)) {
+            return FeedScreenViewModel(navigation, controller) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

@@ -1,4 +1,4 @@
-/** @author Topaze17(ELiott) huge help from chatGPT to make it work correctly */
+/** @author Topaze17 (ELiott) Huge help from ChatGPT to make it work correctly */
 package com.swent.skillswap.auth
 
 import androidx.activity.ComponentActivity
@@ -11,20 +11,22 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.model.offer.*
+import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
-import com.swent.skillswap.ui.auth.AuthMainScreen
-import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.ui.auth.SignInTags
+import com.swent.skillswap.ui.auth.*
 import com.swent.skillswap.ui.chat.ChatListScreen
-import com.swent.skillswap.ui.feedScreen.FeedScreen
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.ui.feedScreen.*
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.user.ProfileScreen
@@ -43,11 +45,8 @@ class AuthClassicTest : TestCase() {
 
     @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-    // Built after emulator is configured
     private lateinit var vmCreateAccount: CreateAccountViewModel
     private lateinit var vmSignIn: SignInViewModel
-
-    // Use the same classic user identity across tests
     private val email = "classic.user@example.com"
     private val password = "PasswordA1" // >= 8, contains uppercase
     private val username = "classicUser"
@@ -59,7 +58,6 @@ class AuthClassicTest : TestCase() {
         @BeforeClass
         @JvmStatic
         fun globalSetUp() {
-            // Start emulator once and bind SDKs
             FirebaseEmulator.startEmulator()
             auth = FirebaseEmulator.auth
             firestore = FirebaseEmulator.firestore
@@ -76,10 +74,13 @@ class AuthClassicTest : TestCase() {
 
     @Before
     fun setUp() {
-        // Build VMs after emulator is ready
+        // Initialize ViewModels after Firebase emulator is ready
         vmCreateAccount =
             CreateAccountViewModel(isGoogleAccount = false, auth = auth, firestore = firestore)
         vmSignIn = SignInViewModel(auth)
+
+        // Build controller via helper (cleaner, reusable)
+        val controller = createFeedController()
 
         // Compose app content
         composeTestRule.setContent {
@@ -101,14 +102,21 @@ class AuthClassicTest : TestCase() {
                     )
                 }
                 composable(Screen.CreateAccount.route) {
-                    // Classic flow (isGoogleAccount = false)
                     AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Feed) },
                         googleAccount = false,
                         vm = vmCreateAccount
                     )
                 }
-                composable(Screen.Feed.route) { FeedScreen() }
+                composable(Screen.Feed.route) {
+                    val factory =
+                        FeedScreenViewModelFactory(
+                            navigation = { uid -> navController.navigate("profile/$uid") },
+                            controller = controller
+                        )
+                    val vm: FeedScreenViewModel = viewModel(factory = factory)
+                    FeedScreen(vm = vm)
+                }
                 composable(Screen.Chat.route) { ChatListScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
@@ -204,11 +212,11 @@ class AuthClassicTest : TestCase() {
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
     }
 
     /**
@@ -221,7 +229,6 @@ class AuthClassicTest : TestCase() {
     fun t2_classicUser_can_log_on() {
         // Seed returning user (Auth + Firestore) on emulator
         runBlocking {
-            // Create / ensure Auth account exists
             try {
                 auth.createUserWithEmailAndPassword(email, password).await()
             } catch (_: Exception) {
@@ -252,11 +259,28 @@ class AuthClassicTest : TestCase() {
         // Arrive at Offers
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
         auth.signOut()
+    }
+
+    /**
+     * Helper to create a FeedController for tests. Uses runBlocking since tests are not on the UI
+     * thread.
+     */
+    private fun createFeedController(): FeedController = runBlocking {
+        FeedControllerFactory(
+                recommendationEngine = RecommendationEngine(),
+                thumbnailRepository = ThumbnailRepository(),
+                postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
+                chatRepository = ChatRepository()
+            )
+            .create(
+                userIdPerformingActions = FirebaseEmulator.auth.uid ?: "AnoUser",
+                feedType = PostType.REQUEST
+            )
     }
 }
