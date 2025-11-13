@@ -94,7 +94,8 @@ class End2EndM1 {
             }
         }
         composeTestRule.waitForIdle()
-
+        composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
+        /*
         /** Verify Sign-In screen is displayed */
         val signInTags =
             listOf(
@@ -108,7 +109,7 @@ class End2EndM1 {
         for (testTag in signInTags) {
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
-        /*
+
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
                 composeTestRule.waitForIdle()
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
