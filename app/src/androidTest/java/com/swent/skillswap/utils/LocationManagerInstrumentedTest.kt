@@ -44,7 +44,9 @@ class LocationManagerInstrumentedTest {
 
     @Test
     fun getCurrentLocation_returnsValidLocation() = runBlocking {
-        // Covers lines 89-90 (location != null path)
+        // Tests that getCurrentLocation() returns a valid location
+        // This tests the two-step approach: getLastLocation() first, then getCurrentLocation() if
+        // needed
         val location = locationManager.getCurrentLocationSync()
         assertNotNull("Should receive a location", location)
         assertTrue("Location should be valid", location.latitude.isFinite())
