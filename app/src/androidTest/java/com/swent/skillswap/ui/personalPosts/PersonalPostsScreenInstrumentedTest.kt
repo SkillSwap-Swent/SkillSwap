@@ -12,7 +12,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.post.*
+import com.swent.skillswap.model.post.Offer
+import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostStatus
+import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
