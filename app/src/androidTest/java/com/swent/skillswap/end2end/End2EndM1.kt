@@ -89,47 +89,21 @@ class End2EndM1 {
     @OptIn(InternalTestApi::class)
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
+        /**
+         * NOTE: During this test, assert displays are wrapped in waitUntil with timeout, to
+         * compensate the CI emulator slowness. You may want to remove these waits when running
+         * tests locally for debugging.
+         */
+
         /** 1. Launch app and wait for setup */
-        // attendre chaque élément du sign-in screen séparément (timeouts distincts pour debugging)
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
-
-        composeTestRule.waitUntil(timeoutMillis = 40_001) {
-            try {
                 composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
-        /*
-        composeTestRule.waitUntil(timeoutMillis = 40_002) {
-            try {
-                composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
-           */
-        composeTestRule.waitUntil(timeoutMillis = 40_003) {
-            try {
                 composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
-
-        composeTestRule.waitUntil(timeoutMillis = 40_004) {
-            try {
                 composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).assertIsDisplayed()
+                // composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed() =>
+                // Breaks CI for unknown reason, but pass on local tests
                 true
             } catch (e: AssertionError) {
                 false
@@ -145,8 +119,7 @@ class End2EndM1 {
         /** 2. Navigate in Create account Screens */
 
         /* Username Screen */
-        // attente spécifique pour l'écran Username
-        composeTestRule.waitUntil(timeoutMillis = 20_001) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).assertIsDisplayed()
@@ -163,8 +136,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /* Email Screen */
-        // attente spécifique pour l'écran Email
-        composeTestRule.waitUntil(timeoutMillis = 20_002) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertIsDisplayed()
@@ -183,8 +155,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /* Password Screen */
-        // attente spécifique pour l'écran Password
-        composeTestRule.waitUntil(timeoutMillis = 20_003) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
@@ -211,8 +182,7 @@ class End2EndM1 {
 
         /* Skills Screen */
         val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
-        // attente spécifique pour l'écran Skills
-        composeTestRule.waitUntil(timeoutMillis = 20_004) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
@@ -231,7 +201,7 @@ class End2EndM1 {
         /* End of Create Account Screens */
 
         /** Wait until firestore auth operation completes and Profile Screen is displayed */
-        composeTestRule.waitUntil(timeoutMillis = 40_005) {
+        composeTestRule.waitUntil(timeoutMillis = 60_000) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 true
@@ -251,8 +221,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /** Wait until the previous test is done a the app is set up again */
-        // première vérification du Profile (auto sign-in)
-        composeTestRule.waitUntil(timeoutMillis = 20_006) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 true
@@ -306,8 +275,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /** Profile Screen checks */
-        // attente identifiée pour les checks initiaux du Profile Screen
-        composeTestRule.waitUntil(timeoutMillis = 20_007) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 for (testTag in visibleComposableProfile) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -325,8 +293,7 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // attente identifiée pour les checks initiaux du Feed Screen
-        composeTestRule.waitUntil(timeoutMillis = 20_008) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 for (testTag in visibleComposableFeedScreen) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -344,8 +311,7 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // attente identifiée pour les checks initiaux du Chat Screen
-        composeTestRule.waitUntil(timeoutMillis = 20_009) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 for (testTag in visibleComposableChatScreen) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
