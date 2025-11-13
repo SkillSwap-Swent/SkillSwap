@@ -144,6 +144,36 @@ class PersonalPostsViewModelInstrumentedTest {
     }
 
     @Test
+    fun setPostTypeFilter_offers_loadsOnlyOffers() = runBlocking {
+        fakeRepository.preloadPosts(
+            createOffer("offer-1", PostStatus.POSTED),
+            createRequest("request-1", PostStatus.POSTED)
+        )
+        viewModel = PersonalPostsViewModel(fakeRepository)
+        Thread.sleep(100)
+        viewModel.setPostTypeFilter(PostTypeFilter.OFFERS)
+        Thread.sleep(100)
+        val state = viewModel.uiState.value
+        assertEquals(PostTypeFilter.OFFERS, state.selectedPostType)
+        state.posts.forEach { assertEquals(PostType.OFFER, it.type) }
+    }
+
+    @Test
+    fun setPostTypeFilter_requests_loadsOnlyRequests() = runBlocking {
+        fakeRepository.preloadPosts(
+            createOffer("offer-1", PostStatus.POSTED),
+            createRequest("request-1", PostStatus.POSTED)
+        )
+        viewModel = PersonalPostsViewModel(fakeRepository)
+        Thread.sleep(100)
+        viewModel.setPostTypeFilter(PostTypeFilter.REQUESTS)
+        Thread.sleep(100)
+        val state = viewModel.uiState.value
+        assertEquals(PostTypeFilter.REQUESTS, state.selectedPostType)
+        state.posts.forEach { assertEquals(PostType.REQUEST, it.type) }
+    }
+
+    @Test
     fun deletePost_success_removesPost() = runBlocking {
         val offer = createOffer("offer-1", PostStatus.POSTED)
         fakeRepository.preloadPosts(offer)
@@ -207,6 +237,17 @@ class PersonalPostsViewModelInstrumentedTest {
         assertNotNull(viewModel.uiState.value.error)
         viewModel.clearError()
         assertNull(viewModel.uiState.value.error)
+    }
+
+    @Test
+    fun loadPersonalPosts_emptyList_handlesGracefully() = runBlocking {
+        fakeRepository.preloadPosts()
+        viewModel = PersonalPostsViewModel(fakeRepository)
+        Thread.sleep(100)
+        val state = viewModel.uiState.value
+        assertTrue(state.posts.isEmpty())
+        assertFalse(state.isLoading)
+        assertNull(state.error)
     }
 
     private fun createOffer(uid: String, status: PostStatus) =

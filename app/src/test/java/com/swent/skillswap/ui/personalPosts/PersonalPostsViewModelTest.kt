@@ -179,56 +179,6 @@ class PersonalPostsViewModelTest {
     }
 
     @Test
-    fun setPostTypeFilter_offers_loadsOnlyOffers() = runTest {
-        fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-        try {
-            FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        viewModel.setPostTypeFilter(PostTypeFilter.OFFERS)
-        advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertEquals(PostTypeFilter.OFFERS, state.selectedPostType)
-        if (state.posts.isNotEmpty()) {
-            state.posts.forEach { assertEquals(PostType.OFFER, it.type) }
-        }
-    }
-
-    @Test
-    fun setPostTypeFilter_requests_loadsOnlyRequests() = runTest {
-        fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-        try {
-            FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        viewModel.setPostTypeFilter(PostTypeFilter.REQUESTS)
-        advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertEquals(PostTypeFilter.REQUESTS, state.selectedPostType)
-        if (state.posts.isNotEmpty()) {
-            state.posts.forEach { assertEquals(PostType.REQUEST, it.type) }
-        }
-    }
-
-    @Test
-    fun loadPersonalPosts_repositoryFailure_setsError() = runTest {
-        fakeRepository.setShouldFailOnGet(true)
-        fakeRepository.preloadPosts(sampleOffer)
-        try {
-            FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        advanceUntilIdle()
-        assertNotNull(viewModel.uiState.value)
-    }
-
-    @Test
     fun deletePost_removesPostAndReloads() = runTest {
         // Use SKILLSANDCASH to match default paymentMethod filter
         val offerWithDefaultPayment = sampleOffer.copy(paymentMethod = PaymentMethod.SKILLSANDCASH)
@@ -266,22 +216,6 @@ class PersonalPostsViewModelTest {
             "Post should be removed from repository",
             remainingPosts.any { it.uid == offerWithDefaultPayment.uid }
         )
-    }
-
-    @Test
-    fun refresh_reloadsPosts() = runTest {
-        fakeRepository.preloadPosts(sampleOffer)
-        try {
-            FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
-        viewModel = PersonalPostsViewModel(fakeRepository)
-        advanceUntilIdle()
-        fakeRepository.preloadPosts(sampleOffer, sampleRequest)
-        viewModel.refresh()
-        advanceUntilIdle()
-        assertNotNull(viewModel.uiState.value)
     }
 
     @Test
