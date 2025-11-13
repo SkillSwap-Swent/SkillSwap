@@ -56,6 +56,8 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.post.PostOperation
+import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.SkillsEditScreen
@@ -176,7 +178,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                             navigationActions.navigateTo(Screen.AuthMain)
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
-                        onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) }
+                        onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddPost) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -208,6 +211,22 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         }
                     val vm: FeedScreenViewModel = viewModel(factory = factory)
                     FeedScreen(vm = vm)
+                }
+            }
+
+            composable(Screen.AddPost.route) {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (currentUserId != null) {
+
+                    RequestScreen(
+                        postRepository = PostFirestoreRepository(Firebase.firestore),
+                        currentUserId = currentUserId,
+                        uid = null,
+                        onGoBack = { navigationActions.goBack() },
+                        onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
+                        postOperation = PostOperation.ADD,
+                    )
                 }
             }
 

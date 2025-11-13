@@ -25,6 +25,8 @@ sealed class Screen(
     object EditSkills : Screen(route = "edit_skills", name = "Edit Skills")
 
     object Chat : Screen(route = "chat", name = "Chat", isTopLevelDestination = true)
+
+    object AddPost : Screen(route = "addPost", name = "Add post")
 }
 
 open class NavigationActions(

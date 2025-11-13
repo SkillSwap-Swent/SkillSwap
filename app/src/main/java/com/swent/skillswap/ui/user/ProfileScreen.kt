@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
@@ -64,6 +65,7 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onSkillClick: () -> Unit = {},
+    onAddPostClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -224,6 +226,24 @@ fun ProfileScreen(
             Text(text = "My skills")
         }
         Spacer(modifier = Modifier.weight(1f))
+
+        /* Add post button */
+        Button(
+            onClick = { onAddPostClick() },
+            shape = RoundedCornerShape(26),
+            contentPadding = PaddingValues(12.dp, 0.dp),
+            modifier = Modifier.testTag(SKILLS_BUTTON)
+        ) {
+            Icon(
+                contentDescription = "New Post",
+                imageVector = Icons.Outlined.AddCircle,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = "Make a post")
+        }
+        Spacer(modifier = Modifier.weight(1f))
+
         /** log Out button */
         Button(
             onClick = { onLogoutClick() },
