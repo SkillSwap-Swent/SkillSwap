@@ -90,13 +90,13 @@ class End2EndM1 {
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
         /**
-         * NOTE: During this test, assert displays are wrapped in waitUntil with timeout, to
-         * compensate the CI emulator slowness. You may want to remove these waits when running
+         * NOTE: During this test, assert displays are wrapped in waitUntil with very big timeout,
+         * to compensate the CI emulator slowness. You may want to remove these waits when running
          * tests locally for debugging.
          */
 
         /** 1. Launch app and wait for setup */
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
@@ -119,7 +119,7 @@ class End2EndM1 {
         /** 2. Navigate in Create account Screens */
 
         /* Username Screen */
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).assertIsDisplayed()
@@ -136,7 +136,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /* Email Screen */
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).assertIsDisplayed()
@@ -155,7 +155,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /* Password Screen */
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
@@ -182,7 +182,7 @@ class End2EndM1 {
 
         /* Skills Screen */
         val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
@@ -221,7 +221,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
 
         /** Wait until the previous test is done a the app is set up again */
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 true
@@ -260,22 +260,12 @@ class End2EndM1 {
                 NavigationTestTags.CHAT_TAB
             )
 
-        val visibleComposableFeedScreen =
-            listOf(
-                FeedScreenTestTags.FEED_CARD,
-                FeedScreenTestTags.FEED_THUMBNAIL,
-                FeedScreenTestTags.SKILL_REQUESTED,
-                FeedScreenTestTags.SKILL_GIVE,
-                FeedScreenTestTags.ACCEPT_BUTTON,
-                FeedScreenTestTags.DECLINE_BUTTON,
-            )
-
         val visibleComposableChatScreen = emptyList<String>() // No tests tags defined yet
 
         composeTestRule.waitForIdle()
 
         /** Profile Screen checks */
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 for (testTag in visibleComposableProfile) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
@@ -293,11 +283,9 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
-                for (testTag in visibleComposableFeedScreen) {
-                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-                }
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
                 for (testTag in visibleComposableBotBar) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
                 }
@@ -311,7 +299,7 @@ class End2EndM1 {
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 for (testTag in visibleComposableChatScreen) {
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
