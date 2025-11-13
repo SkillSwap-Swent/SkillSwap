@@ -16,4 +16,5 @@ object ValidationConfig {
      * - Requires . followed by 2-6 letter TLD
      */
     val EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$".toRegex()
+    val USERNAME_REGEX = "^[a-zA-Z0-9_]{3,20}$".toRegex()
 }
