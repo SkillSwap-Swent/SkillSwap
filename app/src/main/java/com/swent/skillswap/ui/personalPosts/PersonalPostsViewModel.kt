@@ -49,7 +49,7 @@ enum class PostTypeFilter {
  *
  * @property postRepository The repository used to retrieve posts from the database.
  */
-class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewModel() {
+open class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewModel() {
 
     private val TAG = "PersonalPostsViewModel"
 
@@ -62,7 +62,7 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
     private val _uiState = MutableStateFlow(PersonalPostsUiState())
 
     /** Publicly exposed, read-only state of the Personal Posts screen. */
-    val uiState: StateFlow<PersonalPostsUiState> = _uiState.asStateFlow()
+    open val uiState: StateFlow<PersonalPostsUiState> = _uiState.asStateFlow()
 
     /** Job reference for the current load operation to prevent race conditions. */
     private var loadJob: Job? = null
@@ -160,7 +160,7 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
      *
      * @param filter The new filter to apply (ALL, OFFERS, or REQUESTS).
      */
-    fun setPostTypeFilter(filter: PostTypeFilter) {
+    open fun setPostTypeFilter(filter: PostTypeFilter) {
         _uiState.update { it.copy(selectedPostType = filter) }
         loadPersonalPosts()
     }
@@ -173,7 +173,7 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
      *
      * @param post The post to delete.
      */
-    fun deletePost(post: Post) {
+    open fun deletePost(post: Post) {
         // Optimistic update: remove post from UI immediately
         _uiState.update { it.copy(posts = it.posts.filterNot { p -> p.uid == post.uid }) }
 
@@ -191,12 +191,12 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
     }
 
     /** Refreshes the posts list by reloading from the database. */
-    fun refresh() {
+    open fun refresh() {
         loadPersonalPosts()
     }
 
     /** Clears any error message from the UI state. */
-    fun clearError() {
+    open fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
 }

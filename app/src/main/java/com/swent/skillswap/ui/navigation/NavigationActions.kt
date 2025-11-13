@@ -24,6 +24,12 @@ sealed class Screen(
 
     object EditSkills : Screen(route = "edit_skills", name = "Edit Skills")
 
+    object PersonalPosts : Screen(route = "personal_posts", name = "Personal Posts")
+
+    object EditRequest : Screen(route = "edit_request/{postId}", name = "Edit Request") {
+        fun createRoute(postId: String) = "edit_request/$postId"
+    }
+
     object Chat : Screen(route = "chat", name = "Chat", isTopLevelDestination = true)
 }
 
