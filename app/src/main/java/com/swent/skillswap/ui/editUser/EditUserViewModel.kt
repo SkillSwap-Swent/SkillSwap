@@ -48,7 +48,7 @@ data class EditUserUiState(
 
 class EditUserViewModel(
     // val navigation:
-   /* private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())*/
+    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
 ) : ViewModel() {
 
     /** Internal state of the Edit User screen. */
@@ -61,7 +61,7 @@ class EditUserViewModel(
 
     /** Fetch the current user data from Firestore on initialization */
     init {
-       /* val currentFirestoreUser = Firebase.auth.currentUser
+        val currentFirestoreUser = Firebase.auth.currentUser
 
         if (currentFirestoreUser == null) {
             /** No authenticated user found, update the state with an error */
@@ -71,10 +71,10 @@ class EditUserViewModel(
                         "No authenticated user found, you have to login to edit your profile"
                 )
             }
-        }*/
+        }
 
         viewModelScope.launch {
-            /*try {
+            try {
                 _uiState.update { it.copy(isLoading = true) }
                 currentUser = repo.getUser(currentFirestoreUser!!.uid)
 
@@ -85,7 +85,7 @@ class EditUserViewModel(
                 _uiState.update {
                     it.copy(isLoading = false, generalError = "Failed to load current user")
                 }
-            }*/
+            }
         }
     }
 
@@ -185,7 +185,7 @@ class EditUserViewModel(
 
     /** Updates the edited user in the state with new values. */
     fun validate() {
-        /*
+
         /** PRECONDITIONS */
         if (
             uiState.value.usernameError != null ||
@@ -217,6 +217,6 @@ class EditUserViewModel(
                     it.copy(isLoading = false, generalError = "Failed to edit user: ${e.message}")
                 }
             }
-        }*/
+        }
     }
 }

@@ -153,13 +153,13 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                             navigationActions.navigateTo(Screen.AuthMain)
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
+                        onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
                     EditUserScreen(
                         vm = editProfileViewModel,
                         onGoBack = { navigationActions.goBack() },
-                        onSkillsPressed = { navigationActions.navigateTo(Screen.EditSkills) }
                     )
                 }
                 composable(Screen.EditSkills.route) {

@@ -50,7 +50,6 @@ object EditUserTags {
 fun EditUserScreen(
     vm: EditUserViewModel = viewModel(),
     onGoBack: () -> Unit = {},
-    onSkillsPressed: () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
