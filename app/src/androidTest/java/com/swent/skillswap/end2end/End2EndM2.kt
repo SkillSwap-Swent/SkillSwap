@@ -217,13 +217,29 @@ class End2EndM2 {
                 FeedScreenTestTags.ACCEPT_BUTTON,
                 FeedScreenTestTags.DECLINE_BUTTON,
             )
-
-        /** Scroll down */
-        composeTestRule.on
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX).performScrollToIndex(9)
+        //composeTestRule.onNodeWithText("Generated 1").assertIsDisplayed()
+        Thread.sleep(3000) // Wait for feed to load
 
         /** Scroll up */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.SCROLL_BOX).performScrollToIndex(0)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeDown() }
+        //composeTestRule.onNodeWithText("Generated 2").assertIsDisplayed()
+        Thread.sleep(3000) // Wait for feed to load
+
+        /** Scroll down */
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeUp() }
+        //composeTestRule.onNodeWithText("Generated 1").assertIsDisplayed()
+        Thread.sleep(3000) // Wait for feed to load
+
+        /** Open menu */
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.onNodeWithText("Report User").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
+
+
+
+
+
+
     }
 
     @Test
