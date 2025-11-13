@@ -144,13 +144,15 @@ class PersonalPostsScreenInstrumentedTest {
     }
 
     @Test
-    fun displays_posts_list() = runBlocking {
-        // Add test posts to Firestore
-        val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
-        val offer = createOffer("offer-1", "Test Offer")
-        val request = createRequest("request-1", "Test Request")
-        repo.addPost(offer)
-        repo.addPost(request)
+    fun displays_posts_list() {
+        runBlocking {
+            // Add test posts to Firestore
+            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+            val offer = createOffer("offer-1", "Test Offer")
+            val request = createRequest("request-1", "Test Request")
+            repo.addPost(offer)
+            repo.addPost(request)
+        }
 
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
@@ -162,10 +164,12 @@ class PersonalPostsScreenInstrumentedTest {
     }
 
     @Test
-    fun post_item_displays_title_and_type() = runBlocking {
-        val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
-        val post = createOffer("offer-1", "Test Offer")
-        repo.addPost(post)
+    fun post_item_displays_title_and_type() {
+        runBlocking {
+            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+            val post = createOffer("offer-1", "Test Offer")
+            repo.addPost(post)
+        }
 
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
@@ -176,10 +180,12 @@ class PersonalPostsScreenInstrumentedTest {
     }
 
     @Test
-    fun delete_button_removes_post() = runBlocking {
-        val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
-        val post = createOffer("offer-1", "To Delete")
-        repo.addPost(post)
+    fun delete_button_removes_post() {
+        runBlocking {
+            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+            val post = createOffer("offer-1", "To Delete")
+            repo.addPost(post)
+        }
 
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
