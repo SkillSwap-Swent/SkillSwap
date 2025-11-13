@@ -4,10 +4,10 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
@@ -73,6 +73,13 @@ class SignInCreateAccountScreenTest : TestCase() {
         pressNext()
     }
 
+    private fun verifyNextButtonIsNotEnabled() {
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.NEXT_BUTTON)
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
+    }
+
     // --- Smoke / visibility across steps ---
 
     @Test
@@ -123,26 +130,21 @@ class SignInCreateAccountScreenTest : TestCase() {
     // --- Username ---
 
     @Test
-    fun username_showsError_whenEmpty() {
+    fun usernameIsEmpty_disablesNextButton() {
         // At Username step by default
         composeTestRule
             .onNodeWithTag(CreateAccountTags.USERNAME_FIELD)
             .performScrollTo()
             .performTextClearance()
 
-        pressNext()
-
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.USERNAME_FIELD)
-            .performScrollTo()
-            .assertIsDisplayed()
-            .assertTextContains("Username cannot be empty")
+        composeTestRule.waitForIdle()
+        verifyNextButtonIsNotEnabled()
     }
 
     // --- Email ---
 
     @Test
-    fun email_showsError_whenEmpty() {
+    fun emailIsEmpty_disablesNextButton() {
         goToEmailStep()
 
         composeTestRule
@@ -150,13 +152,8 @@ class SignInCreateAccountScreenTest : TestCase() {
             .performScrollTo()
             .performTextClearance()
 
-        pressNext()
-
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.EMAIL_FIELD)
-            .performScrollTo()
-            .assertIsDisplayed()
-            .assertTextContains("Email cannot be empty")
+        composeTestRule.waitForIdle()
+        verifyNextButtonIsNotEnabled()
     }
 
     @Test
@@ -180,7 +177,7 @@ class SignInCreateAccountScreenTest : TestCase() {
     // --- Passwords (combined validation) ---
 
     @Test
-    fun password_showsError_whenEmpty() {
+    fun passwordIsEmpty_disablesNextButton() {
         goToPasswordStep()
 
         composeTestRule
@@ -188,13 +185,8 @@ class SignInCreateAccountScreenTest : TestCase() {
             .performScrollTo()
             .performTextClearance()
 
-        pressNext()
-
-        composeTestRule
-            .onNodeWithTag(CreateAccountTags.PASSWORD_FIELD)
-            .performScrollTo()
-            .assertIsDisplayed()
-            .assertTextContains("Password cannot be empty")
+        composeTestRule.waitForIdle()
+        verifyNextButtonIsNotEnabled()
     }
 
     @Test
@@ -282,14 +274,11 @@ class SignInCreateAccountScreenTest : TestCase() {
     // --- Skills (chips) ---
 
     @Test
-    fun skills_showsError_whenEmpty() {
+    fun skillsIsEmpty_disablesNextButton() {
         goToSkillsStep()
 
-        // Pressing Next on the Skills step will run ViewModel.done() → validateInputs() inside,
-        // which sets skillsError when no skill is selected. SkillScreen shows it as plain Text.
-        pressNext()
-
-        composeTestRule.onNodeWithText("At least one skill must be selected").assertIsDisplayed()
+        composeTestRule.waitForIdle()
+        verifyNextButtonIsNotEnabled()
     }
 
     @Test

@@ -15,6 +15,7 @@ import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
 
@@ -38,21 +39,25 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         userLocation: GeoPoint?,
         maxDistanceKm: Double?
     ): List<Post> {
-        val query: Query =
-            buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
+        return try {
+            // Build query and get posts
+            val query: Query =
+                buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
+            var posts = query.get().await().map { documentToPost(it) }
 
-        var posts = query.get().await().map { documentToPost(it) }
+            if (userLocation != null && maxDistanceKm != null) {
+                val epsilon = 0.05
+                posts =
+                    posts.filter {
+                        calculateDistance(userLocation, it.location) <= maxDistanceKm + epsilon
+                    }
+            }
 
-        if (userLocation != null && maxDistanceKm != null) {
-
-            val epsilon = 0.05 // small tolerance for floating-point errors
-            posts =
-                posts.filter { post ->
-                    calculateDistance(userLocation, post.location) <= maxDistanceKm + epsilon
-                }
+            // To fulfil contracted requirements sort by creation date
+            posts.sortedByDescending { it.creation }
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to fetch posts", e)
         }
-
-        return posts.sortedByDescending { it.creation }
     }
 
     private fun buildQuery(
@@ -73,10 +78,12 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         if (status != null) {
             query = query.whereEqualTo("status", status)
         }
+        // PaymentMethod is an exhaustive list, always use whereEqualTo
         query = query.whereEqualTo("paymentMethod", paymentMethod)
 
         // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
-        // query
+        // query, current implementation is limited to using the first 10 search keys, the rest are
+        // ignored
         val searchKeys = buildSearchKeys(titleContains, tags)
         if (searchKeys.isNotEmpty()) {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
@@ -104,60 +111,105 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
     }
 
     override suspend fun getPost(type: PostType, postId: String): Post {
-        val document = getCollectionPath(type).document(postId).get().await()
-        return documentToPost(document)
+        return try {
+            val document = getCollectionPath(type).document(postId).get().await()
+            if (!document.exists()) {
+                throw RepositoryException("Post $postId does not exist", null)
+            }
+            documentToPost(document)
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to get post $postId", e)
+        }
     }
 
     override suspend fun addPost(post: Post) {
-        require(post.validate()) { "Post fields are invalid" }
+        try {
+            require(post.validate()) { "Post fields are invalid" }
+            val docRef = getCollectionPath(post.type).document(post.uid)
+            val snapshot = docRef.get().await()
 
-        val docRef = getCollectionPath(post.type).document(post.uid)
-        val snapshot = docRef.get().await()
-
-        require(!snapshot.exists()) { "Post with UID ${post.uid} already exists" }
-        docRef.set(serializePost(post)).await()
+            // ensure addPost isn't being used to overwrite
+            require(!snapshot.exists()) { "Post with UID ${post.uid} already exists" }
+            docRef.set(serializePost(post)).await()
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to add post ${post.uid}", e)
+        }
     }
 
     override suspend fun editPost(postId: String, newPost: Post) {
-        require(newPost.validate()) { "Post fields are invalid" }
+        try {
+            require(newPost.validate()) { "Post fields are invalid" }
 
-        getCollectionPath(newPost.type)
-            .document(postId)
-            .set(serializePost(newPost), SetOptions.merge())
-            .await()
+            getCollectionPath(newPost.type)
+                .document(postId)
+                .set(serializePost(newPost), SetOptions.merge())
+                .await()
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to edit post $postId", e)
+        }
     }
 
     override suspend fun deletePost(type: PostType, postId: String) {
-        getCollectionPath(type).document(postId).delete().await()
+        try {
+            getCollectionPath(type).document(postId).delete().await()
+        } catch (e: Exception) {
+            throw RepositoryException("Failed to delete post $postId", e)
+        }
+    }
+
+    fun <T> requireField(name: String, value: T?): T =
+        value ?: throw IllegalArgumentException("Missing or invalid field: $name")
+
+    inline fun <reified T : Enum<T>> safeEnum(raw: String?): T {
+        val value = raw ?: throw IllegalArgumentException("Missing ${T::class.simpleName} value")
+        try {
+            return enumValueOf(value)
+        } catch (_: IllegalArgumentException) {
+            throw IllegalArgumentException("Invalid ${T::class.simpleName} value: $value")
+        }
     }
 
     private fun documentToPost(document: DocumentSnapshot): Post {
         val uid = document.id
-        val title: String = document.getString("title")!!
-        val description: String = document.getString("description")!!
-        val ownerId: String = document.getString("ownerId")!!
+        val title = requireField("title", document.getString("title"))
+        val description = requireField("description", document.getString("description"))
+        val ownerId = requireField("ownerId", document.getString("ownerId"))
+        val expiry = requireField("expiry", document.getTimestamp("expiry"))
+        val creation = requireField("creation", document.getTimestamp("creation"))
+        val location = requireField("location", document.getGeoPoint("location"))
 
-        @Suppress("UNCHECKED_CAST")
-        val tags = (document.get("tags") as? List<String>)?.map { EveryTag.valueOf(it) }!!.toSet()
+        val tags =
+            requireField(
+                "tags",
+                (document.get("tags") as? List<*>)
+                    ?.map { safeEnum<PostTag>(it.toString()) }
+                    ?.toSet()
+            )
+        val paymentMethod =
+            safeEnum<PaymentMethod>(
+                requireField("paymentMethod", document.getString("paymentMethod"))
+            )
 
-        @Suppress("UNCHECKED_CAST")
-        val paymentMethod = PaymentMethod.valueOf(document.getString("paymentMethod")!!)
-
-        val expiry = document.getTimestamp("expiry")!!
-        val creation = document.getTimestamp("creation")!!
-
-        val status = document.getString("status")?.let { PostStatus.valueOf(it) }!!
-
-        @Suppress("UNCHECKED_CAST") val media = (document.get("media") as? List<String>)!!
-
-        val postType = document.getString("type")?.let { PostType.valueOf(it) }!!
-
-        val location = document.getGeoPoint("location")!!
-
+        val status = safeEnum<PostStatus>(requireField("status", document.getString("status")))
+        val postType = safeEnum<PostType>(requireField("type", document.getString("type")))
+        val media =
+            requireField("media", (document.get("media") as? List<*>)?.map { it.toString() })
         val postReplies: Set<PostReply> =
-            (document.get("postReplies") as? List<*>)
-                ?.map { item -> documentToPostReply(item) }
-                ?.toSet() ?: emptySet()
+            requireField(
+                "postReplies",
+                (document.get("postReplies") as? List<*>)
+                    ?.map {
+                        try {
+                            documentToPostReply(it)
+                        } catch (e: Exception) {
+                            throw IllegalArgumentException(
+                                "Invalid postReply entry: $it — ${e.message}",
+                                e
+                            )
+                        }
+                    }
+                    ?.toSet()
+            )
 
         val post =
             when (postType) {
@@ -176,7 +228,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         postReplies,
                         location
                     )
-                // TODO("Replace with FeedOffer when it's implemented")
+                // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("FeedOffer posts are not supported yet")
             }
         require(post.validate()) { "Post was not validated successfully" }
@@ -250,3 +302,5 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         )
     }
 }
+
+class RepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)

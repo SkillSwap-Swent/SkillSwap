@@ -1,39 +1,53 @@
 package com.swent.skillswap.ui.theme
 
-import android.app.Activity
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.colorResource
-import androidx.core.view.WindowCompat
 import com.swent.skillswap.R
 
 @Composable
 fun SkillSwapAppTheme(content: @Composable () -> Unit) {
+
     val appColorScheme =
-        lightColorScheme(
+        ColorScheme(
             primary = colorResource(id = R.color.md_theme_primary),
             onPrimary = colorResource(id = R.color.md_theme_onPrimary),
             primaryContainer = colorResource(id = R.color.md_theme_primaryContainer),
             onPrimaryContainer = colorResource(id = R.color.md_theme_onPrimaryContainer),
+            inversePrimary = colorResource(id = R.color.md_theme_inversePrimary),
             secondary = colorResource(id = R.color.md_theme_secondary),
             onSecondary = colorResource(id = R.color.md_theme_onSecondary),
+            secondaryContainer = colorResource(id = R.color.md_theme_secondaryContainer),
+            onSecondaryContainer = colorResource(id = R.color.md_theme_onSecondaryContainer),
             tertiary = colorResource(id = R.color.md_theme_tertiary),
             onTertiary = colorResource(id = R.color.md_theme_onTertiary),
+            tertiaryContainer = colorResource(id = R.color.md_theme_tertiaryContainer),
+            onTertiaryContainer = colorResource(id = R.color.md_theme_onTertiaryContainer),
             background = colorResource(id = R.color.md_theme_background),
             onBackground = colorResource(id = R.color.md_theme_onBackground),
             surface = colorResource(id = R.color.md_theme_surface),
-            onSurface = colorResource(id = R.color.md_theme_onSurface)
+            onSurface = colorResource(id = R.color.md_theme_onSurface),
+            surfaceVariant = colorResource(id = R.color.md_theme_surfaceVariant),
+            onSurfaceVariant = colorResource(id = R.color.md_theme_onSurfaceVariant),
+            surfaceTint = colorResource(id = R.color.md_theme_surfaceTint),
+            inverseSurface = colorResource(id = R.color.md_theme_inverseSurface),
+            inverseOnSurface = colorResource(id = R.color.md_theme_inverseOnSurface),
+            error = colorResource(id = R.color.md_theme_error),
+            onError = colorResource(id = R.color.md_theme_onError),
+            errorContainer = colorResource(id = R.color.md_theme_errorContainer),
+            onErrorContainer = colorResource(id = R.color.md_theme_onErrorContainer),
+            outline = colorResource(id = R.color.md_theme_outline),
+            outlineVariant = colorResource(id = R.color.md_theme_outlineVariant),
+            scrim = colorResource(id = R.color.md_theme_scrim),
+            surfaceBright = colorResource(id = R.color.md_theme_surfaceBright),
+            surfaceDim = colorResource(id = R.color.md_theme_surfaceDim),
+            surfaceContainer = colorResource(id = R.color.md_theme_surfaceContainer),
+            surfaceContainerHigh = colorResource(id = R.color.md_theme_surfaceContainerHigh),
+            surfaceContainerHighest = colorResource(id = R.color.md_theme_surfaceContainerHighest),
+            surfaceContainerLow = colorResource(id = R.color.md_theme_surfaceContainerLow),
+            surfaceContainerLowest = colorResource(id = R.color.md_theme_surfaceContainerLowest)
         )
-    val view = LocalView.current
-    SideEffect {
-        val window = (view.context as Activity).window
-        window.statusBarColor = appColorScheme.primary.toArgb()
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
-    }
 
     MaterialTheme(colorScheme = appColorScheme, typography = Typography, content = content)
 }

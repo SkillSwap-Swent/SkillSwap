@@ -21,6 +21,7 @@
     <color name="md_theme_onSurface">#191C20</color>
     <color name="md_theme_surfaceVariant">#DFE3EB</color>
     <color name="md_theme_onSurfaceVariant">#42474E</color>
+    <color name="md_theme_surfaceTint">#42474E</color>
     <color name="md_theme_outline">#73777F</color>
     <color name="md_theme_outlineVariant">#C2C7CF</color>
     <color name="md_theme_scrim">#000000</color>

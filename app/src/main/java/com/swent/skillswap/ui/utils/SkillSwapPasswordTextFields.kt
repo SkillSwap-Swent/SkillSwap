@@ -36,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -54,6 +53,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.swent.skillswap.R
 import com.swent.skillswap.ui.auth.CreateAccountTags
+import com.swent.skillswap.ui.theme.LoginTextFieldColors
 
 // Shared keyboard options for all password fields
 val PasswordKeyboardOptions =
@@ -155,15 +155,7 @@ fun SkillSwapPasswordTextField(
         supportingText = {
             Text(text = supportText, modifier = Modifier.testTag(CreateAccountTags.ERROR))
         },
-        colors =
-            TextFieldDefaults.colors(
-                focusedContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
-                unfocusedContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
-                disabledContainerColor =
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(container_field_alpha),
-            ),
+        colors = LoginTextFieldColors.colors,
         shape =
             RoundedCornerShape(
                 topStart = dimensionResource(id = R.dimen.corner_radius_top),
