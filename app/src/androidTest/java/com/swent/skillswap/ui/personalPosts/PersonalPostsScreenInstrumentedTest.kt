@@ -33,7 +33,7 @@ class PersonalPostsScreenInstrumentedTest {
     @get:Rule val composeRule = createComposeRule()
 
     private lateinit var testUserId: String
-    private val testLocation = GeoPoint(46.5191, 6.5668)
+    private lateinit var testLocation: GeoPoint
 
     @Before
     fun setUp() {
@@ -41,6 +41,7 @@ class PersonalPostsScreenInstrumentedTest {
             FirebaseEmulator.startEmulator()
             val authResult = FirebaseAuth.getInstance().signInAnonymously().await()
             testUserId = authResult.user?.uid ?: "test-user"
+            testLocation = GeoPoint(46.5191, 6.5668)
         }
     }
 
