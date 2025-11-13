@@ -61,7 +61,6 @@ class End2EndM2 {
 
     @Before
     fun setup() {
-        FirebaseEmulator.startEmulator()
         db = FirebaseEmulator.firestore
         auth = FirebaseAuth.getInstance()
     }
