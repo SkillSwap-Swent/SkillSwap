@@ -187,15 +187,7 @@ fun PersonalPostsScreen(
             }
             Snackbar(
                 modifier = Modifier.padding(16.dp),
-                action = {
-                    TextButton(
-                        onClick = {
-                            viewModel.clearError()
-                        }
-                    ) {
-                        Text("Dismiss")
-                    }
-                }
+                action = { TextButton(onClick = { viewModel.clearError() }) { Text("Dismiss") } }
             ) {
                 Text(uiState.error ?: "An error occurred")
             }
