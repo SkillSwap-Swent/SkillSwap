@@ -7,6 +7,7 @@ import android.location.Location
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LastLocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.firebase.firestore.GeoPoint
@@ -34,7 +35,11 @@ class LocationManager(private val context: Context) {
         /** Default fallback location (EPFL, Lausanne) */
         val DEFAULT_LOCATION = GeoPoint(46.5191, 6.5668)
 
-        /** Maximum age of location data to accept (5 minutes) */
+        /**
+         * Maximum age of location data to accept (5 minutes). Cached locations older than this will
+         * trigger a fresh location request. 5 minutes is a reasonable balance between accuracy and
+         * battery efficiency for filtering local posts.
+         */
         private const val MAX_LOCATION_AGE_MS = 5 * 60 * 1000L
 
         /** Priority for location requests */
@@ -60,11 +65,15 @@ class LocationManager(private val context: Context) {
     /**
      * Gets the current location as a Flow that emits a single GeoPoint.
      *
-     * This function uses the recommended getCurrentLocation() API which is safer and more efficient
-     * than managing location updates manually. It:
+     * This function uses a two-step approach for efficiency:
+     * 1. First tries getLastLocation() with LastLocationRequest to use cached location if it's
+     *    fresh enough (within MAX_LOCATION_AGE_MS)
+     * 2. Falls back to getCurrentLocation() if cached location is unavailable or too old
+     *
+     * This approach:
      * - Checks for permissions first
-     * - Requests a single fresh location with high accuracy
-     * - Uses CurrentLocationRequest to request a fresh location update
+     * - Uses cached location when possible (faster, more battery-efficient)
+     * - Requests fresh location only when needed
      * - Emits the location as a GeoPoint
      * - Falls back to DEFAULT_LOCATION if permission denied or location unavailable
      *
@@ -77,14 +86,23 @@ class LocationManager(private val context: Context) {
         }
 
         try {
-            // Use CurrentLocationRequest for getCurrentLocation() API
-            // This requests a single fresh location update (not a stream)
-            val currentLocationRequest =
-                CurrentLocationRequest.Builder().setPriority(LOCATION_PRIORITY).build()
+            // First try getLastLocation() with LastLocationRequest for efficiency
+            // This uses cached location if it's fresh enough (within MAX_LOCATION_AGE_MS)
+            val lastLocationRequest =
+                LastLocationRequest.Builder()
+                    .setMaxUpdateAgeMillis(MAX_LOCATION_AGE_MS)
+                    .setPriority(LOCATION_PRIORITY)
+                    .build()
 
-            // Use getCurrentLocation() API - recommended way to get a fresh location
-            // This is safer than requestLocationUpdates() and doesn't waste battery
-            val location = fusedLocationClient.getCurrentLocation(currentLocationRequest).await()
+            var location = fusedLocationClient.getLastLocation(lastLocationRequest).await()
+
+            // If no cached location or it's too old (getLastLocation returns null if too old),
+            // request a fresh location using getCurrentLocation()
+            if (location == null) {
+                val currentLocationRequest =
+                    CurrentLocationRequest.Builder().setPriority(LOCATION_PRIORITY).build()
+                location = fusedLocationClient.getCurrentLocation(currentLocationRequest).await()
+            }
 
             if (location != null) {
                 emit(locationToGeoPoint(location))
