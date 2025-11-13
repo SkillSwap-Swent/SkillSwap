@@ -166,7 +166,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             // USER SCREENS
             navigation(startDestination = Screen.Profile.route, route = Screen.Profile.name) {
                 composable(Screen.Profile.route) {
-                    LaunchedEffect(Unit) { editProfileViewModel.loadCurrentUser() }
+                    editProfileViewModel.loadCurrentUser()
                     profileViewModel.loadCurrentUser()
                     ProfileScreen(
                         vm = profileViewModel,
