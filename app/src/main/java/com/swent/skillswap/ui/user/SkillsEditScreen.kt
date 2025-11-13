@@ -1,262 +1,146 @@
 package com.swent.skillswap.ui.user
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.ui.editUser.EditUserViewModel
+import com.swent.skillswap.ui.user.SkillsEditTestTags.BACK_BUTTON
+import com.swent.skillswap.ui.user.SkillsEditTestTags.OTHER_SKILLS_BOX
+import com.swent.skillswap.ui.user.SkillsEditTestTags.OTHER_SKILLS_FLOW
+import com.swent.skillswap.ui.user.SkillsEditTestTags.TITLE_SELECT_NEW
+import com.swent.skillswap.ui.user.SkillsEditTestTags.TITLE_YOUR_SKILLS
+import com.swent.skillswap.ui.user.SkillsEditTestTags.USER_SKILLS_BOX
+import com.swent.skillswap.ui.user.SkillsEditTestTags.USER_SKILLS_FLOW
+import com.swent.skillswap.ui.utils.SkillPill
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object SkillsEditTestTags {
-    const val SCREEN_CONTAINER = "skills_edit_screen_container"
-    const val TITLE = "skills_edit_title"
+    // Screen-level
+    const val TITLE_YOUR_SKILLS = "skills_title_your_skills"
+    const val TITLE_SELECT_NEW = "skills_title_select_new"
 
-    const val SEARCH_FIELD = "skills_search_field"
-    const val DROPDOWN = "skills_dropdown"
-    const val SUGGESTIONS_LIST = "skills_suggestions_list"
-    const val SUGGESTION_ITEM_PREFIX = "skills_suggestion"
+    // User’s skills section
+    const val USER_SKILLS_BOX = "skills_user_box"
+    const val USER_SKILLS_FLOW = "skills_user_flow"
 
-    const val SELECTED_COUNT = "skills_selected_count"
-    const val SELECTED_LIST = "skills_selected_list"
-    const val SKILL_CHIP_PREFIX = "skills_chip"
+    // Other skills section
+    const val OTHER_SKILLS_BOX = "skills_other_box"
+    const val OTHER_SKILLS_FLOW = "skills_other_flow"
 
-    const val CANCEL_BUTTON = "skills_cancel_button"
-    const val SAVE_BUTTON = "skills_save_button"
+    // Buttons
+    const val BACK_BUTTON = "skills_back_button"
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Unit = {}) {
     val userState by vm.uiState.collectAsState()
-    var selectedSkills by remember { mutableStateOf<Set<SkillTag>>(emptySet()) }
-    var expanded by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-    var hasFocus by remember { mutableStateOf(false) }
-
-    LaunchedEffect(userState) {
-        selectedSkills = (userState.editedUser?.skillSet?.map { it.name }?.toSet() ?: emptySet())
-    }
-
-    Column(
-        modifier =
-            Modifier.fillMaxSize().padding(16.dp).testTag(SkillsEditTestTags.SCREEN_CONTAINER),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Title
+    val screenScroll = rememberScrollState()
+    val scrollForOwnSkills = rememberScrollState()
+    val scrollForOtherSkills = rememberScrollState()
+    DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
+    Column(modifier = Modifier.fillMaxSize(1f).verticalScroll(screenScroll)) {
+        Spacer(modifier = Modifier.height(40.dp))
+        /** own skill Row Flow* */
         Text(
-            text = "Edit Skills",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 24.dp).testTag(SkillsEditTestTags.TITLE)
+            text = "Your Skills",
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(TITLE_YOUR_SKILLS)
         )
-
-        // Skills selection section
+        Spacer(modifier = Modifier.height(20.dp))
+        val skillOfUser = userState.editedUser?.skillSet ?: setOf()
         Box(
             modifier =
-                Modifier.fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        brush =
-                            Brush.verticalGradient(
-                                colors =
-                                    listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.primaryContainer
-                                    )
-                            )
-                    )
-                    .padding(16.dp)
+                Modifier.align(Alignment.CenterHorizontally)
+                    .height(250.dp)
+                    .testTag(USER_SKILLS_BOX)
+                    .clipToBounds()
+                    .verticalScroll(scrollForOwnSkills)
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Skills input section
-                Text(
-                    text = "Add Skills",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    modifier = Modifier.fillMaxWidth().testTag(SkillsEditTestTags.DROPDOWN)
-                ) {
-                    val suggestions =
-                        remember(query) {
-                            SkillTag.entries
-                                .filter { skill ->
-                                    query.isNotBlank() &&
-                                        skill.name.contains(query, ignoreCase = true) &&
-                                        skill !in selectedSkills
-                                }
-                                .take(5)
-                        }
-
-                    TextField(
-                        value = query,
-                        onValueChange = {
-                            query = it
-                            if (it.isNotBlank()) {
-                                expanded = true
-                            }
-                        },
-                        label = { Text("Search skills", color = Color.White.copy(alpha = 0.7f)) },
-                        placeholder = {
-                            Text("Type to search...", color = Color.White.copy(alpha = 0.5f))
-                        },
-                        modifier =
-                            Modifier.menuAnchor()
-                                .onFocusChanged {
-                                    hasFocus = it.isFocused
-                                    if (it.isFocused && query.isNotBlank()) {
-                                        expanded = true
-                                    }
-                                }
-                                .fillMaxWidth()
-                                .testTag(SkillsEditTestTags.SEARCH_FIELD),
-                        colors =
-                            TextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            ),
-                        shape = RoundedCornerShape(8.dp)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(0.7f).testTag(USER_SKILLS_FLOW)
+            ) {
+                for (skill in skillOfUser) {
+                    SkillPill(
+                        skill.name,
+                        true,
+                        { skill -> vm.setSkills(skillOfUser.filter { it.name != skill }.toSet()) }
                     )
-
-                    DropdownMenu(
-                        expanded = expanded && hasFocus && suggestions.isNotEmpty(),
-                        onDismissRequest = { expanded = false },
-                        properties = PopupProperties(focusable = false),
-                        modifier =
-                            Modifier.fillMaxWidth(0.8f).testTag(SkillsEditTestTags.SUGGESTIONS_LIST)
-                    ) {
-                        suggestions.forEachIndexed { index, skill ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        skill.name.replace("_", " ").lowercase().replaceFirstChar {
-                                            if (it.isLowerCase()) it.titlecase() else it.toString()
-                                        },
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    selectedSkills = selectedSkills + skill
-                                    query = ""
-                                    expanded = false
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        "${SkillsEditTestTags.SUGGESTION_ITEM_PREFIX}_$index"
-                                    )
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Selected skills display
-                Text(
-                    text = "Selected Skills (${selectedSkills.size}):",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.8f),
-                    modifier =
-                        Modifier.padding(bottom = 8.dp).testTag(SkillsEditTestTags.SELECTED_COUNT)
-                )
-
-                Box(modifier = Modifier.height(120.dp).fillMaxWidth()) {
-                    val flowScroll = rememberScrollState()
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier =
-                            Modifier.verticalScroll(flowScroll)
-                                .testTag(SkillsEditTestTags.SELECTED_LIST)
-                    ) {
-                        selectedSkills.forEach { skill ->
-                            val tag = "${SkillsEditTestTags.SKILL_CHIP_PREFIX}_${skill.name}"
-                            Box(
-                                modifier =
-                                    Modifier.background(
-                                            color = Color.White.copy(alpha = 0.2f),
-                                            shape = RoundedCornerShape(16.dp)
-                                        )
-                                        .clickable { selectedSkills = selectedSkills - skill }
-                                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                                        .testTag(tag)
-                            ) {
-                                Text(
-                                    text =
-                                        skill.name.replace("_", " ").lowercase().replaceFirstChar {
-                                            if (it.isLowerCase()) it.titlecase() else it.toString()
-                                        },
-                                    fontSize = 12.sp,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
                 }
             }
         }
+        Spacer(modifier = Modifier.height(20.dp))
+        /** other skill Row Flow* */
+        Text(
+            text = "Select new ones",
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(TITLE_SELECT_NEW)
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        val otherSkills =
+            (SkillTag.entries.filter { skillTag -> !(skillOfUser.any { it.name == skillTag }) })
+                .toSet()
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Action buttons
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Box(
+            modifier =
+                Modifier.align(Alignment.CenterHorizontally)
+                    .testTag(OTHER_SKILLS_BOX)
+                    .height(250.dp)
+                    .clipToBounds()
+                    .verticalScroll(scrollForOtherSkills)
         ) {
-            // Cancel button
-            SkillSwapShadowButton(
-                onClick = onBackClick,
-                modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.CANCEL_BUTTON)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(0.7f).testTag(OTHER_SKILLS_FLOW)
             ) {
-                Text("Cancel")
+                for (skill in otherSkills) {
+                    SkillPill(
+                        skill,
+                        false,
+                        { skill -> vm.setSkills(skillOfUser + Skill(skill, 0f, "")) }
+                    )
+                }
             }
-
-            // Save button
-            SkillSwapShadowButton(
-                onClick = {
-                    val updatedSkills = selectedSkills.map { Skill(it, 0f, "") }.toSet()
-                    vm.setSkills(updatedSkills)
-                    onBackClick()
-                },
-                modifier = Modifier.weight(1f).testTag(SkillsEditTestTags.SAVE_BUTTON)
-            ) {
-                Text("Save")
-            }
+        }
+        Spacer(modifier = Modifier.weight(0.9f))
+        /** save button* */
+        SkillSwapShadowButton(
+            onClick = {
+                vm.validate()
+                onBackClick()
+            },
+            modifier =
+                Modifier.height(56.dp).align(Alignment.CenterHorizontally).testTag(BACK_BUTTON),
+        ) {
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Done")
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(
+                "Save",
+                fontSize = 16.sp,
+            )
         }
     }
 }
