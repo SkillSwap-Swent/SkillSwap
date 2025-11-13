@@ -89,8 +89,7 @@ interface Post {
             title.isNotBlank() &&
             description.isNotBlank() &&
             tags.isNotEmpty() &&
-            expiry.toDate().after(Timestamp.now().toDate()) &&
-            creation.toDate().before(Timestamp.now().toDate())
+            expiry.toDate().after(Timestamp.now().toDate())
     }
 }
 

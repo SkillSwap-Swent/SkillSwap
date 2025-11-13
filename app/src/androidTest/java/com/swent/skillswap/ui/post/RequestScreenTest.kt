@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -439,5 +440,145 @@ class RequestScreenTest {
         composeTestRule
             .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
             .assertHasClickAction()
+    }
+
+    @Test
+    fun tagInput_showsSuggestions_whenTyping() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Type into tags input to trigger suggestions
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TAGS_INPUT)
+            .performClick()
+            .performTextInput("flu")
+
+        composeTestRule.waitForIdle()
+
+        // Verify suggestion appears (FLUID_MECHANICS contains "flu")
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun tagSuggestion_onClick_addsTagAndClearsInput() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Type to show suggestions
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TAGS_INPUT)
+            .performClick()
+            .performTextInput("fluid")
+
+        composeTestRule.waitForIdle()
+
+        // Click on the suggestion
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        // Verify tag chip appears
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
+            .assertIsDisplayed()
+
+        // Verify input is cleared
+        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assert(hasText(""))
+
+        // Verify dropdown is closed (suggestion no longer visible)
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun tagSuggestions_limitedToMaxSearchKeys() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Type a common letter to get many matches
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TAGS_INPUT)
+            .performClick()
+            .performTextInput("a")
+
+        composeTestRule.waitForIdle()
+
+        // Count displayed suggestions - should not exceed MAX_SEARCH_KEYS
+        val displayedSuggestions =
+            SkillTag.entries
+                .filter { it.name.contains("a", ignoreCase = true) }
+                .take(MAX_SEARCH_KEYS)
+
+        // Verify only limited suggestions are shown
+        displayedSuggestions.forEach { tag ->
+            composeTestRule
+                .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_${tag.name}")
+                .assertExists()
+        }
+    }
+
+    @Test
+    fun tagSuggestions_hideWhenInputEmpty() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Focus tags input without typing
+        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).performClick()
+
+        composeTestRule.waitForIdle()
+
+        // Suggestions should not appear for empty input
+        composeTestRule
+            .onAllNodesWithTag(RequestScreenTags.TAG_SUGGESTION, useUnmergedTree = true)
+            .assertCountEquals(0)
+    }
+
+    @Test
+    fun tagSuggestions_caseInsensitiveSearch() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD
+            )
+        }
+
+        // Type lowercase query
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TAGS_INPUT)
+            .performClick()
+            .performTextInput("FLUID")
+
+        composeTestRule.waitForIdle()
+
+        // Should still find FLUID_MECHANICS
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .assertIsDisplayed()
     }
 }

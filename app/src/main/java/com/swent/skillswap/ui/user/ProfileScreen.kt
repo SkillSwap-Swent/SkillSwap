@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.List
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.model.user.Preference
+import com.swent.skillswap.ui.user.ProfileTestTags.ADD_POST_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
 import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
@@ -59,6 +61,7 @@ object ProfileTestTags {
     // Buttons
     const val SKILLS_BUTTON = "profile_skills_button"
     const val MY_POSTS_BUTTON = "profile_my_posts_button"
+    const val ADD_POST_BUTTON = "profile_add_post_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
 }
 
@@ -68,6 +71,7 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit = {},
     onSkillClick: () -> Unit = {},
     onSeeMyPostsClick: () -> Unit = {},
+    onAddPostClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -244,6 +248,24 @@ fun ProfileScreen(
             Text(text = "See my posts")
         }
         Spacer(modifier = Modifier.weight(1f))
+
+        /* Add post button */
+        Button(
+            onClick = { onAddPostClick() },
+            shape = RoundedCornerShape(26),
+            contentPadding = PaddingValues(12.dp, 0.dp),
+            modifier = Modifier.testTag(ADD_POST_BUTTON)
+        ) {
+            Icon(
+                contentDescription = "New Post",
+                imageVector = Icons.Outlined.AddCircle,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = "Make a post")
+        }
+        Spacer(modifier = Modifier.weight(1f))
+
         /** log Out button */
         Button(
             onClick = { onLogoutClick() },

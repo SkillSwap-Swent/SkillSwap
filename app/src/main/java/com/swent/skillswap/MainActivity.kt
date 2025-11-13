@@ -1,6 +1,7 @@
 package com.swent.skillswap
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -183,6 +184,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
                         onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) }
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -250,6 +252,22 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     val vm: FeedScreenViewModel = viewModel(factory = factory)
                     FeedScreen(vm = vm)
                 }
+            }
+
+            composable(Screen.AddRequest.route) {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUserId == null) {
+                    Log.d("MainActivity", "AddPost screen skipped: currentUserId is null")
+                    return@composable
+                }
+                RequestScreen(
+                    postRepository = PostFirestoreRepository(Firebase.firestore),
+                    currentUserId = currentUserId,
+                    uid = null,
+                    onGoBack = { navigationActions.goBack() },
+                    onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
+                    postOperation = PostOperation.ADD,
+                )
             }
 
             composable(Screen.Chat.route) {
