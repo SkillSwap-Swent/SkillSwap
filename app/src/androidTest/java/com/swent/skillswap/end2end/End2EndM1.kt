@@ -86,7 +86,12 @@ class End2EndM1 {
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
         /** 1. Launch app and wait for setup */
         composeTestRule.waitUntil(timeoutMillis = 30_000) {
-            composeTestRule.onAllNodesWithTag(SignInTags.LOGO).fetchSemanticsNodes().isNotEmpty()
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
         composeTestRule.waitForIdle()
 
