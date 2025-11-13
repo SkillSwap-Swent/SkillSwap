@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -56,6 +56,7 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
     val screenScroll = rememberScrollState()
     val scrollForOwnSkills = rememberScrollState()
     val scrollForOtherSkills = rememberScrollState()
+    DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
     Column(modifier = Modifier.fillMaxSize(1f).verticalScroll(screenScroll)) {
         Spacer(modifier = Modifier.height(40.dp))
         /** own skill Row Flow* */
@@ -125,7 +126,7 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
             }
         }
         Spacer(modifier = Modifier.weight(0.9f))
-        /** back button* */
+        /** save button* */
         SkillSwapShadowButton(
             onClick = {
                 vm.validate()
@@ -134,10 +135,10 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
             modifier =
                 Modifier.height(56.dp).align(Alignment.CenterHorizontally).testTag(BACK_BUTTON),
         ) {
-            Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Done")
             Spacer(modifier = Modifier.width(5.dp))
             Text(
-                "Back",
+                "Save",
                 fontSize = 16.sp,
             )
         }

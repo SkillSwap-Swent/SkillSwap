@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,7 @@ fun EditUserScreen(
 
     var username by remember { mutableStateOf(user?.username ?: "") }
 
+    DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
     Scaffold() { paddingValues ->
         Box(
             modifier =
@@ -178,10 +180,7 @@ fun EditUserScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 /** go back button* */
                 SkillSwapShadowButton(
-                    onClick = {
-                        vm.clearLoadedState()
-                        onGoBack()
-                    },
+                    onClick = { onGoBack() },
                     modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON),
                 ) {
                     Icon(
