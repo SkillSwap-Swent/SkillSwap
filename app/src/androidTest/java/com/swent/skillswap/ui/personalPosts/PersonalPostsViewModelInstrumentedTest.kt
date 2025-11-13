@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 class PersonalPostsViewModelInstrumentedTest {
     private lateinit var fakeRepository: FakePostRepository
     private lateinit var viewModel: PersonalPostsViewModel
-    private val testUserId = "test-user"
+    private lateinit var testUserId: String
     private val testLocation = GeoPoint(46.5191, 6.5668)
 
     @Before
@@ -29,7 +29,8 @@ class PersonalPostsViewModelInstrumentedTest {
         runBlocking {
             FirebaseEmulator.startEmulator()
             fakeRepository = FakePostRepository()
-            FirebaseAuth.getInstance().signInAnonymously().await()
+            val authResult = FirebaseAuth.getInstance().signInAnonymously().await()
+            testUserId = authResult.user?.uid ?: "test-user"
         }
     }
 
@@ -45,11 +46,16 @@ class PersonalPostsViewModelInstrumentedTest {
     fun init_loadsPostsWithLoadingState() = runBlocking {
         fakeRepository.preloadPosts(createOffer("offer-1", PostStatus.POSTED))
         viewModel = PersonalPostsViewModel(fakeRepository)
-        assertTrue(viewModel.uiState.value.isLoading)
-        Thread.sleep(100)
+        assertTrue("Should start in loading state", viewModel.uiState.value.isLoading)
+        // Wait for async operation to complete
+        var attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
         val state = viewModel.uiState.value
-        assertFalse(state.isLoading)
-        assertTrue(state.posts.isNotEmpty())
+        assertFalse("Should finish loading", state.isLoading)
+        assertTrue("Should have loaded posts", state.posts.isNotEmpty())
     }
 
     @Test
@@ -60,12 +66,20 @@ class PersonalPostsViewModelInstrumentedTest {
             createRequest("archived", PostStatus.ARCHIVED)
         )
         viewModel = PersonalPostsViewModel(fakeRepository)
-        Thread.sleep(100)
+        // Wait for async operation to complete
+        var attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
         val state = viewModel.uiState.value
-        assertEquals(3, state.posts.size)
-        assertTrue(state.posts.any { it.status == PostStatus.POSTED })
-        assertTrue(state.posts.any { it.status == PostStatus.DRAFT })
-        assertTrue(state.posts.any { it.status == PostStatus.ARCHIVED })
+        assertEquals("Should load all 3 posts", 3, state.posts.size)
+        assertTrue("Should have POSTED status", state.posts.any { it.status == PostStatus.POSTED })
+        assertTrue("Should have DRAFT status", state.posts.any { it.status == PostStatus.DRAFT })
+        assertTrue(
+            "Should have ARCHIVED status",
+            state.posts.any { it.status == PostStatus.ARCHIVED }
+        )
     }
 
     @Test
@@ -86,10 +100,18 @@ class PersonalPostsViewModelInstrumentedTest {
     fun loadPersonalPosts_repositoryException_setsError() = runBlocking {
         fakeRepository.setShouldFailOnGet(true)
         viewModel = PersonalPostsViewModel(fakeRepository)
-        Thread.sleep(100)
+        // Wait for async operation to complete
+        var attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
         val state = viewModel.uiState.value
-        assertNotNull(state.error)
-        assertTrue(state.error!!.contains("Failed", ignoreCase = true))
+        assertNotNull("Error should be set when repository fails", state.error)
+        assertTrue(
+            "Error message should contain 'Failed'",
+            state.error!!.contains("Failed", ignoreCase = true)
+        )
     }
 
     @Test
@@ -99,12 +121,23 @@ class PersonalPostsViewModelInstrumentedTest {
             createRequest("request-1", PostStatus.POSTED)
         )
         viewModel = PersonalPostsViewModel(fakeRepository)
-        Thread.sleep(100)
+        // Wait for initial load
+        var attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
         viewModel.setPostTypeFilter(PostTypeFilter.ALL)
-        Thread.sleep(100)
+        // Wait for filter reload
+        attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
         val state = viewModel.uiState.value
         assertEquals(PostTypeFilter.ALL, state.selectedPostType)
         assertTrue(
+            "Should have both offer and request types",
             state.posts.any { it.type == PostType.OFFER } &&
                 state.posts.any { it.type == PostType.REQUEST }
         )
@@ -179,11 +212,21 @@ class PersonalPostsViewModelInstrumentedTest {
         val offer1 = createOffer("offer-1", PostStatus.POSTED)
         fakeRepository.preloadPosts(offer1)
         viewModel = PersonalPostsViewModel(fakeRepository)
-        Thread.sleep(100)
+        // Wait for initial load
+        var attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
         fakeRepository.preloadPosts(offer1, createOffer("offer-2", PostStatus.POSTED))
         viewModel.refresh()
-        Thread.sleep(100)
-        assertTrue(viewModel.uiState.value.posts.size >= 1)
+        // Wait for refresh to complete
+        attempts = 0
+        while (viewModel.uiState.value.isLoading && attempts < 50) {
+            Thread.sleep(50)
+            attempts++
+        }
+        assertTrue("Should have at least 1 post", viewModel.uiState.value.posts.size >= 1)
     }
 
     @Test
