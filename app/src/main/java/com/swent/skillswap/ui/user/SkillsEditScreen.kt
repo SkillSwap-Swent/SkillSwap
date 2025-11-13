@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -58,6 +58,7 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
     val scrollForOtherSkills = rememberScrollState()
     Column(modifier = Modifier.fillMaxSize(1f).verticalScroll(screenScroll)) {
         Spacer(modifier = Modifier.height(40.dp))
+        /** own skill Row Flow* */
         Text(
             text = "Your Skills",
             fontSize = 36.sp,
@@ -89,6 +90,7 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
             }
         }
         Spacer(modifier = Modifier.height(20.dp))
+        /** other skill Row Flow* */
         Text(
             text = "Select new ones",
             fontSize = 36.sp,
@@ -99,6 +101,7 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
         val otherSkills =
             (SkillTag.entries.filter { skillTag -> !(skillOfUser.any { it.name == skillTag }) })
                 .toSet()
+
         Box(
             modifier =
                 Modifier.align(Alignment.CenterHorizontally)
@@ -122,12 +125,13 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
             }
         }
         Spacer(modifier = Modifier.weight(0.9f))
+        /** back button* */
         SkillSwapShadowButton(
             onClick = { onBackClick() },
             modifier =
                 Modifier.height(56.dp).align(Alignment.CenterHorizontally).testTag(BACK_BUTTON),
         ) {
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
             Spacer(modifier = Modifier.width(5.dp))
             Text(
                 "Back",

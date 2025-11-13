@@ -11,9 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -106,6 +105,7 @@ fun EditUserScreen(
                             )
                         }
                     }
+                    /** picture edit button */
                     SkillSwapEditButton(
                         onClick = { /* TODO Next Sprint: Open image picker to change profile picture */},
                         modifier = Modifier.align(Alignment.BottomEnd)
@@ -165,7 +165,10 @@ fun EditUserScreen(
                     },
                     modifier = Modifier.height(56.dp).testTag(EditUserTags.VALIDATE_BUTTON),
                 ) {
-                    Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Done")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowForward,
+                        contentDescription = "Done"
+                    )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = if (uiState.isLoading) "Loading..." else "Done",
@@ -179,7 +182,10 @@ fun EditUserScreen(
                     onClick = { onGoBack() },
                     modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON),
                 ) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = if (uiState.isLoading) "Loading..." else "Back",
