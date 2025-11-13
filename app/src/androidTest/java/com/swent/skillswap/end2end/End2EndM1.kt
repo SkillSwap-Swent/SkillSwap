@@ -8,16 +8,16 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
-import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.ui.navigation.NavigationTestTags
+import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.user.ProfileTestTags
-import junit.framework.TestCase.assertNotNull
-import junit.framework.TestCase.assertEquals
+import com.swent.skillswap.utils.FirebaseEmulator
 import java.net.HttpURLConnection
 import java.net.URL
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
@@ -161,7 +161,9 @@ class End2EndM1 {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(CreateAccountTags.CONFIRM_PASSWORD_FIELD)
+                    .assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
