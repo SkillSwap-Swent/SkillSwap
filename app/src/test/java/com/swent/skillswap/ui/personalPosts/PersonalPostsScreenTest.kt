@@ -31,17 +31,18 @@ class PersonalPostsScreenTest {
         tags: Set<com.swent.skillswap.model.tags.EveryTag> = emptySet()
     ) =
         Offer(
-            id,
-            title,
-            "Description",
-            "user1",
-            tags,
-            PaymentMethod.SKILLS,
-            future,
-            now,
-            PostStatus.POSTED,
-            emptyList(),
-            testLocation
+            uid = id,
+            title = title,
+            description = "Description",
+            ownerId = "user1",
+            tags = tags,
+            paymentMethod = PaymentMethod.SKILLS,
+            expiry = future,
+            creation = now,
+            status = PostStatus.POSTED,
+            media = emptyList(),
+            postReplies = emptySet(),
+            location = testLocation
         )
 
     private fun createRequest(
@@ -50,17 +51,18 @@ class PersonalPostsScreenTest {
         tags: Set<com.swent.skillswap.model.tags.EveryTag> = emptySet()
     ) =
         Request(
-            id,
-            title,
-            "Description",
-            "user1",
-            tags,
-            PaymentMethod.SKILLS,
-            future,
-            now,
-            PostStatus.POSTED,
-            emptyList(),
-            testLocation
+            uid = id,
+            title = title,
+            description = "Description",
+            ownerId = "user1",
+            tags = tags,
+            paymentMethod = PaymentMethod.SKILLS,
+            expiry = future,
+            creation = now,
+            status = PostStatus.POSTED,
+            media = emptyList(),
+            postReplies = emptySet(),
+            location = testLocation
         )
 
     private class TestViewModel(initialState: PersonalPostsUiState) :
