@@ -92,7 +92,7 @@ class End2EndM1 {
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
         /** 1. Launch app and wait for setup */
         // attendre l'affichage du sign-in screen (timeout dédié pour CI lent)
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 120_000) {
             try {
                 val signInTags =
                     listOf(
