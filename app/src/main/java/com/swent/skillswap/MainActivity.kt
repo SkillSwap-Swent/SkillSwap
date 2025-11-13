@@ -1,6 +1,5 @@
 package com.swent.skillswap
 
-import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,10 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
@@ -68,18 +67,7 @@ class MainActivity : ComponentActivity() {
 // Enabling navController to be passed as an argument to facilitate testing
 @Composable
 fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
-    val context = LocalContext.current
-    val activity = context as? Activity
     val focusManager = LocalFocusManager.current
-    val screens =
-        listOf(
-            Screen.AuthMain,
-            Screen.CreateAccount,
-            Screen.Feed,
-            Screen.Profile,
-            Screen.EditSkills,
-            Screen.Chat
-        )
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
 
@@ -89,6 +77,7 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
     val currentRoute = navBackStackEntry.value?.destination?.route
 
     val editProfileViewModel: EditUserViewModel = viewModel()
+    val profileViewModel: ProfileViewModel = viewModel()
 
     Scaffold(
         bottomBar = {
@@ -144,11 +133,12 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
             // USER SCREENS
             navigation(startDestination = Screen.Profile.route, route = Screen.Profile.name) {
                 composable(Screen.Profile.route) {
-                    val profileViewModel: ProfileViewModel = viewModel()
+                    LaunchedEffect(Unit) { editProfileViewModel.loadCurrentUser() }
                     profileViewModel.loadCurrentUser()
                     ProfileScreen(
                         vm = profileViewModel,
                         onLogoutClick = {
+                            editProfileViewModel.clearLoadedState()
                             FirebaseAuth.getInstance().signOut()
                             navigationActions.navigateTo(Screen.AuthMain)
                         },

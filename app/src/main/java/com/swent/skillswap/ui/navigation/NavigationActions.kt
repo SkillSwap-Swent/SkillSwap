@@ -52,6 +52,10 @@ open class NavigationActions(
                     saveState = true
                 )
         }
+        if (screen == Screen.AuthMain) {
+            navOptionsBuilder.setPopUpTo(0, inclusive = true)
+        }
+
         navController.navigate(screen.route, navOptionsBuilder.build())
     }
 
