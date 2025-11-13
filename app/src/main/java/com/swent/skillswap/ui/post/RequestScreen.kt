@@ -28,7 +28,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
@@ -173,60 +173,73 @@ fun RequestScreen(
             val tagsQuery = remember { mutableStateOf("") }
             var tagsHasFocus by remember { mutableStateOf(false) }
 
-            ExposedDropdownMenuBox(
-                expanded = tagsExpanded,
-                onExpandedChange = { tagsExpanded = it },
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 val tagSuggestions =
                     remember(tagsQuery.value) {
                         SkillTag.entries
                             .filter {
                                 tagsQuery.value.isNotBlank() &&
-                                    it.name.contains(tagsQuery.value, ignoreCase = true)
+                                    it.name.contains(tagsQuery.value, ignoreCase = true) &&
+                                    it !in uiState.tags // Exclude already selected tags
                             }
                             .take(MAX_SEARCH_KEYS)
                     }
 
-                // Could be using SkillSwapTextField for consistency
-                OutlinedTextField(
-                    value = tagsQuery.value,
-                    onValueChange = { tagsQuery.value = it },
-                    label = { Text("Tags") },
-                    placeholder = { Text("Search and add skill tags") },
-                    isError = uiState.tagsError.isNotEmpty(),
-                    supportingText = {
-                        if (uiState.tagsError.isNotEmpty()) {
-                            Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
-                        }
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .menuAnchor()
-                            .onFocusChanged { tagsHasFocus = it.isFocused }
-                            .testTag(RequestScreenTags.TAGS_INPUT)
-                )
+                Column {
+                    OutlinedTextField(
+                        value = tagsQuery.value,
+                        onValueChange = {
+                            tagsQuery.value = it
+                            if (it.isNotBlank()) {
+                                tagsExpanded = true
+                            }
+                        },
+                        label = { Text("Tags") },
+                        placeholder = { Text("Search and add skill tags") },
+                        isError = uiState.tagsError.isNotEmpty(),
+                        supportingText = {
+                            if (uiState.tagsError.isNotEmpty()) {
+                                Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .onFocusChanged {
+                                    tagsHasFocus = it.isFocused
+                                    if (it.isFocused && tagsQuery.value.isNotBlank()) {
+                                        tagsExpanded = true
+                                    }
+                                }
+                                .testTag(RequestScreenTags.TAGS_INPUT)
+                    )
 
-                ExposedDropdownMenu(
-                    expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
-                    onDismissRequest = { tagsExpanded = false }
-                ) {
-                    tagSuggestions.forEach { tag ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    tag.name.replace("_", " "),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
-                            onClick = {
-                                requestViewModel.addTag(tag)
-                                tagsQuery.value = ""
-                            },
-                            modifier =
-                                Modifier.testTag("${RequestScreenTags.TAG_SUGGESTION}_${tag.name}")
-                        )
+                    androidx.compose.material3.DropdownMenu(
+                        expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
+                        onDismissRequest = { tagsExpanded = false },
+                        properties =
+                            PopupProperties(focusable = false), // KEY: This prevents focus loss
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        tagSuggestions.forEach { tag ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        tag.name.replace("_", " "),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                onClick = {
+                                    requestViewModel.addTag(tag)
+                                    tagsQuery.value = ""
+                                    tagsExpanded = false
+                                },
+                                modifier =
+                                    Modifier.testTag(
+                                        "${RequestScreenTags.TAG_SUGGESTION}_${tag.name}"
+                                    )
+                            )
+                        }
                     }
                 }
             }
