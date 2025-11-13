@@ -20,12 +20,14 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.FirestorePaths
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.offer.ChatRepository
 import com.swent.skillswap.model.offer.FeedControllerFactory
 import com.swent.skillswap.model.offer.RecommendationEngine
 import com.swent.skillswap.model.offer.ThumbnailRepository
 import com.swent.skillswap.model.post.*
-import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
@@ -71,7 +73,7 @@ class FeedScreenInstrumentedTest {
             title = title,
             description = "Valid description for $title",
             ownerId = ownerId,
-            tags = listOf(SkillTag.CALCULUS),
+            tags = setOf(PostTag.ONE_TIME).toList(),
             expiry = expiry,
             creation = now,
             status = PostStatus.POSTED,
@@ -83,29 +85,49 @@ class FeedScreenInstrumentedTest {
         )
     }
 
-    /** Add post to emulator */
     private suspend fun addPostToEmulator(post: Post) {
-        // Convert to SerializablePost if needed
-        val serializable =
-            post as? SerializablePost
-                ?: SerializablePost(
-                    uid = post.uid,
-                    title = post.title,
-                    description = post.description,
-                    ownerId = post.ownerId,
-                    tags = post.tags.toList(),
-                    expiry = post.expiry,
-                    creation = post.creation,
-                    status = post.status,
-                    location = post.location,
-                    media = post.media,
-                    paymentMethod = post.paymentMethod,
-                    type = post.type,
-                    postReplies = post.postReplies.toList()
-                )
+        val postMap =
+            mapOf(
+                "uid" to post.uid,
+                "title" to post.title,
+                "description" to post.description,
+                "ownerId" to post.ownerId,
+                "tags" to post.tags.map { it.toString() },
+                "paymentMethod" to post.paymentMethod.toString(),
+                "expiry" to post.expiry,
+                "creation" to post.creation,
+                "status" to post.status.toString(),
+                "type" to post.type.toString(),
+                "location" to post.location,
+                "media" to post.media,
+                "postReplies" to
+                    post.postReplies.map { reply ->
+                        mapOf(
+                            "uid" to reply.uid,
+                            "postId" to reply.postId,
+                            "ownerId" to reply.ownerId,
+                            "message" to reply.message,
+                            "creation" to reply.creation,
+                            "postType" to reply.postType.toString(),
+                            "replyStatus" to reply.replyStatus.toString()
+                        )
+                    },
+                "searchKeys" to buildSearchKeysForPost(post)
+            )
 
-        val ref = FirebaseEmulator.firestore.collection(REQUESTS_COLLECTION).document(post.uid)
-        ref.set(serializable).await()
+        FirebaseEmulator.firestore
+            .collection(FirestorePaths.REQUESTS_COLLECTION)
+            .document(post.uid)
+            .set(postMap)
+            .await()
+    }
+
+    // Helper to generate searchKeys (matches repository logic)
+    private fun buildSearchKeysForPost(post: Post): List<String> {
+        val keys = mutableListOf<String>()
+        keys.addAll(post.title.split(" ").map { it.lowercase() })
+        keys.addAll(post.tags.map { it.toString().lowercase() })
+        return keys.distinct().take(FirestoreSettings.MAX_SEARCH_KEYS)
     }
 
     /** Get post from emulator */
