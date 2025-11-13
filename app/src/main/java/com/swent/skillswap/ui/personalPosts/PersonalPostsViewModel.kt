@@ -168,8 +168,8 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
     /**
      * Deletes a post from the database.
      *
-     * Uses optimistic update to immediately remove the post from the UI, then refreshes the list in
-     * the background. If deletion fails, the error is shown and the post remains in the list.
+     * Uses optimistic update to immediately remove the post from the UI. If deletion fails, the
+     * list is reloaded to restore the post and an error is shown.
      *
      * @param post The post to delete.
      */
@@ -180,8 +180,7 @@ class PersonalPostsViewModel(private val postRepository: PostRepository) : ViewM
         viewModelScope.launch {
             try {
                 postRepository.deletePost(post.type, post.uid)
-                // Refresh to ensure consistency, but don't wait for it
-                loadPersonalPosts()
+                // No refresh needed on success - optimistic update already shows correct state
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting post", e)
                 // On failure, reload to restore the post in the list
