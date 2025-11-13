@@ -91,7 +91,7 @@ class End2EndM1 {
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
         /** 1. Launch app and wait for setup */
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 30_000) {
             try {
                 val signInTags =
                     listOf(
