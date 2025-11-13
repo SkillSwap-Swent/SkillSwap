@@ -204,7 +204,9 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                         onEditPost = { post ->
                             // Navigate to edit screen based on post type
                             if (post.type == PostType.REQUEST) {
-                                navController.navigate(Screen.EditRequest.createRoute(post.uid))
+                                if (post.uid.isNotBlank()) {
+                                    navController.navigate(Screen.EditRequest.createRoute(post.uid))
+                                }
                             } else {
                                 // TODO: Add navigation to edit offer screen when available
                             }
