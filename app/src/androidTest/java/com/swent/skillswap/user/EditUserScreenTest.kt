@@ -117,6 +117,7 @@ class EditUserScreenTest : TestCase() {
 
         // Instantiate the ViewModel with the emulated repo
         viewModel = EditUserViewModel(repo)
+        viewModel.loadCurrentUser()
     }
 
     @Test

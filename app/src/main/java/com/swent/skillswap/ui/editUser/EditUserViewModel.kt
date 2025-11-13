@@ -14,6 +14,7 @@ import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
+import kotlin.String
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,35 +59,49 @@ class EditUserViewModel(
 
     /** Current user to be fetched from firestore and then edited */
     private lateinit var currentUser: User
+    private var isDataLoaded = false
 
-    /** Fetch the current user data from Firestore on initialization */
-    init {
+    /**
+     * Loads the current user data from Firestore. Should be called when navigating to the
+     * EditUserScreen.
+     */
+    fun loadCurrentUser() {
+
+        // Skip if data is already loaded
+        if (isDataLoaded && ::currentUser.isInitialized) {
+            return
+        }
+
         val currentFirestoreUser = Firebase.auth.currentUser
 
         if (currentFirestoreUser == null) {
-            /** No authenticated user found, update the state with an error */
             _uiState.update {
                 it.copy(
                     generalError =
                         "No authenticated user found, you have to login to edit your profile"
                 )
             }
+            isDataLoaded = false
+            return
         }
 
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isLoading = true) }
-                currentUser = repo.getUser(currentFirestoreUser!!.uid)
-
-                /** Operation successful, update the state with fetched user */
+                currentUser = repo.getUser(currentFirestoreUser.uid)
                 _uiState.update { it.copy(editedUser = currentUser, isLoading = false) }
+                isDataLoaded = true
             } catch (e: Exception) {
-                /** Operation failed, cannot fetch current user */
                 _uiState.update {
                     it.copy(isLoading = false, generalError = "Failed to load current user")
                 }
+                isDataLoaded = false
             }
         }
+    }
+
+    fun clearLoadedState() {
+        isDataLoaded = false
     }
 
     /**
