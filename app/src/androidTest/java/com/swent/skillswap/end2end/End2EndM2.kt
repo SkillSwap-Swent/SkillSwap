@@ -160,7 +160,7 @@ class End2EndM2 {
     }
 
     @Test
-    fun t1_canModifyProfile(){
+    fun t2_canModifyProfile(){
         /** Assumes user is already signed in from previous test */
         composeTestRule.onNodeWithTag(ProfileTestTags.EDIT_PROFILE).performClick()
 
@@ -203,7 +203,7 @@ class End2EndM2 {
     }
 
     @Test
-    fun t2_canScrollOnFeedScreen(){
+    fun t1_canScrollOnFeedScreenAndClickOnReportBlockUserMenu(){
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
 
         /** Assumes user is already signed in from previous test */
@@ -217,22 +217,26 @@ class End2EndM2 {
                 FeedScreenTestTags.DECLINE_BUTTON,
             )
         //composeTestRule.onNodeWithText("Generated 1").assertIsDisplayed()
-        Thread.sleep(3000) // Wait for feed to load
-
-        /** Scroll up */
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeDown() }
-        //composeTestRule.onNodeWithText("Generated 2").assertIsDisplayed()
-        Thread.sleep(3000) // Wait for feed to load
+        composeTestRule.waitForIdle()
 
         /** Scroll down */
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeDown() }
+        composeTestRule.onNodeWithText("Looking for Skill 2").assertIsDisplayed()
+        composeTestRule.waitForIdle()
+
+        /** Scroll up */
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput { swipeUp() }
-        //composeTestRule.onNodeWithText("Generated 1").assertIsDisplayed()
-        Thread.sleep(3000) // Wait for feed to load
+        composeTestRule.onNodeWithText("Looking for Skill 15").assertIsDisplayed()
+        composeTestRule.waitForIdle()
 
         /** Open menu */
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Report User").assertIsDisplayed()
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("Report User").performClick()
+        composeTestRule.onNodeWithTag("Block User").performClick()
+
 
 
 
@@ -283,12 +287,12 @@ class End2EndM2 {
         /** Go to Request chat tab */
         composeTestRule.onNodeWithText("Request").performClick()
 
-        val RequestChatUsernames = listOf(
+        val requestChatUsernames = listOf(
             "Emma Wilson",
             "Alex Johnson"
         )
 
-        for (username in RequestChatUsernames) {
+        for (username in requestChatUsernames) {
             composeTestRule.onNodeWithText(username).assertIsDisplayed()
             composeTestRule.onNodeWithText(username).performClick()
         }
