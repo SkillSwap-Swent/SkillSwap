@@ -7,14 +7,32 @@ package com.swent.skillswap.ui.auth
 // ----- Imports -----
 import android.app.Activity
 import android.content.Context
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -27,8 +45,6 @@ import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.R
-import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 import com.swent.skillswap.ui.utils.SkillSwapTextField
@@ -44,10 +60,6 @@ object SignInTags {
     const val PASSWORD_FIELD = "PASSWORD_FIELD"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
 }
-
-// ----- Default styles for Sign-In buttons -----
-val signInButtonColor = ButtonColors(Color.Transparent, Color.White, Color.White, Color.Black)
-val signInButtonStroke = BorderStroke(1.dp, Color.White)
 
 /**
  * Main Sign-In screen of the app.
@@ -83,15 +95,9 @@ fun AuthMainScreen(
     val uiState by vm.uiState.collectAsState()
     // Scaffold gives a top-level layout structure (with padding, backgrounds, etc.)
     Scaffold { padding ->
-        Column(
-            modifier =
-                Modifier.padding(padding)
-                    .background(getLinearBrush(BrushDirection.DOWN_TOP))
-                    .fillMaxSize()
-                    .verticalScroll(scroll)
-        ) {
+        Column(modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(scroll)) {
             // ----- App logo -----
-            Spacer(modifier = Modifier.height(200.dp))
+            Spacer(modifier = Modifier.height(50.dp))
             Image(
                 painter = painterResource(R.drawable.logo),
                 contentDescription = "SkillSwap logo",
@@ -110,6 +116,9 @@ fun AuthMainScreen(
                 onValueChange = { vm.onEmailChange(it) },
                 label = "Email",
                 placeholder = "your.email@gmail.com",
+                leadingIcon = {
+                    Icon(imageVector = Icons.Outlined.Person, contentDescription = "Email Icon")
+                },
                 keyboardOptions =
                     KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -124,78 +133,79 @@ fun AuthMainScreen(
                 value = uiState.password,
                 supportText = uiState.passwordError,
                 label = "Password",
-                placeholder = "enter password",
+                placeholder = "Type your password",
                 onValueChange = { vm.onPasswordChange(it) },
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally).testTag(SignInTags.PASSWORD_FIELD)
             )
+            // ----- Classic Sign-In button -----
+            Spacer(modifier = Modifier.height(20.dp))
+            SkillSwapShadowButton(
+                onClick = { vm.classicSignIn() },
+                modifier =
+                    Modifier.align(Alignment.CenterHorizontally)
+                        .fillMaxWidth(0.3f)
+                        .testTag(SignInTags.SIGN_IN_BUTTON)
+                        .height(55.dp)
+            ) {
+                Text(
+                    text = "Login",
+                    fontSize = 24.sp,
+                )
+            }
             // ----- Forgot Password link -----
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(
                 onClick = goToPasswordRecovery,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text(
-                    text = "Forgot Password?",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center
-                )
+                Text(text = "Forgot Password?", fontSize = 14.sp, textAlign = TextAlign.Center)
             }
             Spacer(modifier = Modifier.height(50.dp))
             // ------------------------------------------------------------
             // Sign-In Buttons (Google + Classic)
             // ------------------------------------------------------------
             // ----- Google Sign-In button -----
-            OutlinedButton(
+            SkillSwapShadowButton(
                 onClick = { vm.googleSignIn(credentialManager, context as Activity) },
-                colors = signInButtonColor,
-                border = signInButtonStroke,
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
+                        .fillMaxWidth(0.6f)
                         .testTag(SignInTags.GOOGLE_BUTTON)
+                        .height(55.dp)
             ) {
                 Row(modifier = Modifier.height(21.dp)) {
                     Image(
                         painter = painterResource(R.drawable.google_logo),
                         contentDescription = "Google logo",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(text = "SIGN IN WITH GOOGLE")
+                    Text("Sign up with Google", fontSize = 14.sp)
                 }
-            }
-
-            // ----- Classic Sign-In button -----
-            Spacer(modifier = Modifier.height(20.dp))
-            OutlinedButton(
-                onClick = { vm.classicSignIn() },
-                colors = signInButtonColor,
-                border = signInButtonStroke,
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
-                        .testTag(SignInTags.SIGN_IN_BUTTON)
-            ) {
-                Text(text = "SIGN IN")
             }
 
             // ------------------------------------------------------------
             // Create Account Button
             // ------------------------------------------------------------
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             SkillSwapShadowButton(
                 onClick = { vm.createAccount() },
                 modifier =
                     Modifier.align(Alignment.CenterHorizontally)
                         .testTag(SignInTags.CREATE_ACCOUNT_TEXT)
-                        .fillMaxWidth(0.4f)
+                        .fillMaxWidth(0.6f)
+                        .height(55.dp)
             ) {
-                Text(
-                    text = "Next",
-                    fontSize = 24.sp,
-                )
+                Row {
+                    Icon(
+                        imageVector = Icons.Outlined.AccountCircle,
+                        contentDescription = "User",
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text("Sign up with email", fontSize = 14.sp)
+                }
             }
         }
     }

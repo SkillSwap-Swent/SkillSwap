@@ -67,4 +67,8 @@ class ChatViewModel(
             }
         }
     }
+
+    fun getCurrentUserId(): String {
+        return currentUserId
+    }
 }
