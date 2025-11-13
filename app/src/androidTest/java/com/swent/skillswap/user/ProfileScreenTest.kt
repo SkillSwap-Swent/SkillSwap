@@ -137,7 +137,8 @@ class ProfileScreenTest : TestCase() {
                     ProfileTestTags.USERNAME_VALUE,
                     ProfileTestTags.PREFERENCE_SWITCH,
                     ProfileTestTags.SKILLS_BUTTON,
-                    ProfileTestTags.LOGOUT_BUTTON
+                    ProfileTestTags.LOGOUT_BUTTON,
+                    ProfileTestTags.ADD_POST_BUTTON
                 )
 
             tags.forEach { tag ->
@@ -207,6 +208,15 @@ class ProfileScreenTest : TestCase() {
             waitForNodeToExist(ProfileTestTags.SKILLS_BUTTON)
             composeTestRule
                 .onNodeWithTag(ProfileTestTags.SKILLS_BUTTON)
+                .performScrollTo()
+                .assertIsDisplayed()
+                .assertHasClickAction()
+                .performClick()
+        }
+        step("Add post button is clickable") {
+            waitForNodeToExist(ProfileTestTags.ADD_POST_BUTTON)
+            composeTestRule
+                .onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON)
                 .performScrollTo()
                 .assertIsDisplayed()
                 .assertHasClickAction()

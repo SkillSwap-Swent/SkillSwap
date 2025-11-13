@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.model.user.Preference
+import com.swent.skillswap.ui.user.ProfileTestTags.ADD_POST_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
 import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
@@ -57,6 +58,7 @@ object ProfileTestTags {
 
     // Buttons
     const val SKILLS_BUTTON = "profile_skills_button"
+    const val ADD_POST_BUTTON = "profile_add_post_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
 }
 
@@ -232,7 +234,7 @@ fun ProfileScreen(
             onClick = { onAddPostClick() },
             shape = RoundedCornerShape(26),
             contentPadding = PaddingValues(12.dp, 0.dp),
-            modifier = Modifier.testTag(SKILLS_BUTTON)
+            modifier = Modifier.testTag(ADD_POST_BUTTON)
         ) {
             Icon(
                 contentDescription = "New Post",
