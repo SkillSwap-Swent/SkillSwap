@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
-import androidx.compose.material.icons.outlined.Mail
-import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -33,11 +33,11 @@ object NavigationTestTags {
 }
 
 sealed class Tab(val name: String, val icon: ImageVector, val destination: Screen) {
-    object Profile : Tab("Profile", Icons.Outlined.People, Screen.Profile)
+    object Profile : Tab("Profile", Icons.Outlined.Person, Screen.Profile)
 
     object Feed : Tab("Feed", Icons.AutoMirrored.Outlined.List, Screen.Feed)
 
-    object Chat : Tab("Chat", Icons.Outlined.Mail, Screen.Chat)
+    object Chat : Tab("Chat", Icons.Outlined.ChatBubbleOutline, Screen.Chat)
 }
 
 private val tabs = listOf(Tab.Profile, Tab.Feed, Tab.Chat)
@@ -54,7 +54,7 @@ fun BottomNavigationMenu(
                 .fillMaxWidth()
                 .height(70.dp)
                 .testTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU),
-        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         tabs.forEach { tab ->
             NavigationBarItem(
@@ -64,11 +64,11 @@ fun BottomNavigationMenu(
                 onClick = { onTabSelected(tab) },
                 colors =
                     NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                 modifier = Modifier.testTag(NavigationTestTags.getTabTestTag(tab))
             )
