@@ -36,6 +36,7 @@ class PersonalPostsScreenInstrumentedTest {
     fun setUp() {
         runBlocking {
             FirebaseEmulator.startEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
             testUserId =
                 FirebaseAuth.getInstance().signInAnonymously().await().user?.uid ?: "test-user"
             testLocation = GeoPoint(46.5191, 6.5668)
@@ -47,6 +48,7 @@ class PersonalPostsScreenInstrumentedTest {
         runBlocking {
             FirebaseAuth.getInstance().signOut()
             FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
     }
 
