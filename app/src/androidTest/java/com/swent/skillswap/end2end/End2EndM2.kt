@@ -69,7 +69,7 @@ class End2EndM2 {
     @Before
     fun setup() {
         db = FirebaseEmulator.firestore
-        auth = FirebaseAuth.getInstance()
+        auth = FirebaseEmulator.auth
     }
 
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
