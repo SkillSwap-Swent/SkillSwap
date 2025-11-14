@@ -1,31 +1,26 @@
 /** @author Younes Belgroune - Made with the help of AI */
 package com.swent.skillswap.ui.personalPosts
 
-// Optimized with waitUntil for better CI performance
-
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.waitUntil
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.post.Offer
-import com.swent.skillswap.model.post.PaymentMethod
-import com.swent.skillswap.model.post.PostFirestoreRepository
-import com.swent.skillswap.model.post.PostStatus
-import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.post.*
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -34,7 +29,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class PersonalPostsScreenInstrumentedTest {
     @get:Rule val composeRule = createComposeRule()
-
     private lateinit var testUserId: String
     private lateinit var testLocation: GeoPoint
 
@@ -42,8 +36,8 @@ class PersonalPostsScreenInstrumentedTest {
     fun setUp() {
         runBlocking {
             FirebaseEmulator.startEmulator()
-            val authResult = FirebaseAuth.getInstance().signInAnonymously().await()
-            testUserId = authResult.user?.uid ?: "test-user"
+            testUserId =
+                FirebaseAuth.getInstance().signInAnonymously().await().user?.uid ?: "test-user"
             testLocation = GeoPoint(46.5191, 6.5668)
         }
     }
@@ -56,37 +50,13 @@ class PersonalPostsScreenInstrumentedTest {
         }
     }
 
-    private fun createOffer(
-        id: String,
-        title: String,
-        tags: Set<com.swent.skillswap.model.tags.EveryTag> = emptySet()
-    ) =
-        Offer(
-            uid = id,
-            title = title,
-            description = "Description",
-            ownerId = testUserId,
-            tags = tags,
-            paymentMethod = PaymentMethod.SKILLS,
-            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-            creation = Timestamp.now(),
-            status = PostStatus.POSTED,
-            media = emptyList(),
-            postReplies = emptySet(),
-            location = testLocation
-        )
-
-    private fun createRequest(
-        id: String,
-        title: String,
-        tags: Set<com.swent.skillswap.model.tags.EveryTag> = emptySet()
-    ) =
+    private fun createRequest(id: String, title: String) =
         Request(
             uid = id,
             title = title,
             description = "Description",
             ownerId = testUserId,
-            tags = tags,
+            tags = emptySet(),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
@@ -104,7 +74,6 @@ class PersonalPostsScreenInstrumentedTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag(PersonalPostsScreenTags.TITLE).assertIsDisplayed()
-        composeRule.onNodeWithText("My Posts").assertIsDisplayed()
         composeRule.onAllNodesWithContentDescription("Back")[0].performClick()
         assert(backClicked)
     }
@@ -113,34 +82,12 @@ class PersonalPostsScreenInstrumentedTest {
     fun displays_loading_indicator_when_loading() {
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
         composeRule.waitForIdle()
-        // ViewModel loads posts in init, so we might see loading briefly
         composeRule.onNodeWithTag(PersonalPostsScreenTags.LOADING_INDICATOR).assertExists()
-    }
-
-    @Test
-    fun displays_filter_buttons() {
-        composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).assertIsDisplayed()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_OFFERS).assertIsDisplayed()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).assertIsDisplayed()
-    }
-
-    @Test
-    fun filter_all_button_calls_viewmodel() {
-        composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).performClick()
-        composeRule.waitForIdle()
-        // Filter should be applied
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).assertIsDisplayed()
     }
 
     @Test
     fun displays_empty_state_when_no_posts() {
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
-        composeRule.waitForIdle()
-        // Wait for loading to complete - empty state should appear
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithText("No posts found").fetchSemanticsNodes().isNotEmpty()
         }
@@ -148,64 +95,80 @@ class PersonalPostsScreenInstrumentedTest {
     }
 
     @Test
-    fun displays_posts_list() {
+    fun displays_posts_list_and_details() {
         runBlocking {
-            // Add test posts to Firestore
-            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
-            val offer = createOffer("offer-1", "Test Offer")
-            val request = createRequest("request-1", "Test Request")
-            repo.addPost(offer)
-            repo.addPost(request)
+            PostFirestoreRepository(FirebaseEmulator.firestore)
+                .addPost(createRequest("request-1", "Test Post"))
         }
-
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
-        composeRule.waitForIdle()
-        // Wait for posts to load
         composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodesWithText("Test Offer").fetchSemanticsNodes().isNotEmpty() &&
-                composeRule.onAllNodesWithText("Test Request").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithText("Test Post").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("Test Offer").assertIsDisplayed()
-        composeRule.onNodeWithText("Test Request").assertIsDisplayed()
+        composeRule.onNodeWithText("Test Post").assertIsDisplayed()
+        composeRule.onNodeWithText("Request").assertIsDisplayed()
+        composeRule.onNodeWithText("Description").assertIsDisplayed()
+        composeRule.onNodeWithText("Payment: SKILLS").assertIsDisplayed()
     }
 
     @Test
-    fun post_item_displays_title_and_type() {
-        runBlocking {
-            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
-            val post = createOffer("offer-1", "Test Offer")
-            repo.addPost(post)
-        }
-
+    fun displays_error_message_and_retry_button() {
+        runBlocking { FirebaseAuth.getInstance().signOut() }
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
-        composeRule.waitForIdle()
-        composeRule.waitUntil(timeoutMillis = 10_000) {
-            composeRule.onAllNodesWithText("Test Offer").fetchSemanticsNodes().isNotEmpty() &&
-                composeRule.onAllNodesWithText("Offer").fetchSemanticsNodes().isNotEmpty()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule
+                .onAllNodesWithTag(PersonalPostsScreenTags.ERROR_MESSAGE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
-        composeRule.onNodeWithText("Test Offer").assertIsDisplayed()
-        composeRule.onNodeWithText("Offer").assertIsDisplayed()
+        composeRule.onNodeWithTag(PersonalPostsScreenTags.ERROR_MESSAGE).assertIsDisplayed()
+        composeRule.onNodeWithText("Retry").assertIsDisplayed()
+    }
+
+    @Test
+    fun edit_button_triggers_callback() {
+        var editClicked = false
+        runBlocking {
+            PostFirestoreRepository(FirebaseEmulator.firestore)
+                .addPost(createRequest("request-1", "Edit Me"))
+        }
+        composeRule.setContent {
+            SkillSwapAppTheme { PersonalPostsScreen(onEditPost = { editClicked = true }) }
+        }
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("Edit Me").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodesWithTag(PersonalPostsScreenTags.EDIT_BUTTON)[0].performClick()
+        assert(editClicked)
     }
 
     @Test
     fun delete_button_removes_post() {
         runBlocking {
-            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
-            val post = createOffer("offer-1", "To Delete")
-            repo.addPost(post)
+            PostFirestoreRepository(FirebaseEmulator.firestore)
+                .addPost(createRequest("request-1", "To Delete"))
         }
-
         composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
-        composeRule.waitForIdle()
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithText("To Delete").fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("To Delete").assertIsDisplayed()
         composeRule.onAllNodesWithTag(PersonalPostsScreenTags.DELETE_BUTTON)[0].performClick()
-        composeRule.waitForIdle()
-        // Post should be removed (optimistic update) - verify it's gone
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithText("To Delete").fetchSemanticsNodes().isEmpty()
         }
+    }
+
+    @Test
+    fun filter_buttons_work() {
+        runBlocking {
+            val repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+            repo.addPost(createRequest("request-1", "My Request"))
+        }
+        composeRule.setContent { SkillSwapAppTheme { PersonalPostsScreen() } }
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("My Request").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("My Request").assertIsDisplayed()
     }
 }

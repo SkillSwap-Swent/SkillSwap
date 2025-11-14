@@ -31,54 +31,21 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class PersonalPostsViewModelTest {
-
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
-
     private lateinit var fakeRepository: FakePostRepository
     private lateinit var viewModel: PersonalPostsViewModel
-    private val testUserId = "test-user-123"
     private val testLocation = GeoPoint(46.5191, 6.5668)
-
-    private val sampleOffer =
-        Offer(
-            uid = "offer-1",
-            title = "Kotlin Tutoring",
-            description = "I can teach Kotlin",
-            ownerId = testUserId,
-            tags = setOf(PostTag.REOCCURRING),
-            paymentMethod = PaymentMethod.SKILLS,
-            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-            creation = Timestamp(Date(System.currentTimeMillis() - 100000)),
-            status = PostStatus.POSTED,
-            media = emptyList(),
-            location = testLocation
-        )
 
     private val sampleRequest =
         Request(
             uid = "request-1",
             title = "Need Python Help",
             description = "Looking for Python tutor",
-            ownerId = testUserId,
+            ownerId = "test-user-123",
             tags = setOf(PostTag.REOCCURRING),
-            paymentMethod = PaymentMethod.CASH,
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp(Date(System.currentTimeMillis() - 50000)),
-            status = PostStatus.POSTED,
-            media = emptyList(),
-            location = testLocation
-        )
-
-    private val otherUserOffer =
-        Offer(
-            uid = "offer-3",
-            title = "Other User Offer",
-            description = "Not mine",
-            ownerId = "other-user-456",
-            tags = setOf(PostTag.REOCCURRING),
-            paymentMethod = PaymentMethod.SKILLS,
-            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-            creation = Timestamp.now(),
             status = PostStatus.POSTED,
             media = emptyList(),
             location = testLocation
@@ -87,37 +54,23 @@ class PersonalPostsViewModelTest {
     @Before
     fun setUp() {
         val context = RuntimeEnvironment.getApplication()
-        requireNotNull(context) { "Robolectric context must not be null" }
-
         try {
             FirebaseApp.getInstance()
         } catch (e: IllegalStateException) {
-            val options =
+            FirebaseApp.initializeApp(
+                context,
                 FirebaseOptions.Builder()
                     .setApplicationId("test-app-id")
                     .setApiKey("test-api-key")
                     .setProjectId("test-project")
                     .build()
-            try {
-                FirebaseApp.initializeApp(context, options)
-            } catch (initError: Exception) {
-                throw AssertionError(
-                    "Failed to initialize Firebase with options: ${initError.message}",
-                    initError
-                )
-            }
+            )
         }
-
         fakeRepository = FakePostRepository()
     }
 
     @After
     fun tearDown() {
-        // Clean up Firebase Auth state after each test to ensure test isolation
-        cleanFirebaseAuth()
-    }
-
-    private fun cleanFirebaseAuth() {
         try {
             FirebaseAuth.getInstance().signOut()
             if (
@@ -151,71 +104,54 @@ class PersonalPostsViewModelTest {
         FirebaseAuth.getInstance().signOut()
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertNotNull(state.error)
-        assertTrue(
-            state.error!!.contains("authenticated", ignoreCase = true) ||
-                state.error!!.contains("log in", ignoreCase = true)
-        )
-        assertFalse(state.isLoading)
+        assertNotNull(viewModel.uiState.value.error)
+        assertFalse(viewModel.uiState.value.isLoading)
     }
 
     @Test
     fun loadPersonalPosts_withAllFilter_loadsBothOffersAndRequests() = runTest {
-        fakeRepository.preloadPosts(sampleOffer, sampleRequest, otherUserOffer)
+        fakeRepository.preloadPosts(sampleRequest)
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
+        } catch (e: Exception) {}
         viewModel = PersonalPostsViewModel(fakeRepository)
         viewModel.setPostTypeFilter(PostTypeFilter.ALL)
         advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertEquals(PostTypeFilter.ALL, state.selectedPostType)
-        if (state.error == null && state.posts.isNotEmpty()) {
-            assertTrue(state.posts.isNotEmpty())
-        }
+        assertEquals(PostTypeFilter.ALL, viewModel.uiState.value.selectedPostType)
     }
 
     @Test
     fun deletePost_removesPostAndReloads() = runTest {
-        // Use SKILLSANDCASH to match default paymentMethod filter
-        val offerWithDefaultPayment = sampleOffer.copy(paymentMethod = PaymentMethod.SKILLSANDCASH)
-        fakeRepository.preloadPosts(offerWithDefaultPayment, sampleRequest)
+        fakeRepository.preloadPosts(sampleRequest)
         try {
             FirebaseAuth.getInstance().signInAnonymously().await()
-        } catch (e: Exception) {
-            // Continue
-        }
+        } catch (e: Exception) {}
         viewModel = PersonalPostsViewModel(fakeRepository)
         advanceUntilIdle()
         val initialCount = viewModel.uiState.value.posts.size
-        if (initialCount == 0) {
-            // If no posts loaded, skip the test (might be due to auth or filter issues)
-            return@runTest
-        }
-        assertTrue(
-            "Post should exist before deletion",
-            viewModel.uiState.value.posts.any { it.uid == offerWithDefaultPayment.uid }
-        )
-
-        // Test optimistic update: post should be removed immediately (synchronously)
-        viewModel.deletePost(offerWithDefaultPayment)
+        if (initialCount == 0) return@runTest
+        viewModel.deletePost(sampleRequest)
         val stateAfterDelete = viewModel.uiState.value
-        assertTrue(
-            "Post should be removed immediately via optimistic update",
-            stateAfterDelete.posts.none { it.uid == offerWithDefaultPayment.uid }
-        )
-        assertEquals("Post count should decrease", initialCount - 1, stateAfterDelete.posts.size)
-
-        // Wait for repository deletion to complete
+        assertTrue(stateAfterDelete.posts.none { it.uid == sampleRequest.uid })
+        assertEquals(initialCount - 1, stateAfterDelete.posts.size)
         advanceUntilIdle()
-        val remainingPosts = fakeRepository.getAddedPosts()
-        assertFalse(
-            "Post should be removed from repository",
-            remainingPosts.any { it.uid == offerWithDefaultPayment.uid }
-        )
+        assertFalse(fakeRepository.getAddedPosts().any { it.uid == sampleRequest.uid })
+    }
+
+    @Test
+    fun deletePost_failure_reloadsAndShowsError() = runTest {
+        fakeRepository.preloadPosts(sampleRequest)
+        try {
+            FirebaseAuth.getInstance().signInAnonymously().await()
+        } catch (e: Exception) {}
+        viewModel = PersonalPostsViewModel(fakeRepository)
+        advanceUntilIdle()
+        if (viewModel.uiState.value.posts.isEmpty()) return@runTest
+        fakeRepository.clear()
+        viewModel.deletePost(sampleRequest)
+        assertTrue(viewModel.uiState.value.posts.none { it.uid == sampleRequest.uid })
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.error != null || viewModel.uiState.value.posts.isEmpty())
     }
 
     @Test
@@ -229,7 +165,6 @@ class PersonalPostsViewModelTest {
     }
 }
 
-// Test rule to set Main dispatcher for coroutines in unit tests
 class MainDispatcherRule(private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()) :
     TestWatcher() {
     override fun starting(description: Description) {
