@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - M1
+      - M2
   workflow_dispatch:
 
 jobs:
