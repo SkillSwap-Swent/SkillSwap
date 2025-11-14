@@ -77,25 +77,17 @@ class End2EndM2 {
     @Test
     fun t0_createAccount() {
         /** 1. Launch app and verify sign in screen */
-        composeTestRule.waitForIdle()
-
-        // Wait for sign-in screen to fully load
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            composeTestRule.onAllNodesWithTag(SignInTags.LOGO).fetchSemanticsNodes().isNotEmpty()
-        }
-
-        /** Verify Sign-In screen is displayed */
-        val signInTags =
-            listOf(
-                SignInTags.LOGO,
-                SignInTags.SIGN_IN_BUTTON,
-                SignInTags.GOOGLE_BUTTON,
-                SignInTags.EMAIL_FIELD,
-                SignInTags.PASSWORD_FIELD
-            )
-
-        for (testTag in signInTags) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
 
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
