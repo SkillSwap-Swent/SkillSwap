@@ -1,6 +1,4 @@
 /*
- * Written with help of copilot to complete all repetitive code, and set up the companion object
- */
 package com.swent.skillswap.end2end
 
 import androidx.compose.ui.test.*
@@ -29,15 +27,13 @@ import org.junit.runners.MethodSorters
 
 /** End-to-end tests for Milestone 1 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Be careful, tests order matters !
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class End2EndM1 {
 
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
     lateinit var auth: FirebaseAuth
 
-    /** Companion object to clear the Auth emulator after running all tests */
     companion object {
-        private const val EMULATOR_URL = "http://10.0.2.2:9099"
         private const val PROJECT_ID = "skillswap-93276"
 
         @BeforeClass
@@ -49,7 +45,9 @@ class End2EndM1 {
         @AfterClass
         @JvmStatic
         fun cleanupAuthEmulator() {
-            val url = URL("$EMULATOR_URL/emulator/v1/projects/$PROJECT_ID/accounts")
+            // Use the detected HOST from FirebaseEmulator
+            val emulatorUrl = "http://${FirebaseEmulator.HOST}:${FirebaseEmulator.AUTH_PORT}"
+            val url = URL("$emulatorUrl/emulator/v1/projects/$PROJECT_ID/accounts")
             val maxAttempts = 20
             var attempt = 0
             var cleared = false
@@ -63,7 +61,7 @@ class End2EndM1 {
                         val responseCode = responseCode
                         if (responseCode == HttpURLConnection.HTTP_OK) {
                             cleared = true
-                            println("Firebase Auth emulator cleared successfully")
+                            println("Firebase Auth emulator cleared successfully at ${FirebaseEmulator.HOST}")
                         }
                         disconnect()
                     }
@@ -74,7 +72,7 @@ class End2EndM1 {
             }
 
             if (!cleared) {
-                println("Warning: Failed to clear Auth emulator after $maxAttempts attempts")
+                println("Warning: Failed to clear Auth emulator after $maxAttempts attempts at ${FirebaseEmulator.HOST}")
             }
         }
     }
@@ -89,12 +87,6 @@ class End2EndM1 {
     @OptIn(InternalTestApi::class)
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
-        /**
-         * NOTE: During this test, assert displays are wrapped in waitUntil with very big timeout,
-         * to compensate the CI emulator slowness. You may want to remove these waits when running
-         * tests locally for debugging.
-         */
-
         /** 1. Launch app and wait for setup */
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
@@ -102,8 +94,6 @@ class End2EndM1 {
                 composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).assertIsDisplayed()
-                // composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed() =>
-                // Breaks CI for unknown reason, but pass on local tests
                 true
             } catch (e: AssertionError) {
                 false
@@ -198,7 +188,6 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
         composeTestRule.waitForIdle()
-        /* End of Create Account Screens */
 
         /** Wait until firestore auth operation completes and Profile Screen is displayed */
         composeTestRule.waitUntil(timeoutMillis = 60_000) {
@@ -217,10 +206,8 @@ class End2EndM1 {
 
     @Test
     fun completeUserFlow1_AutoSignInAndNavigate() {
-        /** The User is already sign in, hence the app should open directly on Profile Screen */
         composeTestRule.waitForIdle()
 
-        /** Wait until the previous test is done a the app is set up again */
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
@@ -231,16 +218,10 @@ class End2EndM1 {
         }
         composeTestRule.waitForIdle()
 
-        /** Perform Navigation Verification */
         navigateThroughAllScreensAfterAuthentification()
     }
 
-    /**
-     * Navigate through all main screens after authentication. Starting from Profile Screen, then to
-     * Feed Screen, and finally to the Chat Screen.
-     */
     fun navigateThroughAllScreensAfterAuthentification() {
-
         val visibleComposableProfile =
             listOf(
                 ProfileTestTags.PROFILE_TITLE,
@@ -262,7 +243,7 @@ class End2EndM1 {
                 NavigationTestTags.CHAT_TAB
             )
 
-        val visibleComposableChatScreen = emptyList<String>() // No tests tags defined yet
+        val visibleComposableChatScreen = emptyList<String>()
 
         composeTestRule.waitForIdle()
 
@@ -320,9 +301,11 @@ class End2EndM1 {
     fun finalTest_UserIsAuthentified() {
         composeTestRule.waitForIdle()
 
-        /** Verify that the user is correctly authenticated */
         val currentUser = FirebaseAuth.getInstance().currentUser
         assertNotNull(currentUser)
         assertEquals("bob@mail.com", currentUser!!.email)
     }
 }
+
+
+ */
