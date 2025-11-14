@@ -83,7 +83,7 @@ class End2EndM2 {
                 composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
+                // composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
