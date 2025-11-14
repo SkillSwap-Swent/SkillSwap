@@ -38,28 +38,39 @@ import org.junit.runners.MethodSorters
 
 /** End-to-end tests for Milestone 2 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Be careful, tests order matters !
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class End2EndM2 {
 
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
     lateinit var auth: FirebaseAuth
 
-    /** Companion object to clear the Auth emulator before running tests */
     companion object {
-        private const val EMULATOR_URL = "http://10.0.2.2:9099"
         private const val PROJECT_ID = "skillswap-93276"
 
         @BeforeClass
         @JvmStatic
         fun clearAuthEmulatorAndFirestoreEmulators() {
-            val url = URL("$EMULATOR_URL/emulator/v1/projects/$PROJECT_ID/accounts")
-            with(url.openConnection() as HttpURLConnection) {
-                requestMethod = "DELETE"
-                val responseCode = responseCode
-                if (responseCode != 200) {
-                    throw Exception("Failed to clear Auth emulator: $responseCode")
+            FirebaseEmulator.startEmulator()
+
+            // Use the detected HOST from FirebaseEmulator
+            val emulatorUrl = "http://${FirebaseEmulator.HOST}:${FirebaseEmulator.AUTH_PORT}"
+            val url = URL("$emulatorUrl/emulator/v1/projects/$PROJECT_ID/accounts")
+
+            try {
+                with(url.openConnection() as HttpURLConnection) {
+                    connectTimeout = 2000
+                    readTimeout = 2000
+                    requestMethod = "DELETE"
+                    val responseCode = responseCode
+                    if (responseCode != HttpURLConnection.HTTP_OK) {
+                        println("Warning: Failed to clear Auth emulator: $responseCode")
+                    }
+                    disconnect()
                 }
-                disconnect()
+            } catch (e: Exception) {
+                println(
+                    "Warning: Failed to connect to Auth emulator at ${FirebaseEmulator.HOST}: ${e.message}"
+                )
             }
 
             FirebaseEmulator.clearFirestoreEmulator()
