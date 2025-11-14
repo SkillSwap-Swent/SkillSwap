@@ -47,7 +47,6 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
-import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
@@ -163,9 +162,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
                     )
-                }
-                composable(Screen.PasswordRecovery.route) {
-                    PasswordRecoveryScreen(goBackToSignIn = { navigationActions.goBack() })
                 }
             }
 

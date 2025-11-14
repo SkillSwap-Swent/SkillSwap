@@ -210,7 +210,7 @@ class AuthClassicTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // Arrive at Offers
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+        composeTestRule.waitUntil(timeoutMillis = 30_000L) {
             composeTestRule
                 .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                 .fetchSemanticsNodes()

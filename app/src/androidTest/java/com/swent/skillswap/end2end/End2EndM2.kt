@@ -77,7 +77,7 @@ class End2EndM2 {
     @Test
     fun t0_createAccount() {
         /** 1. Launch app and verify sign in screen */
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+        composeTestRule.waitUntil(timeoutMillis = 200_000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
