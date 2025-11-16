@@ -120,7 +120,7 @@ jobs:
           api-level: 34
           target: google_apis
           arch: x86_64
-          profile: 4.65in 720p
+          profile: Small Phone
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -153,7 +153,7 @@ jobs:
           api-level: 34
           target: google_apis
           arch: x86_64
-          profile: 4.65in 720p
+          profile: Small Phone
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
