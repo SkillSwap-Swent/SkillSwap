@@ -78,13 +78,13 @@ jobs:
             echo "Firebase emulators not configured, skipping..."
           fi
       - name: Run unit tests + coverage
-        run: ./gradlew check jacocoTestReport --parallel --build-cache
+        run: ./gradlew check --parallel --build-cache
         # upload unit test result to be use on the sonar job
-      - name: Upload unit coverage
+      - name: Upload unit test result
         uses: actions/upload-artifact@v4
         with:
-          name: unit-coverage
-          path: app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          name: unit-result
+          path: app/build/test-results/testDebugUnitTest/
   #run android test
   android-tests:
     runs-on: ubuntu-latest
@@ -165,7 +165,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-coverage
-          path: app/build/reports/coverage/androidTest/debug/report.xml
+          path: app/build/reports/coverage/androidTest/debug/connected/
   #upload every things to sonar
   sonar:
     runs-on: ubuntu-latest
@@ -185,27 +185,29 @@ jobs:
 
       - run: chmod +x ./gradlew
 
-      - name: Download unit coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: unit-coverage
-          path: build/reports/jacoco/jacocoTestReport
+
 
       - name: Download android coverage
         uses: actions/download-artifact@v4
         with:
           name: android-coverage
+          path: app/build/reports/coverage/androidTest/debug/connected/
 
-      - name: Download coverage artifact
+      - name: Download unit test result
         uses: actions/download-artifact@v4
         with:
-          name: unit-test-coverage
-          path: build/reports/jacoco
+          name: unit-result
+          path: app/build/test-results/testDebugUnitTest/
+
       - name: Download lint report
         uses: actions/download-artifact@v4
         with:
           name: android-lint-report
-          path: app/build/reports
+          path: app/build/reports/
+
+      - name: Generate Coverage Report
+        run: |
+          ./gradlew jacocoTestReport
       - name: Run Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
