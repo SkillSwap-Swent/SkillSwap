@@ -3,7 +3,7 @@ package com.swent.skillswap.model.post
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -31,7 +31,7 @@ class PostFirestoreRepositoryTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
-            tags = setOf(PostTag.REOCCURRING),
+            tags = setOf(SkillTag.MACHINE_DESIGN),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
             status = PostStatus.POSTED,
@@ -207,7 +207,7 @@ class PostFirestoreRepositoryTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     titleContains = "help Kotlin",
-                    tags = setOf(PostTag.REOCCURRING)
+                    tags = setOf(SkillTag.MACHINE_DESIGN)
                 )
 
             assertTrue(results.any { (it as Request).uid == id })

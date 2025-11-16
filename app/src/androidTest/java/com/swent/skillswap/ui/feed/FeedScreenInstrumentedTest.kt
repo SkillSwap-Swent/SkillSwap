@@ -27,7 +27,7 @@ import com.swent.skillswap.model.offer.FeedControllerFactory
 import com.swent.skillswap.model.offer.RecommendationEngine
 import com.swent.skillswap.model.offer.ThumbnailRepository
 import com.swent.skillswap.model.post.*
-import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.feedScreen.FeedScreen
 import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
 import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
@@ -73,7 +73,7 @@ class FeedScreenInstrumentedTest {
             title = title,
             description = "Valid description for $title",
             ownerId = ownerId,
-            tags = setOf(PostTag.ONE_TIME).toList(),
+            tags = setOf(SkillTag.MACHINE_DESIGN).toList(),
             expiry = expiry,
             creation = now,
             status = PostStatus.POSTED,
