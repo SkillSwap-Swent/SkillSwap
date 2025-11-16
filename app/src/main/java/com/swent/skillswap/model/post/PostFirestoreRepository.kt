@@ -5,6 +5,7 @@
  */
 package com.swent.skillswap.model.post
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -16,6 +17,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
 
@@ -44,7 +46,6 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             val query: Query =
                 buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
             var posts = query.get().await().map { documentToPost(it) }
-
             if (userLocation != null && maxDistanceKm != null) {
                 val epsilon = 0.05
                 posts =
@@ -182,7 +183,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             requireField(
                 "tags",
                 (document.get("tags") as? List<*>)
-                    ?.map { safeEnum<PostTag>(it.toString()) }
+                    ?.map { safeEnum<SkillTag>(it.toString()) }
                     ?.toSet()
             )
         val paymentMethod =
