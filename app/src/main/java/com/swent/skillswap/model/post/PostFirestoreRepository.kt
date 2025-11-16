@@ -5,7 +5,6 @@
  */
 package com.swent.skillswap.model.post
 
-import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -16,7 +15,6 @@ import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
-import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.tasks.await
