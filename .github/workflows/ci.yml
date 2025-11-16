@@ -185,6 +185,15 @@ jobs:
 
       - run: chmod +x ./gradlew
 
+      - name: Decode secrets
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
+          else
+            echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
+          fi
 
 
       - name: Download android coverage
