@@ -47,6 +47,7 @@ object EditUserTags {
     const val GENERAL_ERROR = "edit_user_general_error"
     const val SUCCESS_MESSAGE = "edit_user_success_message"
     const val PROFILE_PICTURE_TEXTFIELD = "edit_user_profile_picture_textfield"
+    const val PROFILE_PICTURE_CONTENT = "edit_user_profile_picture_content"
 }
 
 
@@ -93,7 +94,7 @@ fun EditUserScreen(
                             model = user.profilePicture,
                             contentDescription = "Profil picture",
                             modifier =
-                                Modifier.size(120.dp).clip(CircleShape).align(Alignment.TopCenter),
+                                Modifier.size(120.dp).clip(CircleShape).align(Alignment.TopCenter).testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
                             contentScale = ContentScale.Crop
                         )
                     } else {
