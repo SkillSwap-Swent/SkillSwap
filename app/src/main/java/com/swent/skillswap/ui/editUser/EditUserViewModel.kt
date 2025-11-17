@@ -145,32 +145,20 @@ class EditUserViewModel(
         )
     }
 
-    /** Sets the email of the edited user after validating its format. */
-    fun setEmail(email: String) {
-        setField(
-            input = email,
-            precondition = { Patterns.EMAIL_ADDRESS.matcher(it).matches() },
-            applyToUser = { user, value -> user.copy(email = value) },
-            applyToError = { _uiState.update { it.copy(emailError = "Invalid email format") } },
-            clearError = { it.copy(emailError = null) }
-        )
-    }
-
-    /* THE NEXT FUNCTION ARE NOT USED YET, THEN ON COMMENT FOR NOW TO MAKE LINE COVERAGE HAPPY
-
-
     /** Sets the profile picture URL of the edited user. */
     fun setProfilePicture(url: String) {
         setField(
             input = url,
-            precondition = { true }, // Better validation to be added later
+            precondition = { it.isNotBlank() },
             applyToUser = { user, value -> user.copy(profilePicture = value) },
-            applyToError = { /* No error handling for now */},
+            applyToError = {
+                _uiState.update { it.copy(profilePictureError = "Invalid URL") }
+            },
             clearError = { it.copy(profilePictureError = null) }
         )
     }
 
-     */
+
     /** Sets the skill set of the edited user */
     fun setSkills(skills: Set<Skill>) {
         setField(
