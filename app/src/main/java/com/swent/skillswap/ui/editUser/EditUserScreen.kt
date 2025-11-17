@@ -142,7 +142,7 @@ fun EditUserScreen(
 
                 /** Profile picture URL Field - to be implemented later */
                 SkillSwapOutlinedTextField(
-                    value = (user?.profilePicture ?: "Put your profile picture URL here"),
+                    value = url,
                     onValueChange = {
                         url = it
                         vm.setProfilePicture(url)
