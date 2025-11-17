@@ -58,7 +58,7 @@ class FakePostRepository : PostRepository {
         type: PostType,
         titleContains: String,
         ownerId: String,
-        paymentMethod: PaymentMethod,
+        paymentMethod: PaymentMethod?,
         tags: Set<EveryTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
