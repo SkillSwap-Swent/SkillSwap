@@ -29,10 +29,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepositery
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -42,7 +46,10 @@ object EditUserTags {
     const val PROFILE_PICTURE = "edit_user_profile_picture"
     const val GENERAL_ERROR = "edit_user_general_error"
     const val SUCCESS_MESSAGE = "edit_user_success_message"
+    const val PROFILE_PICTURE_TEXTFIELD = "edit_user_profile_picture_textfield"
 }
+
+
 
 /** Displays the edit user screen. */
 @Composable
@@ -52,8 +59,9 @@ fun EditUserScreen(
 ) {
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
-
     var username by remember { mutableStateOf(user?.username ?: "") }
+    var url by remember { mutableStateOf(user?.profilePicture ?: "") }
+
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
     Scaffold() { paddingValues ->
@@ -127,6 +135,22 @@ fun EditUserScreen(
                     supportText =
                         if (uiState.usernameError != null) uiState.usernameError!! else "",
                     modifier = Modifier.fillMaxWidth().testTag(EditUserTags.USERNAME_TEXTFIELD)
+                )
+
+                Spacer(modifier = Modifier.weight(0.05f))
+
+                /** Profile picture URL Field - to be implemented later */
+                SkillSwapOutlinedTextField(
+                    value = (user?.profilePicture ?: "Put your profile picture URL here"),
+                    onValueChange = {
+                        url = it
+                        vm.setProfilePicture(url)
+                    },
+                    label = "profile picture URL",
+                    placeholder = "Put your profile picture URL here",
+                    supportText =
+                        if (uiState.profilePictureError != null) uiState.profilePictureError!! else "",
+                    modifier = Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.weight(0.05f))
@@ -208,7 +232,7 @@ private class FakeUserRepository : UserRepositery {
             uid = userID,
             username = "John Doe",
             email = "john.doe@example.com",
-            profilePicture = "",
+            profilePicture = "https://upload.wikimedia.org/wikipedia/en/thumb/9/96/Meme_Man_on_transparent_background.webp/316px-Meme_Man_on_transparent_background.webp.png",
             skillSet = emptySet(),
             rating = 4.5f,
             availability = emptyList()
@@ -226,6 +250,10 @@ private class FakeUserRepository : UserRepositery {
     override suspend fun deleteUser(userID: String) {
         /* no-op */
     }
+
+    override suspend fun userExists(userId: String): Boolean {
+        return true
+    }
 }
 
 @Preview(showBackground = true)
@@ -233,8 +261,8 @@ private class FakeUserRepository : UserRepositery {
 fun EditUserScreenPreview() {
     SkillSwapAppTheme {
         EditUserScreen(
-            // vm = EditUserViewModel(repo = FakeUserRepository())
+             vm = EditUserViewModel(repo = FakeUserRepository())
         )
     }
-}
-*/
+}*/
+
