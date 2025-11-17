@@ -79,12 +79,18 @@ jobs:
           fi
       - name: Run unit tests + coverage
         run: ./gradlew check --parallel --build-cache
-        # upload unit test result to be use on the sonar job
+      # upload unit test result to be use on the sonar job
       - name: Upload unit test result
         uses: actions/upload-artifact@v4
         with:
           name: unit-result
           path: app/build/test-results/testDebugUnitTest/
+      # upload unit test coverage to be use on the sonar job
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-coverage
+          path: app/build/outputs/unit_test_code_coverage/
   #run android test
   android-tests:
     runs-on: ubuntu-latest
@@ -161,11 +167,17 @@ jobs:
             export RUNNING_ON_CI=true
             ./gradlew connectedCheck --parallel --build-cache -PRUNNING_ON_CI=$RUNNING_ON_CI
       # upload androit test result to be use on the sonar job
+      - name: Upload android test result
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-result
+          path: app/build/reports/coverage/androidTest/debug/connected/
+      # upload androit test coverage to be use on the sonar job
       - name: Upload android coverage
         uses: actions/upload-artifact@v4
         with:
           name: android-coverage
-          path: app/build/reports/coverage/androidTest/debug/connected/
+          path: app/build/outputs/code_coverage/debugAndroidTest/
   #upload every things to sonar
   sonar:
     runs-on: ubuntu-latest
@@ -195,12 +207,22 @@ jobs:
             echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
           fi
 
-
       - name: Download android coverage
         uses: actions/download-artifact@v4
         with:
           name: android-coverage
+          path: app/build/outputs/code_coverage/debugAndroidTest/
+      - name: Download android test result
+        uses: actions/download-artifact@v4
+        with:
+          name: android-result
           path: app/build/reports/coverage/androidTest/debug/connected/
+
+      - name: Download unit test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-coverage
+          path: app/build/outputs/unit_test_code_coverage/
 
       - name: Download unit test result
         uses: actions/download-artifact@v4
