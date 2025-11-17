@@ -98,7 +98,8 @@ enum class PostType {
     /** A post where a user is requesting a skill or service. */
     REQUEST,
     /** A post where a user is offering a skill or service. */
-    OFFER
+    OFFER,
+    TESTER
 }
 
 /** Enum representing the possible payment methods for a skill exchange. */
