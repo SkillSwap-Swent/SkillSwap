@@ -209,6 +209,12 @@ class AuthGoogleTest : TestCase() {
                 CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.MACHINE_DESIGN,
                 useUnmergedTree = true
             )
+            .performScrollTo()
+        composeTestRule
+            .onNodeWithTag(
+                CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.MACHINE_DESIGN,
+                useUnmergedTree = true
+            )
             .performClick()
 
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
