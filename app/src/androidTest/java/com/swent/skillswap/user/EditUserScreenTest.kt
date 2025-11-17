@@ -278,6 +278,10 @@ class EditUserScreenTest : TestCase() {
             .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
             .performTextInput("UpdatedChef")
 
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+            .performTextInput("https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png")
+
         // Check that UI state is updated
         assert(viewModel.uiState.value.editedUser!!.username == "UpdatedChef")
 
@@ -292,6 +296,8 @@ class EditUserScreenTest : TestCase() {
         val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
         assert(editedUser.username == "UpdatedChef")
-        // Email is no longer editable in EditUserScreen, so we don't assert it here
+        assert(editedUser.profilePicture == "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png")
+
+        composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).performScrollTo().assertIsDisplayed()
     }
 }
