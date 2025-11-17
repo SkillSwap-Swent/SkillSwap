@@ -29,14 +29,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.model.user.User
-import com.swent.skillswap.model.user.UserRepositery
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -50,8 +46,6 @@ object EditUserTags {
     const val PROFILE_PICTURE_CONTENT = "edit_user_profile_picture_content"
 }
 
-
-
 /** Displays the edit user screen. */
 @Composable
 fun EditUserScreen(
@@ -62,7 +56,6 @@ fun EditUserScreen(
     val user = uiState.editedUser
     var username by remember { mutableStateOf(user?.username ?: "") }
     var url by remember { mutableStateOf(user?.profilePicture ?: "") }
-
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
     Scaffold() { paddingValues ->
@@ -94,7 +87,10 @@ fun EditUserScreen(
                             model = user.profilePicture,
                             contentDescription = "Profil picture",
                             modifier =
-                                Modifier.size(120.dp).clip(CircleShape).align(Alignment.TopCenter).testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
+                                Modifier.size(120.dp)
+                                    .clip(CircleShape)
+                                    .align(Alignment.TopCenter)
+                                    .testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -150,8 +146,10 @@ fun EditUserScreen(
                     label = "profile picture URL",
                     placeholder = "Put your profile picture URL here",
                     supportText =
-                        if (uiState.profilePictureError != null) uiState.profilePictureError!! else "",
-                    modifier = Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+                        if (uiState.profilePictureError != null) uiState.profilePictureError!!
+                        else "",
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.weight(0.05f))
@@ -266,4 +264,3 @@ fun EditUserScreenPreview() {
         )
     }
 }*/
-

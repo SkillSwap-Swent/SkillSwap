@@ -27,7 +27,6 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -291,7 +290,9 @@ class EditUserScreenTest : TestCase() {
 
         composeTestRule
             .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performTextInput("https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png")
+            .performTextInput(
+                "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png"
+            )
 
         // Check that UI state is updated
         assertEquals("UpdatedChef", viewModel.uiState.value.editedUser!!.username)
@@ -304,15 +305,21 @@ class EditUserScreenTest : TestCase() {
 
         assertNotNull(Firebase.auth.currentUser)
 
-        step("Verify user data is updated in repository"){
+        step("Verify user data is updated in repository") {
             runBlocking {
                 val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
                 assertEquals("UpdatedChef", editedUser.username)
-                assertEquals("https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png", editedUser.profilePicture)
+                assertEquals(
+                    "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png",
+                    editedUser.profilePicture
+                )
             }
         }
 
-        composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).performScrollTo().assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 }

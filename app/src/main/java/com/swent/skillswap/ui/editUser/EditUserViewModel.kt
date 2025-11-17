@@ -4,7 +4,6 @@
  */
 package com.swent.skillswap.ui.editUser
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
@@ -151,13 +150,10 @@ class EditUserViewModel(
             input = url,
             precondition = { it.isNotBlank() },
             applyToUser = { user, value -> user.copy(profilePicture = value) },
-            applyToError = {
-                _uiState.update { it.copy(profilePictureError = "Invalid URL") }
-            },
+            applyToError = { _uiState.update { it.copy(profilePictureError = "Invalid URL") } },
             clearError = { it.copy(profilePictureError = null) }
         )
     }
-
 
     /** Sets the skill set of the edited user */
     fun setSkills(skills: Set<Skill>) {
