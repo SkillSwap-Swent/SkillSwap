@@ -11,6 +11,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Mail
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -222,7 +225,8 @@ fun UsernameScreen(vm: CreateAccountViewModel) {
             supportText = uiState.usernameError,
             onValueChange = { vm.onUsernameChange(it) },
             label = "Username",
-            placeholder = "username",
+            leadingIcon = { Icon(Icons.Outlined.Person, contentDescription = "Person Icon") },
+            placeholder = "examplename",
             modifier =
                 Modifier.align(Alignment.CenterHorizontally)
                     .testTag(CreateAccountTags.USERNAME_FIELD)
@@ -249,6 +253,7 @@ fun EmailScreen(vm: CreateAccountViewModel) {
             onValueChange = { vm.onEmailChange(it) },
             label = "Email",
             placeholder = "your.email@gmail.com",
+            leadingIcon = { Icon(Icons.Outlined.Mail, contentDescription = "Mail Icon") },
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Email,
