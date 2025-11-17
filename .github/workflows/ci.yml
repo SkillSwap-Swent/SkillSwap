@@ -217,7 +217,10 @@ jobs:
         with:
           name: android-result
           path: app/build/reports/coverage/androidTest/debug/connected/
-
+      - name: Debug class files
+        run: |
+          echo "=== Any .class files? ==="
+          find app/build -name "*.class" | head || echo "No class files found"
       - name: Download unit test coverage
         uses: actions/download-artifact@v4
         with:
