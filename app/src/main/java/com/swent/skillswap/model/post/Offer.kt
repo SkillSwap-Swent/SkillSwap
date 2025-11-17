@@ -6,7 +6,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.EveryTag
 
 data class Offer(
-    override val uid: String,
+    override val uid: Array,
     override val title: String,
     override val description: String,
     override val ownerId: String,
