@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
