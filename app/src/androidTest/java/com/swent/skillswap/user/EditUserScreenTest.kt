@@ -24,7 +24,10 @@ import com.swent.skillswap.ui.editUser.EditUserTags
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.utils.FirebaseEmulator
+import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -182,7 +185,7 @@ class EditUserScreenTest : TestCase() {
             composeTestRule.waitForIdle()
 
             // Verify error disappears
-            assert(viewModel.uiState.value.usernameError == null)
+            assertNull(viewModel.uiState.value.usernameError)
         }
     }
 
@@ -258,7 +261,7 @@ class EditUserScreenTest : TestCase() {
     }
 
     @Test
-    fun validateButtonPerformsUserUpdate() = runBlocking {
+    fun validateButtonPerformsUserUpdate() = run {
         composeTestRule.setContent {
             SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
         }
@@ -280,10 +283,18 @@ class EditUserScreenTest : TestCase() {
 
         composeTestRule
             .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+            .performScrollTo()
+            .performTextClearance()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
             .performTextInput("https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png")
 
         // Check that UI state is updated
-        assert(viewModel.uiState.value.editedUser!!.username == "UpdatedChef")
+        assertEquals("UpdatedChef", viewModel.uiState.value.editedUser!!.username)
 
         // Click validate button
         composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
@@ -293,10 +304,14 @@ class EditUserScreenTest : TestCase() {
 
         assertNotNull(Firebase.auth.currentUser)
 
-        val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
+        step("Verify user data is updated in repository"){
+            runBlocking {
+                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
-        assert(editedUser.username == "UpdatedChef")
-        assert(editedUser.profilePicture == "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png")
+                assertEquals("UpdatedChef", editedUser.username)
+                assertEquals("https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png", editedUser.profilePicture)
+            }
+        }
 
         composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).performScrollTo().assertIsDisplayed()
     }
