@@ -17,6 +17,7 @@ import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.user.calculateDistance
+import com.swent.skillswap.utils.RepositoryException
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
@@ -302,5 +303,3 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         )
     }
 }
-
-class RepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)
