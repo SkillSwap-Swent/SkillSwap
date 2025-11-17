@@ -206,6 +206,12 @@ class AuthClassicTest : TestCase() {
                 CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.MACHINE_DESIGN.name,
                 useUnmergedTree = true
             )
+            .performScrollTo()
+        composeTestRule
+            .onNodeWithTag(
+                CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.MACHINE_DESIGN.name,
+                useUnmergedTree = true
+            )
             .performClick()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
