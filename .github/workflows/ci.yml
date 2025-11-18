@@ -206,7 +206,9 @@ jobs:
           else
             echo ":⚠️:GOOGLE_SERVICES secret is not set. google-services.json will not be created."
           fi
-
+      #not pretty but didn't want to try to get compiled class from assemble task
+      - name: Build debug classes
+        run: ./gradlew :app:assembleDebug --build-cache
       - name: Download android coverage
         uses: actions/download-artifact@v4
         with:
@@ -217,7 +219,6 @@ jobs:
         with:
           name: android-result
           path: app/build/reports/coverage/androidTest/debug/connected/
-
       - name: Download unit test coverage
         uses: actions/download-artifact@v4
         with:
