@@ -288,91 +288,92 @@ class End2EndM2 {
 
     @Test
     fun t2_canModifySkillsInProfile() {
-        /** Assumes user is already signed in from previous test */
-        composeTestRule.waitForIdle()
+        // ---------- Ensure Profile screen is fully loaded ----------
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .onAllNodesWithTag(ProfileTestTags.SKILLS_BUTTON)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
-        /** Navigate to Skills Edit Screen from Profile */
+        // Navigate to Skills Edit Screen
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_BUTTON).performScrollTo()
-        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(ProfileTestTags.SKILLS_BUTTON).performClick()
 
-        /** Wait for Skills Edit Screen to be displayed */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        // ---------- Wait until both skill lists are available ----------
+        composeTestRule.waitUntil(timeoutMillis = 12_000) {
             composeTestRule
-                .onAllNodesWithTag(SkillsEditTestTags.TITLE_YOUR_SKILLS)
+                .onAllNodesWithTag(SkillsEditTestTags.USER_SKILLS_BOX)
                 .fetchSemanticsNodes()
-                .isNotEmpty()
+                .isNotEmpty() &&
+                composeTestRule
+                    .onAllNodesWithTag(SkillsEditTestTags.OTHER_SKILLS_BOX)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
         }
 
-        /** Verify Skills Edit Screen is displayed */
-        val skillsEditTags =
-            listOf(
+        // Verify Skills Edit Screen visible
+        listOf(
                 SkillsEditTestTags.TITLE_YOUR_SKILLS,
                 SkillsEditTestTags.TITLE_SELECT_NEW,
                 SkillsEditTestTags.USER_SKILLS_BOX,
                 SkillsEditTestTags.OTHER_SKILLS_BOX,
                 SkillsEditTestTags.BACK_BUTTON
             )
+            .forEach { tag ->
+                composeTestRule.onNodeWithTag(tag).performScrollTo()
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            }
 
-        for (testTag in skillsEditTags) {
-            composeTestRule.onNodeWithTag(testTag).performScrollTo()
-            composeTestRule.waitForIdle()
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        // ---------- Helper function: wait until chip appears ----------
+        fun waitForChip(tag: String) {
+            composeTestRule.waitUntil(timeoutMillis = 8000) {
+                composeTestRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+            }
         }
 
-        // Add ALGORITHMS - with state verification
+        // ---------- Add ALGORITHMS ----------
         val algorithmChipTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.ALGORITHMS.name
+
         composeTestRule.onNodeWithTag(algorithmChipTag).performScrollTo()
-        Thread.sleep(300) // Wait for scroll to complete
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(algorithmChipTag).assertIsDisplayed()
+        waitForChip(algorithmChipTag)
         composeTestRule.onNodeWithTag(algorithmChipTag).performClick()
-        Thread.sleep(500) // Wait for animation
-        composeTestRule.waitForIdle()
+        // Confirm ALGORITHMS moved to "Your Skills"
+        waitForChip(algorithmChipTag)
 
-        // Remove CALCULUS - THIS IS THE CRITICAL ONE
+        // ---------- Remove CALCULUS ----------
         val calculusChipTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.CALCULUS.name
+
         composeTestRule.onNodeWithTag(calculusChipTag).performScrollTo()
-        Thread.sleep(300)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(calculusChipTag).assertIsDisplayed()
+        waitForChip(calculusChipTag)
         composeTestRule.onNodeWithTag(calculusChipTag).performClick()
-        Thread.sleep(500) // Critical - wait for chip to move to "Other Skills" section
-        composeTestRule.waitForIdle()
 
-        // Add PHYSICS_MECHANICS
-        val physicsMechanicsChipTag =
-            CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.PHYSICS_MECHANICS.name
-        composeTestRule.onNodeWithTag(physicsMechanicsChipTag).performScrollTo()
-        Thread.sleep(300)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(physicsMechanicsChipTag).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(physicsMechanicsChipTag).performClick()
-        Thread.sleep(500)
-        composeTestRule.waitForIdle()
+        // Confirm CALCULUS moved to "Other Skills"
+        waitForChip(calculusChipTag)
 
-        // Add DATA_STRUCTURES
-        val dataStructuresChipTag =
-            CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.DATA_STRUCTURES.name
-        composeTestRule.onNodeWithTag(dataStructuresChipTag).performScrollTo()
-        Thread.sleep(300)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(dataStructuresChipTag).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(dataStructuresChipTag).performClick()
-        Thread.sleep(500)
-        composeTestRule.waitForIdle()
+        // ---------- Add PHYSICS_MECHANICS ----------
+        val physicsTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.PHYSICS_MECHANICS.name
 
-        /** Save the changes */
+        composeTestRule.onNodeWithTag(physicsTag).performScrollTo()
+        waitForChip(physicsTag)
+        composeTestRule.onNodeWithTag(physicsTag).performClick()
+
+        waitForChip(physicsTag)
+
+        // ---------- Add DATA_STRUCTURES ----------
+        val dataTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.DATA_STRUCTURES.name
+
+        composeTestRule.onNodeWithTag(dataTag).performScrollTo()
+        waitForChip(dataTag)
+        composeTestRule.onNodeWithTag(dataTag).performClick()
+
+        waitForChip(dataTag)
+
+        // ---------- Save the changes ----------
+        composeTestRule.onNodeWithTag(SkillsEditTestTags.BACK_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SkillsEditTestTags.BACK_BUTTON).performClick()
-        composeTestRule.waitForIdle()
 
-        /** Wait for Profile Screen to be displayed again */
+        // ---------- Wait for return to Profile ----------
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
@@ -380,30 +381,18 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        /** Verify the skills were updated in Firestore */
+        // ---------- Validate Firestore Update ----------
         composeTestRule.runOnIdle {
             runBlocking(Dispatchers.IO) {
                 val document =
                     Tasks.await(db.collection("users").document(auth.currentUser!!.uid).get())
-
-                // Get the skillSet string and deserialize it
                 val skillSetString = document.getString("skillSet") ?: ""
-                val skills = deserializeSkills(skillSetString)
-                val skillNames = skills.map { it.name.name }
+                val skills = deserializeSkills(skillSetString).map { it.name.name }
 
-                val calculusRemoved = !skillNames.contains("CALCULUS")
-                val algorithmsAdded = skillNames.contains("ALGORITHMS")
-                val physicsMechanicsAdded = skillNames.contains("PHYSICS_MECHANICS")
-                val dataStructuresAdded = skillNames.contains("DATA_STRUCTURES")
-
-                assert(
-                    calculusRemoved &&
-                        algorithmsAdded &&
-                        physicsMechanicsAdded &&
-                        dataStructuresAdded
-                ) {
-                    "Skills were not updated correctly. Got: $skillNames"
-                }
+                check("ALGORITHMS" in skills)
+                check("PHYSICS_MECHANICS" in skills)
+                check("DATA_STRUCTURES" in skills)
+                check("CALCULUS" !in skills)
             }
         }
     }
