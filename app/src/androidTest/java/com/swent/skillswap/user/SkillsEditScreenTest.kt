@@ -19,6 +19,10 @@ import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.SkillsEditScreen
 import com.swent.skillswap.ui.user.SkillsEditTestTags
+import com.swent.skillswap.ui.user.SkillsEditTestTags.OTHER_SKILLS_BOX
+import com.swent.skillswap.ui.user.SkillsEditTestTags.OTHER_SKILLS_FLOW
+import com.swent.skillswap.ui.user.SkillsEditTestTags.USER_SKILLS_BOX
+import com.swent.skillswap.ui.user.SkillsEditTestTags.USER_SKILLS_FLOW
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -187,7 +191,9 @@ class SkillsEditScreenTest : TestCase() {
 
             // Wait for chip then click it
             waitForNodeToExist(chipTag)
-            composeTestRule.onNodeWithTag(chipTag).performScrollTo().performClick()
+            composeTestRule.onNodeWithTag(USER_SKILLS_BOX).performScrollTo()
+            composeTestRule.onNodeWithTag(chipTag, useUnmergedTree = true).performScrollTo()
+            composeTestRule.onNodeWithTag(chipTag, useUnmergedTree = true).performClick()
 
             // Wait until it's removed from the VM
             waitForSkillInViewModel(SkillTag.DATABASES, shouldExist = false)
@@ -223,7 +229,9 @@ class SkillsEditScreenTest : TestCase() {
 
             // Click on the ALGORITHMS pill in "other skills"
             waitForNodeToExist(chipTag)
-            composeTestRule.onNodeWithTag(chipTag).performScrollTo().performClick()
+            composeTestRule.onNodeWithTag(OTHER_SKILLS_BOX).performScrollTo()
+            composeTestRule.onNodeWithTag(chipTag, useUnmergedTree = true).performScrollTo()
+            composeTestRule.onNodeWithTag(chipTag, useUnmergedTree = true).performClick()
 
             // Wait for ViewModel state to update
             waitForSkillInViewModel(SkillTag.ALGORITHMS, shouldExist = true)
