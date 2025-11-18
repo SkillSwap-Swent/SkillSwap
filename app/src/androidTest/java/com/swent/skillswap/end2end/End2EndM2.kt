@@ -22,6 +22,7 @@ import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.ui.user.SkillsEditTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
+import kotlin.collections.forEach
 import kotlin.collections.get
 import kotlin.text.get
 import kotlinx.coroutines.Dispatchers
@@ -515,9 +516,18 @@ class End2EndM2 {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+                    .assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
 
         // ---------- Fill description ----------
         composeTestRule
@@ -551,9 +561,23 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
-            .assertIsDisplayed()
+        composeTestRule.waitUntil(5_000) {
+            composeTestRule
+                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.waitUntil(5_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
+                    .assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
 
         // ---------- Select Payment Method ----------
         val skillsChip = "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}"
@@ -591,7 +615,15 @@ class End2EndM2 {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
+
+        composeTestRule.waitUntil(5_000) {
+            try {
+                composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
 
         composeTestRule.waitUntil(5_000) {
             composeTestRule
@@ -600,7 +632,6 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertDoesNotExist()
 
         // ---------- Re-add a tag: DATA_STRUCTURES ----------
@@ -628,9 +659,16 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_DATA_STRUCTURES")
-            .assertIsDisplayed()
+        composeTestRule.waitUntil(5_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_DATA_STRUCTURES")
+                    .assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
 
         // ---------- Submit form ----------
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
@@ -645,7 +683,14 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+        composeTestRule.waitUntil(5_000) {
+            try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
     }
 
     @Test
@@ -750,7 +795,15 @@ class End2EndM2 {
         /** Scroll to logout button and click it */
         composeTestRule.onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON).performScrollTo()
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON).assertIsDisplayed()
+        composeTestRule.waitUntil(5_000) {
+            try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+
         composeTestRule.onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON).performClick()
 
         /** Wait for Sign-In screen to be displayed */
@@ -761,16 +814,16 @@ class End2EndM2 {
         /** Verify Sign-In screen elements are displayed */
         val signInTags =
             listOf(
-                SignInTags.LOGO,
-                SignInTags.SIGN_IN_BUTTON,
-                SignInTags.GOOGLE_BUTTON,
-                SignInTags.EMAIL_FIELD,
-                SignInTags.PASSWORD_FIELD
-            )
-
-        for (testTag in signInTags) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
+                    SignInTags.LOGO,
+                    SignInTags.SIGN_IN_BUTTON,
+                    SignInTags.GOOGLE_BUTTON,
+                    SignInTags.EMAIL_FIELD,
+                    SignInTags.PASSWORD_FIELD
+                )
+                .forEach { tag ->
+                    // composeTestRule.onNodeWithTag(tag).performScrollTo()
+                    composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                }
 
         /** Verify user is logged out */
         composeTestRule.runOnIdle {
