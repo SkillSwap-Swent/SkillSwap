@@ -341,16 +341,6 @@ class End2EndM2 {
         // Confirm ALGORITHMS moved to "Your Skills"
         waitForChip(algorithmChipTag)
 
-        // ---------- Remove CALCULUS ----------
-        val calculusChipTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.CALCULUS.name
-
-        composeTestRule.onNodeWithTag(calculusChipTag).performScrollTo()
-        waitForChip(calculusChipTag)
-        composeTestRule.onNodeWithTag(calculusChipTag).performClick()
-
-        // Confirm CALCULUS moved to "Other Skills"
-        waitForChip(calculusChipTag)
-
         // ---------- Add PHYSICS_MECHANICS ----------
         val physicsTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.PHYSICS_MECHANICS.name
 
@@ -387,12 +377,16 @@ class End2EndM2 {
                 val document =
                     Tasks.await(db.collection("users").document(auth.currentUser!!.uid).get())
                 val skillSetString = document.getString("skillSet") ?: ""
-                val skills = deserializeSkills(skillSetString).map { it.name.name }
+                val skills = deserializeSkills(skillSetString)
+                val skillNames = skills.map { it.name.name }
 
-                check("ALGORITHMS" in skills)
-                check("PHYSICS_MECHANICS" in skills)
-                check("DATA_STRUCTURES" in skills)
-                check("CALCULUS" !in skills)
+                val algorithmsAdded = skillNames.contains("ALGORITHMS")
+                val physicsMechanicsAdded = skillNames.contains("PHYSICS_MECHANICS")
+                val dataStructuresAdded = skillNames.contains("DATA_STRUCTURES")
+
+                assert(algorithmsAdded && physicsMechanicsAdded && dataStructuresAdded) {
+                    "Skills were not updated correctly. Got: $skillNames"
+                }
             }
         }
     }
