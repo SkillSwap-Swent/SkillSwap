@@ -484,20 +484,17 @@ class End2EndM2 {
 
         // ---------- Verify UI ----------
 
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            try {
-                composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
-                composeTestRule
-                    .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
-                    .assertIsDisplayed()
-                composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
+        listOf(
+                RequestScreenTags.BACK_BUTTON,
+                RequestScreenTags.TITLE_INPUT,
+                RequestScreenTags.DESCRIPTION_INPUT,
+                RequestScreenTags.TAGS_INPUT,
+                RequestScreenTags.CREATE_BUTTON
+            )
+            .forEach { tag ->
+                composeTestRule.onNodeWithTag(tag).performScrollTo()
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
             }
-        }
 
         // ---------- Fill title ----------
         composeTestRule
@@ -515,18 +512,6 @@ class End2EndM2 {
                 .onAllNodesWithTag(RequestScreenTags.ERROR_MESSAGE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
-        }
-
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            try {
-                composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
-                composeTestRule
-                    .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
-                    .assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
         }
 
         // ---------- Fill description ----------
@@ -568,17 +553,6 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        composeTestRule.waitUntil(5_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
-                    .assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
-
         // ---------- Select Payment Method ----------
         val skillsChip = "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}"
 
@@ -617,15 +591,6 @@ class End2EndM2 {
         }
 
         composeTestRule.waitUntil(5_000) {
-            try {
-                composeTestRule.onNodeWithTag(RequestScreenTags.ERROR_MESSAGE).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
-
-        composeTestRule.waitUntil(5_000) {
             composeTestRule
                 .onAllNodesWithTag(RequestScreenTags.TAGS_INPUT)
                 .fetchSemanticsNodes()
@@ -657,17 +622,6 @@ class End2EndM2 {
                 .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_DATA_STRUCTURES")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
-        }
-
-        composeTestRule.waitUntil(5_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_DATA_STRUCTURES")
-                    .assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
         }
 
         // ---------- Submit form ----------
@@ -812,18 +766,16 @@ class End2EndM2 {
         }
 
         /** Verify Sign-In screen elements are displayed */
-        val signInTags =
-            listOf(
-                    SignInTags.LOGO,
-                    SignInTags.SIGN_IN_BUTTON,
-                    SignInTags.GOOGLE_BUTTON,
-                    SignInTags.EMAIL_FIELD,
-                    SignInTags.PASSWORD_FIELD
-                )
-                .forEach { tag ->
-                    // composeTestRule.onNodeWithTag(tag).performScrollTo()
-                    composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
-                }
+        listOf(
+                SignInTags.SIGN_IN_BUTTON,
+                SignInTags.GOOGLE_BUTTON,
+                SignInTags.EMAIL_FIELD,
+                SignInTags.PASSWORD_FIELD
+            )
+            .forEach { tag ->
+                composeTestRule.onNodeWithTag(tag).performScrollTo()
+                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+            }
 
         /** Verify user is logged out */
         composeTestRule.runOnIdle {
