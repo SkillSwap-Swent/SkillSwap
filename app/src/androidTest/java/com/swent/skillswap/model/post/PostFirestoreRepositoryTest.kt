@@ -317,6 +317,7 @@ class PostFirestoreRepositoryTest {
                     type = PostType.REQUEST,
                     titleContains = "Kotlin",
                     userLocation = epflLocation,
+                    paymentMethod = PaymentMethod.SKILLSANDCASH,
                     maxDistanceKm = 10.0
                 )
 
