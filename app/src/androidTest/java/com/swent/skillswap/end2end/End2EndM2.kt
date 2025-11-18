@@ -322,37 +322,50 @@ class End2EndM2 {
 
         for (testTag in skillsEditTags) {
             composeTestRule.onNodeWithTag(testTag).performScrollTo()
+            composeTestRule.waitForIdle()
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
 
-        /** Add ALGORITHMS skill */
+        // Add ALGORITHMS - with state verification
         val algorithmChipTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.ALGORITHMS.name
         composeTestRule.onNodeWithTag(algorithmChipTag).performScrollTo()
+        Thread.sleep(300) // Wait for scroll to complete
         composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(algorithmChipTag).assertIsDisplayed()
         composeTestRule.onNodeWithTag(algorithmChipTag).performClick()
+        Thread.sleep(500) // Wait for animation
         composeTestRule.waitForIdle()
 
-        /** Remove CALCULUS skill from user's skills */
+        // Remove CALCULUS - THIS IS THE CRITICAL ONE
         val calculusChipTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.CALCULUS.name
         composeTestRule.onNodeWithTag(calculusChipTag).performScrollTo()
+        Thread.sleep(300)
         composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(calculusChipTag).assertIsDisplayed()
         composeTestRule.onNodeWithTag(calculusChipTag).performClick()
+        Thread.sleep(500) // Critical - wait for chip to move to "Other Skills" section
         composeTestRule.waitForIdle()
 
-        /** Add PHYSICS_MECHANICS skill */
+        // Add PHYSICS_MECHANICS
         val physicsMechanicsChipTag =
             CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.PHYSICS_MECHANICS.name
         composeTestRule.onNodeWithTag(physicsMechanicsChipTag).performScrollTo()
+        Thread.sleep(300)
         composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(physicsMechanicsChipTag).assertIsDisplayed()
         composeTestRule.onNodeWithTag(physicsMechanicsChipTag).performClick()
+        Thread.sleep(500)
         composeTestRule.waitForIdle()
 
-        /** Add DATA_STRUCTURES skill */
+        // Add DATA_STRUCTURES
         val dataStructuresChipTag =
             CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.DATA_STRUCTURES.name
         composeTestRule.onNodeWithTag(dataStructuresChipTag).performScrollTo()
+        Thread.sleep(300)
         composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(dataStructuresChipTag).assertIsDisplayed()
         composeTestRule.onNodeWithTag(dataStructuresChipTag).performClick()
+        Thread.sleep(500)
         composeTestRule.waitForIdle()
 
         /** Save the changes */
@@ -428,7 +441,7 @@ class End2EndM2 {
             )
 
         for (testTag in myPostsTags) {
-            composeTestRule.onNodeWithTag(testTag).performScrollTo()
+            // composeTestRule.onNodeWithTag(testTag).performScrollTo()
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
 

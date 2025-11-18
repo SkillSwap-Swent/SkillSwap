@@ -1,3 +1,6 @@
+/*
+ * Written with help of copilot to complete all repetitive code, and set up the companion object
+ */
 package com.swent.skillswap.end2end
 
 import androidx.compose.ui.test.*
@@ -30,6 +33,7 @@ class End2EndM1 {
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
     lateinit var auth: FirebaseAuth
 
+    /** Companion object to clear the Auth emulator after running all tests */
     companion object {
         private const val PROJECT_ID = "skillswap-93276"
 
@@ -67,6 +71,11 @@ class End2EndM1 {
     @OptIn(InternalTestApi::class)
     @Test
     fun completeUserFlow0_CreateAnAccountAndNavigate() {
+        /**
+         * NOTE: During this test, assert displays are wrapped in waitUntil with very big timeout,
+         * to compensate the CI emulator slowness. You may want to remove these waits when running
+         * tests locally for debugging.
+         */
         /** 1. Launch app and wait for setup */
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
@@ -169,6 +178,7 @@ class End2EndM1 {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
         composeTestRule.waitForIdle()
+        /* End of Create Account Screens */
 
         /** Wait until firestore auth operation completes and Profile Screen is displayed */
         composeTestRule.waitUntil(timeoutMillis = 60_000) {
@@ -188,8 +198,10 @@ class End2EndM1 {
 
     @Test
     fun completeUserFlow1_AutoSignInAndNavigate() {
+        /** The User is already sign in, hence the app should open directly on Profile Screen */
         composeTestRule.waitForIdle()
 
+        /** Wait until the previous test is done a the app is set up again */
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
@@ -200,9 +212,14 @@ class End2EndM1 {
         }
         composeTestRule.waitForIdle()
 
+        /** Perform Navigation Verification */
         navigateThroughAllScreensAfterAuthentification()
     }
 
+    /**
+     * Navigate through all main screens after authentication. Starting from Profile Screen, then to
+     * Feed Screen, and finally to the Chat Screen.
+     */
     fun navigateThroughAllScreensAfterAuthentification() {
         val visibleComposableProfile =
             listOf(
@@ -284,6 +301,7 @@ class End2EndM1 {
     fun finalTest_UserIsAuthentified() {
         composeTestRule.waitForIdle()
 
+        /** Verify that the user is correctly authenticated */
         val currentUser = FirebaseAuth.getInstance().currentUser
         assertNotNull(currentUser)
         assertEquals("bob@mail.com", currentUser!!.email)
