@@ -24,17 +24,5 @@ enum class SkillTag : EveryTag {
     SIGNAL_PROCESSING,
     MACHINE_DESIGN,
     PROJECT_MANAGEMENT,
-    ENGINEERING_ETHICS;
-
-    companion object {
-        init {
-            TagRegistry.register { value ->
-                try {
-                    valueOf(value)
-                } catch (_: IllegalArgumentException) {
-                    null
-                }
-            }
-        }
-    }
+    ENGINEERING_ETHICS
 }
