@@ -352,7 +352,7 @@ fun RequestScreen(
         }
     }
 }
-
+// NOSONAR_START
 @Preview(showBackground = true)
 @Composable
 fun NewRequestScreenPreview() {
@@ -370,3 +370,4 @@ fun NewRequestScreenPreview() {
         )
     }
 }
+// NOSONAR_END
