@@ -176,7 +176,8 @@ class End2EndM1 {
             try {
                 composeTestRule.onNodeWithTag(CreateAccountTags.TITLE).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.SKILLS_FLOW).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(skillTag).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(skillTag, useUnmergedTree = true).performScrollTo()
+                composeTestRule.onNodeWithTag(skillTag, useUnmergedTree = true).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
@@ -184,7 +185,7 @@ class End2EndM1 {
             }
         }
 
-        composeTestRule.onNodeWithTag(skillTag).performClick()
+        composeTestRule.onNodeWithTag(skillTag, useUnmergedTree = true).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
         composeTestRule.waitForIdle()
@@ -192,6 +193,7 @@ class End2EndM1 {
         /** Wait until firestore auth operation completes and Profile Screen is displayed */
         composeTestRule.waitUntil(timeoutMillis = 60_000) {
             try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).performScrollTo()
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
@@ -251,6 +253,7 @@ class End2EndM1 {
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 for (testTag in visibleComposableProfile) {
+                    composeTestRule.onNodeWithTag(testTag).performScrollTo()
                     composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
                 }
                 for (testTag in visibleComposableBotBar) {
