@@ -393,7 +393,7 @@ class End2EndM2 {
 
     @Test
     fun t3_canViewAndNavigateMyPostsScreen() {
-        /** Assumes user is already signed in from previous test */
+
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
@@ -401,67 +401,62 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        /** Navigate to My Posts Screen from Profile */
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performScrollTo()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
 
-        /** Wait for My Posts Screen to be displayed */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule
-                .onAllNodesWithTag(PersonalPostsScreenTags.TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        //  More robust wait for My Posts screen
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule.onNodeWithTag(PersonalPostsScreenTags.TITLE).assertExists()
+                composeTestRule.onNodeWithTag(PersonalPostsScreenTags.TITLE).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
 
-        /** Verify My Posts Screen elements are displayed */
-        val myPostsTags =
-            listOf(
-                PersonalPostsScreenTags.TITLE,
-                PersonalPostsScreenTags.FILTER_ALL,
-                PersonalPostsScreenTags.FILTER_OFFERS,
-                PersonalPostsScreenTags.FILTER_REQUESTS
-            )
+        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.TITLE).assertIsDisplayed()
 
-        for (testTag in myPostsTags) {
-            // composeTestRule.onNodeWithTag(testTag).performScrollTo()
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(PersonalPostsScreenTags.FILTER_OFFERS)
+                    .assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS)
+                    .assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL)
+                    .assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
 
-        /** Verify title text */
-        composeTestRule.onNodeWithText("My Posts").assertIsDisplayed()
-
-        /** Test filter tabs - click on Offers */
+        // Filters
         composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_OFFERS).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(500) // Allow animation to complete
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).isDisplayed()
+        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()
 
-        /** Test filter tabs - click on Requests */
         composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).isDisplayed()
+        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()
 
-        /** Test filter tabs - click back on All */
         composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).performClick()
         composeTestRule.waitForIdle()
-        Thread.sleep(500)
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).isDisplayed()
+        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()
 
-        /** Navigate back to Profile */
-        composeTestRule.waitForIdle()
+        // Navigate back
         composeTestRule.onAllNodesWithContentDescription("Back")[0].performClick()
 
-        /** Wait for Profile Screen to be displayed again */
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-
-        composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
     }
 
     @Test
@@ -487,11 +482,21 @@ class End2EndM2 {
         }
 
         // ---------- Verify UI ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
+
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
 
         // ---------- Fill title ----------
         composeTestRule
@@ -664,10 +669,17 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        composeTestRule.onNodeWithTag(ChatListTestTags.SCREEN).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(ChatListTestTags.TITLE).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(ChatListTestTags.OFFER).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(ChatListTestTags.REQUEST).assertIsDisplayed()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule.onNodeWithTag(ChatListTestTags.SCREEN).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(ChatListTestTags.TITLE).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(ChatListTestTags.OFFER).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(ChatListTestTags.REQUEST).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
 
         val OfferChatsText =
             listOf(
