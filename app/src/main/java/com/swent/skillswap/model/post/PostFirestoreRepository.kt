@@ -15,8 +15,8 @@ import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
-import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.user.calculateDistance
+import com.swent.skillswap.utils.RepositoryException
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
@@ -33,7 +33,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         type: PostType,
         titleContains: String,
         ownerId: String,
-        paymentMethod: PaymentMethod,
+        paymentMethod: PaymentMethod?,
         tags: Set<EveryTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
@@ -65,7 +65,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         ownerId: String,
         status: PostStatus?,
         titleContains: String,
-        paymentMethod: PaymentMethod,
+        paymentMethod: PaymentMethod?,
         tags: Set<EveryTag>,
         numberOfPosts: Long
     ): Query {
@@ -78,8 +78,9 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         if (status != null) {
             query = query.whereEqualTo("status", status)
         }
-        // PaymentMethod is an exhaustive list, always use whereEqualTo
-        query = query.whereEqualTo("paymentMethod", paymentMethod)
+        if (paymentMethod != null) {
+            query = query.whereEqualTo("paymentMethod", paymentMethod)
+        }
 
         // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
         // query, current implementation is limited to using the first 10 search keys, the rest are
@@ -182,7 +183,16 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             requireField(
                 "tags",
                 (document.get("tags") as? List<*>)
-                    ?.map { safeEnum<PostTag>(it.toString()) }
+                    ?.mapNotNull {
+                        try {
+                            EveryTag.valueOf(it.toString())
+                        } catch (e: IllegalArgumentException) {
+                            throw IllegalArgumentException(
+                                "Invalid tag entry: $it — ${e.message}",
+                                e
+                            )
+                        }
+                    }
                     ?.toSet()
             )
         val paymentMethod =
@@ -302,5 +312,3 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         )
     }
 }
-
-class RepositoryException(message: String, cause: Throwable? = null) : Exception(message, cause)

@@ -44,7 +44,7 @@ interface PostRepository {
         // optional filters
         titleContains: String = "",
         ownerId: String = "",
-        paymentMethod: PaymentMethod = PaymentMethod.SKILLSANDCASH,
+        paymentMethod: PaymentMethod? = null,
         tags: Set<EveryTag> = emptySet(),
         status: PostStatus? = null,
         userLocation: GeoPoint? = null,

@@ -58,7 +58,7 @@ class FakePostRepository : PostRepository {
         type: PostType,
         titleContains: String,
         ownerId: String,
-        paymentMethod: PaymentMethod,
+        paymentMethod: PaymentMethod?,
         tags: Set<EveryTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
@@ -78,7 +78,7 @@ class FakePostRepository : PostRepository {
                     titleContains.isEmpty() || it.title.contains(titleContains, ignoreCase = true)
                 }
                 .filter { ownerId.isEmpty() || it.ownerId == ownerId }
-                .filter { it.paymentMethod == paymentMethod }
+                .filter { paymentMethod == null || it.paymentMethod == paymentMethod }
                 .filter { status == null || it.status == status }
 
         // Filter by distance if location and maxDistance are provided
