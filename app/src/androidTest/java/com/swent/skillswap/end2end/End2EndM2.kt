@@ -22,12 +22,11 @@ import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.ui.user.SkillsEditTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
-import java.net.HttpURLConnection
-import java.net.URL
 import kotlin.collections.get
 import kotlin.text.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -49,30 +48,24 @@ class End2EndM2 {
 
         @BeforeClass
         @JvmStatic
-        fun clearAuthEmulatorAndFirestoreEmulators() {
-            FirebaseEmulator.startEmulator()
+        fun setupEmulator() {
+            FirebaseEmulator.reinitialize()
 
-            // Use the detected HOST from FirebaseEmulator
-            val emulatorUrl = "http://${FirebaseEmulator.HOST}:${FirebaseEmulator.AUTH_PORT}"
-            val url = URL("$emulatorUrl/emulator/v1/projects/$PROJECT_ID/accounts")
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        }
 
+        @AfterClass
+        @JvmStatic
+        fun tearDownFirebase() {
+
+            // Sign out before clearing
             try {
-                with(url.openConnection() as HttpURLConnection) {
-                    connectTimeout = 2000
-                    readTimeout = 2000
-                    requestMethod = "DELETE"
-                    val responseCode = responseCode
-                    if (responseCode != HttpURLConnection.HTTP_OK) {
-                        println("Warning: Failed to clear Auth emulator: $responseCode")
-                    }
-                    disconnect()
-                }
-            } catch (e: Exception) {
-                println(
-                    "Warning: Failed to connect to Auth emulator at ${FirebaseEmulator.HOST}: ${e.message}"
-                )
-            }
+                FirebaseAuth.getInstance().signOut()
+            } catch (_: Exception) {}
 
+            // Clear emulators AFTER this test class finishes
+            FirebaseEmulator.clearAuthEmulator()
             FirebaseEmulator.clearFirestoreEmulator()
         }
     }

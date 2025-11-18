@@ -1,4 +1,3 @@
-/*
 package com.swent.skillswap.end2end
 
 import androidx.compose.ui.test.*
@@ -12,8 +11,6 @@ import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
-import java.net.HttpURLConnection
-import java.net.URL
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import org.junit.AfterClass
@@ -39,41 +36,24 @@ class End2EndM1 {
         @BeforeClass
         @JvmStatic
         fun setupEmulator() {
-            FirebaseEmulator.startEmulator()
+            FirebaseEmulator.reinitialize()
+
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
 
         @AfterClass
         @JvmStatic
-        fun cleanupAuthEmulator() {
-            // Use the detected HOST from FirebaseEmulator
-            val emulatorUrl = "http://${FirebaseEmulator.HOST}:${FirebaseEmulator.AUTH_PORT}"
-            val url = URL("$emulatorUrl/emulator/v1/projects/$PROJECT_ID/accounts")
-            val maxAttempts = 20
-            var attempt = 0
-            var cleared = false
+        fun tearDownFirebase() {
 
-            while (attempt < maxAttempts && !cleared) {
-                try {
-                    with(url.openConnection() as HttpURLConnection) {
-                        connectTimeout = 2000
-                        readTimeout = 2000
-                        requestMethod = "DELETE"
-                        val responseCode = responseCode
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                            cleared = true
-                            println("Firebase Auth emulator cleared successfully at ${FirebaseEmulator.HOST}")
-                        }
-                        disconnect()
-                    }
-                } catch (e: Exception) {
-                    attempt++
-                    Thread.sleep(1000)
-                }
-            }
+            // Sign out before clearing
+            try {
+                FirebaseAuth.getInstance().signOut()
+            } catch (_: Exception) {}
 
-            if (!cleared) {
-                println("Warning: Failed to clear Auth emulator after $maxAttempts attempts at ${FirebaseEmulator.HOST}")
-            }
+            // Clear emulators AFTER this test class finishes
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
     }
 
@@ -306,6 +286,3 @@ class End2EndM1 {
         assertEquals("bob@mail.com", currentUser!!.email)
     }
 }
-
-
- */
