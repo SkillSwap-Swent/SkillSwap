@@ -492,8 +492,14 @@ class End2EndM2 {
                 RequestScreenTags.CREATE_BUTTON
             )
             .forEach { tag ->
-                composeTestRule.onNodeWithTag(tag).performScrollTo()
-                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                    try {
+                        composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                        true
+                    } catch (_: Exception) {
+                        false
+                    }
+                }
             }
 
         // ---------- Fill title ----------
