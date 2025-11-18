@@ -289,6 +289,7 @@ class End2EndM2 {
     @Test
     fun t2_canModifySkillsInProfile() {
         /** Assumes user is already signed in from previous test */
+        composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
@@ -320,6 +321,7 @@ class End2EndM2 {
             )
 
         for (testTag in skillsEditTags) {
+            composeTestRule.onNodeWithTag(testTag).performScrollTo()
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
 
@@ -426,6 +428,7 @@ class End2EndM2 {
             )
 
         for (testTag in myPostsTags) {
+            composeTestRule.onNodeWithTag(testTag).performScrollTo()
             composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
         }
 
