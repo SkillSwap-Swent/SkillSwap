@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -153,272 +155,298 @@ fun RequestScreen(
             }
         )
 
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(bottom = 32.dp)
         ) {
-            // Title Input
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = { requestViewModel.setTitle(it) },
-                label = { Text("Title") },
-                placeholder = { Text("Enter the title of your request") },
-                isError = uiState.titleError.isNotEmpty(),
-                supportingText = {
-                    if (uiState.titleError.isNotEmpty()) {
-                        Text(uiState.titleError, color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
-            )
+            item {
+                // Title Input
+                OutlinedTextField(
+                    value = uiState.title,
+                    onValueChange = { requestViewModel.setTitle(it) },
+                    label = { Text("Title") },
+                    placeholder = { Text("Enter the title of your request") },
+                    isError = uiState.titleError.isNotEmpty(),
+                    supportingText = {
+                        if (uiState.titleError.isNotEmpty()) {
+                            Text(uiState.titleError, color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
+                )
+            }
 
-            // Description Input
-            OutlinedTextField(
-                value = uiState.description,
-                onValueChange = { requestViewModel.setDescription(it) },
-                label = { Text("Description") },
-                placeholder = { Text("Describe the skill you are requesting") },
-                isError = uiState.descriptionError.isNotEmpty(),
-                supportingText = {
-                    if (uiState.descriptionError.isNotEmpty()) {
-                        Text(uiState.descriptionError, color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
-            )
+            item {
+                // Description Input
+                OutlinedTextField(
+                    value = uiState.description,
+                    onValueChange = { requestViewModel.setDescription(it) },
+                    label = { Text("Description") },
+                    placeholder = { Text("Describe the skill you are requesting") },
+                    isError = uiState.descriptionError.isNotEmpty(),
+                    supportingText = {
+                        if (uiState.descriptionError.isNotEmpty()) {
+                            Text(uiState.descriptionError, color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
+                )
+            }
 
-            /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
-            var tagsExpanded by remember { mutableStateOf(false) }
-            val tagsQuery = remember { mutableStateOf("") }
-            var tagsHasFocus by remember { mutableStateOf(false) }
+            item {
+                /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
+                var tagsExpanded by remember { mutableStateOf(false) }
+                val tagsQuery = remember { mutableStateOf("") }
+                var tagsHasFocus by remember { mutableStateOf(false) }
 
-            Box(modifier = Modifier.fillMaxWidth()) {
-                val tagSuggestions =
-                    remember(tagsQuery.value) {
-                        SkillTag.entries
-                            .filter {
-                                tagsQuery.value.isNotBlank() &&
-                                    it.name.contains(tagsQuery.value, ignoreCase = true) &&
-                                    it !in uiState.tags // Exclude already selected tags
-                            }
-                            .take(MAX_SEARCH_KEYS)
-                    }
-
-                Column {
-                    OutlinedTextField(
-                        value = tagsQuery.value,
-                        onValueChange = {
-                            tagsQuery.value = it
-                            if (it.isNotBlank()) {
-                                tagsExpanded = true
-                            }
-                        },
-                        label = { Text("Tags") },
-                        placeholder = { Text("Search and add skill tags") },
-                        isError = uiState.tagsError.isNotEmpty(),
-                        supportingText = {
-                            if (uiState.tagsError.isNotEmpty()) {
-                                Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .onFocusChanged {
-                                    tagsHasFocus = it.isFocused
-                                    if (it.isFocused && tagsQuery.value.isNotBlank()) {
-                                        tagsExpanded = true
-                                    }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    val tagSuggestions =
+                        remember(tagsQuery.value) {
+                            SkillTag.entries
+                                .filter {
+                                    tagsQuery.value.isNotBlank() &&
+                                        it.name.contains(tagsQuery.value, ignoreCase = true) &&
+                                        it !in uiState.tags // Exclude already selected tags
                                 }
-                                .testTag(RequestScreenTags.TAGS_INPUT)
-                    )
+                                .take(MAX_SEARCH_KEYS)
+                        }
 
-                    androidx.compose.material3.DropdownMenu(
-                        expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
-                        onDismissRequest = { tagsExpanded = false },
-                        properties =
-                            PopupProperties(focusable = false), // KEY: This prevents focus loss
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        tagSuggestions.forEach { tag ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        tag.name.replace("_", " "),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
-                                onClick = {
-                                    requestViewModel.addTag(tag)
-                                    tagsQuery.value = ""
-                                    tagsExpanded = false
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        "${RequestScreenTags.TAG_SUGGESTION}_${tag.name}"
-                                    )
-                            )
+                    Column {
+                        OutlinedTextField(
+                            value = tagsQuery.value,
+                            onValueChange = {
+                                tagsQuery.value = it
+                                if (it.isNotBlank()) {
+                                    tagsExpanded = true
+                                }
+                            },
+                            label = { Text("Tags") },
+                            placeholder = { Text("Search and add skill tags") },
+                            isError = uiState.tagsError.isNotEmpty(),
+                            supportingText = {
+                                if (uiState.tagsError.isNotEmpty()) {
+                                    Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .onFocusChanged {
+                                        tagsHasFocus = it.isFocused
+                                        if (it.isFocused && tagsQuery.value.isNotBlank()) {
+                                            tagsExpanded = true
+                                        }
+                                    }
+                                    .testTag(RequestScreenTags.TAGS_INPUT)
+                        )
+
+                        androidx.compose.material3.DropdownMenu(
+                            expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
+                            onDismissRequest = { tagsExpanded = false },
+                            properties =
+                                PopupProperties(focusable = false), // KEY: This prevents focus loss
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            tagSuggestions.forEach { tag ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            tag.name.replace("_", " "),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    onClick = {
+                                        requestViewModel.addTag(tag)
+                                        tagsQuery.value = ""
+                                        tagsExpanded = false
+                                    },
+                                    modifier =
+                                        Modifier.testTag(
+                                            "${RequestScreenTags.TAG_SUGGESTION}_${tag.name}"
+                                        )
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            // Display selected tags as chips
-            Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
-                val flowScroll = rememberScrollState()
+            item {
+                // Display selected tags as chips
+                Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
+                    val flowScroll = rememberScrollState()
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.verticalScroll(flowScroll)
+                    ) {
+                        uiState.tags.forEach { tag ->
+                            Box(
+                                modifier =
+                                    Modifier.background(
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                            shape = RoundedCornerShape(16.dp)
+                                        )
+                                        .clickable { requestViewModel.removeTag(tag) }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                        .testTag("${RequestScreenTags.TAG_CHIP}_${tag}")
+                            ) {
+                                Text(
+                                    text =
+                                        (tag as? SkillTag)?.name?.replace("_", " ")
+                                            ?: tag.toString(),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                // Add a photo
+                Text(
+                    text = "Photos",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
+                if (uiState.attachments.isNotEmpty()) {
+                    Row(
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .padding(top = 8.dp)
+                                .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        uiState.attachments.forEach { uri ->
+                            Box(
+                                modifier =
+                                    Modifier.size(80.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            requestViewModel.removeAttachments(setOf(uri))
+                                        }
+                                        .testTag("${RequestScreenTags.PHOTO_PREVIEW}_${uri}")
+                            ) {
+                                AsyncImage(
+                                    model = uri,
+                                    contentDescription = "Selected photo",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    SkillSwapShadowButton(
+                        onClick = {
+                            pickMultipleMedia.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
+                        },
+                        modifier =
+                            Modifier.testTag(RequestScreenTags.CHOOSE_PHOTOS_BUTTON)
+                                .fillMaxWidth(0.4f)
+                                .height(55.dp)
+                    ) {
+                        Text(text = "Add photos")
+                    }
+                }
+            }
+
+            item {
+                // Payment method input
+                Text(
+                    text = "Payment Methods",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.verticalScroll(flowScroll)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    uiState.tags.forEach { tag ->
+                    PaymentMethod.entries.forEach { method ->
+                        val isSelected = uiState.paymentMethod == method
+                        val backgroundColor =
+                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceVariant
+
+                        val textColor =
+                            if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+
                         Box(
                             modifier =
                                 Modifier.background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        color = backgroundColor,
                                         shape = RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { requestViewModel.removeTag(tag) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    .testTag("${RequestScreenTags.TAG_CHIP}_${tag}")
+                                    .clickable { requestViewModel.togglePaymentMethod(method) }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .testTag(
+                                        "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}"
+                                    )
                         ) {
                             Text(
-                                text =
-                                    (tag as? SkillTag)?.name?.replace("_", " ") ?: tag.toString(),
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                text = method.displayName,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = textColor
                             )
                         }
                     }
                 }
             }
 
-            // Add a photo
-            Text(
-                text = "Photos",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            if (uiState.attachments.isNotEmpty()) {
-                Row(
+            item {
+                // Submit button at bottom
+                Spacer(modifier = Modifier.height(16.dp))
+                GradientButton(
+                    onClick = { requestViewModel.save(postOperation) },
+                    enabled = !uiState.isLoading,
                     modifier =
                         Modifier.fillMaxWidth()
-                            .padding(top = 8.dp)
-                            .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(vertical = 16.dp)
+                            .testTag(
+                                when (postOperation) {
+                                    PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
+                                    PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
+                                }
+                            )
                 ) {
-                    uiState.attachments.forEach { uri ->
-                        Box(
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
                             modifier =
-                                Modifier.size(80.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { requestViewModel.removeAttachments(setOf(uri)) }
-                                    .testTag("${RequestScreenTags.PHOTO_PREVIEW}_${uri}")
-                        ) {
-                            AsyncImage(
-                                model = uri,
-                                contentDescription = "Selected photo",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                            )
-                        }
+                                Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
+                            color = Color.White
+                        )
+                    } else {
+                        Text(text = "Submit", fontSize = 18.sp)
                     }
                 }
             }
 
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                SkillSwapShadowButton(
-                    onClick = {
-                        pickMultipleMedia.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                            )
-                        )
-                    },
-                    modifier =
-                        Modifier.testTag(RequestScreenTags.CHOOSE_PHOTOS_BUTTON)
-                            .fillMaxWidth(0.4f)
-                            .height(55.dp)
-                ) {
-                    Text(text = "Add photos")
-                }
-            }
-
-            // Payment method input
-            Text(
-                text = "Payment Methods",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                PaymentMethod.entries.forEach { method ->
-                    val isSelected = uiState.paymentMethod == method
-                    val backgroundColor =
-                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceVariant
-
-                    val textColor =
-                        if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurfaceVariant
-
-                    Box(
+            item {
+                // Show error if submission failed
+                if (uiState.submitError != null) {
+                    Text(
+                        text = uiState.submitError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier =
-                            Modifier.background(
-                                    color = backgroundColor,
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .clickable { requestViewModel.togglePaymentMethod(method) }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .testTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
-                    ) {
-                        Text(
-                            text = method.displayName,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = textColor
-                        )
-                    }
-                }
-            }
-
-            // Submit button at bottom
-            Spacer(modifier = Modifier.height(16.dp))
-            GradientButton(
-                onClick = { requestViewModel.save(postOperation) },
-                enabled = !uiState.isLoading,
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .testTag(
-                            when (postOperation) {
-                                PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
-                                PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
-                            }
-                        )
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier =
-                            Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
-                        color = Color.White
+                            Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
                     )
-                } else {
-                    Text(text = "Submit", fontSize = 18.sp)
                 }
-            }
-            // Show error if submission failed
-            if (uiState.submitError != null) {
-                Text(
-                    text = uiState.submitError!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
-                )
             }
         }
     }
