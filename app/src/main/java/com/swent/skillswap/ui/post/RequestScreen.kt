@@ -310,7 +310,8 @@ fun RequestScreen(
             item {
                 // Add a photo
                 Text(
-                    text = "Photos: ${uiState.attachments.size}/${FirestoreSettings.MAX_ATTACHMENTS}",
+                    text =
+                        "Photos: ${uiState.attachments.size}/${FirestoreSettings.MAX_ATTACHMENTS}",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -344,7 +345,7 @@ fun RequestScreen(
                     }
                 }
 
-                if (uiState.attachmentsError.isNotBlank()){
+                if (uiState.attachmentsError.isNotBlank()) {
                     Text(
                         text = uiState.attachmentsError,
                         color = MaterialTheme.colorScheme.error,

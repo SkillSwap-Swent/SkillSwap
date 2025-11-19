@@ -44,7 +44,7 @@ data class RequestUIState(
     val titleError: String = "",
     val descriptionError: String = "",
     val tagsError: String = "",
-    val attachmentsError: String ="",
+    val attachmentsError: String = "",
     val paymentMethodsError: String = "",
     val expiryError: String = "",
 
