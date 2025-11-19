@@ -31,8 +31,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepositery
+import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.ui.user.ProfileTestTags.LOGOUT_BUTTON
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -44,6 +49,7 @@ object EditUserTags {
     const val SUCCESS_MESSAGE = "edit_user_success_message"
     const val PROFILE_PICTURE_TEXTFIELD = "edit_user_profile_picture_textfield"
     const val PROFILE_PICTURE_CONTENT = "edit_user_profile_picture_content"
+    const val DELETE_PROFILE_PICTURE = "edit_user_delete_profile_picture_button"
 }
 
 /** Displays the edit user screen. */
@@ -136,7 +142,6 @@ fun EditUserScreen(
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
-                /** Profile picture URL Field - to be implemented later */
                 SkillSwapOutlinedTextField(
                     value = url,
                     onValueChange = {
@@ -153,6 +158,26 @@ fun EditUserScreen(
                 )
 
                 Spacer(modifier = Modifier.weight(0.05f))
+
+                /** Clear profile picture button */
+                Button(
+                    onClick = {
+                        url = ""
+                        vm.deleteProfilePicture()
+                              },
+                    modifier = Modifier.fillMaxWidth(0.6f).padding(top = 6.dp).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(
+                        text = "Delete Profile Picture",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(0.05f))
+
 
                 /** General Error Message */
                 if (uiState.generalError != null) {
@@ -191,11 +216,11 @@ fun EditUserScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.ArrowForward,
-                        contentDescription = "Done"
+                        contentDescription = "Save"
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = if (uiState.isLoading) "Loading..." else "Done",
+                        text = if (uiState.isLoading) "Loading..." else "Save",
                         fontSize = 16.sp,
                     )
                 }
