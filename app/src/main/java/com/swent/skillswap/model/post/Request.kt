@@ -18,10 +18,8 @@ data class Request(
     override val media: List<String>,
     override val postReplies: Set<PostReply> = emptySet(),
     override val location: GeoPoint
-) : Post {
-    override val type: PostType
-        get() = PostType.REQUEST
+) : BasePost() {
+    override val type: PostType = PostType.REQUEST
 
     // TODO: implement proper validation logic
-    // https://github.com/orgs/SkillSwap-Swent/projects/1/views/2?filterQuery=&pane=issue&itemId=132697400
 }

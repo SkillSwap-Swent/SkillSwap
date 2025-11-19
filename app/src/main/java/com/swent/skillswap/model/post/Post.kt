@@ -53,13 +53,8 @@ interface Post {
      * - Converting each tag to a lowercase string.
      *
      * The resulting list enables flexible case-insensitive searching across multiple fields.
-     *
-     * TODO: Ideally this list shouldn't be dynamically built as offer and request are immutable
-     *   data classes but I don't know how to do that while keeping the code non duplicated in the
-     *   interface. https://github.com/SkillSwap-Swent/SkillSwap/issues/45
      */
     val searchKeys: List<String>
-        get() = buildSearchKeys()
 
     val postReplies: Collection<PostReply>
 
@@ -69,7 +64,7 @@ interface Post {
      * desired behaviour, hover this can be changed by naming the array elements TAG_$it, TITLE_$it,
      * etc.
      */
-    private fun buildSearchKeys(): List<String> {
+    fun buildSearchKeys(): List<String> {
         val searchKeysTemp = mutableListOf<String>()
 
         searchKeysTemp.addAll(title.split(" ").map { it.lowercase() })

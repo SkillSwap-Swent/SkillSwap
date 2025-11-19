@@ -18,6 +18,6 @@ data class Offer(
     override val media: List<String>,
     override val postReplies: Set<PostReply> = emptySet(),
     override val location: GeoPoint
-) : Post {
+) : BasePost() {
     override val type: PostType = PostType.OFFER
 }
