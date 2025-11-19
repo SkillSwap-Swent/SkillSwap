@@ -57,7 +57,7 @@ import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.GradientButton
 
 object RequestScreenTags {

@@ -48,8 +48,6 @@ import com.swent.skillswap.R
 import com.swent.skillswap.ui.utils.SkillSwapPasswordTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 import com.swent.skillswap.ui.utils.SkillSwapTextField
-import com.swent.skillswap.viewModel.SignInEvent
-import com.swent.skillswap.viewModel.SignInViewModel
 
 // ----- UI Test Tags -----
 object SignInTags {

@@ -34,7 +34,7 @@ class AuthClassicModel(
         val password = classicParams.password
         val skills = classicParams.skills
         val username = classicParams.username
-        val repo = UserRepoFirestore(firestore)
+        val repo = UserRepoFirestore(db)
         require(
             email.isNotBlank() &&
                 password.isNotBlank() &&

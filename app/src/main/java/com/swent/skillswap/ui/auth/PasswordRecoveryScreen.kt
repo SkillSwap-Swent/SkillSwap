@@ -25,12 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.getLinearBrush
+import com.swent.skillswap.resources.theme.BrushDirection
+import com.swent.skillswap.resources.theme.getLinearBrush
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 import com.swent.skillswap.ui.utils.SkillSwapTextField
-import com.swent.skillswap.viewModel.PasswordRecoveryEvent
-import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import kotlinx.coroutines.delay
 
 // ----- UI Test Tags -----

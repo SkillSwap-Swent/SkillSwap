@@ -37,8 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.swent.skillswap.ui.theme.BrushDirection
-import com.swent.skillswap.ui.theme.getLinearBrush
+import com.swent.skillswap.resources.theme.BrushDirection
+import com.swent.skillswap.resources.theme.getLinearBrush
 
 enum class SkillSwapButtonShape {
     ROUND,

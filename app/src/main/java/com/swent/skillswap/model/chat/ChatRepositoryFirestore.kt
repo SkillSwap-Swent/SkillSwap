@@ -3,6 +3,8 @@ package com.swent.skillswap.model.chat
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
+import com.swent.skillswap.model.utils.deserializeMessage
+import com.swent.skillswap.model.utils.serializeMessage
 import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow

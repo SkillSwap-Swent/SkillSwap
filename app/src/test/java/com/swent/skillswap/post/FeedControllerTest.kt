@@ -1,4 +1,4 @@
-package com.swent.skillswap.model.offer
+package com.swent.skillswap.model.feed
 
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PostType

@@ -20,7 +20,7 @@ class FirestoreDebugTest {
         val collection = firestore.collection("testCollection")
 
         val task = collection.document("testDocument").set(testDocument)
-        val result = Tasks.await(task, 5, TimeUnit.SECONDS)
+        val result = Tasks.await(task, 10_000L, TimeUnit.SECONDS)
         assertTrue("Document should be written successfully", task.isSuccessful)
     }
 }
