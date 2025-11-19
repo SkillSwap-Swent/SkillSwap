@@ -69,11 +69,30 @@ class RequestScreenTest {
             )
         }
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.BACK_BUTTON)
+            .performScrollTo()
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TITLE_INPUT)
+            .performScrollTo()
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performScrollTo()
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TAGS_INPUT)
+            .performScrollTo()
+            .assertIsDisplayed()
+
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.CREATE_BUTTON)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
