@@ -71,7 +71,6 @@ class RequestScreenTest {
 
         composeTestRule
             .onNodeWithTag(RequestScreenTags.BACK_BUTTON)
-            .performScrollTo()
             .assertIsDisplayed()
 
         composeTestRule
