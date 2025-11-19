@@ -10,7 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.ui.feed.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator

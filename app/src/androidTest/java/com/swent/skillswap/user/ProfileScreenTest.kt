@@ -16,11 +16,11 @@ import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.ProfileTestTags
+import com.swent.skillswap.ui.user.ProfileViewModel
 import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.viewModel.ProfileViewModel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before

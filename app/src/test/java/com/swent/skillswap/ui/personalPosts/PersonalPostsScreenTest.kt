@@ -11,6 +11,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreen
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreenTags
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsUiState
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsViewModel
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After

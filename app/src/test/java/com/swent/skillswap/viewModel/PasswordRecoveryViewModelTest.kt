@@ -5,6 +5,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.auth
+import com.swent.skillswap.ui.auth.PasswordRecoveryEvent
+import com.swent.skillswap.ui.auth.PasswordRecoveryViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
