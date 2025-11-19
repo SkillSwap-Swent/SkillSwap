@@ -44,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,6 +103,7 @@ fun RequestScreen(
         viewModel(
             factory =
                 RequestViewModelFactory(
+                    appContext = LocalContext.current.applicationContext,
                     postRepository = postRepository,
                     currentUserId = currentUserId,
                     postId = uid
@@ -359,7 +362,8 @@ fun NewRequestScreenPreview() {
     // Create a fake repository for preview
     val fakeRepository = FakePostRepository()
 
-    val viewModel = RequestViewModel(fakeRepository, currentUserId = "preview-user", postId = null)
+    val viewModel =
+        RequestViewModel(null, fakeRepository, currentUserId = "preview-user", postId = null)
 
     SkillSwapAppTheme {
         RequestScreen(

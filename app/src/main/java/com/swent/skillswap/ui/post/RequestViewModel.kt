@@ -1,5 +1,8 @@
 package com.swent.skillswap.ui.post
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
@@ -50,6 +53,7 @@ data class RequestUIState(
 )
 
 class RequestViewModel(
+    private val appContext: Context? = null,
     private val postRepository: PostRepository,
     private val currentUserId: String,
     private val postId: String? = null // Only necessary if postOperation is edit
