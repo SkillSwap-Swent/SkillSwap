@@ -1,5 +1,6 @@
 /* With the help of Sonnet 4.5 for repetitive tasks */
 
+import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -583,5 +584,59 @@ class RequestScreenTest {
         composeTestRule
             .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun addPhoto_triggersPicker() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+            )
+        }
+
+        // 1. Click the button to open photo picker
+        composeTestRule.onNodeWithTag(RequestScreenTags.CHOOSE_PHOTOS_BUTTON).performClick()
+
+        // unable to test any further as this launches a separate android activity
+    }
+
+    @Test
+    fun addImage_andRemoveImage_UIElementsUpdate() {
+        val testViewModel =
+            RequestViewModel(
+                appContext = null,
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = testViewModel
+            )
+        }
+
+        // 1. Simulate picker returning URIs
+        val fakeUri = Uri.parse("content://fake/image1.png")
+        testViewModel.addAttachments(listOf(fakeUri))
+
+        composeTestRule.waitForIdle()
+
+        val tag = "${RequestScreenTags.PHOTO_PREVIEW}_$fakeUri"
+        // 2. Assert the image is displayed
+        composeTestRule.onNodeWithTag(tag).assertExists().assertExists()
+
+        // 3. Click it to remove image
+        composeTestRule.onNodeWithTag(tag).performClick()
+
+        composeTestRule.waitForIdle()
+
+        // 4. Assert it's removed
+        composeTestRule.onNodeWithTag(tag).assertDoesNotExist()
     }
 }
