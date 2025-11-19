@@ -155,6 +155,17 @@ class EditUserViewModel(
         )
     }
 
+    /** delete the actual profile picture */
+    fun deleteProfilePicture() {
+        setField(
+            input = "",
+            precondition = { true },
+            applyToUser = { user, value -> user.copy(profilePicture = value) },
+            applyToError = { _uiState.update { it.copy(generalError = "Error while deleting profile picture") } },
+            clearError = { it.copy(generalError = null) }
+        )
+    }
+
     /** Sets the skill set of the edited user */
     fun setSkills(skills: Set<Skill>) {
         setField(
