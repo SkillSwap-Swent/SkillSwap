@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,9 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.model.utils.LocationManager
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
+import kotlin.text.toInt
 
 /**
  * Displays the main FeedOffer screen.
@@ -41,10 +44,13 @@ import com.swent.skillswap.ui.utils.SkillSwapButtonSize
 fun FeedScreen(
     swipeThreshold: Float = 50f,
     vm: FeedScreenViewModel = viewModel(),
+    locationManager: LocationManager? = null
 ) {
     val uiState by vm.uiState.collectAsState()
     val offer = uiState
     var showMenu by remember { mutableStateOf(false) }
+    var showDistanceSlider by remember { mutableStateOf(false) }
+    var distance by remember { mutableFloatStateOf(10f) }
 
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -61,6 +67,40 @@ fun FeedScreen(
                 .padding(horizontal = horizontalPadding, vertical = verticalPadding),
         contentAlignment = Alignment.Center
     ) {
+
+        // Distance Filter Button - placed AFTER Card to appear on top
+        Button(
+            onClick = { showDistanceSlider = !showDistanceSlider },
+            modifier =
+                Modifier.align(if (offer == null) Alignment.TopStart else Alignment.TopStart)
+                    .padding(top = if (offer == null) 0.dp else 8.dp)
+                    .testTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors =
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            elevation =
+                ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+        ) {
+            Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Distance filter")
+            Spacer(Modifier.width(8.dp))
+            Text("Distance: ${distance.toInt()}km")
+        }
+
+        // Distance Filter Button - positioned at top
+        if (showDistanceSlider) {
+            FeedDistanceFilterButton(
+                distance = distance,
+                onDistanceChange = {
+                    distance = it
+                    // TODO: Handle max distance value update
+                },
+                onDismiss = { showDistanceSlider = false },
+                modifier =
+                    Modifier.align(if (offer == null) Alignment.TopCenter else Alignment.TopCenter)
+                        .padding(top = if (offer == null) 0.dp else 8.dp)
+            )
+        }
+
         if (offer == null) {
             // === No Offer Available ===
             Text(
@@ -251,5 +291,48 @@ fun FeedOfferMenu(onBlockUser: () -> Unit, onReportOffer: () -> Unit, onDismiss:
                 onDismiss()
             }
         )
+    }
+}
+
+@Composable
+fun FeedDistanceFilterButton(
+    distance: Float,
+    onDistanceChange: (Float) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier =
+            modifier
+                .widthIn(min = 240.dp, max = 300.dp)
+                .testTag(FeedScreenTestTags.DISTANCE_SLIDER_CARD),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "${distance.toInt()} km",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Slider(
+                value = distance,
+                onValueChange = onDistanceChange,
+                valueRange = 1f..20f,
+                steps = 20,
+                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_SLIDER),
+                onValueChangeFinished = onDismiss
+            )
+
+            Text(
+                text = "1-20 km",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
