@@ -41,8 +41,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class EditUserScreenTest : TestCase() {
 
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
 
     private val ctx =
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
@@ -340,19 +339,27 @@ class EditUserScreenTest : TestCase() {
                 )
 
             // Click validate button
-            composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo()
+            composeTestRule
+                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+                .performScrollTo()
                 .performClick()
 
             // Wait for save operation to complete
-            //Here we cannot use IsSaved because it is already true from previous save => To fix in a next sprint
-            composeTestRule.waitUntil(timeoutMillis = 5000) { runBlocking { repo.getUser(Firebase.auth.currentUser!!.uid).profilePicture == "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg" } }
+            // Here we cannot use IsSaved because it is already true from previous save => To fix in
+            // a next sprint
+            composeTestRule.waitUntil(timeoutMillis = 5000) {
+                runBlocking {
+                    repo.getUser(Firebase.auth.currentUser!!.uid).profilePicture ==
+                        "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
+                }
+            }
         }
 
         step("Verify profile picture is updated in repository") {
             runBlocking {
                 val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
-                assertEquals("UpdatedChef", editedUser.username) //same as before
+                assertEquals("UpdatedChef", editedUser.username) // same as before
                 assertEquals(
                     "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
                     editedUser.profilePicture
@@ -423,26 +430,24 @@ class EditUserScreenTest : TestCase() {
             composeTestRule.waitForIdle()
 
             // Click validate button
-            composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo()
+            composeTestRule
+                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+                .performScrollTo()
                 .performClick()
 
             // Wait for save operation to complete
             composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
 
-            //Check that the profile picture content is not displayed (default picture)
+            // Check that the profile picture content is not displayed (default picture)
             composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).assertDoesNotExist()
         }
 
-        step("Verifiy that the repository as been cleaned as well"){
+        step("Verifiy that the repository as been cleaned as well") {
             runBlocking {
                 val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
-                assertEquals(
-                    "",
-                    editedUser.profilePicture
-                )
+                assertEquals("", editedUser.profilePicture)
             }
         }
-
     }
 }

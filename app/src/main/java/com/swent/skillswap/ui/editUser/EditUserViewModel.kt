@@ -161,7 +161,9 @@ class EditUserViewModel(
             input = "",
             precondition = { true },
             applyToUser = { user, value -> user.copy(profilePicture = value) },
-            applyToError = { _uiState.update { it.copy(generalError = "Error while deleting profile picture") } },
+            applyToError = {
+                _uiState.update { it.copy(generalError = "Error while deleting profile picture") }
+            },
             clearError = { it.copy(generalError = null) }
         )
     }

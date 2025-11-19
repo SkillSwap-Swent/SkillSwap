@@ -31,13 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-import com.swent.skillswap.model.user.User
-import com.swent.skillswap.model.user.UserRepositery
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.ui.user.ProfileTestTags.LOGOUT_BUTTON
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -164,9 +159,15 @@ fun EditUserScreen(
                     onClick = {
                         url = ""
                         vm.deleteProfilePicture()
-                              },
-                    modifier = Modifier.fillMaxWidth(0.6f).padding(top = 6.dp).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(0.6f)
+                            .padding(top = 6.dp)
+                            .testTag(EditUserTags.DELETE_PROFILE_PICTURE),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
                 ) {
                     Text(
                         text = "Delete Profile Picture",
@@ -177,7 +178,6 @@ fun EditUserScreen(
                 }
 
                 Spacer(modifier = Modifier.weight(0.05f))
-
 
                 /** General Error Message */
                 if (uiState.generalError != null) {
