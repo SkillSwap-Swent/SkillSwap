@@ -618,7 +618,7 @@ class RequestScreenTest {
         }
 
         // 1. Click the button to open photo picker
-        composeTestRule.onNodeWithTag(RequestScreenTags.CHOOSE_PHOTOS_BUTTON).performClick()
+        composeTestRule.onNodeWithTag(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON).performClick()
 
         // unable to test any further as this launches a separate android activity
     }
@@ -648,7 +648,7 @@ class RequestScreenTest {
 
         composeTestRule.waitForIdle()
 
-        val tag = "${RequestScreenTags.PHOTO_PREVIEW}_$fakeUri"
+        val tag = "${RequestScreenTags.ATTACHMENT_PREVIEW}_$fakeUri"
         // 2. Assert the image is displayed
         composeTestRule.onNodeWithTag(tag).assertExists().assertExists()
 
