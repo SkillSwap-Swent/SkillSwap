@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
@@ -309,7 +310,7 @@ fun RequestScreen(
             item {
                 // Add a photo
                 Text(
-                    text = "Photos",
+                    text = "Photos: ${uiState.attachments.size}/${FirestoreSettings.MAX_ATTACHMENTS}",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -330,7 +331,7 @@ fun RequestScreen(
                                         .clickable {
                                             requestViewModel.removeAttachments(setOf(uri))
                                         }
-                                        .testTag("${RequestScreenTags.PHOTO_PREVIEW}_${uri}")
+                                        .testTag("${RequestScreenTags.ATTACHMENT_PREVIEW}_${uri}")
                             ) {
                                 AsyncImage(
                                     model = uri,
@@ -341,6 +342,14 @@ fun RequestScreen(
                             }
                         }
                     }
+                }
+
+                if (uiState.attachmentsError.isNotBlank()){
+                    Text(
+                        text = uiState.attachmentsError,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag(RequestScreenTags.ATTACHMENT_ERROR)
+                    )
                 }
             }
 
@@ -355,7 +364,7 @@ fun RequestScreen(
                             )
                         },
                         modifier =
-                            Modifier.testTag(RequestScreenTags.CHOOSE_PHOTOS_BUTTON)
+                            Modifier.testTag(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
                                 .fillMaxWidth(0.4f)
                                 .height(55.dp)
                     ) {

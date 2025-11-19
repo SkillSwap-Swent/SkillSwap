@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -43,6 +44,7 @@ data class RequestUIState(
     val titleError: String = "",
     val descriptionError: String = "",
     val tagsError: String = "",
+    val attachmentsError: String ="",
     val paymentMethodsError: String = "",
     val expiryError: String = "",
 
@@ -196,10 +198,18 @@ class RequestViewModel(
 
     // photo picker
     fun addAttachments(uris: Collection<Uri>) {
-        // grant file permission for those images to survive recomposition
-        uris.forEach { uri -> grantPersistablePermission(uri) }
+        val current = _uiState.value.attachments
+        val combined = current + uris
 
-        _uiState.update { state -> state.copy(attachments = state.attachments + uris) }
+        // TODO: also perform file size check when that is decided with image repo impl
+        if (combined.size > FirestoreSettings.MAX_ATTACHMENTS) {
+            _uiState.update { it.copy(attachmentsError = "You can attach up to 5 photos.") }
+            return
+        }
+
+        combined.forEach { uri -> grantPersistablePermission(uri) }
+
+        _uiState.update { it.copy(attachments = combined.toSet(), attachmentsError = "") }
     }
 
     // used to signal to android we want persistent access to these files
@@ -214,6 +224,6 @@ class RequestViewModel(
     }
 
     fun removeAttachments(uris: Collection<Uri>) {
-        _uiState.update { it.copy(attachments = it.attachments - uris) }
+        _uiState.update { it.copy(attachments = it.attachments - uris, attachmentsError = "") }
     }
 }
