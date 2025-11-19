@@ -69,9 +69,7 @@ class RequestScreenTest {
             )
         }
 
-        composeTestRule
-            .onNodeWithTag(RequestScreenTags.BACK_BUTTON)
-            .assertIsDisplayed()
+        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
 
         composeTestRule
             .onNodeWithTag(RequestScreenTags.TITLE_INPUT)
@@ -414,9 +412,13 @@ class RequestScreenTest {
         }
 
         // Fill all required fields
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Valid Title")
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TITLE_INPUT)
+            .performScrollTo()
+            .performTextInput("Valid Title")
         composeTestRule
             .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performScrollTo()
             .performTextInput("Valid Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
@@ -425,6 +427,7 @@ class RequestScreenTest {
 
         composeTestRule
             .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+            .performScrollTo()
             .performClick()
 
         // Submit
