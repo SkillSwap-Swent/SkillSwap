@@ -7,13 +7,18 @@
 
 package com.swent.skillswap.ui.post
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +46,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -54,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
@@ -61,6 +69,7 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.GradientButton
+import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object RequestScreenTags {
     const val BACK_BUTTON = "backButton"
@@ -74,6 +83,7 @@ object RequestScreenTags {
     const val EDIT_BUTTON = "editButton"
     const val ERROR_MESSAGE = "errorMessage"
     const val LOADING_INDICATOR = "loadingIndicator"
+    const val CHOOSE_PHOTOS_BUTTON = "choosePhotosButton"
 }
 
 /*
@@ -114,6 +124,11 @@ fun RequestScreen(
     postOperation: PostOperation,
 ) {
     val uiState by requestViewModel.uiState.collectAsState()
+    val pickMultipleMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris
+            ->
+            requestViewModel.addAttachments(uris)
+        }
 
     LaunchedEffect(uiState.isSubmitSuccessful) {
         if (uiState.isSubmitSuccessful) {
@@ -274,6 +289,57 @@ fun RequestScreen(
                             )
                         }
                     }
+                }
+            }
+
+            // Add a photo
+            Text(
+                text = "Photos",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            if (uiState.attachments.isNotEmpty()) {
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    uiState.attachments.forEach { uri ->
+                        Box(
+                            modifier =
+                                Modifier.size(80.dp).clip(RoundedCornerShape(12.dp)).clickable {
+                                    requestViewModel.removeAttachments(setOf(uri))
+                                }
+                        ) {
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = "Selected photo",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                }
+            }
+
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                SkillSwapShadowButton(
+                    onClick = {
+                        pickMultipleMedia.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    modifier =
+                        Modifier.testTag(RequestScreenTags.CHOOSE_PHOTOS_BUTTON)
+                            .fillMaxWidth(0.4f)
+                            .height(55.dp)
+                ) {
+                    Text(text = "Add photos")
                 }
             }
 
