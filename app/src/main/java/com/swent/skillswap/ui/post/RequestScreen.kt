@@ -85,8 +85,9 @@ object RequestScreenTags {
     const val EDIT_BUTTON = "editButton"
     const val ERROR_MESSAGE = "errorMessage"
     const val LOADING_INDICATOR = "loadingIndicator"
-    const val CHOOSE_PHOTOS_BUTTON = "choosePhotosButton"
-    const val PHOTO_PREVIEW = "photoPreview"
+    const val CHOOSE_ATTACHMENT_BUTTON = "chooseAttachmentButton"
+    const val ATTACHMENT_PREVIEW = "attachmentPreview"
+    const val ATTACHMENT_ERROR = "attachmentError"
 }
 
 /*
