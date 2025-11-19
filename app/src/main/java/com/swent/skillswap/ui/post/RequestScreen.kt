@@ -84,6 +84,7 @@ object RequestScreenTags {
     const val ERROR_MESSAGE = "errorMessage"
     const val LOADING_INDICATOR = "loadingIndicator"
     const val CHOOSE_PHOTOS_BUTTON = "choosePhotosButton"
+    const val PHOTO_PREVIEW = "photoPreview"
 }
 
 /*
@@ -310,15 +311,16 @@ fun RequestScreen(
                     uiState.attachments.forEach { uri ->
                         Box(
                             modifier =
-                                Modifier.size(80.dp).clip(RoundedCornerShape(12.dp)).clickable {
-                                    requestViewModel.removeAttachments(setOf(uri))
-                                }
+                                Modifier.size(80.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { requestViewModel.removeAttachments(setOf(uri)) }
+                                    .testTag("${RequestScreenTags.PHOTO_PREVIEW}_${uri}")
                         ) {
                             AsyncImage(
                                 model = uri,
                                 contentDescription = "Selected photo",
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
                             )
                         }
                     }
