@@ -55,7 +55,7 @@ class RequestViewModelTest {
 
     @Test
     fun init_withoutPostId_hasEmptyState() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         val state = viewModel.uiState.value
         assertEquals("", state.uid)
@@ -70,7 +70,7 @@ class RequestViewModelTest {
     @Test
     fun init_withPostId_loadsExistingPost() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
 
         // Wait for coroutine to complete
         kotlinx.coroutines.delay(100)
@@ -85,7 +85,7 @@ class RequestViewModelTest {
 
     @Test
     fun init_withInvalidPostId_setsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = "non-existent")
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = "non-existent")
 
         kotlinx.coroutines.delay(100)
 
@@ -98,7 +98,7 @@ class RequestViewModelTest {
 
     @Test
     fun setTitle_validTitle_updatesStateAndClearsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setTitle("Valid Title")
 
@@ -109,7 +109,7 @@ class RequestViewModelTest {
 
     @Test
     fun setTitle_emptyTitle_setsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setTitle("")
 
@@ -120,7 +120,7 @@ class RequestViewModelTest {
 
     @Test
     fun setTitle_blankTitle_setsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setTitle("   ")
 
@@ -132,7 +132,7 @@ class RequestViewModelTest {
 
     @Test
     fun setDescription_validDescription_updatesStateAndClearsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setDescription("Valid description")
 
@@ -143,7 +143,7 @@ class RequestViewModelTest {
 
     @Test
     fun setDescription_emptyDescription_setsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setDescription("")
 
@@ -155,7 +155,7 @@ class RequestViewModelTest {
 
     @Test
     fun addTag_newTag_addsToListAndClearsError() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.addTag(PostTag.REOCCURRING)
 
@@ -166,7 +166,7 @@ class RequestViewModelTest {
 
     @Test
     fun addTag_duplicateTag_doesNotAddTwice() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.addTag(PostTag.REOCCURRING)
         viewModel.addTag(PostTag.REOCCURRING)
@@ -177,7 +177,7 @@ class RequestViewModelTest {
 
     @Test
     fun removeTag_existingTag_removesFromList() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.addTag(PostTag.REOCCURRING)
         viewModel.removeTag(PostTag.REOCCURRING)
@@ -188,7 +188,7 @@ class RequestViewModelTest {
 
     @Test
     fun removeTag_nonExistentTag_doesNotCrash() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         // Should not throw exception
         viewModel.removeTag(PostTag.REOCCURRING)
@@ -201,7 +201,7 @@ class RequestViewModelTest {
 
     @Test
     fun togglePaymentMethod_notPresent_adds() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
 
@@ -211,7 +211,7 @@ class RequestViewModelTest {
 
     @Test
     fun togglePaymentMethod_present_doesNotAlter() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
@@ -224,7 +224,7 @@ class RequestViewModelTest {
 
     @Test
     fun save_addMode_validData_createsNewPost() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setTitle("Test Request")
         viewModel.setDescription("Test Description")
@@ -246,7 +246,7 @@ class RequestViewModelTest {
 
     @Test
     fun save_addMode_success_setsSubmitSuccessful() = runTest {
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setTitle("Test")
         viewModel.setDescription("Test")
@@ -264,7 +264,7 @@ class RequestViewModelTest {
     @Test
     fun save_addMode_repositoryFailure_setsError() = runTest {
         fakeRepository.setShouldFailOnAdd(true)
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
 
         viewModel.setTitle("Test")
         viewModel.setDescription("Test")
@@ -284,7 +284,7 @@ class RequestViewModelTest {
     @Test
     fun save_editMode_validData_updatesExistingPost() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
 
         kotlinx.coroutines.delay(100)
 
@@ -300,7 +300,7 @@ class RequestViewModelTest {
     @Test
     fun save_editMode_usesExistingPostId() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
 
         kotlinx.coroutines.delay(100)
 
@@ -316,7 +316,7 @@ class RequestViewModelTest {
     fun save_editMode_repositoryFailure_setsError() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
         fakeRepository.setShouldFailOnEdit(true)
-        viewModel = RequestViewModel(fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
 
         kotlinx.coroutines.delay(100)
 

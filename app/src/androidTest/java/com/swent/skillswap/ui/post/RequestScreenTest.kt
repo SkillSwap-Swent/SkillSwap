@@ -282,7 +282,8 @@ class RequestScreenTest {
 
     @Test
     fun tagChip_displayAndRemove() {
-        val viewModel = RequestViewModel(null,fakeRepository, currentUserId = testUserId, postId = null)
+        val viewModel =
+            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
 
         composeTestRule.setContent {
             RequestScreen(
@@ -316,7 +317,8 @@ class RequestScreenTest {
     @Test
     fun submit_showsLoadingIndicator() {
         fakeRepository.setDelay(1000) // Add delay to see loading state
-        val viewModel = RequestViewModel(null,fakeRepository, currentUserId = testUserId, postId = null)
+        val viewModel =
+            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
 
         composeTestRule.setContent {
             RequestScreen(
@@ -379,7 +381,8 @@ class RequestScreenTest {
 
     @Test
     fun submit_success_triggersCallback() {
-        val viewModel = RequestViewModel(null,fakeRepository, currentUserId = testUserId, postId = null)
+        val viewModel =
+            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
 
         composeTestRule.setContent {
             RequestScreen(
