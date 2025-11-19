@@ -419,9 +419,10 @@ fun RequestScreen(
                 }
             }
 
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
             item {
                 // Submit button at bottom
-                Spacer(modifier = Modifier.height(16.dp))
                 GradientButton(
                     onClick = { requestViewModel.save(postOperation) },
                     enabled = !uiState.isLoading,
