@@ -20,6 +20,4 @@ data class Request(
     override val location: GeoPoint
 ) : BasePost() {
     override val type: PostType = PostType.REQUEST
-
-    // TODO: implement proper validation logic
 }
