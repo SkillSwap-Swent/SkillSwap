@@ -11,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NavigateNext
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
@@ -34,9 +33,6 @@ import com.swent.skillswap.ui.utils.SkillPill
 import com.swent.skillswap.ui.utils.SkillSwapOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapPasswordOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
-import com.swent.skillswap.viewModel.CreateAccountEvent
-import com.swent.skillswap.viewModel.CreateAccountViewModel
-import com.swent.skillswap.viewModel.CreateAccountVmFactory
 import kotlin.Boolean
 
 // ----- Tags used for UI testing -----

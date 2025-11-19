@@ -17,22 +17,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import com.swent.skillswap.model.offer.*
+import com.swent.skillswap.model.feed.*
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.auth.*
+import com.swent.skillswap.ui.auth.CreateAccountViewModel
+import com.swent.skillswap.ui.auth.SignInViewModel
 import com.swent.skillswap.ui.chat.ChatListScreen
-import com.swent.skillswap.ui.feedScreen.*
+import com.swent.skillswap.ui.feed.*
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.viewModel.CreateAccountViewModel
-import com.swent.skillswap.viewModel.SignInViewModel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.*
@@ -76,7 +74,7 @@ class AuthClassicTest : TestCase() {
     fun setUp() {
         // Initialize ViewModels after Firebase emulator is ready
         vmCreateAccount =
-            CreateAccountViewModel(isGoogleAccount = false, auth = auth, firestore = firestore)
+            CreateAccountViewModel(isGoogleAccount = false, auth = auth, db = firestore)
         vmSignIn = SignInViewModel(auth)
 
         // Build controller via helper (cleaner, reusable)

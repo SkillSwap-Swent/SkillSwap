@@ -95,7 +95,7 @@ class AuthGoogleModel(
      */
     suspend fun googleAccountInfoAreSavedInFirestore(): Boolean {
         val user = auth.currentUser ?: return false
-        val repo = UserRepoFirestore(firestore)
+        val repo = UserRepoFirestore(db)
 
         // Check if Google provider is linked
         val isGoogleUser = user.providerData.any { it.providerId == "google.com" }
@@ -107,7 +107,7 @@ class AuthGoogleModel(
 
     override suspend fun createAccount(params: CreateAccountParams) {
         val googleParams: CreateAccountGoogleParams = params as CreateAccountGoogleParams
-        val repo = UserRepoFirestore(firestore)
+        val repo = UserRepoFirestore(db)
         val username = googleParams.username
         val skills = googleParams.skills
         val userLogged = auth.currentUser

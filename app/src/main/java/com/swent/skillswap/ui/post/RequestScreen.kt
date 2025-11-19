@@ -52,12 +52,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
+import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.GradientButton
 
 object RequestScreenTags {
@@ -352,53 +352,12 @@ fun RequestScreen(
         }
     }
 }
-
+// NOSONAR_START
 @Preview(showBackground = true)
 @Composable
 fun NewRequestScreenPreview() {
     // Create a fake repository for preview
-    val fakeRepository =
-        object : com.swent.skillswap.model.post.PostRepository {
-            override fun getNewUid(type: com.swent.skillswap.model.post.PostType): String =
-                "preview-uid"
-
-            override suspend fun getMultiplePosts(
-                numberOfPosts: Long,
-                type: com.swent.skillswap.model.post.PostType,
-                titleContains: String,
-                ownerId: String,
-                paymentMethod: PaymentMethod,
-                tags: Set<com.swent.skillswap.model.tags.EveryTag>,
-                status: com.swent.skillswap.model.post.PostStatus?,
-                userLocation: GeoPoint?,
-                maxDistanceKm: Double?
-            ): List<com.swent.skillswap.model.post.Post> = emptyList()
-
-            override suspend fun getPost(
-                type: com.swent.skillswap.model.post.PostType,
-                postId: String
-            ): com.swent.skillswap.model.post.Post {
-                throw NotImplementedError()
-            }
-
-            override suspend fun addPost(post: com.swent.skillswap.model.post.Post) {
-                // Do nothing in preview
-            }
-
-            override suspend fun editPost(
-                postId: String,
-                newPost: com.swent.skillswap.model.post.Post
-            ) {
-                // Do nothing in preview
-            }
-
-            override suspend fun deletePost(
-                type: com.swent.skillswap.model.post.PostType,
-                postId: String
-            ) {
-                // Do nothing in preview
-            }
-        }
+    val fakeRepository = FakePostRepository()
 
     val viewModel = RequestViewModel(fakeRepository, currentUserId = "preview-user", postId = null)
 
@@ -411,3 +370,4 @@ fun NewRequestScreenPreview() {
         )
     }
 }
+// NOSONAR_END

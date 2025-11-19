@@ -19,10 +19,10 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.ui.editUser.EditUserScreen
-import com.swent.skillswap.ui.editUser.EditUserTags
-import com.swent.skillswap.ui.editUser.EditUserViewModel
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
+import com.swent.skillswap.ui.user.editUser.EditUserScreen
+import com.swent.skillswap.ui.user.editUser.EditUserTags
+import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.utils.FirebaseEmulator
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
