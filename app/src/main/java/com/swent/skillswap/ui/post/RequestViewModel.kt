@@ -49,7 +49,10 @@ data class RequestUIState(
     // Submission state
     val isLoading: Boolean = false,
     val submitError: String? = null,
-    val isSubmitSuccessful: Boolean = false
+    val isSubmitSuccessful: Boolean = false,
+
+    // photo picker
+    val attachments: Set<Uri> = emptySet()
 )
 
 class RequestViewModel(
@@ -189,5 +192,28 @@ class RequestViewModel(
                 }
             }
         }
+    }
+
+    // photo picker
+    fun addAttachments(uris: Collection<Uri>) {
+        // grant file permission for those images to survive recomposition
+        uris.forEach { uri -> grantPersistablePermission(uri) }
+
+        _uiState.update { state -> state.copy(attachments = state.attachments + uris) }
+    }
+
+    // used to signal to android we want persistent access to these files
+    // prevents crashes during app recomposition
+    private fun grantPersistablePermission(uri: Uri) {
+        appContext?.contentResolver ?: return // Skip in preview/tests
+        runCatching {
+            appContext
+                ?.contentResolver
+                ?.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+    }
+
+    fun removeAttachments(uris: Collection<Uri>) {
+        _uiState.update { it.copy(attachments = it.attachments - uris) }
     }
 }
