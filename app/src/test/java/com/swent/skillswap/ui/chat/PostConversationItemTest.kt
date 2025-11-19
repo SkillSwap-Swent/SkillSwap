@@ -28,7 +28,8 @@ class PostConversationItemTest {
             title = "Graphic Design Help",
             description = "desc",
             ownerId = "u1",
-            tags = setOf(SkillTag.COMPUTER_PROGRAMMING, SkillTag.DATA_STRUCTURES),
+            setOf(SkillTag.COMPUTER_PROGRAMMING),
+            emptySet(),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Timestamp.now().seconds + 86400, 0),
             creation = Timestamp(Timestamp.now().seconds - 10, 0),
@@ -38,7 +39,7 @@ class PostConversationItemTest {
         )
 
     @Test
-    fun renders_username_title_and_tags() {
+    fun renders_username_title_and_skills() {
         val user = User("u1", "Sarah Chen", "sarah@example.com", "", emptySet(), 4.8f, emptyList())
 
         composeRule.setContent {
@@ -59,7 +60,7 @@ class PostConversationItemTest {
     }
 
     @Test
-    fun formats_tag_names_with_readable_casing() {
+    fun formats_skills_names_with_readable_casing() {
         composeRule.setContent {
             MaterialTheme { PostConversationItem(post = offer(), user = null, onClick = {}) }
         }
@@ -69,8 +70,8 @@ class PostConversationItemTest {
     }
 
     @Test
-    fun handles_no_tags_gracefully() {
-        val noTagOffer = offer().copy(tags = emptySet())
+    fun handles_no_skills_gracefully() {
+        val noTagOffer = offer().copy(skills = emptySet())
         composeRule.setContent {
             MaterialTheme { PostConversationItem(post = noTagOffer, user = null, onClick = {}) }
         }
@@ -80,11 +81,11 @@ class PostConversationItemTest {
     }
 
     @Test
-    fun renders_only_first_two_tags_when_more_present() {
+    fun renders_only_first_two_skills_when_more_present() {
         val manyTags =
             offer()
                 .copy(
-                    tags =
+                    skills =
                         setOf(
                             SkillTag.COMPUTER_PROGRAMMING,
                             SkillTag.DATA_STRUCTURES,

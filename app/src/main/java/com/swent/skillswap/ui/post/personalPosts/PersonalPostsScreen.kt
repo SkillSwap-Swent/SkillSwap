@@ -23,7 +23,6 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostFirestoreRepository
-import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.utils.SkillPill
 
 object PersonalPostsScreenTags {
@@ -269,61 +268,38 @@ private fun PostItem(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
 
-            // Tags/Skills
-            if (post.tags.isNotEmpty()) {
+            if (post.skills.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    post.tags.take(3).forEach { tag ->
-                        if (tag is SkillTag) {
-                            SkillPill(skill = tag, isSelected = false, onClick = {})
-                        } else {
-                            // Fallback for other tag types
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.secondaryContainer
-                            ) {
-                                Text(
-                                    text =
-                                        tag.toString()
-                                            .replace("_", " ")
-                                            .lowercase()
-                                            .replaceFirstChar { it.uppercase() },
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
-                    }
-                    if (post.tags.size > 3) {
-                        Text(
-                            text = "+${post.tags.size - 3}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                    post.skills.take(3).forEach { skill ->
+                        SkillPill(skill = skill, isSelected = false, onClick = {})
                     }
                 }
+                if (post.skills.size > 3) {
+                    Text(
+                        text = "+${post.skills.size - 3}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
             }
+        }
 
-            // Payment method and status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Payment: ${post.paymentMethod.name.replace("_", " ")}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-                Text(
-                    text = post.status.name.lowercase().replaceFirstChar { it.uppercase() },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
+        // Payment method and status
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                text = "Payment: ${post.paymentMethod.name.replace("_", " ")}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+            Text(
+                text = post.status.name.lowercase().replaceFirstChar { it.uppercase() },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
 }

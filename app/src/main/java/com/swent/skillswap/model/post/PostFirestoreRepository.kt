@@ -14,7 +14,8 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.calculateDistance
 import com.swent.skillswap.model.utils.RepositoryException
 import kotlinx.coroutines.tasks.await
@@ -34,7 +35,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         titleContains: String,
         ownerId: String,
         paymentMethod: PaymentMethod?,
-        tags: Set<EveryTag>,
+        skills: Set<SkillTag>,
+        tags: Set<PostTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
         maxDistanceKm: Double?
@@ -42,7 +44,16 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         return try {
             // Build query and get posts
             val query: Query =
-                buildQuery(type, ownerId, status, titleContains, paymentMethod, tags, numberOfPosts)
+                buildQuery(
+                    type,
+                    ownerId,
+                    status,
+                    titleContains,
+                    paymentMethod,
+                    skills,
+                    tags,
+                    numberOfPosts
+                )
             var posts = query.get().await().map { documentToPost(it) }
 
             if (userLocation != null && maxDistanceKm != null) {
@@ -66,7 +77,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         status: PostStatus?,
         titleContains: String,
         paymentMethod: PaymentMethod?,
-        tags: Set<EveryTag>,
+        skills: Set<SkillTag>,
+        tags: Set<PostTag>,
         numberOfPosts: Long
     ): Query {
         var query: Query = getCollectionPath(type)
@@ -85,7 +97,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         // perform complex searchKeys filter to bypass limit of single whereArrayContainsAny per
         // query, current implementation is limited to using the first 10 search keys, the rest are
         // ignored
-        val searchKeys = buildSearchKeys(titleContains, tags)
+        val searchKeys = buildSearchKeys(titleContains, skills, tags)
         if (searchKeys.isNotEmpty()) {
             query = query.whereArrayContainsAny("searchKeys", searchKeys)
         }
@@ -98,15 +110,21 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
      * are used to perform a complex search in Firestore.
      *
      * @param titleContains The title to search for.
+     * @param skills the skill to filter by
      * @param tags The tags to filter by.
      * @return A list of search keys. Note: Firestore's 'array-contains-any' is limited to a maximum
      *   of 10 elements in the comparison array, so this function returns at most 10 distinct search
      *   keys.
      */
-    private fun buildSearchKeys(titleContains: String, tags: Set<EveryTag>): List<String> {
+    private fun buildSearchKeys(
+        titleContains: String,
+        skills: Set<SkillTag>,
+        tags: Set<PostTag>
+    ): List<String> {
         val searchKeys = mutableListOf<String>()
         if (titleContains.isNotBlank())
             searchKeys.addAll(titleContains.split(" ").map { it.lowercase() })
+        if (skills.isNotEmpty()) searchKeys.addAll(skills.map { it.toString().lowercase() })
         if (tags.isNotEmpty()) searchKeys.addAll(tags.map { it.toString().lowercase() })
         return searchKeys.distinct().take(FirestoreSettings.MAX_SEARCH_KEYS)
     }
@@ -178,14 +196,29 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val expiry = requireField("expiry", document.getTimestamp("expiry"))
         val creation = requireField("creation", document.getTimestamp("creation"))
         val location = requireField("location", document.getGeoPoint("location"))
-
+        val skills =
+            requireField(
+                "skills",
+                (document.get("skills") as? List<*>)
+                    ?.mapNotNull {
+                        try {
+                            SkillTag.valueOf(it.toString())
+                        } catch (e: IllegalArgumentException) {
+                            throw IllegalArgumentException(
+                                "Invalid skill entry: $it — ${e.message}",
+                                e
+                            )
+                        }
+                    }
+                    ?.toSet()
+            )
         val tags =
             requireField(
                 "tags",
                 (document.get("tags") as? List<*>)
                     ?.mapNotNull {
                         try {
-                            EveryTag.valueOf(it.toString())
+                            PostTag.valueOf(it.toString())
                         } catch (e: IllegalArgumentException) {
                             throw IllegalArgumentException(
                                 "Invalid tag entry: $it — ${e.message}",
@@ -229,6 +262,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         title,
                         description,
                         ownerId,
+                        skills,
                         tags,
                         paymentMethod,
                         expiry,
@@ -300,6 +334,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             title = post.title,
             description = post.description,
             ownerId = post.ownerId,
+            skills = post.skills.toList(),
             tags = post.tags.toList(),
             paymentMethod = post.paymentMethod,
             expiry = post.expiry,

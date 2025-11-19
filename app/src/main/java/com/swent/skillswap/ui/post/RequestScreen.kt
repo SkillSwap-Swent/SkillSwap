@@ -180,7 +180,7 @@ fun RequestScreen(
                             .filter {
                                 tagsQuery.value.isNotBlank() &&
                                     it.name.contains(tagsQuery.value, ignoreCase = true) &&
-                                    it !in uiState.tags // Exclude already selected tags
+                                    it !in uiState.skills // Exclude already selected tags
                             }
                             .take(MAX_SEARCH_KEYS)
                     }
@@ -252,7 +252,7 @@ fun RequestScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.verticalScroll(flowScroll)
                 ) {
-                    uiState.tags.forEach { tag ->
+                    uiState.skills.forEach { tag ->
                         Box(
                             modifier =
                                 Modifier.background(

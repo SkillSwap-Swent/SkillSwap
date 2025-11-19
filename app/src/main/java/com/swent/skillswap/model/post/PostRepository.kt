@@ -8,7 +8,8 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 
 /**
  * Interface for the post repository, which handles all the database operations related to posts.
@@ -33,6 +34,7 @@ interface PostRepository {
      * @param titleContains: The title of the post to filter by.
      * @param ownerId: The ID of the owner of the post to filter by.
      * @param paymentMethod The accepted payment methods to filter by.
+     * @param skills the skill to filter by.
      * @param tags The list of tags to filter by. Applies OR logic (any of).
      * @param status The status of the posts to retrieve. Applies OR logic (any of).
      * @return A list of posts matching the criteria.
@@ -45,7 +47,8 @@ interface PostRepository {
         titleContains: String = "",
         ownerId: String = "",
         paymentMethod: PaymentMethod? = null,
-        tags: Set<EveryTag> = emptySet(),
+        skills: Set<SkillTag> = emptySet(),
+        tags: Set<PostTag> = emptySet(),
         status: PostStatus? = null,
         userLocation: GeoPoint? = null,
         maxDistanceKm: Double? = null
