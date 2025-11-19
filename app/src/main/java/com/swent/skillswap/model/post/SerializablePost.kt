@@ -19,4 +19,4 @@ data class SerializablePost(
     override val type: PostType,
     override val postReplies: List<PostReply>,
     override val location: GeoPoint
-) : Post, Serializable
+) : BasePost(), Serializable
