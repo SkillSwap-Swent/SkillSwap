@@ -35,7 +35,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 availability = deserializeAvailabilities(data["availability"] as String),
                 preference = deserializePreference(data["preference"] as String),
                 location = data["location"] as GeoPoint,
-                fcmToken = data["fcmToken"] as? String
+                fcmToken = (data["fcmToken"] as? String)?.takeIf { it.isNotBlank() }
             )
         } catch (e: Exception) {
             Log.e("UserRepoFirestore", "Error while getting user in getUser", e)
