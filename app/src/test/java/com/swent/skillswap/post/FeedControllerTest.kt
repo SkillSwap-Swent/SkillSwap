@@ -22,7 +22,8 @@ open class FeedControllerTest : PostDataClassTest() {
                     recommendationEngine = RecommendationEngine(),
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = repo,
-                    chatRepository = ChatRepository()
+                    chatRepository = ChatRepository(),
+                    locationManager = null
                 )
                 .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
 
