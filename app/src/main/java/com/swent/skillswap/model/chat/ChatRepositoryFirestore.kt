@@ -1,34 +1,55 @@
 package com.swent.skillswap.model.chat
 
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
+import com.swent.skillswap.model.post.PostType
 import java.util.UUID
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Firestore implementation of the ChatRepository interface.
+ *
+ * The structure of this component of the database is as follows:
+ * - Collection: "chats"
+ *     - Document: "{chatId}"
+ *     - Field: Chat (object)
+ *
+ * @property db The FirebaseFirestore instance for database operations
+ */
 class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepository {
 
-    /**
-     * Creates a new chat with the specified participants.
-     *
-     * @param chatId The ID of the chat to create
-     * @throws IllegalArgumentException if chat cannot be created
-     */
-    private suspend fun createChat(chatId: String) {
+    override suspend fun createChat(
+        participants: List<String>,
+        relatedPostId: String,
+        relatedPostType: PostType
+    ): String {
         /** Precondition */
-        require(chatId.isNotBlank()) { "new chatUid cannot be empty" }
+        require(participants.isNotEmpty()) { "participants list cannot be empty" }
 
+        val chatId = generateUniqueId()
         /** Create chat */
         try {
             val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId)
-            val newChat = mapOf("messages" to emptyList<Message>())
+            val newChat =
+                mapOf(
+                    "id" to chatId,
+                    "participants" to participants,
+                    "relatedPostId" to relatedPostId,
+                    "relatedPostType" to relatedPostType,
+                    "messages" to emptyList<Message>()
+                )
             document.set(newChat).await()
         } catch (e: Exception) {
             throw Exception("Error while creating chat in createChat: ${e.message}")
         }
+        return chatId
     }
 
     /**
@@ -36,7 +57,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
      *
      * @return A unique message ID as a String
      */
-    fun getMessageId(): String {
+    private fun generateUniqueId(): String {
         return UUID.randomUUID().toString()
     }
 
@@ -46,10 +67,10 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         require(senderId.isNotEmpty()) { "senderId cannot be empty" }
         require(content.isNotEmpty()) { "content cannot be empty" }
 
-        /** Send message */
+        /** Build and send message */
         val message =
             Message(
-                id = getMessageId(),
+                id = generateUniqueId(),
                 senderId = senderId,
                 content = content,
                 timestamp = System.currentTimeMillis()
@@ -57,9 +78,9 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         try {
             val document = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId)
             if (!document.get().await().exists()) {
-                createChat(chatId)
+                throw Exception("Chat with ID $chatId does not exist")
             }
-            // Append the new message to the existing messages list
+            // Append the new message to the existing chat's messages list
             document.update("messages", FieldValue.arrayUnion(serializeMessage(message))).await()
         } catch (e: Exception) {
             throw Exception("Error while sending message in sendMessage: ${e.message}")
@@ -94,5 +115,50 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             }
         /** Clean up listener on flow cancellation */
         awaitClose { registration.remove() }
+    }
+
+    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+
+        val currentUserId =
+            try {
+                Firebase.auth.currentUser?.uid ?: throw Exception("No authenticated user found")
+            } catch (e: Exception) {
+                throw Exception("Error while retrieving current user ID: ${e.message}")
+            }
+
+        val allDocs =
+            try {
+                db.collection(FirestorePaths.CHATS_COLLECTION)
+                    .whereArrayContains("participants", currentUserId)
+                    .get()
+                    .await()
+            } catch (e: Exception) {
+                throw Exception("Error while fetching chats in getChatsOfCurrentUser: ${e.message}")
+            }
+
+        // Filter chats by related post type
+        return allDocs
+            .mapNotNull { doc ->
+                try {
+                    documentToChat(doc)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            .filter { it.relatedPostType == relatedPostType }
+    }
+
+    private fun documentToChat(document: DocumentSnapshot): Chat {
+        val id = document.getString("id") ?: ""
+        val participants: List<String> =
+            document.get("participants") as? List<String> ?: emptyList()
+        val relatedPostId = document.getString("relatedPostId") ?: ""
+        val relatedPostType = PostType.valueOf(document.getString("relatedPostType") ?: "REQUEST")
+        val messagesData = document.get("messages") as? List<*> ?: emptyList<Any>()
+        val messages =
+            messagesData.mapNotNull {
+                deserializeMessage((it as? String) ?: return@mapNotNull null)
+            }
+        return Chat(id, participants, relatedPostId, relatedPostType, messages)
     }
 }
