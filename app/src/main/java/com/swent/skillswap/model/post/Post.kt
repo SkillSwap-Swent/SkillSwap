@@ -86,7 +86,7 @@ interface Post {
         return uid.isNotBlank() &&
             title.isNotBlank() &&
             description.isNotBlank() &&
-            tags.isNotEmpty() &&
+            skills.isNotEmpty() &&
             expiry.toDate().after(Timestamp.now().toDate())
     }
 }

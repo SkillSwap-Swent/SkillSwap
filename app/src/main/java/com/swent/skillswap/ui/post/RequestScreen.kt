@@ -171,10 +171,11 @@ private fun TitleInput(value: String, error: String, onValueChange: (String) -> 
         supportingText = {
             if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
         },
-        modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(RequestScreenTags.TITLE_INPUT)
     )
 }
-
 // Description Input
 @Composable
 private fun DescriptionInput(value: String, error: String, onValueChange: (String) -> Unit) {
@@ -224,16 +225,16 @@ private fun TagInputSection(
             supportingText = {
                 if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
             },
-            modifier =
-                Modifier.fillMaxWidth()
-                    .onFocusChanged {
-                        tagsHasFocus = it.isFocused
-                        if (it.isFocused && tagsQuery.isNotBlank()) tagsExpanded = true
-                    }
-                    .testTag(RequestScreenTags.TAGS_INPUT)
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged {
+                    tagsHasFocus = it.isFocused
+                    if (it.isFocused && tagsQuery.isNotBlank()) tagsExpanded = true
+                }
+                .testTag(RequestScreenTags.TAGS_INPUT)
         )
 
-        androidx.compose.material3.DropdownMenu(
+        DropdownMenu(
             expanded = tagsExpanded && tagsHasFocus && suggestions.isNotEmpty(),
             onDismissRequest = { tagsExpanded = false },
             properties = PopupProperties(focusable = false),
@@ -259,7 +260,11 @@ private fun TagInputSection(
         }
 
         // Display selected tags as chips
-        Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth()
+        ) {
             val scroll = rememberScrollState()
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -268,14 +273,14 @@ private fun TagInputSection(
             ) {
                 selectedTags.forEach { tag ->
                     Box(
-                        modifier =
-                            Modifier.background(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    RoundedCornerShape(16.dp)
-                                )
-                                .clickable { onRemoveTag(tag) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                                .testTag("${RequestScreenTags.TAG_CHIP}_$tag")
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                RoundedCornerShape(16.dp)
+                            )
+                            .clickable { onRemoveTag(tag) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .testTag("${RequestScreenTags.TAG_CHIP}_$tag")
                     ) {
                         Text(
                             tag.name.replace("_", " "),
