@@ -490,9 +490,15 @@ class FeedScreenInstrumentedTest {
         // Wait for distance filter popup to fully render
         composeTestRule.waitUntil(timeoutMillis = 5_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER)
+                    .assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+                    .assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -517,10 +523,11 @@ class FeedScreenInstrumentedTest {
         // Wait until distance value text updates to ~10 km
         composeTestRule.waitUntil(timeoutMillis = 5_000L) {
             try {
-                val distanceText = composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
-                    .fetchSemanticsNode()
-                    .getTextString() ?: ""
+                val distanceText =
+                    composeTestRule
+                        .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+                        .fetchSemanticsNode()
+                        .getTextString() ?: ""
                 distanceText.contains("10 km", ignoreCase = true)
             } catch (e: Exception) {
                 false
@@ -528,9 +535,7 @@ class FeedScreenInstrumentedTest {
         }
 
         // Dismiss the slider by clicking outside of it
-        composeTestRule.onRoot().performTouchInput {
-            click(bottomCenter)
-        }
+        composeTestRule.onRoot().performTouchInput { click(bottomCenter) }
         composeTestRule.waitForIdle()
 
         // After filter applied, feed should refresh showing postMedium (newest within 10km)
