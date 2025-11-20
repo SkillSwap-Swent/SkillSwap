@@ -122,8 +122,6 @@ fun FeedScreen(
             }
         }
 
-
-
         if (offer == null) {
             // === No Offer Available ===
             Text(
