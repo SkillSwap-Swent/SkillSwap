@@ -2,8 +2,10 @@
 
 package com.swent.skillswap.ui.chat
 
+import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +26,7 @@ class ChatViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         fakeRepo = FakeChatRepository()
         // Initialize new view model. This implies startListening is called.
-        viewModel = ChatViewModel(fakeRepo, "user1", "chat1")
+        viewModel = ChatViewModel(fakeRepo, "chat1")
     }
 
     @After
@@ -78,6 +80,18 @@ class ChatViewModelTest {
 
         override suspend fun sendMessage(chatId: String, senderId: String, content: String) {
             sentMessages.add(SentMessage(chatId, senderId, content))
+        }
+
+        override suspend fun createChat(
+            participants: List<String>,
+            relatedPostId: String,
+            relatedPostType: PostType
+        ): String {
+            return "fake-chat-id"
+        }
+
+        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+            return emptyList()
         }
 
         fun addMessages(messages: List<Message>) {
