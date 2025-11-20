@@ -464,7 +464,7 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Verify suggestion appears (FLUID_MECHANICS contains "flu")
-        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+        composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS").assertIsDisplayed()
     }
 
     @Test
@@ -486,12 +486,16 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Click on the suggestion
-        scrollAndClick("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .performClick()
 
         composeTestRule.waitForIdle()
 
         // Verify tag chip appears
-        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
+            .assertIsDisplayed()
 
         // Verify input is cleared
         composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assert(hasText(""))
@@ -574,7 +578,7 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Should still find FLUID_MECHANICS
-        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+        composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS").assertIsDisplayed()
     }
 
     @Test
