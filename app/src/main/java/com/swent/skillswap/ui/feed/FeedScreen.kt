@@ -130,7 +130,6 @@ fun FeedScreen(
                     distance = it
                     vm.updateDistanceFilter(it)
                 },
-                onDismiss = { showDistanceSlider = false },
                 modifier =
                     Modifier.align(if (offer == null) Alignment.TopCenter else Alignment.TopCenter)
                         .padding(top = if (offer == null) 0.dp else 8.dp),
@@ -339,7 +338,6 @@ fun FeedOfferMenu(onBlockUser: () -> Unit, onReportOffer: () -> Unit, onDismiss:
 fun FeedDistanceFilterButton(
     distance: Float,
     onDistanceChange: (Float) -> Unit,
-    onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     onLiveLocationClicked: () -> Unit,
     checked: Boolean
@@ -364,7 +362,11 @@ fun FeedDistanceFilterButton(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(checked = checked, onCheckedChange = { onLiveLocationClicked() })
+                Checkbox(
+                    checked = checked,
+                    onCheckedChange = { onLiveLocationClicked() },
+                    modifier = Modifier.testTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX)
+                )
                 Text(text = "Use Live Location", style = MaterialTheme.typography.bodyMedium)
             }
 
@@ -375,8 +377,7 @@ fun FeedDistanceFilterButton(
                 onValueChange = onDistanceChange,
                 valueRange = 1f..20f,
                 steps = 20,
-                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_SLIDER),
-                onValueChangeFinished = onDismiss
+                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_SLIDER)
             )
 
             Text(
