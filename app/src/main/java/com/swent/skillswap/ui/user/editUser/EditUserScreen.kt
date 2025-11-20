@@ -101,6 +101,19 @@ fun EditUserScreen(
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
+                SkillSwapOutlinedTextField(
+                    value = url,
+                    onValueChange = {
+                        url = it
+                        vm.setProfilePicture(it)
+                    },
+                    label = "profile picture URL",
+                    placeholder = "Put your profile picture URL here",
+                    supportText = uiState.profilePictureError.orEmpty(),
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+                )
+
                 Button(
                     onClick = {
                         url = ""
@@ -120,21 +133,6 @@ fun EditUserScreen(
                         color = MaterialTheme.colorScheme.onError
                     )
                 }
-
-                Spacer(modifier = Modifier.weight(0.05f))
-
-                SkillSwapOutlinedTextField(
-                    value = url,
-                    onValueChange = {
-                        url = it
-                        vm.setProfilePicture(it)
-                    },
-                    label = "profile picture URL",
-                    placeholder = "Put your profile picture URL here",
-                    supportText = uiState.profilePictureError.orEmpty(),
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-                )
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
@@ -235,22 +233,39 @@ private fun SuccessMessage(isSaved: Boolean) {
 
 @Composable
 private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: () -> Unit) {
-    SkillSwapShadowButton(
-        onClick = onValidate,
-        modifier = Modifier.height(56.dp).testTag(EditUserTags.VALIDATE_BUTTON)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp), // space between buttons
+        modifier = Modifier.padding(8.dp) // optional padding around the row
     ) {
-        Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Save")
-        Spacer(modifier = Modifier.width(5.dp))
-        Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
-    }
+        SkillSwapShadowButton(
+            onClick = onGoBack,
+            modifier = Modifier
+                .height(56.dp)
+                .weight(1f)
+                .testTag(EditUserTags.GO_BACK_BUTTON)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                contentDescription = "Back"
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
+        }
 
-    SkillSwapShadowButton(
-        onClick = onGoBack,
-        modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON)
-    ) {
-        Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
-        Spacer(modifier = Modifier.width(5.dp))
-        Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
+        SkillSwapShadowButton(
+            onClick = onValidate,
+            modifier = Modifier
+                .height(56.dp)
+                .weight(1f) // optional: make buttons equally wide
+                .testTag(EditUserTags.VALIDATE_BUTTON)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Default.ArrowForward,
+                contentDescription = "Save"
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
+        }
     }
 }
 
