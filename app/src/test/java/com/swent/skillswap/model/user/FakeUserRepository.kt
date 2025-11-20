@@ -8,6 +8,13 @@ import kotlinx.coroutines.delay
  * testing success/failure cases without actual database interactions.
  */
 class FakeUserRepository : UserRepositery {
+    companion object {
+        private const val ERROR_GET_FAILURE = "Simulated get failure"
+        private const val ERROR_ADD_FAILURE = "Simulated add failure"
+        private const val ERROR_EDIT_FAILURE = "Simulated edit failure"
+        private const val ERROR_UPDATE_FCM_TOKEN_FAILURE = "Simulated updateFcmToken failure"
+    }
+
     private val users = mutableMapOf<String, User>()
     private var uidCounter = 0
     private var shouldFailOnAdd = false
@@ -50,7 +57,7 @@ class FakeUserRepository : UserRepositery {
             delay(delayMillis)
         }
         if (shouldFailOnGet) {
-            throw Exception("Simulated get failure")
+            throw Exception(ERROR_GET_FAILURE)
         }
         return users[userID] ?: throw Exception("User not found: $userID")
     }
@@ -60,7 +67,7 @@ class FakeUserRepository : UserRepositery {
             delay(delayMillis)
         }
         if (shouldFailOnAdd) {
-            throw Exception("Simulated add failure")
+            throw Exception(ERROR_ADD_FAILURE)
         }
         users[user.uid] = user
     }
@@ -70,7 +77,7 @@ class FakeUserRepository : UserRepositery {
             delay(delayMillis)
         }
         if (shouldFailOnEdit) {
-            throw Exception("Simulated edit failure")
+            throw Exception(ERROR_EDIT_FAILURE)
         }
         if (!users.containsKey(userID)) {
             throw Exception("Cannot edit non-existent user: $userID")
@@ -91,7 +98,7 @@ class FakeUserRepository : UserRepositery {
             delay(delayMillis)
         }
         if (shouldFailOnUpdateFcmToken) {
-            throw Exception("Simulated updateFcmToken failure")
+            throw Exception(ERROR_UPDATE_FCM_TOKEN_FAILURE)
         }
         val user = users[userId] ?: throw Exception("User not found: $userId")
         users[userId] = user.copy(fcmToken = fcmToken)
