@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -21,6 +22,15 @@ import androidx.compose.ui.unit.dp
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
+
+object ChatListTestTags {
+    const val SCREEN = "ChatListScreen"
+    const val TITLE = "ChatListTitle"
+    const val OFFER = "OfferFilterButton"
+    const val REQUEST = "RequestFilterButton"
+    const val POSTS_LIST = "PostsList"
+    const val EMPTY_STATE = "EmptyState"
+}
 
 /**
  * Chat list screen that displays conversations with posts instead of users. Shows posts in
@@ -35,14 +45,15 @@ fun ChatListScreen(
 ) {
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
         // Title
         Text(
             text = "Chat",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+            modifier =
+                Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
         )
 
         // Post Type Filter Buttons
@@ -54,14 +65,14 @@ fun ChatListScreen(
                 text = "Offer",
                 isSelected = selectedPostType == PostType.OFFER,
                 onClick = { selectedPostType = PostType.OFFER },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.OFFER)
             )
 
             PostTypeFilterButton(
                 text = "Request",
                 isSelected = selectedPostType == PostType.REQUEST,
                 onClick = { selectedPostType = PostType.REQUEST },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.REQUEST)
             )
         }
 
@@ -71,7 +82,10 @@ fun ChatListScreen(
 
         if (filteredPosts.isEmpty()) {
             // Empty state
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = "No ${selectedPostType.name.lowercase()} posts available",
                     style = MaterialTheme.typography.bodyLarge,
@@ -80,7 +94,10 @@ fun ChatListScreen(
                 )
             }
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
+            ) {
                 items(filteredPosts) { post ->
                     PostConversationItem(
                         post = post,
@@ -131,10 +148,15 @@ fun PostTypeFilterButton(
 
 /** Individual post conversation item */
 @Composable
-fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
+fun PostConversationItem(
+    post: Post,
+    user: User?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
