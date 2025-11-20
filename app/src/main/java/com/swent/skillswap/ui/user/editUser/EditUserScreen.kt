@@ -156,7 +156,7 @@ private fun ProfilePictureSection(
     onDelete: () -> Unit
 ) {
     Box(modifier = Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp)) {
-        if (!url.isNullOrEmpty()) {
+        if (url.isNotEmpty()) {
             AsyncImage(
                 model = url,
                 contentDescription = "Profile picture",
