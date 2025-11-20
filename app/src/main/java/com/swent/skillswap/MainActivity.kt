@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
         val locationManager = LocationManager(this)
 
         // Request location permissions on app start if not already granted
-        if (!locationManager.hasLocationPermission()) {
+        if (!locationManager.hasLocationPermission() && !BuildConfig.IS_TESTING) {
             requestLocationPermissions()
         }
 
