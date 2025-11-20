@@ -34,13 +34,8 @@ class AuthClassicModel(
         val password = classicParams.password
         val skills = classicParams.skills
         val username = classicParams.username
-        val repo = UserRepoFirestore(firestore)
-        require(
-            email.isNotBlank() &&
-                password.isNotBlank() &&
-                skills.isNotEmpty() &&
-                username.isNotBlank()
-        )
+        val repo = UserRepoFirestore(db)
+        require(email.isNotBlank() && password.isNotBlank() && username.isNotBlank())
         val result = auth.createUserWithEmailAndPassword(email, password).await()
         val user = result.user
         val skillSet = mutableSetOf<Skill>()

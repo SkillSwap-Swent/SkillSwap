@@ -6,9 +6,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.swent.skillswap.SkillSwapApp
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
+import com.swent.skillswap.ui.feed.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.*
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.ProfileTestTags
 import org.junit.Before
 import org.junit.Rule

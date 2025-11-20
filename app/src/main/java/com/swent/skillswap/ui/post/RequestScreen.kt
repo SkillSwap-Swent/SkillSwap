@@ -57,7 +57,7 @@ import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.GradientButton
 
 object RequestScreenTags {
@@ -180,7 +180,7 @@ fun RequestScreen(
                             .filter {
                                 tagsQuery.value.isNotBlank() &&
                                     it.name.contains(tagsQuery.value, ignoreCase = true) &&
-                                    it !in uiState.tags // Exclude already selected tags
+                                    it !in uiState.skills // Exclude already selected tags
                             }
                             .take(MAX_SEARCH_KEYS)
                     }
@@ -252,20 +252,19 @@ fun RequestScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.verticalScroll(flowScroll)
                 ) {
-                    uiState.tags.forEach { tag ->
+                    uiState.skills.forEach { skills ->
                         Box(
                             modifier =
                                 Modifier.background(
                                         color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { requestViewModel.removeTag(tag) }
+                                    .clickable { requestViewModel.removeTag(skills) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    .testTag("${RequestScreenTags.TAG_CHIP}_${tag}")
+                                    .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
                         ) {
                             Text(
-                                text =
-                                    (tag as? SkillTag)?.name?.replace("_", " ") ?: tag.toString(),
+                                text = skills.name.replace("_", " "),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )

@@ -35,4 +35,13 @@ interface UserRepositery {
      * @return if the user exist or not in firestore
      */
     suspend fun userExists(userId: String): Boolean
+
+    /**
+     * Updates the FCM token for a specific user.
+     *
+     * @param userId The ID of the user whose FCM token to update.
+     * @param fcmToken The new FCM token to save.
+     * @throws Exception if the user does not exist or update fails.
+     */
+    suspend fun updateFcmToken(userId: String, fcmToken: String)
 }

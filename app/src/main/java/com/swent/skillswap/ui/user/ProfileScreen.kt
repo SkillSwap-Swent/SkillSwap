@@ -40,7 +40,6 @@ import com.swent.skillswap.ui.user.ProfileTestTags.PROFILE_PICTURE_IMAGE
 import com.swent.skillswap.ui.user.ProfileTestTags.SKILLS_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.USERNAME_VALUE
 import com.swent.skillswap.ui.utils.SkillSwapEditButton
-import com.swent.skillswap.viewModel.ProfileViewModel
 
 object ProfileTestTags {
     const val PROFILE_TITLE = "profile_title"

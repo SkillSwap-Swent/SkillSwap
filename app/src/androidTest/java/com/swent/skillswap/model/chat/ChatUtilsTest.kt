@@ -3,6 +3,8 @@
  */
 package com.swent.skillswap.model.chat
 
+import com.swent.skillswap.model.utils.deserializeMessage
+import com.swent.skillswap.model.utils.serializeMessage
 import org.junit.Assert.*
 import org.junit.Test
 

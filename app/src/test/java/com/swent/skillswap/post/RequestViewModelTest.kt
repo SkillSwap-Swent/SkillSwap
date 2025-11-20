@@ -6,6 +6,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestViewModel
 import java.util.Date
@@ -37,6 +38,7 @@ class RequestViewModelTest {
             title = "Need Kotlin Help",
             description = "Looking for someone to teach Kotlin basics",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -61,7 +63,7 @@ class RequestViewModelTest {
         assertEquals("", state.uid)
         assertEquals("", state.title)
         assertEquals("", state.description)
-        assertTrue(state.tags.isEmpty())
+        assertTrue(state.skills.isEmpty())
         assertTrue(state.paymentMethod == PaymentMethod.SKILLS)
         assertFalse(state.isLoading)
         assertFalse(state.isSubmitSuccessful)
@@ -79,6 +81,7 @@ class RequestViewModelTest {
         assertEquals(sampleRequest.uid, state.uid)
         assertEquals(sampleRequest.title, state.title)
         assertEquals(sampleRequest.description, state.description)
+        assertEquals(sampleRequest.skills, state.skills)
         assertEquals(sampleRequest.tags, state.tags)
         assertEquals(sampleRequest.paymentMethod, state.paymentMethod)
     }

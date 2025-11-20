@@ -19,12 +19,14 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.ui.editUser.EditUserScreen
-import com.swent.skillswap.ui.editUser.EditUserTags
-import com.swent.skillswap.ui.editUser.EditUserViewModel
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
+import com.swent.skillswap.ui.user.editUser.EditUserScreen
+import com.swent.skillswap.ui.user.editUser.EditUserTags
+import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.utils.FirebaseEmulator
+import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.Before
@@ -182,7 +184,7 @@ class EditUserScreenTest : TestCase() {
             composeTestRule.waitForIdle()
 
             // Verify error disappears
-            assert(viewModel.uiState.value.usernameError == null)
+            assertNull(viewModel.uiState.value.usernameError)
         }
     }
 
@@ -258,7 +260,7 @@ class EditUserScreenTest : TestCase() {
     }
 
     @Test
-    fun validateButtonPerformsUserUpdate() = runBlocking {
+    fun validateButtonPerformsUserUpdate() = run {
         composeTestRule.setContent {
             SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
         }
@@ -278,8 +280,22 @@ class EditUserScreenTest : TestCase() {
             .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
             .performTextInput("UpdatedChef")
 
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+            .performScrollTo()
+            .performTextClearance()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+            .performTextInput(
+                "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png"
+            )
+
         // Check that UI state is updated
-        assert(viewModel.uiState.value.editedUser!!.username == "UpdatedChef")
+        assertEquals("UpdatedChef", viewModel.uiState.value.editedUser!!.username)
 
         // Click validate button
         composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
@@ -289,9 +305,149 @@ class EditUserScreenTest : TestCase() {
 
         assertNotNull(Firebase.auth.currentUser)
 
-        val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
+        step("Verify user data is updated in repository") {
+            runBlocking {
+                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
-        assert(editedUser.username == "UpdatedChef")
-        // Email is no longer editable in EditUserScreen, so we don't assert it here
+                assertEquals("UpdatedChef", editedUser.username)
+                assertEquals(
+                    "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png",
+                    editedUser.profilePicture
+                )
+            }
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
+                .performScrollTo()
+                .assertIsDisplayed()
+        }
+
+        step("Edit profile picture again") {
+            composeTestRule.waitForIdle()
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+                .performScrollTo()
+                .performTextClearance()
+
+            composeTestRule.waitForIdle()
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+                .performTextInput(
+                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
+                )
+
+            // Click validate button
+            composeTestRule
+                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+                .performScrollTo()
+                .performClick()
+
+            // Wait for save operation to complete
+            // Here we cannot use IsSaved because it is already true from previous save => To fix in
+            // a next sprint
+            composeTestRule.waitUntil(timeoutMillis = 5000) {
+                runBlocking {
+                    repo.getUser(Firebase.auth.currentUser!!.uid).profilePicture ==
+                        "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
+                }
+            }
+        }
+
+        step("Verify profile picture is updated in repository") {
+            runBlocking {
+                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
+
+                assertEquals("UpdatedChef", editedUser.username) // same as before
+                assertEquals(
+                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
+                    editedUser.profilePicture
+                )
+            }
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
+                .performScrollTo()
+                .assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun deleteProfilePictureRemoveURLFromRepoAndDisplayDefaultProfilePicture() = run {
+        composeTestRule.setContent {
+            SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
+        }
+
+        // Wait for user to be loaded
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            viewModel.uiState.value.editedUser != null
+        }
+
+        // Set profile picture URL
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+            .performScrollTo()
+            .performTextClearance()
+
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+            .performTextInput(
+                "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
+            )
+
+        composeTestRule.waitForIdle()
+
+        // Click validate button
+        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
+
+        // Wait for save operation to complete
+        composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
+
+        step("Verify profile picture URL is in repository") {
+            runBlocking {
+                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
+
+                assertEquals(
+                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
+                    editedUser.profilePicture
+                )
+            }
+
+            composeTestRule
+                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
+                .performScrollTo()
+                .assertIsDisplayed()
+        }
+
+        step("Delete profile picture URL and validate") {
+            // Clear profile picture URL
+            composeTestRule
+                .onNodeWithTag(EditUserTags.DELETE_PROFILE_PICTURE)
+                .performScrollTo()
+                .performClick()
+
+            composeTestRule.waitForIdle()
+
+            // Click validate button
+            composeTestRule
+                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+                .performScrollTo()
+                .performClick()
+
+            // Wait for save operation to complete
+            composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
+
+            // Check that the profile picture content is not displayed (default picture)
+            composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).assertDoesNotExist()
+        }
+
+        step("Verifiy that the repository as been cleaned as well") {
+            runBlocking {
+                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
+
+                assertEquals("", editedUser.profilePicture)
+            }
+        }
     }
 }

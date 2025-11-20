@@ -22,17 +22,13 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
-import com.swent.skillswap.model.offer.ChatRepository
-import com.swent.skillswap.model.offer.FeedControllerFactory
-import com.swent.skillswap.model.offer.RecommendationEngine
-import com.swent.skillswap.model.offer.ThumbnailRepository
+import com.swent.skillswap.model.feed.ChatRepository
+import com.swent.skillswap.model.feed.FeedControllerFactory
+import com.swent.skillswap.model.feed.RecommendationEngine
+import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
-import com.swent.skillswap.ui.feedScreen.FeedScreen
-import com.swent.skillswap.ui.feedScreen.FeedScreenNavigation
-import com.swent.skillswap.ui.feedScreen.FeedScreenTestTags
-import com.swent.skillswap.ui.feedScreen.FeedScreenViewModel
-import com.swent.skillswap.ui.feedScreen.FeedScreenViewModelFactory
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Calendar
 import kotlinx.coroutines.runBlocking
@@ -73,6 +69,7 @@ class FeedScreenInstrumentedTest {
             title = title,
             description = "Valid description for $title",
             ownerId = ownerId,
+            skills = setOf(SkillTag.MACHINE_DESIGN).toList(),
             tags = setOf(PostTag.ONE_TIME).toList(),
             expiry = expiry,
             creation = now,
@@ -92,6 +89,7 @@ class FeedScreenInstrumentedTest {
                 "title" to post.title,
                 "description" to post.description,
                 "ownerId" to post.ownerId,
+                "skills" to post.skills.map { it.toString() },
                 "tags" to post.tags.map { it.toString() },
                 "paymentMethod" to post.paymentMethod.toString(),
                 "expiry" to post.expiry,

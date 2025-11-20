@@ -11,6 +11,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreen
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreenTags
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsUiState
+import com.swent.skillswap.ui.post.personalPosts.PersonalPostsViewModel
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
@@ -64,6 +69,7 @@ class PersonalPostsScreenTest {
             title = title,
             description = "Test description",
             ownerId = "test-user",
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),

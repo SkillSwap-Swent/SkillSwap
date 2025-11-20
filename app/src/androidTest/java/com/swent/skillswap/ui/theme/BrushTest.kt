@@ -13,6 +13,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.swent.skillswap.resources.theme.BrushDirection
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
+import com.swent.skillswap.resources.theme.getLinearBrush
 import junit.framework.TestCase.assertTrue
 import org.junit.Rule
 import org.junit.Test

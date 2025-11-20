@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -17,7 +18,7 @@ import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.viewModel.CreateAccountViewModel
+import com.swent.skillswap.ui.auth.CreateAccountViewModel
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -274,11 +275,14 @@ class SignInCreateAccountScreenTest : TestCase() {
     // --- Skills (chips) ---
 
     @Test
-    fun skillsIsEmpty_disablesNextButton() {
+    fun skillsIsEmpty_NextButtonIsEnable() {
         goToSkillsStep()
 
         composeTestRule.waitForIdle()
-        verifyNextButtonIsNotEnabled()
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.NEXT_BUTTON)
+            .assertIsDisplayed()
+            .assertIsEnabled()
     }
 
     @Test

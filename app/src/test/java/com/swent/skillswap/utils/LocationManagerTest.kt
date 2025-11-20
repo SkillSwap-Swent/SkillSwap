@@ -4,6 +4,7 @@ package com.swent.skillswap.utils
 import android.Manifest
 import android.location.Location
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.model.utils.LocationManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*

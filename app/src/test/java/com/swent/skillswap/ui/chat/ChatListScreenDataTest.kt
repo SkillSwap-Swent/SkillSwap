@@ -4,9 +4,9 @@
 // and maintains consistency with the Post and User models used throughout the application.
 package com.swent.skillswap.ui.chat
 
+import com.swent.skillswap.model.chat.ChatListScreenData
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.tags.SkillTag
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -80,7 +80,7 @@ class ChatListScreenDataTest {
         assertNotNull(post.title)
         assertNotNull(post.description)
         assertNotNull(post.ownerId)
-        assertTrue(post.tags.isNotEmpty())
+        assertTrue(post.skills.isNotEmpty())
         assertEquals(PostStatus.POSTED, post.status)
     }
 
@@ -99,8 +99,7 @@ class ChatListScreenDataTest {
         val posts = ChatListScreenData.getSamplePosts()
         val post = posts.first()
 
-        assertTrue(post.tags.isNotEmpty())
-        assertTrue(post.tags.all { it is SkillTag })
+        assertTrue(post.skills.isNotEmpty())
     }
 
     @Test
