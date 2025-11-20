@@ -147,7 +147,8 @@ class FeedScreenInstrumentedTest {
                 recommendationEngine = RecommendationEngine(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
-                chatRepository = ChatRepository()
+                chatRepository = ChatRepository(),
+                locationManager = null
             )
 
         runBlocking { testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid }

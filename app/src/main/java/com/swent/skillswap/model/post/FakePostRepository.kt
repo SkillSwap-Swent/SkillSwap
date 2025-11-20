@@ -62,7 +62,7 @@ class FakePostRepository : PostRepository {
         tags: Set<EveryTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
-        maxDistanceKm: Double?
+        maxDistanceKm: Float
     ): List<Post> {
         if (delayMillis > 0) {
             delay(delayMillis)
@@ -82,7 +82,7 @@ class FakePostRepository : PostRepository {
                 .filter { status == null || it.status == status }
 
         // Filter by distance if location and maxDistance are provided
-        if (userLocation != null && maxDistanceKm != null) {
+        if (userLocation != null && maxDistanceKm != 0f) {
             filteredPosts =
                 filteredPosts.filter { post ->
                     calculateDistance(userLocation, post.location) <= maxDistanceKm

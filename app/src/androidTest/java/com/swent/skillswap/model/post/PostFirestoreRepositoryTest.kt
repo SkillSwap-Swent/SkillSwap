@@ -233,7 +233,7 @@ class PostFirestoreRepositoryTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     userLocation = lausanneLocation,
-                    maxDistanceKm = 5.0
+                    maxDistanceKm = 5f
                 )
 
             assertEquals(1, results.size)
@@ -254,7 +254,7 @@ class PostFirestoreRepositoryTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     userLocation = epflLocation,
-                    maxDistanceKm = 10.0
+                    maxDistanceKm = 10f
                 )
 
             assertTrue(results.isEmpty())
@@ -318,7 +318,7 @@ class PostFirestoreRepositoryTest {
                     titleContains = "Kotlin",
                     userLocation = epflLocation,
                     paymentMethod = PaymentMethod.SKILLSANDCASH,
-                    maxDistanceKm = 10.0
+                    maxDistanceKm = 10f
                 )
 
             // Should only return nearbyMatch (nearby AND contains "Kotlin")

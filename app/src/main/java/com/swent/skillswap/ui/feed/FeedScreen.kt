@@ -4,6 +4,7 @@ package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -25,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.model.utils.LocationManager
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
@@ -44,13 +44,13 @@ import kotlin.text.toInt
 fun FeedScreen(
     swipeThreshold: Float = 50f,
     vm: FeedScreenViewModel = viewModel(),
-    locationManager: LocationManager? = null
 ) {
     val uiState by vm.uiState.collectAsState()
     val offer = uiState
     var showMenu by remember { mutableStateOf(false) }
     var showDistanceSlider by remember { mutableStateOf(false) }
-    var distance by remember { mutableFloatStateOf(10f) }
+    var distance by remember { mutableFloatStateOf(0f) }
+    var isLiveLocationEnabled by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -64,26 +64,62 @@ fun FeedScreen(
     Box(
         modifier =
             Modifier.fillMaxSize()
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                .pointerInput(showDistanceSlider) {
+                    if (showDistanceSlider) {
+                        detectTapGestures { showDistanceSlider = false }
+                    }
+                },
         contentAlignment = Alignment.Center
     ) {
 
-        // Distance Filter Button - placed AFTER Card to appear on top
-        Button(
-            onClick = { showDistanceSlider = !showDistanceSlider },
+        //  Filter Bar
+        Row(
             modifier =
                 Modifier.align(if (offer == null) Alignment.TopStart else Alignment.TopStart)
                     .padding(top = if (offer == null) 0.dp else 8.dp)
-                    .testTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON),
-            shape = MaterialTheme.shapes.extraLarge,
-            colors =
-                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            elevation =
-                ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = horizontalPadding),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Distance filter")
-            Spacer(Modifier.width(8.dp))
-            Text("Distance: ${distance.toInt()}km")
+            // DISTANCE FILTER BUTTON
+            Button(
+                onClick = { showDistanceSlider = !showDistanceSlider },
+                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON),
+                shape = MaterialTheme.shapes.extraLarge,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                elevation =
+                    ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+            ) {
+                Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Distance filter")
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text =
+                        if (distance == 0f) "Distance: No limit"
+                        else "Distance: ${distance.toInt()}km"
+                )
+            }
+            // CLEAR FILTERS BUTTON
+            Button(
+                onClick = {
+                    distance = 0f
+                    vm.updateDistanceFilter(0f)
+                },
+                modifier = Modifier.testTag(FeedScreenTestTags.CLEAR_FILTERS_BUTTON),
+                shape = MaterialTheme.shapes.extraLarge,
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
+                elevation =
+                    ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+            ) {
+                Text("Clear Filters")
+            }
         }
 
         // Distance Filter Button - positioned at top
@@ -92,12 +128,17 @@ fun FeedScreen(
                 distance = distance,
                 onDistanceChange = {
                     distance = it
-                    // TODO: Handle max distance value update
+                    vm.updateDistanceFilter(it)
                 },
                 onDismiss = { showDistanceSlider = false },
                 modifier =
                     Modifier.align(if (offer == null) Alignment.TopCenter else Alignment.TopCenter)
-                        .padding(top = if (offer == null) 0.dp else 8.dp)
+                        .padding(top = if (offer == null) 0.dp else 8.dp),
+                onLiveLocationClicked = {
+                    isLiveLocationEnabled = !isLiveLocationEnabled
+                    vm.toggleLiveLocation(isLiveLocationEnabled)
+                },
+                checked = isLiveLocationEnabled
             )
         }
 
@@ -299,13 +340,12 @@ fun FeedDistanceFilterButton(
     distance: Float,
     onDistanceChange: (Float) -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLiveLocationClicked: () -> Unit,
+    checked: Boolean
 ) {
     Card(
-        modifier =
-            modifier
-                .widthIn(min = 240.dp, max = 300.dp)
-                .testTag(FeedScreenTestTags.DISTANCE_SLIDER_CARD),
+        modifier = modifier.widthIn(min = 240.dp, max = 300.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors =
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
@@ -318,6 +358,17 @@ fun FeedDistanceFilterButton(
             )
 
             Spacer(Modifier.height(8.dp))
+
+            // Live Location Checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = checked, onCheckedChange = { onLiveLocationClicked() })
+                Text(text = "Use Live Location", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             Slider(
                 value = distance,
