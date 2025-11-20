@@ -28,6 +28,7 @@ import com.swent.skillswap.model.feed.RecommendationEngine
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Calendar
 import kotlinx.coroutines.runBlocking
@@ -68,6 +69,7 @@ class FeedScreenInstrumentedTest {
             title = title,
             description = "Valid description for $title",
             ownerId = ownerId,
+            skills = setOf(SkillTag.MACHINE_DESIGN).toList(),
             tags = setOf(PostTag.ONE_TIME).toList(),
             expiry = expiry,
             creation = now,
@@ -87,6 +89,7 @@ class FeedScreenInstrumentedTest {
                 "title" to post.title,
                 "description" to post.description,
                 "ownerId" to post.ownerId,
+                "skills" to post.skills.map { it.toString() },
                 "tags" to post.tags.map { it.toString() },
                 "paymentMethod" to post.paymentMethod.toString(),
                 "expiry" to post.expiry,

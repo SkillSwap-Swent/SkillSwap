@@ -39,6 +39,7 @@ class RequestScreenTest {
             title = "Need Kotlin Help",
             description = "Looking for someone to teach Kotlin basics",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -283,7 +284,7 @@ class RequestScreenTest {
             .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
             .assert(hasText(sampleRequest.description))
 
-        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
+        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_CHIP}_MACHINE_DESIGN")
     }
 
     // ========== TAG TESTS ==========
@@ -303,7 +304,7 @@ class RequestScreenTest {
         }
 
         // Add tag directly via ViewModel
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         // Verify tag chip appears
@@ -340,7 +341,7 @@ class RequestScreenTest {
             .performTextInput("Test Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         // Select payment method
@@ -407,7 +408,7 @@ class RequestScreenTest {
             .performTextInput("Valid Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
