@@ -1,3 +1,4 @@
+/** Created with the help of Cursor */
 package com.swent.skillswap.model.notification
 
 import com.google.firebase.firestore.DocumentSnapshot
