@@ -348,41 +348,57 @@ class CreateAccountViewModel(
      * Called when the user finishes the account creation process. Performs full validation and, if
      * successful, triggers the model to create the account and navigates to the main screen.
      */
+    /**
+     * Called when the user finishes the account creation process. Performs full validation and, if
+     * successful, triggers the model to create the account and navigates to the main screen.
+     */
     fun done() =
         viewModelScope.launch {
-            if (validateInputs()) {
-                if (!isGoogleAccount) {
-                    val email = _uiState.value.email
-                    if (isEmailTakenInDb(email)) {
-                        emailIsInDb()
-                        _eventFlow.emit(CreateAccountEvent.NavigateToEmail)
-                        return@launch // Stop creation
-                    }
+            if (!validateInputs()) return@launch
+
+            if (!validateEmailAvailability()) return@launch
+
+            createUserAccount()
+        }
+
+    /**
+     * Validates email availability for non-Google accounts. Returns false if email is already
+     * taken, true otherwise.
+     */
+    private suspend fun validateEmailAvailability(): Boolean {
+        if (isGoogleAccount) return true
+
+        val email = _uiState.value.email
+        if (isEmailTakenInDb(email)) {
+            emailIsInDb()
+            _eventFlow.emit(CreateAccountEvent.NavigateToEmail)
+            return false
+        }
+        return true
+    }
+
+    /** Creates the user account and navigates to the main screen on success. */
+    private suspend fun createUserAccount() {
+        try {
+            val params =
+                if (isGoogleAccount) {
+                    CreateAccountGoogleParams(_uiState.value.username, _uiState.value.skills)
+                } else {
+                    CreateAccountClassicParams(
+                        _uiState.value.username,
+                        _uiState.value.email,
+                        _uiState.value.skills,
+                        _uiState.value.password
+                    )
                 }
 
-                try {
-                    model.createAccount(
-                        if (isGoogleAccount) {
-                            CreateAccountGoogleParams(
-                                _uiState.value.username,
-                                _uiState.value.skills
-                            )
-                        } else {
-                            CreateAccountClassicParams(
-                                _uiState.value.username,
-                                _uiState.value.email,
-                                _uiState.value.skills,
-                                _uiState.value.password
-                            )
-                        }
-                    )
-                    fcmTokenManager.getAndSaveToken()
-                    _eventFlow.emit(CreateAccountEvent.NavigateToMainScreen)
-                } catch (e: Exception) {
-                    Log.w("Create Account", "Firestore Error", e)
-                }
-            }
+            model.createAccount(params)
+            fcmTokenManager.getAndSaveToken()
+            _eventFlow.emit(CreateAccountEvent.NavigateToMainScreen)
+        } catch (e: Exception) {
+            Log.w("Create Account", "Firestore Error", e)
         }
+    }
 }
 
 /**
