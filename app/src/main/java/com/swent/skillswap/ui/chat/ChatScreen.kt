@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.Message
 
 // Encapsulating object for test tags
@@ -101,7 +102,10 @@ fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: (
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(uiState.messages) { message ->
-                MessageBubble(message = message, message.senderId == viewModel.getCurrentUserId())
+                MessageBubble(
+                    message = message,
+                    message.senderId == FirebaseAuth.getInstance().currentUser?.uid
+                )
             }
         }
 
