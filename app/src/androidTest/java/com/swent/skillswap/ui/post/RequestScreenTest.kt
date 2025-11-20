@@ -97,8 +97,7 @@ class RequestScreenTest {
                 postOperation = PostOperation.ADD
             )
         }
-
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertExists()
+        scrollAndAssertIsDisplayed(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertDoesNotExist()
     }
 
@@ -116,7 +115,7 @@ class RequestScreenTest {
         }
 
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertExists()
+        scrollAndAssertIsDisplayed(RequestScreenTags.EDIT_BUTTON)
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertDoesNotExist()
     }
 
@@ -214,9 +213,7 @@ class RequestScreenTest {
 
         // All payment methods should be displayed
         PaymentMethod.entries.forEach { method ->
-            composeTestRule
-                .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
-                .assertExists()
+scrollAndAssertIsDisplayed("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
         }
     }
 
@@ -361,7 +358,7 @@ class RequestScreenTest {
         scrollAndClick(RequestScreenTags.CREATE_BUTTON)
 
         // Loading indicator should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.LOADING_INDICATOR).assertExists()
+        scrollAndAssertIsDisplayed(RequestScreenTags.LOADING_INDICATOR)
     }
 
     // ========== ERROR HANDLING TESTS ==========
@@ -646,7 +643,7 @@ class RequestScreenTest {
 
         val tag = "${RequestScreenTags.ATTACHMENT_PREVIEW}_$fakeUri"
         // 2. Assert the image is displayed
-        composeTestRule.onNodeWithTag(tag).assertExists().assertExists()
+        scrollAndAssertIsDisplayed(tag)
 
         // 3. Click it to remove image
         composeTestRule.onNodeWithTag(tag).performClick()
