@@ -85,6 +85,7 @@ object RequestScreenTags {
     const val CHOOSE_ATTACHMENT_BUTTON = "chooseAttachmentButton"
     const val ATTACHMENT_PREVIEW = "attachmentPreview"
     const val ATTACHMENT_ERROR = "attachmentError"
+    const val SCROLL_COLUMN = "scrollColumn"
 }
 
 /*
@@ -155,7 +156,11 @@ fun RequestScreen(
         )
 
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            modifier =
+                Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+                    .testTag(RequestScreenTags.SCROLL_COLUMN),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Title Input

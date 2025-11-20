@@ -421,6 +421,9 @@ class RequestScreenTest {
             .performClick()
 
         // Submit
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
