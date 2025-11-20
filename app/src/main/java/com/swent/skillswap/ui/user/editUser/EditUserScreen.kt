@@ -242,8 +242,6 @@ private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: 
         Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
     }
 
-    // Spacer(modifier = Modifier.height(8.dp))
-
     SkillSwapShadowButton(
         onClick = onGoBack,
         modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON)
