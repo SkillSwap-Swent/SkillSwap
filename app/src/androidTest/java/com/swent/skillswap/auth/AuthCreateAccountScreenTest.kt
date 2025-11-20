@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -274,11 +275,14 @@ class SignInCreateAccountScreenTest : TestCase() {
     // --- Skills (chips) ---
 
     @Test
-    fun skillsIsEmpty_disablesNextButton() {
+    fun skillsIsEmpty_NextButtonIsEnable() {
         goToSkillsStep()
 
         composeTestRule.waitForIdle()
-        verifyNextButtonIsNotEnabled()
+        composeTestRule
+            .onNodeWithTag(CreateAccountTags.NEXT_BUTTON)
+            .assertIsDisplayed()
+            .assertIsEnabled()
     }
 
     @Test
