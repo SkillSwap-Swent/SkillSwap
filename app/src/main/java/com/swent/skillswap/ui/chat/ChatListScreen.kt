@@ -25,6 +25,7 @@ object ChatListTestTags {
     const val POSTS_LIST = "PostsList"
     const val EMPTY_STATE = "EmptyState"
 }
+
 @Composable
 fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),

@@ -48,8 +48,6 @@ import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
-import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
-import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feed.FeedScreen
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
 import com.swent.skillswap.ui.feed.FeedScreenViewModelFactory
