@@ -468,9 +468,7 @@ class End2EndM2 {
         }
 
         // ---------- Navigate to Add Post Screen ----------
-        composeTestRule
-            .onNodeWithTag("scrollColumn")
-            .performScrollToNode(hasTestTag(ProfileTestTags.ADD_POST_BUTTON))
+        composeTestRule.onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON).performScrollTo()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON).performClick()
 
@@ -564,7 +562,7 @@ class End2EndM2 {
         // ---------- Select Payment Method ----------
         val skillsChip = "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}"
 
-        composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(skillsChip))
+        composeTestRule.onNodeWithTag(skillsChip).performScrollTo()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(skillsChip).performClick()
         composeTestRule.waitForIdle()
