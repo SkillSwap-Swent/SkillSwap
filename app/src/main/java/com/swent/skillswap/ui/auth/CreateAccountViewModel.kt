@@ -207,12 +207,6 @@ class CreateAccountViewModel(
         return (cause.isEmpty()) to cause
     }
 
-    private fun validateSkillsResult(): Pair<Boolean, String> {
-        val ok = _uiState.value.skills.isNotEmpty()
-        val cause = if (ok) "" else "At least one skill must be selected"
-        return ok to cause
-    }
-
     // ---------- Existing validate* wrappers now use the result + update UI ----------
     private fun validateUsername(): Boolean {
         if (_uiState.value.username.isEmpty()) return true
@@ -250,13 +244,6 @@ class CreateAccountViewModel(
         return ok
     }
 
-    private fun validateSkills(): Boolean {
-        if (_uiState.value.skills.isEmpty()) return true
-        val (ok, cause) = validateSkillsResult()
-        _uiState.update { it.copy(skillsError = cause) }
-        return ok
-    }
-
     // ---------- Button enabled? section -----------
     /**
      * Determines if the "Next" or "Done" button should be enabled for a given route. This function
@@ -270,7 +257,7 @@ class CreateAccountViewModel(
             CreateAccountRoutes.USERNAME -> validateUsernameResult().first
             CreateAccountRoutes.EMAIL -> validateEmailResult().first
             CreateAccountRoutes.PASSWORD -> validatePasswordsResult().first
-            CreateAccountRoutes.SKILLS -> validateSkillsResult().first
+            CreateAccountRoutes.SKILLS -> true
             else -> false
         }
 
@@ -296,8 +283,7 @@ class CreateAccountViewModel(
      * all are valid.
      */
     private fun validateInputs(): Boolean {
-        val results =
-            listOf(validateUsername(), validateEmail(), validatePasswords(), validateSkills())
+        val results = listOf(validateUsername(), validateEmail(), validatePasswords())
         return results.all { it }
     }
 
@@ -312,7 +298,7 @@ class CreateAccountViewModel(
             CreateAccountRoutes.USERNAME -> validateUsername()
             CreateAccountRoutes.EMAIL -> validateEmail()
             CreateAccountRoutes.PASSWORD -> validatePasswords()
-            CreateAccountRoutes.SKILLS -> validateSkills()
+            CreateAccountRoutes.SKILLS -> true
             else -> false // Unknown route
         }
     }
