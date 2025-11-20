@@ -436,9 +436,7 @@ fun RequestScreen(
                     SkillSwapShadowButton(
                         onClick = { requestViewModel.save(postOperation) },
                         enable = !uiState.isLoading,
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .padding(vertical = 16.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
