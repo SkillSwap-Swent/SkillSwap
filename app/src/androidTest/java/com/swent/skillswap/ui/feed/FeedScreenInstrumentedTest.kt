@@ -31,8 +31,6 @@ import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Calendar
-import kotlin.text.get
-import kotlin.text.toFloat
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -489,10 +487,19 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
-        // Assert all elements of the distance filter popup are displayed
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX).assertIsDisplayed()
+        // Wait for distance filter popup to fully render
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Assert all elements are displayed
         composeTestRule.onNodeWithText("Use Live Location").assertIsDisplayed()
         composeTestRule.onNodeWithText("1-20 km").assertIsDisplayed()
 
@@ -502,16 +509,27 @@ class FeedScreenInstrumentedTest {
             val targetPosition = sliderWidth * (9f / 19f) // (10-1)/(20-1)
             click(center.copy(x = left + targetPosition))
         }
+
+        // Wait for the slider value to update before checking
         composeTestRule.waitForIdle()
+        Thread.sleep(500) // Give extra time for UI to stabilize
 
-        // Verify distance value text shows ~10 km
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
-            .assertTextContains("10 km")
+        // Wait until distance value text updates to ~10 km
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                val distanceText = composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+                    .fetchSemanticsNode()
+                    .getTextString() ?: ""
+                distanceText.contains("10 km", ignoreCase = true)
+            } catch (e: Exception) {
+                false
+            }
+        }
 
-        // Dismiss the slider by clicking outside of it (on the feed card or root)
+        // Dismiss the slider by clicking outside of it
         composeTestRule.onRoot().performTouchInput {
-            click(bottomCenter) // Click at the bottom of the screen, outside the slider card
+            click(bottomCenter)
         }
         composeTestRule.waitForIdle()
 
