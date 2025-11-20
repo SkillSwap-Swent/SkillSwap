@@ -71,7 +71,6 @@ import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.utils.GradientButton
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object RequestScreenTags {
@@ -424,9 +423,9 @@ fun RequestScreen(
 
             item {
                 // Submit button at bottom
-                GradientButton(
+                SkillSwapShadowButton(
                     onClick = { requestViewModel.save(postOperation) },
-                    enabled = !uiState.isLoading,
+                    enable = !uiState.isLoading,
                     modifier =
                         Modifier.fillMaxWidth()
                             .padding(vertical = 16.dp)
