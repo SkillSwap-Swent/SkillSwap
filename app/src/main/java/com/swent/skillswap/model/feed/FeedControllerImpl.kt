@@ -12,6 +12,7 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.utils.LocationManager
+import kotlin.text.clear
 
 const val NUMB_POSTS_TO_FETCH = 10L
 const val PRELOAD_THRESHOLD = 3
@@ -48,7 +49,9 @@ private class FeedControllerImpl(
 
     override suspend fun updateDistanceFilter(distance: Float) {
         maxDistance.floatValue = distance
-        initialLoad()
+        postQueue.clear()
+        fetchPosts()
+        _currentPost.value = getNextPost()
     }
 
     override suspend fun acceptPost(message: String) {
@@ -96,7 +99,9 @@ private class FeedControllerImpl(
                 Log.d("FeedController", "Using default location")
             }
         }
-        initialLoad()
+        postQueue.clear()
+        fetchPosts()
+        _currentPost.value = getNextPost()
     }
 
     private suspend fun fetchPosts() {

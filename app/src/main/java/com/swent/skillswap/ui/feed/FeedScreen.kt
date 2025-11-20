@@ -131,7 +131,7 @@ fun FeedScreen(
                     vm.updateDistanceFilter(it)
                 },
                 modifier =
-                    Modifier.align( Alignment.TopCenter)
+                    Modifier.align(Alignment.TopCenter)
                         .padding(top = if (offer == null) 0.dp else 8.dp),
                 onLiveLocationClicked = {
                     isLiveLocationEnabled = !isLiveLocationEnabled
