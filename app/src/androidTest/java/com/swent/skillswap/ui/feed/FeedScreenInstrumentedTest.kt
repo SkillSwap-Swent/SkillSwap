@@ -488,7 +488,13 @@ class FeedScreenInstrumentedTest {
         // Open distance filter slider
         composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON).performClick()
         composeTestRule.waitForIdle()
+
+        // Assert all elements of the distance filter popup are displayed
         composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Use Live Location").assertIsDisplayed()
+        composeTestRule.onNodeWithText("1-20 km").assertIsDisplayed()
 
         // Set filter to 10 km (should exclude postFar at ~15 km)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER).performTouchInput {
