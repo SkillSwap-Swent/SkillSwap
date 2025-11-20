@@ -124,7 +124,7 @@ fun PostTypeFilterButton(
     }
 }
 
-/** Individual post conversation item */
+/** Individual chat conversation item */
 @Composable
 fun ChatConversationItem(
     viewModel: ChatListViewModel,
