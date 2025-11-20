@@ -34,7 +34,8 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 rating = (data["rating"] as? Number)?.toFloat() ?: 0f,
                 availability = deserializeAvailabilities(data["availability"] as String),
                 preference = deserializePreference(data["preference"] as String),
-                location = data["location"] as GeoPoint
+                location = data["location"] as GeoPoint,
+                fcmToken = data["fcmToken"] as? String
             )
         } catch (e: Exception) {
             Log.e("UserRepoFirestore", "Error while getting user in getUser", e)
@@ -52,7 +53,8 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 "rating" to user.rating,
                 "availability" to serializeAvailabilities(user.availability),
                 "preference" to serializePreference(user.preference),
-                "location" to user.location
+                "location" to user.location,
+                "fcmToken" to (user.fcmToken ?: "")
             )
 
         db.collection(USERS_COLLECTION).document(user.uid).set(userData)
@@ -77,7 +79,8 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                     "rating" to newValue.rating,
                     "availability" to serializeAvailabilities(newValue.availability),
                     "preference" to serializePreference(newValue.preference),
-                    "location" to newValue.location
+                    "location" to newValue.location,
+                    "fcmToken" to (newValue.fcmToken ?: "")
                 ),
                 SetOptions.merge()
             )
@@ -95,5 +98,18 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     override suspend fun userExists(userId: String): Boolean {
         val doc = db.collection(USERS_COLLECTION).document(userId).get().await()
         return doc.exists()
+    }
+
+    override suspend fun updateFcmToken(userId: String, fcmToken: String) {
+        try {
+            if (!db.collection(USERS_COLLECTION).document(userId).get().await().exists()) {
+                Log.e("UserRepoFirestore", "Error while updating FCM token: user does not exist")
+                throw Exception("User does not exist: $userId")
+            }
+            db.collection(USERS_COLLECTION).document(userId).update("fcmToken", fcmToken).await()
+        } catch (e: Exception) {
+            Log.e("UserRepoFirestore", "Error while updating FCM token", e)
+            throw Exception("Failed to update FCM token: ${e.message}")
+        }
     }
 }
