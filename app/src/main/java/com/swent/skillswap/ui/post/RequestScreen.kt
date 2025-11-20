@@ -402,6 +402,7 @@ fun RequestScreen(
                 enable = !uiState.isLoading,
                 modifier =
                     Modifier.fillMaxWidth()
+                        .padding(vertical = 16.dp)
                         .testTag(
                             when (postOperation) {
                                 PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
