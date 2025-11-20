@@ -55,8 +55,9 @@ class RequestScreenTest {
         postCreatedCalled = false
     }
 
-    private fun assertIsDisplayed(tag: String) {
-        composeTestRule.onNodeWithTag(tag).assertExists()
+    private fun scrollAndAssertIsDisplayed(tag: String) {
+        composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
+        composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
     }
 
     // ========== UI VISIBILITY TESTS ==========
@@ -72,14 +73,14 @@ class RequestScreenTest {
                 onPostCreated = { postCreatedCalled = true }
             )
         }
-        composeTestRule.onRoot(useUnmergedTree = true).printToLog("SEMANTICS")
+        // Can't scroll because not in column
+        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
 
-        assertIsDisplayed(RequestScreenTags.BACK_BUTTON)
-        assertIsDisplayed(RequestScreenTags.TITLE_INPUT)
-        assertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
-        assertIsDisplayed(RequestScreenTags.TAGS_INPUT)
-        assertIsDisplayed(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
-        assertIsDisplayed(RequestScreenTags.CREATE_BUTTON)
+        scrollAndAssertIsDisplayed(RequestScreenTags.TITLE_INPUT)
+        scrollAndAssertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
+        scrollAndAssertIsDisplayed(RequestScreenTags.TAGS_INPUT)
+        scrollAndAssertIsDisplayed(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
+        scrollAndAssertIsDisplayed(RequestScreenTags.CREATE_BUTTON)
     }
 
     @Test
