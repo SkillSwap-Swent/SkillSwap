@@ -26,6 +26,7 @@ open class PostDataClassTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)), // 1 day later
             creation = Timestamp(Date(System.currentTimeMillis() - 10)),
@@ -46,6 +47,7 @@ open class PostDataClassTest {
                 title = "Need help with Kotlin",
                 description = "Looking for an expert to teach me Kotlin.",
                 ownerId = "user456",
+                skills = setOf(SkillTag.MACHINE_DESIGN),
                 tags = setOf(PostTag.REOCCURRING),
                 expiry = expiryDate,
                 creation = creationDate,
@@ -88,7 +90,7 @@ open class PostDataClassTest {
         assertFalse(baseRequest.copy(description = "").validate())
 
         // Test invalid Tags
-        assertFalse(baseRequest.copy(tags = emptySet()).validate())
+        assertFalse(baseRequest.copy(skills = emptySet()).validate())
     }
 
     @Test

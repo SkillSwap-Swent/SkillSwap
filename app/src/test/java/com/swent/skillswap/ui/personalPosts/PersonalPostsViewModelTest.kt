@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsViewModel
 import com.swent.skillswap.ui.post.personalPosts.PostTypeFilter
 import java.util.Date
@@ -47,6 +48,7 @@ class PersonalPostsViewModelTest {
             title = "Kotlin Tutoring",
             description = "I can teach Kotlin",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -62,6 +64,7 @@ class PersonalPostsViewModelTest {
             title = "Need Python Help",
             description = "Looking for Python tutor",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.CASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -77,6 +80,7 @@ class PersonalPostsViewModelTest {
             title = "Other User Offer",
             description = "Not mine",
             ownerId = "other-user-456",
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),

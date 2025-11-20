@@ -52,7 +52,6 @@ import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
-import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feed.FeedScreen
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
@@ -205,9 +204,6 @@ fun SkillSwapApp(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
                     )
                 }
-                composable(Screen.PasswordRecovery.route) {
-                    PasswordRecoveryScreen(goBackToSignIn = { navigationActions.goBack() })
-                }
             }
 
             // USER SCREENS
@@ -224,8 +220,8 @@ fun SkillSwapApp(
                         },
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) },
-                        onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) }
+                        onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
                     )
                 }
                 composable(Screen.EditProfile.route) {

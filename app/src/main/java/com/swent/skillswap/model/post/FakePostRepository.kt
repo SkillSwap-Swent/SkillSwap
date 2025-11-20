@@ -1,7 +1,8 @@
 package com.swent.skillswap.model.post
 
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.calculateDistance
 import kotlinx.coroutines.delay
 
@@ -59,7 +60,8 @@ class FakePostRepository : PostRepository {
         titleContains: String,
         ownerId: String,
         paymentMethod: PaymentMethod?,
-        tags: Set<EveryTag>,
+        skills: Set<SkillTag>,
+        tags: Set<PostTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
         maxDistanceKm: Float

@@ -1,5 +1,6 @@
 package com.swent.skillswap.ui.post
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
@@ -9,7 +10,8 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +33,8 @@ data class RequestUIState(
     val uid: String = "",
     val title: String = "",
     val description: String = "",
-    val tags: Set<EveryTag> = emptySet(),
+    val skills: Set<SkillTag> = emptySet(),
+    val tags: Set<PostTag> = emptySet(),
     val paymentMethod: PaymentMethod = PaymentMethod.SKILLS,
     val expiry: Timestamp = Timestamp.now(),
     val location: GeoPoint = GeoPoint(46.5191, 6.5668), // Default fallback
@@ -78,6 +81,7 @@ class RequestViewModel(
                         uid = post.uid,
                         title = post.title,
                         description = post.description,
+                        skills = post.skills.toSet(),
                         tags = post.tags.toSet(),
                         paymentMethod = post.paymentMethod,
                         location = post.location,
@@ -111,7 +115,7 @@ class RequestViewModel(
         }
     }
 
-    fun addTag(tag: EveryTag) {
+    fun addTag(tag: PostTag) {
         _uiState.update { current ->
             if (tag !in current.tags) {
                 current.copy(tags = current.tags + tag, tagsError = "")
@@ -121,10 +125,30 @@ class RequestViewModel(
         }
     }
 
-    fun removeTag(tag: EveryTag) {
+    fun removeTag(tag: PostTag) {
         _uiState.update { current ->
             if (tag in current.tags) {
                 current.copy(tags = current.tags - tag)
+            } else {
+                current
+            }
+        }
+    }
+
+    fun addSkill(skill: SkillTag) {
+        _uiState.update { current ->
+            if (skill !in current.skills) {
+                current.copy(skills = current.skills + skill, tagsError = "")
+            } else {
+                current
+            }
+        }
+    }
+
+    fun removeSkill(skill: SkillTag) {
+        _uiState.update { current ->
+            if (skill in current.skills) {
+                current.copy(skills = current.skills - skill)
             } else {
                 current
             }
@@ -155,6 +179,7 @@ class RequestViewModel(
                         title = _uiState.value.title,
                         description = _uiState.value.description,
                         ownerId = currentUserId,
+                        skills = _uiState.value.skills,
                         tags = _uiState.value.tags,
                         paymentMethod = _uiState.value.paymentMethod,
                         expiry =
@@ -169,6 +194,7 @@ class RequestViewModel(
                         media = emptyList(),
                         location = _uiState.value.location
                     )
+                Log.d("RequestViewModel", "save - Request object skills: ${request.skills}")
 
                 // Will call validate() internally
                 when (postOperation) {

@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsViewModel
 import com.swent.skillswap.ui.post.personalPosts.PostTypeFilter
 import com.swent.skillswap.utils.FirebaseEmulator
@@ -258,6 +259,7 @@ class PersonalPostsViewModelInstrumentedTest {
             title = "Test",
             description = "Test",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -273,6 +275,7 @@ class PersonalPostsViewModelInstrumentedTest {
             title = "Test",
             description = "Test",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),

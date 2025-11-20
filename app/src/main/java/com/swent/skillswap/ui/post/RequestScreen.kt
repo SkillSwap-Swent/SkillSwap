@@ -168,7 +168,7 @@ fun RequestScreen(
                 modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
             )
 
-            /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
+            /* Skill input. The following is heavily inspired by the implementation in the create account screen. */
             var tagsExpanded by remember { mutableStateOf(false) }
             val tagsQuery = remember { mutableStateOf("") }
             var tagsHasFocus by remember { mutableStateOf(false) }
@@ -180,7 +180,7 @@ fun RequestScreen(
                             .filter {
                                 tagsQuery.value.isNotBlank() &&
                                     it.name.contains(tagsQuery.value, ignoreCase = true) &&
-                                    it !in uiState.tags // Exclude already selected tags
+                                    it !in uiState.skills // Exclude already selected tags
                             }
                             .take(MAX_SEARCH_KEYS)
                     }
@@ -230,7 +230,7 @@ fun RequestScreen(
                                     )
                                 },
                                 onClick = {
-                                    requestViewModel.addTag(tag)
+                                    requestViewModel.addSkill(tag)
                                     tagsQuery.value = ""
                                     tagsExpanded = false
                                 },
@@ -244,7 +244,7 @@ fun RequestScreen(
                 }
             }
 
-            // Display selected tags as chips
+            // Display selected skills as chips
             Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
                 val flowScroll = rememberScrollState()
                 FlowRow(
@@ -252,20 +252,19 @@ fun RequestScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.verticalScroll(flowScroll)
                 ) {
-                    uiState.tags.forEach { tag ->
+                    uiState.skills.forEach { skills ->
                         Box(
                             modifier =
                                 Modifier.background(
                                         color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { requestViewModel.removeTag(tag) }
+                                    .clickable { requestViewModel.removeSkill(skills) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    .testTag("${RequestScreenTags.TAG_CHIP}_${tag}")
+                                    .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
                         ) {
                             Text(
-                                text =
-                                    (tag as? SkillTag)?.name?.replace("_", " ") ?: tag.toString(),
+                                text = skills.name.replace("_", " "),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )

@@ -15,6 +15,8 @@ import com.swent.skillswap.model.Auth.CreateAccountClassicParams
 import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
 import com.swent.skillswap.model.Auth.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.utils.FCMTokenManager
 import com.swent.skillswap.resources.config.ValidationConfig
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,6 +84,8 @@ class CreateAccountViewModel(
     val eventFlow: SharedFlow<CreateAccountEvent> = _eventFlow
 
     val uiState: StateFlow<CreateAccountUIState> = _uiState
+    // FCM token manager for saving push notification tokens
+    private val fcmTokenManager: FCMTokenManager = FCMTokenManager(UserRepoFirestore(db), auth)
 
     /**
      * Checks whether the current user already has a valid account record in Firestore. If so,
@@ -207,12 +211,6 @@ class CreateAccountViewModel(
         return (cause.isEmpty()) to cause
     }
 
-    private fun validateSkillsResult(): Pair<Boolean, String> {
-        val ok = _uiState.value.skills.isNotEmpty()
-        val cause = if (ok) "" else "At least one skill must be selected"
-        return ok to cause
-    }
-
     // ---------- Existing validate* wrappers now use the result + update UI ----------
     private fun validateUsername(): Boolean {
         if (_uiState.value.username.isEmpty()) return true
@@ -250,13 +248,6 @@ class CreateAccountViewModel(
         return ok
     }
 
-    private fun validateSkills(): Boolean {
-        if (_uiState.value.skills.isEmpty()) return true
-        val (ok, cause) = validateSkillsResult()
-        _uiState.update { it.copy(skillsError = cause) }
-        return ok
-    }
-
     // ---------- Button enabled? section -----------
     /**
      * Determines if the "Next" or "Done" button should be enabled for a given route. This function
@@ -270,7 +261,7 @@ class CreateAccountViewModel(
             CreateAccountRoutes.USERNAME -> validateUsernameResult().first
             CreateAccountRoutes.EMAIL -> validateEmailResult().first
             CreateAccountRoutes.PASSWORD -> validatePasswordsResult().first
-            CreateAccountRoutes.SKILLS -> validateSkillsResult().first
+            CreateAccountRoutes.SKILLS -> true
             else -> false
         }
 
@@ -296,8 +287,7 @@ class CreateAccountViewModel(
      * all are valid.
      */
     private fun validateInputs(): Boolean {
-        val results =
-            listOf(validateUsername(), validateEmail(), validatePasswords(), validateSkills())
+        val results = listOf(validateUsername(), validateEmail(), validatePasswords())
         return results.all { it }
     }
 
@@ -312,7 +302,7 @@ class CreateAccountViewModel(
             CreateAccountRoutes.USERNAME -> validateUsername()
             CreateAccountRoutes.EMAIL -> validateEmail()
             CreateAccountRoutes.PASSWORD -> validatePasswords()
-            CreateAccountRoutes.SKILLS -> validateSkills()
+            CreateAccountRoutes.SKILLS -> true
             else -> false // Unknown route
         }
     }
@@ -340,6 +330,7 @@ class CreateAccountViewModel(
                             )
                         }
                     )
+                    fcmTokenManager.getAndSaveToken()
                     _eventFlow.emit(CreateAccountEvent.NavigateToMainScreen)
                 } catch (e: Exception) {
                     Log.w("Create Account", "Firestore Error", e)

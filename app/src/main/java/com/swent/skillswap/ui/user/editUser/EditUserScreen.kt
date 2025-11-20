@@ -42,6 +42,9 @@ object EditUserTags {
     const val PROFILE_PICTURE = "edit_user_profile_picture"
     const val GENERAL_ERROR = "edit_user_general_error"
     const val SUCCESS_MESSAGE = "edit_user_success_message"
+    const val PROFILE_PICTURE_TEXTFIELD = "edit_user_profile_picture_textfield"
+    const val PROFILE_PICTURE_CONTENT = "edit_user_profile_picture_content"
+    const val DELETE_PROFILE_PICTURE = "edit_user_delete_profile_picture_button"
 }
 
 /** Displays the edit user screen. */
@@ -52,8 +55,8 @@ fun EditUserScreen(
 ) {
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
-
     var username by remember { mutableStateOf(user?.username ?: "") }
+    var url by remember { mutableStateOf(user?.profilePicture ?: "") }
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
     Scaffold() { paddingValues ->
@@ -85,7 +88,10 @@ fun EditUserScreen(
                             model = user.profilePicture,
                             contentDescription = "Profil picture",
                             modifier =
-                                Modifier.size(120.dp).clip(CircleShape).align(Alignment.TopCenter),
+                                Modifier.size(120.dp)
+                                    .clip(CircleShape)
+                                    .align(Alignment.TopCenter)
+                                    .testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -131,6 +137,48 @@ fun EditUserScreen(
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
+                SkillSwapOutlinedTextField(
+                    value = url,
+                    onValueChange = {
+                        url = it
+                        vm.setProfilePicture(url)
+                    },
+                    label = "profile picture URL",
+                    placeholder = "Put your profile picture URL here",
+                    supportText =
+                        if (uiState.profilePictureError != null) uiState.profilePictureError!!
+                        else "",
+                    modifier =
+                        Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
+                )
+
+                Spacer(modifier = Modifier.weight(0.05f))
+
+                /** Clear profile picture button */
+                Button(
+                    onClick = {
+                        url = ""
+                        vm.deleteProfilePicture()
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(0.6f)
+                            .padding(top = 6.dp)
+                            .testTag(EditUserTags.DELETE_PROFILE_PICTURE),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                ) {
+                    Text(
+                        text = "Delete Profile Picture",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(0.05f))
+
                 /** General Error Message */
                 if (uiState.generalError != null) {
                     Text(
@@ -168,11 +216,11 @@ fun EditUserScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Default.ArrowForward,
-                        contentDescription = "Done"
+                        contentDescription = "Save"
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
-                        text = if (uiState.isLoading) "Loading..." else "Done",
+                        text = if (uiState.isLoading) "Loading..." else "Save",
                         fontSize = 16.sp,
                     )
                 }
@@ -208,7 +256,7 @@ private class FakeUserRepository : UserRepositery {
             uid = userID,
             username = "John Doe",
             email = "john.doe@example.com",
-            profilePicture = "",
+            profilePicture = "https://upload.wikimedia.org/wikipedia/en/thumb/9/96/Meme_Man_on_transparent_background.webp/316px-Meme_Man_on_transparent_background.webp.png",
             skillSet = emptySet(),
             rating = 4.5f,
             availability = emptyList()
@@ -226,6 +274,10 @@ private class FakeUserRepository : UserRepositery {
     override suspend fun deleteUser(userID: String) {
         /* no-op */
     }
+
+    override suspend fun userExists(userId: String): Boolean {
+        return true
+    }
 }
 
 @Preview(showBackground = true)
@@ -233,8 +285,7 @@ private class FakeUserRepository : UserRepositery {
 fun EditUserScreenPreview() {
     SkillSwapAppTheme {
         EditUserScreen(
-            // vm = EditUserViewModel(repo = FakeUserRepository())
+             vm = EditUserViewModel(repo = FakeUserRepository())
         )
     }
-}
-*/
+}*/
