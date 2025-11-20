@@ -60,6 +60,11 @@ class RequestScreenTest {
         composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
     }
 
+    private fun scrollAndClick(tag: String) {
+        composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
+        composeTestRule.onNodeWithTag(tag).performClick()
+    }
+
     // ========== UI VISIBILITY TESTS ==========
 
     @Test
@@ -353,7 +358,7 @@ class RequestScreenTest {
             .performClick()
 
         // Click submit
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
 
         // Loading indicator should appear
         composeTestRule.onNodeWithTag(RequestScreenTags.LOADING_INDICATOR).assertExists()
@@ -422,10 +427,7 @@ class RequestScreenTest {
             .performClick()
 
         // Submit
-        composeTestRule
-            .onNodeWithTag("scrollColumn")
-            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
         // Callback should be triggered
