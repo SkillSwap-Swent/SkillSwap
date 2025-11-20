@@ -199,7 +199,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val skills =
             requireField(
                 "skills",
-                (document.get("skills") as? List<*>)
+                (document["skills"] as? List<*>)
                     ?.mapNotNull {
                         try {
                             SkillTag.valueOf(it.toString())
@@ -215,7 +215,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val tags =
             requireField(
                 "tags",
-                (document.get("tags") as? List<*>)
+                (document["tags"] as? List<*>)
                     ?.mapNotNull {
                         try {
                             PostTag.valueOf(it.toString())

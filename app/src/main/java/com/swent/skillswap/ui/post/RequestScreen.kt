@@ -252,20 +252,19 @@ fun RequestScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.verticalScroll(flowScroll)
                 ) {
-                    uiState.skills.forEach { tag ->
+                    uiState.skills.forEach { skills ->
                         Box(
                             modifier =
                                 Modifier.background(
                                         color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { requestViewModel.removeTag(tag) }
+                                    .clickable { requestViewModel.removeTag(skills) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    .testTag("${RequestScreenTags.TAG_CHIP}_${tag}")
+                                    .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
                         ) {
                             Text(
-                                text =
-                                    (tag as? SkillTag)?.name?.replace("_", " ") ?: tag.toString(),
+                                text = skills.name.replace("_", " "),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
