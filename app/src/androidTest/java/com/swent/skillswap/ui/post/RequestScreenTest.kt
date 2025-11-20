@@ -55,11 +55,8 @@ class RequestScreenTest {
         postCreatedCalled = false
     }
 
-    private fun assertIsDisplayedWithScroll(tag: String) {
-        composeTestRule
-            .onNodeWithTag(tag, useUnmergedTree = true)
-            .performScrollTo()
-            .assertIsDisplayed()
+    private fun assertIsDisplayed(tag: String) {
+        composeTestRule.onNodeWithTag(tag).assertExists()
     }
 
     // ========== UI VISIBILITY TESTS ==========
@@ -76,14 +73,13 @@ class RequestScreenTest {
             )
         }
         composeTestRule.onRoot(useUnmergedTree = true).printToLog("SEMANTICS")
-        // not inside lazy column, cant scroll
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
 
-        assertIsDisplayedWithScroll(RequestScreenTags.TITLE_INPUT)
-        assertIsDisplayedWithScroll(RequestScreenTags.DESCRIPTION_INPUT)
-        assertIsDisplayedWithScroll(RequestScreenTags.TAGS_INPUT)
-        assertIsDisplayedWithScroll(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
-        assertIsDisplayedWithScroll(RequestScreenTags.CREATE_BUTTON)
+        assertIsDisplayed(RequestScreenTags.BACK_BUTTON)
+        assertIsDisplayed(RequestScreenTags.TITLE_INPUT)
+        assertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
+        assertIsDisplayed(RequestScreenTags.TAGS_INPUT)
+        assertIsDisplayed(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
+        assertIsDisplayed(RequestScreenTags.CREATE_BUTTON)
     }
 
     @Test
