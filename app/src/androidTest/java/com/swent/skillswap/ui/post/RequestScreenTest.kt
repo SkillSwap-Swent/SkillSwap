@@ -213,7 +213,7 @@ class RequestScreenTest {
 
         // All payment methods should be displayed
         PaymentMethod.entries.forEach { method ->
-scrollAndAssertIsDisplayed("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
+            scrollAndAssertIsDisplayed("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
         }
     }
 
