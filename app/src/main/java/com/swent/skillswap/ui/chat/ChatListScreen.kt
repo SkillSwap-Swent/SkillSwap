@@ -17,7 +17,7 @@ import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 
 @Composable
-fun ChatListScreen(viewModel: ChatListViewModel = viewModel(), onPostClick: (String) -> Unit = {}) {
+fun ChatListScreen(viewModel: ChatListViewModel = viewModel(), onChatClick: (String) -> Unit = {}) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
@@ -70,7 +70,7 @@ fun ChatListScreen(viewModel: ChatListViewModel = viewModel(), onPostClick: (Str
                     ChatConversationItem(
                         viewModel = viewModel,
                         chat = chat,
-                        onClick = { onPostClick(chat.id) }
+                        onClick = { onChatClick(chat.id) }
                     )
                 }
             }
