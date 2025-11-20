@@ -468,7 +468,9 @@ class End2EndM2 {
         }
 
         // ---------- Navigate to Add Post Screen ----------
-        composeTestRule.onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(ProfileTestTags.ADD_POST_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON).performClick()
 
@@ -507,7 +509,9 @@ class End2EndM2 {
         composeTestRule.waitForIdle()
 
         // ---------- Try submit without description ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 
@@ -560,7 +564,7 @@ class End2EndM2 {
         // ---------- Select Payment Method ----------
         val skillsChip = "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}"
 
-        composeTestRule.onNodeWithTag(skillsChip).performScrollTo()
+        composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(skillsChip))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(skillsChip).performClick()
         composeTestRule.waitForIdle()
@@ -583,7 +587,9 @@ class End2EndM2 {
             .assertDoesNotExist()
 
         // ---------- Try submitting without tags ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 
@@ -629,7 +635,9 @@ class End2EndM2 {
         }
 
         // ---------- Submit form ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 
