@@ -191,10 +191,10 @@ fun PostConversationItem(
                 )
                 Text(
                     text =
-                        if (post.tags.isEmpty()) {
+                        if (post.skills.isEmpty()) {
                             "No skills listed"
                         } else {
-                            post.tags.take(2).joinToString(", ") {
+                            post.skills.take(2).joinToString(", ") {
                                 it.toString().replace("_", " ").lowercase().replaceFirstChar { char
                                     ->
                                     if (char.isLowerCase()) char.titlecase() else char.toString()

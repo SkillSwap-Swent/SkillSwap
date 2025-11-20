@@ -19,7 +19,8 @@ data class User(
     val rating: Float = 0f,
     val availability: List<Availability> = emptyList(),
     val preference: Preference = Preference.SKILLS,
-    val location: GeoPoint = GeoPoint(46.5191, 6.5668) // EPFL default location
+    val location: GeoPoint = GeoPoint(46.5191, 6.5668), // EPFL default location
+    val fcmToken: String? = null
     // val offerSet: Set<Offer>,
     // val favoriteOffers: Set<Offer>
 )

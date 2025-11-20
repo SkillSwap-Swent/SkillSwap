@@ -12,7 +12,8 @@ package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 
 /**
  * Represents a generic post in the application, either a request for a skill or an offer of a
@@ -27,8 +28,10 @@ interface Post {
     val description: String
     /** The ID of the user who created the post. */
     val ownerId: String
+    /** A list of tags representing the skill attach to the post */
+    val skills: Collection<SkillTag>
     /** A list of tags that categorize the post, making it easier to search for. */
-    val tags: Collection<EveryTag>
+    val tags: Collection<PostTag>
     /** A list of accepted/offered payment methods for the skill exchange. */
     val paymentMethod: PaymentMethod
     /** The expiration timestamp of the post, after which it may become inactive. */
@@ -53,13 +56,8 @@ interface Post {
      * - Converting each tag to a lowercase string.
      *
      * The resulting list enables flexible case-insensitive searching across multiple fields.
-     *
-     * TODO: Ideally this list shouldn't be dynamically built as offer and request are immutable
-     *   data classes but I don't know how to do that while keeping the code non duplicated in the
-     *   interface. https://github.com/SkillSwap-Swent/SkillSwap/issues/45
      */
     val searchKeys: List<String>
-        get() = buildSearchKeys()
 
     val postReplies: Collection<PostReply>
 
@@ -69,7 +67,7 @@ interface Post {
      * desired behaviour, hover this can be changed by naming the array elements TAG_$it, TITLE_$it,
      * etc.
      */
-    private fun buildSearchKeys(): List<String> {
+    fun buildSearchKeys(): List<String> {
         val searchKeysTemp = mutableListOf<String>()
 
         searchKeysTemp.addAll(title.split(" ").map { it.lowercase() })
