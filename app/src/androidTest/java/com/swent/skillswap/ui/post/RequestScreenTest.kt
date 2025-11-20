@@ -295,7 +295,7 @@ class RequestScreenTest {
         }
 
         // Add tag directly via ViewModel
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         // Verify tag chip appears
@@ -335,7 +335,7 @@ class RequestScreenTest {
             .performTextInput("Test Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         // Select payment method
@@ -399,7 +399,7 @@ class RequestScreenTest {
             .performTextInput("Valid Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         composeTestRule

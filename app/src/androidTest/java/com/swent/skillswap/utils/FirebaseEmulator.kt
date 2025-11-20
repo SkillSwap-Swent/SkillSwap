@@ -83,6 +83,21 @@ object FirebaseEmulator {
         clearEmulator(firestoreEndpoint)
     }
 
+    fun reinitialize() {
+        // Delete old apps
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        FirebaseApp.getApps(context).forEach { it.delete() }
+
+        // Create fresh app
+        FirebaseApp.initializeApp(context)
+
+        // Reattach emulators
+        if (isRunning) {
+            auth.useEmulator(HOST, AUTH_PORT)
+            firestore.useEmulator(HOST, FIRESTORE_PORT)
+        }
+    }
+
     /**
      * Seeds a Google user in the Firebase Auth Emulator using a fake JWT id_token.
      *

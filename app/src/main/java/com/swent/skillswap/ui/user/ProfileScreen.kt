@@ -59,8 +59,8 @@ object ProfileTestTags {
 
     // Buttons
     const val SKILLS_BUTTON = "profile_skills_button"
-    const val ADD_POST_BUTTON = "profile_add_post_button"
     const val MY_POSTS_BUTTON = "profile_my_posts_button"
+    const val ADD_POST_BUTTON = "profile_add_post_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
 }
 

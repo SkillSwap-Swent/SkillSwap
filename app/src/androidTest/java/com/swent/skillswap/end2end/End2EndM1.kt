@@ -14,8 +14,6 @@ import com.swent.skillswap.ui.feed.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
-import java.net.HttpURLConnection
-import java.net.URL
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import org.junit.AfterClass
@@ -29,7 +27,7 @@ import org.junit.runners.MethodSorters
 
 /** End-to-end tests for Milestone 1 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Be careful, tests order matters !
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class End2EndM1 {
 
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
@@ -37,45 +35,29 @@ class End2EndM1 {
 
     /** Companion object to clear the Auth emulator after running all tests */
     companion object {
-        private const val EMULATOR_URL = "http://10.0.2.2:9099"
         private const val PROJECT_ID = "skillswap-93276"
 
         @BeforeClass
         @JvmStatic
         fun setupEmulator() {
-            FirebaseEmulator.startEmulator()
+            FirebaseEmulator.reinitialize()
+
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
 
         @AfterClass
         @JvmStatic
-        fun cleanupAuthEmulator() {
-            val url = URL("$EMULATOR_URL/emulator/v1/projects/$PROJECT_ID/accounts")
-            val maxAttempts = 20
-            var attempt = 0
-            var cleared = false
+        fun tearDownFirebase() {
 
-            while (attempt < maxAttempts && !cleared) {
-                try {
-                    with(url.openConnection() as HttpURLConnection) {
-                        connectTimeout = 2000
-                        readTimeout = 2000
-                        requestMethod = "DELETE"
-                        val responseCode = responseCode
-                        if (responseCode == HttpURLConnection.HTTP_OK) {
-                            cleared = true
-                            println("Firebase Auth emulator cleared successfully")
-                        }
-                        disconnect()
-                    }
-                } catch (e: Exception) {
-                    attempt++
-                    Thread.sleep(1000)
-                }
-            }
+            // Sign out before clearing
+            try {
+                FirebaseAuth.getInstance().signOut()
+            } catch (_: Exception) {}
 
-            if (!cleared) {
-                println("Warning: Failed to clear Auth emulator after $maxAttempts attempts")
-            }
+            // Clear emulators AFTER this test class finishes
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
     }
 
@@ -94,7 +76,6 @@ class End2EndM1 {
          * to compensate the CI emulator slowness. You may want to remove these waits when running
          * tests locally for debugging.
          */
-
         /** 1. Launch app and wait for setup */
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
@@ -102,8 +83,6 @@ class End2EndM1 {
                 composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
                 composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).assertIsDisplayed()
-                // composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).assertIsDisplayed() =>
-                // Breaks CI for unknown reason, but pass on local tests
                 true
             } catch (e: AssertionError) {
                 false
@@ -242,7 +221,6 @@ class End2EndM1 {
      * Feed Screen, and finally to the Chat Screen.
      */
     fun navigateThroughAllScreensAfterAuthentification() {
-
         val visibleComposableProfile =
             listOf(
                 ProfileTestTags.PROFILE_TITLE,
@@ -264,7 +242,7 @@ class End2EndM1 {
                 NavigationTestTags.CHAT_TAB
             )
 
-        val visibleComposableChatScreen = emptyList<String>() // No tests tags defined yet
+        val visibleComposableChatScreen = emptyList<String>()
 
         composeTestRule.waitForIdle()
 
