@@ -122,24 +122,7 @@ fun FeedScreen(
             }
         }
 
-        // Distance Filter Button - positioned at top
-        if (showDistanceSlider) {
-            FeedDistanceFilterButton(
-                distance = distance,
-                onDistanceChange = {
-                    distance = it
-                    vm.updateDistanceFilter(it)
-                },
-                modifier =
-                    Modifier.align(Alignment.TopCenter)
-                        .padding(top = if (offer == null) 0.dp else 8.dp),
-                onLiveLocationClicked = {
-                    isLiveLocationEnabled = !isLiveLocationEnabled
-                    vm.toggleLiveLocation(isLiveLocationEnabled)
-                },
-                checked = isLiveLocationEnabled
-            )
-        }
+
 
         if (offer == null) {
             // === No Offer Available ===
@@ -305,6 +288,24 @@ fun FeedScreen(
                     }
                 }
             }
+        }
+        // Distance Filter Button - positioned at top
+        if (showDistanceSlider) {
+            FeedDistanceFilterButton(
+                distance = distance,
+                onDistanceChange = {
+                    distance = it
+                    vm.updateDistanceFilter(it)
+                },
+                modifier =
+                    Modifier.align(Alignment.TopCenter)
+                        .padding(top = if (offer == null) 0.dp else 8.dp),
+                onLiveLocationClicked = {
+                    isLiveLocationEnabled = !isLiveLocationEnabled
+                    vm.toggleLiveLocation(isLiveLocationEnabled)
+                },
+                checked = isLiveLocationEnabled
+            )
         }
     }
 }
