@@ -62,7 +62,11 @@ class ChatViewModel(private val chatRepository: ChatRepository, private val chat
             try {
                 chatRepository.sendMessage(
                     chatId,
-                    FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                    try {
+                        FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                    } catch (e: Exception) {
+                        ""
+                    },
                     content
                 )
             } catch (exception: Exception) {

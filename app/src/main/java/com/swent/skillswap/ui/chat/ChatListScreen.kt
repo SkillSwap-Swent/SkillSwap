@@ -17,7 +17,16 @@ import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 
 @Composable
-fun ChatListScreen(viewModel: ChatListViewModel = viewModel(), onChatClick: (String) -> Unit = {}) {
+fun ChatListScreen(
+    viewModel: ChatListViewModel = viewModel(),
+    currentUserId: String =
+        try {
+            FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        } catch (e: Exception) {
+            ""
+        },
+    onChatClick: (String) -> Unit = {}
+) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
@@ -69,6 +78,7 @@ fun ChatListScreen(viewModel: ChatListViewModel = viewModel(), onChatClick: (Str
                 items(filteredChats) { chat ->
                     ChatConversationItem(
                         viewModel = viewModel,
+                        currentUserId,
                         chat = chat,
                         onClick = { onChatClick(chat.id) }
                     )
@@ -116,11 +126,16 @@ fun PostTypeFilterButton(
 
 /** Individual post conversation item */
 @Composable
-fun ChatConversationItem(viewModel: ChatListViewModel, chat: Chat, onClick: () -> Unit) {
+fun ChatConversationItem(
+    viewModel: ChatListViewModel,
+    currentUserId: String,
+    chat: Chat,
+    onClick: () -> Unit
+) {
 
     val uiState by viewModel.uiState.collectAsState()
 
-    val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    val currentUser = currentUserId
     // Assuming two participants
     val otherUser = chat.participants.first { it != currentUser }
 
