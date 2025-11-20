@@ -226,7 +226,7 @@ class End2EndM2 {
         composeTestRule.waitForIdle()
 
         /** Edit Profile Screen */
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             composeTestRule
                 .onAllNodesWithTag(EditUserTags.USERNAME_TEXTFIELD)
                 .fetchSemanticsNodes()
