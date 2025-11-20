@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.utils.RepositoryException
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
@@ -32,6 +33,7 @@ class PostFirestoreRepositoryTest {
             title = "Need help with Kotlin",
             description = "Looking for an expert to teach me Kotlin.",
             ownerId = "user456",
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
             creation = Timestamp.now(),
@@ -80,6 +82,7 @@ class PostFirestoreRepositoryTest {
             assertEquals(req.title, fetched.title)
             assertEquals(req.description, fetched.description)
             assertEquals(req.ownerId, fetched.ownerId)
+            assertEquals(req.skills, fetched.skills)
             assertEquals(req.tags, fetched.tags)
             assertEquals(req.paymentMethod, fetched.paymentMethod)
             assertEquals(req.status, fetched.status)
@@ -208,6 +211,7 @@ class PostFirestoreRepositoryTest {
                     numberOfPosts = 10,
                     type = PostType.REQUEST,
                     titleContains = "help Kotlin",
+                    skills = setOf(SkillTag.MACHINE_DESIGN),
                     tags = setOf(PostTag.REOCCURRING)
                 )
 

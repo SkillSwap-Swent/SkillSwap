@@ -3,14 +3,16 @@ package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 
 data class Offer(
     override val uid: String,
     override val title: String,
     override val description: String,
     override val ownerId: String,
-    override val tags: Set<EveryTag>,
+    override val skills: Set<SkillTag>,
+    override val tags: Set<PostTag>,
     override val paymentMethod: PaymentMethod,
     override val expiry: Timestamp,
     override val creation: Timestamp,

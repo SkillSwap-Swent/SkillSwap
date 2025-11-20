@@ -12,7 +12,8 @@ package com.swent.skillswap.model.post
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.tags.EveryTag
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 
 /**
  * Represents a generic post in the application, either a request for a skill or an offer of a
@@ -27,8 +28,10 @@ interface Post {
     val description: String
     /** The ID of the user who created the post. */
     val ownerId: String
+    /** A list of tags representing the skill attach to the post */
+    val skills: Collection<SkillTag>
     /** A list of tags that categorize the post, making it easier to search for. */
-    val tags: Collection<EveryTag>
+    val tags: Collection<PostTag>
     /** A list of accepted/offered payment methods for the skill exchange. */
     val paymentMethod: PaymentMethod
     /** The expiration timestamp of the post, after which it may become inactive. */

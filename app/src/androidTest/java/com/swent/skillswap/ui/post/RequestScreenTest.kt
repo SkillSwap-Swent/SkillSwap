@@ -38,6 +38,7 @@ class RequestScreenTest {
             title = "Need Kotlin Help",
             description = "Looking for someone to teach Kotlin basics",
             ownerId = testUserId,
+            skills = setOf(SkillTag.MACHINE_DESIGN),
             tags = setOf(PostTag.REOCCURRING),
             paymentMethod = PaymentMethod.SKILLS,
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -274,7 +275,7 @@ class RequestScreenTest {
             .assert(hasText(sampleRequest.description))
 
         composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
+            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_MACHINE_DESIGN")
             .assertIsDisplayed()
     }
 
