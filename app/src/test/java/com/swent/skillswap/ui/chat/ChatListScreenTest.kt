@@ -13,6 +13,8 @@ import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.Flow
@@ -56,6 +58,8 @@ class ChatListScreenTest {
         override suspend fun deleteUser(userID: String) {}
 
         override suspend fun userExists(userId: String) = users.containsKey(userId)
+
+        override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
     }
 
     private class FakePostRepository(private val posts: Map<String, Post>) : PostRepository {
@@ -67,7 +71,8 @@ class ChatListScreenTest {
             titleContains: String,
             ownerId: String,
             paymentMethod: com.swent.skillswap.model.post.PaymentMethod?,
-            tags: Set<com.swent.skillswap.model.tags.EveryTag>,
+            skills: Set<SkillTag>,
+            tags: Set<PostTag>,
             status: com.swent.skillswap.model.post.PostStatus?,
             userLocation: com.google.firebase.firestore.GeoPoint?,
             maxDistanceKm: Double?
@@ -105,7 +110,8 @@ class ChatListScreenTest {
     private class MockPost(override val uid: String, override val title: String) : Post {
         override val description = ""
         override val ownerId = ""
-        override val tags = emptySet<com.swent.skillswap.model.tags.SkillTag>()
+        override val skills = emptySet<SkillTag>()
+        override val tags = emptySet<PostTag>()
         override val paymentMethod = com.swent.skillswap.model.post.PaymentMethod.SKILLS
         override val expiry = Timestamp.now()
         override val creation = Timestamp.now()
@@ -114,6 +120,7 @@ class ChatListScreenTest {
         override val location = com.google.firebase.firestore.GeoPoint(0.0, 0.0)
         override val type = PostType.OFFER
         override val postReplies = emptyList<com.swent.skillswap.model.post.PostReply>()
+        override val searchKeys = listOf<String>()
     }
 
     @Test
