@@ -1,5 +1,6 @@
 package com.swent.skillswap.ui.post
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
@@ -134,7 +135,7 @@ class RequestViewModel(
         }
     }
 
-    fun addTag(skill: SkillTag) {
+    fun addSkill(skill: SkillTag) {
         _uiState.update { current ->
             if (skill !in current.skills) {
                 current.copy(skills = current.skills + skill, tagsError = "")
@@ -144,7 +145,7 @@ class RequestViewModel(
         }
     }
 
-    fun removeTag(skill: SkillTag) {
+    fun removeSkill(skill: SkillTag) {
         _uiState.update { current ->
             if (skill in current.skills) {
                 current.copy(skills = current.skills - skill)
@@ -193,6 +194,7 @@ class RequestViewModel(
                         media = emptyList(),
                         location = _uiState.value.location
                     )
+                Log.d("RequestViewModel", "save - Request object skills: ${request.skills}")
 
                 // Will call validate() internally
                 when (postOperation) {
