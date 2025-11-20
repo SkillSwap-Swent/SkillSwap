@@ -33,4 +33,4 @@ class Chat(
     val messages: List<Message>
 )
 
-val NUMBER_OF_CHAT_PARTICIPANTS = 2
+const val NUMBER_OF_CHAT_PARTICIPANTS = 2
