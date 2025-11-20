@@ -130,8 +130,9 @@ fun RequestScreen(
 ) {
     val uiState by requestViewModel.uiState.collectAsState()
     val pickMultipleMedia =
-        rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(5)) { uris
-            ->
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickMultipleVisualMedia(FirestoreSettings.MAX_ATTACHMENTS)
+        ) { uris ->
             requestViewModel.addAttachments(uris)
         }
 

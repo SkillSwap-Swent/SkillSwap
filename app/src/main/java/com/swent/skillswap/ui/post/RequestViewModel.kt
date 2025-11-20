@@ -198,8 +198,7 @@ class RequestViewModel(
 
     // photo picker
     fun addAttachments(uris: Collection<Uri>) {
-        val current = _uiState.value.attachments
-        val combined = current + uris
+        val combined = _uiState.value.attachments + uris
 
         // TODO: also perform file size check when that is decided with image repo impl
         if (combined.size > FirestoreSettings.MAX_ATTACHMENTS) {
@@ -207,19 +206,29 @@ class RequestViewModel(
             return
         }
 
-        combined.forEach { uri -> grantPersistablePermission(uri) }
+        // Check permissions on new uris, fail on error
+        for (uri in uris) {
+            if (!grantPersistablePermission(uri)) {
+                return // error state is set by the helper
+            }
+        }
 
         _uiState.update { it.copy(attachments = combined.toSet(), attachmentsError = "") }
     }
 
     // used to signal to android we want persistent access to these files
     // prevents crashes during app recomposition
-    private fun grantPersistablePermission(uri: Uri) {
-        appContext?.contentResolver ?: return // Skip in preview/tests
-        runCatching {
-            appContext
-                ?.contentResolver
-                ?.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    private fun grantPersistablePermission(uri: Uri): Boolean {
+        val resolver = appContext?.contentResolver ?: return true // skip in preview/tests
+
+        return try {
+            resolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            true
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(attachmentsError = "Failed getting permission for attachment: $e")
+            }
+            false
         }
     }
 
