@@ -161,6 +161,32 @@ fun RequestScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
+            item(key = "createButtonItem") {
+                Column(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(vertical = 16.dp)
+                            .testTag(RequestScreenTags.CREATE_BUTTON) // <-- now on the item
+                ) {
+                    SkillSwapShadowButton(
+                        onClick = { requestViewModel.save(postOperation) },
+                        enable = !uiState.isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier =
+                                    Modifier.size(24.dp)
+                                        .testTag(RequestScreenTags.LOADING_INDICATOR),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text("Submit", fontSize = 18.sp)
+                        }
+                    }
+                }
+            }
+
             item {
                 // Title Input
                 OutlinedTextField(
@@ -419,31 +445,6 @@ fun RequestScreen(
             }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item(key = "createButtonItem") {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .testTag(RequestScreenTags.CREATE_BUTTON)   // <-- now on the item
-                ) {
-                    SkillSwapShadowButton(
-                        onClick = { requestViewModel.save(postOperation) },
-                        enable = !uiState.isLoading,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp)
-                                    .testTag(RequestScreenTags.LOADING_INDICATOR),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        } else {
-                            Text("Submit", fontSize = 18.sp)
-                        }
-                    }
-                }
-            }
 
             item {
                 // Show error if submission failed
