@@ -37,6 +37,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
@@ -48,6 +49,9 @@ import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
+import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.chat.ChatScreen
+import com.swent.skillswap.ui.chat.ChatViewModel
 import com.swent.skillswap.ui.feed.FeedScreen
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
 import com.swent.skillswap.ui.feed.FeedScreenViewModelFactory
@@ -246,6 +250,34 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     val vm: FeedScreenViewModel = viewModel(factory = factory)
                     FeedScreen(vm = vm)
                 }
+            }
+
+            composable(Screen.Chat.route) {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUserId == null) {
+                    Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
+                    return@composable
+                }
+                ChatListScreen(
+                    onChatClick = { chatId ->
+                        navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                    }
+                )
+            }
+
+            composable(
+                route = Screen.ChatScreen.route,
+                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
+            ) {
+                val chatId = it.arguments?.getString("chatId") ?: return@composable
+                val viewModel =
+                    remember(chatId) {
+                        ChatViewModel(
+                            chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                            chatId = chatId
+                        )
+                    }
+                ChatScreen(viewModel = viewModel, onGoBack = { navigationActions.goBack() })
             }
 
             composable(Screen.AddRequest.route) {
