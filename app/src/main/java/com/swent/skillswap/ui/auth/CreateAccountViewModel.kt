@@ -16,12 +16,15 @@ import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
 import com.swent.skillswap.model.Auth.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.config.ValidationConfig
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 /**
  * Represents one-time events (usually navigation or UI triggers) that occur during the Create
@@ -34,6 +37,8 @@ sealed class CreateAccountEvent {
      * navigated to the main screen.
      */
     object NavigateToMainScreen : CreateAccountEvent()
+
+    object NavigateToEmail : CreateAccountEvent()
 }
 /**
  * Represents all UI state fields for the Create Account screen. This includes both user-entered
@@ -216,9 +221,19 @@ class CreateAccountViewModel(
     }
 
     private fun validateEmail(): Boolean {
-        if (_uiState.value.email.isEmpty()) return true
+        val email = _uiState.value.email
+        if (email.isEmpty()) return true
         val (ok, cause) = validateEmailResult()
         _uiState.update { it.copy(emailError = cause) }
+
+        if (cause.isEmpty()) {
+            emailCheckJob?.cancel()
+            emailCheckJob =
+                viewModelScope.launch {
+                    delay(500) // prevent unnecessary check for job cancel
+                    if (isEmailTakenInDb(email)) emailIsInDb()
+                }
+        }
         return ok
     }
 
@@ -303,6 +318,28 @@ class CreateAccountViewModel(
         }
     }
 
+    private var emailCheckJob: Job? = null
+
+    /**
+     * Checks Firestore to see if the email exists. Returns TRUE if email is TAKEN (already in use).
+     */
+    private suspend fun isEmailTakenInDb(email: String): Boolean {
+        return try {
+            val snapshot =
+                db.collection("users") // Ensure this matches your collection path const
+                    .whereEqualTo("email", email)
+                    .get()
+                    .await()
+            !snapshot.isEmpty
+        } catch (e: Exception) {
+            false // Assume not taken on error to avoid blocking user, or handle differently
+        }
+    }
+
+    private fun emailIsInDb() {
+        _uiState.update { it.copy(emailError = "Email is already in use", buttonEnabled = false) }
+    }
+
     /**
      * Called when the user finishes the account creation process. Performs full validation and, if
      * successful, triggers the model to create the account and navigates to the main screen.
@@ -310,6 +347,15 @@ class CreateAccountViewModel(
     fun done() =
         viewModelScope.launch {
             if (validateInputs()) {
+                if (!isGoogleAccount) {
+                    val email = _uiState.value.email
+                    if (isEmailTakenInDb(email)) {
+                        emailIsInDb()
+                        _eventFlow.emit(CreateAccountEvent.NavigateToEmail)
+                        return@launch // Stop creation
+                    }
+                }
+
                 try {
                     model.createAccount(
                         if (isGoogleAccount) {
