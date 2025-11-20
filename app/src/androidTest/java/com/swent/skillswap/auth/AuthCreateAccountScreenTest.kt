@@ -290,6 +290,7 @@ class SignInCreateAccountScreenTest : TestCase() {
 
     @Test
     fun skillsIsEmpty_NextButtonIsEnable() {
+        launchScreen()
         goToSkillsStep()
 
         composeTestRule.waitForIdle()
