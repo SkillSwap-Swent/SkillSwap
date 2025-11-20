@@ -143,4 +143,28 @@ class FakeNotificationRepositoryTest {
         repository.deleteAllNotificationsForUser(testUserId)
         assertTrue(repository.getNotificationsForUser(testUserId).isEmpty())
     }
+
+    @Test
+    fun setShouldFail_controlsAllFailureFlags() = runTest {
+        repository.setShouldFail(true)
+        repository.setShouldFailOnAdd(false)
+        repository.addNotification(sampleNotification1)
+        repository.setShouldFailOnGet(true)
+        try {
+            repository.getNotification(sampleNotification1.uid)
+            fail("Should have thrown exception")
+        } catch (e: Exception) {
+            assertTrue(e.message!!.contains("Simulated get failure"))
+        }
+    }
+
+    @Test
+    fun helperMethods_workCorrectly() = runTest {
+        repository.addNotification(sampleNotification1)
+        assertEquals(sampleNotification1, repository.getNotificationById(sampleNotification1.uid))
+        assertNull(repository.getNotificationById("non-existent"))
+        repository.clear()
+        assertEquals(0, repository.getAddedNotifications().size)
+        assertTrue(repository.getNewUid().startsWith("test-notification-0"))
+    }
 }

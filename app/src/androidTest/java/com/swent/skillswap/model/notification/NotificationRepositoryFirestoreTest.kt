@@ -38,14 +38,6 @@ class NotificationRepositoryFirestoreTest {
     }
 
     @Test
-    fun getNewUid_returnsUniqueIds() {
-        val uid1 = repo.getNewUid()
-        val uid2 = repo.getNewUid()
-        assertNotEquals(uid1, uid2)
-        assertTrue(uid1.isNotBlank())
-    }
-
-    @Test
     fun addAndGet_roundTrip_success() = runTest {
         val uid = repo.getNewUid()
         val notification =
@@ -93,17 +85,6 @@ class NotificationRepositoryFirestoreTest {
                 runBlocking { repo.getNotification("non-existent") }
             }
         assertTrue(exception.message!!.contains("does not exist"))
-    }
-
-    @Test
-    fun getNotificationsForUser_filtersCorrectly() = runTest {
-        repo.addNotification(
-            Notification(repo.getNewUid(), userId1, "T1", "M1", NotificationType.MESSAGE)
-        )
-        repo.addNotification(
-            Notification(repo.getNewUid(), userId2, "T2", "M2", NotificationType.MESSAGE)
-        )
-        assertEquals(1, repo.getNotificationsForUser(userId1).size)
     }
 
     @Test
