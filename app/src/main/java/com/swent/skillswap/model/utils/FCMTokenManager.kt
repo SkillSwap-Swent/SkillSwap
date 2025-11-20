@@ -38,7 +38,6 @@ class FCMTokenManager(
 
             if (targetUserId != null && token.isNotEmpty()) {
                 userRepository.updateFcmToken(targetUserId, token)
-                Log.d(TAG, "FCM token saved for user: $targetUserId")
             } else {
                 Log.w(TAG, "Cannot save FCM token: userId is null or token is empty")
             }
@@ -63,7 +62,6 @@ class FCMTokenManager(
 
             if (targetUserId != null && token.isNotEmpty()) {
                 userRepository.updateFcmToken(targetUserId, token)
-                Log.d(TAG, "FCM token saved for user: $targetUserId")
             } else {
                 Log.w(TAG, "Cannot save FCM token: userId is null or token is empty")
             }
