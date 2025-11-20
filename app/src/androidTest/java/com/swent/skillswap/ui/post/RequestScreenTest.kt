@@ -75,6 +75,7 @@ class RequestScreenTest {
                 onPostCreated = { postCreatedCalled = true }
             )
         }
+        composeTestRule.onRoot(useUnmergedTree = true).printToLog("SEMANTICS")
         // not inside lazy column, cant scroll
         composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
 

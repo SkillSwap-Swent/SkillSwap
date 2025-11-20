@@ -420,33 +420,26 @@ fun RequestScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            item {
-                Box(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(vertical = 16.dp)
-                            .testTag(
-                                when (postOperation) {
-                                    PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
-                                    PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
-                                }
-                            )
+            item(key = "createButtonItem") {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                        .testTag(RequestScreenTags.CREATE_BUTTON)   // <-- now on the item
                 ) {
-                    // Submit button at bottom
                     SkillSwapShadowButton(
                         onClick = { requestViewModel.save(postOperation) },
                         enable = !uiState.isLoading,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
-                                modifier =
-                                    Modifier.size(24.dp)
-                                        .testTag(RequestScreenTags.LOADING_INDICATOR),
+                                modifier = Modifier.size(24.dp)
+                                    .testTag(RequestScreenTags.LOADING_INDICATOR),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         } else {
-                            Text(text = "Submit", fontSize = 18.sp)
+                            Text("Submit", fontSize = 18.sp)
                         }
                     }
                 }
