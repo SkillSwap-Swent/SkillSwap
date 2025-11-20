@@ -4,6 +4,7 @@ package com.swent.skillswap.model.chat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths.CHATS_COLLECTION
+import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.utils.deserializeMessage
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.launch
@@ -40,42 +41,14 @@ class ChatRepositoryFirestoreTest {
     }
 
     @Test
-    fun sendFirstMessageCreatesChat() = runBlocking {
-        val chatId = "chat2"
-        val senderId = "boubi"
-        val refMessage =
-            Message(
-                id = "USELESS_ID",
-                senderId = senderId,
-                content = "Hello, this is the first message!",
-                timestamp = 0L // USELESS
-            )
-        // verify chat does not exist
-        val preDocument = db.collection(CHATS_COLLECTION).document(chatId).get().await()
-        assert(!preDocument.exists())
-
-        // Send message (should create chat)
-        repo.sendMessage(chatId, senderId, refMessage.content)
-
-        // Verify chat and message
-        val document = db.collection(CHATS_COLLECTION).document(chatId).get().await()
-        assert(document.exists())
-        val messages = document.get("messages") as? List<*>
-        val deserialized = deserializeMessage(messages!!.first() as String)
-        assertEquals(refMessage.senderId, deserialized.senderId)
-        assertEquals(refMessage.content, deserialized.content)
-        assertTrue(deserialized.timestamp > 0L)
-    }
-
-    @Test
     fun sendNonFirstMessageUpdateChat() = runBlocking {
-        val chatId = "chat3"
         val senderId1 = "user1"
         val content1 = "First message"
         val senderId2 = "user2"
         val content2 = "Second message"
 
         // Create chat and send first message
+        val chatId = repo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
         repo.sendMessage(chatId, senderId1, content1)
 
         // Send second message
@@ -132,11 +105,13 @@ class ChatRepositoryFirestoreTest {
 
     @Test
     fun streamMessageReactAtNewMessages() = runTest {
-        val chatId = "chat5"
         val senderId1 = "user1"
         val content1 = "First streamed message"
         val senderId2 = "user2"
         val content2 = "Second streamed message"
+
+        // create chat first
+        val chatId = repo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
 
         val messagesReceived = mutableListOf<List<Message>>()
         val job = launch {
