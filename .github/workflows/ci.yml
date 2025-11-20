@@ -126,7 +126,7 @@ jobs:
           api-level: 34
           target: google_apis
           arch: x86_64
-          profile: small_phone
+          profile: medium_phone
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
