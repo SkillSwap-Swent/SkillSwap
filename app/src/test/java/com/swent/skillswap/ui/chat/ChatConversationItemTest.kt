@@ -156,7 +156,12 @@ class ChatConversationItemTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatConversationItem(viewModel = mockViewModel, chat = chat, currentUserId = "currentUser", onClick = {})
+                ChatConversationItem(
+                    viewModel = mockViewModel,
+                    chat = chat,
+                    currentUserId = "currentUser",
+                    onClick = {}
+                )
             }
         }
 
@@ -176,7 +181,12 @@ class ChatConversationItemTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatConversationItem(viewModel = mockViewModel, chat = chat, currentUserId = "currentUser", onClick = {})
+                ChatConversationItem(
+                    viewModel = mockViewModel,
+                    chat = chat,
+                    currentUserId = "currentUser",
+                    onClick = {}
+                )
             }
         }
 
@@ -210,7 +220,12 @@ class ChatConversationItemTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatConversationItem(viewModel = mockViewModel, chat = chat, currentUserId = "currentUser", onClick = {})
+                ChatConversationItem(
+                    viewModel = mockViewModel,
+                    chat = chat,
+                    currentUserId = "currentUser",
+                    onClick = {}
+                )
             }
         }
 
@@ -230,7 +245,12 @@ class ChatConversationItemTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatConversationItem(viewModel = mockViewModel, chat = chat, currentUserId = "currentUser", onClick = {})
+                ChatConversationItem(
+                    viewModel = mockViewModel,
+                    chat = chat,
+                    currentUserId = "currentUser",
+                    onClick = {}
+                )
             }
         }
 

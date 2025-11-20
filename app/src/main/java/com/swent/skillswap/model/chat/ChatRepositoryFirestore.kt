@@ -31,7 +31,9 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         relatedPostType: PostType
     ): String {
         /** Precondition */
-        require(participants.size == NUMBER_OF_CHAT_PARTICIPANTS) { "participants list cannot be empty" }
+        require(participants.size == NUMBER_OF_CHAT_PARTICIPANTS) {
+            "participants list cannot be empty"
+        }
         require(relatedPostId.isNotEmpty()) { "relatedPostId cannot be empty" }
 
         val chatId = generateUniqueId()

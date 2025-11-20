@@ -118,7 +118,9 @@ class ChatListScreenTest {
 
     @Test
     fun shows_filters_and_empty_state_by_default() {
-        composeRule.setContent { MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") } }
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") }
+        }
         composeRule.onNodeWithText("Chat").assertExists()
         composeRule.onNodeWithText("Offer").assertExists()
         composeRule.onNodeWithText("Request").assertExists()
@@ -141,7 +143,9 @@ class ChatListScreenTest {
                 posts = posts
             )
 
-        composeRule.setContent { MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") } }
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
 
         // Trigger initial load for offers
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
@@ -170,7 +174,11 @@ class ChatListScreenTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatListScreen(viewModel = viewModel, currentUserId = "u1", onChatClick = { clickedChatId = it })
+                ChatListScreen(
+                    viewModel = viewModel,
+                    currentUserId = "u1",
+                    onChatClick = { clickedChatId = it }
+                )
             }
         }
 
@@ -188,7 +196,9 @@ class ChatListScreenTest {
         val chat = createChat("c1", "p1", PostType.OFFER)
         val viewModel = createViewModel(offerChats = listOf(chat))
 
-        composeRule.setContent { MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") } }
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
 
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
         composeRule.waitForIdle()
@@ -202,7 +212,9 @@ class ChatListScreenTest {
         val requestChat = createChat("c1", "p1", PostType.REQUEST)
         val viewModel = createViewModel(requestChats = listOf(requestChat))
 
-        composeRule.setContent { MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") } }
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
 
         // Default is offers - should be empty
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
@@ -233,7 +245,9 @@ class ChatListScreenTest {
 
         val viewModel = createViewModel(offerChats = chats, users = users, posts = posts)
 
-        composeRule.setContent { MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") } }
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
 
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
         chats.forEach { chat ->
