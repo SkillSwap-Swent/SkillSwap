@@ -32,3 +32,5 @@ class Chat(
     val relatedPostType: PostType,
     val messages: List<Message>
 )
+
+val NUMBER_OF_CHAT_PARTICIPANTS = 2
