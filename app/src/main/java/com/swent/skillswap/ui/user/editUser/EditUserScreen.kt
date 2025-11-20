@@ -239,30 +239,21 @@ private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: 
     ) {
         SkillSwapShadowButton(
             onClick = onGoBack,
-            modifier = Modifier
-                .height(56.dp)
-                .weight(1f)
-                .testTag(EditUserTags.GO_BACK_BUTTON)
+            modifier = Modifier.height(56.dp).weight(1f).testTag(EditUserTags.GO_BACK_BUTTON)
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                contentDescription = "Back"
-            )
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
             Spacer(modifier = Modifier.width(5.dp))
             Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
         }
 
         SkillSwapShadowButton(
             onClick = onValidate,
-            modifier = Modifier
-                .height(56.dp)
-                .weight(1f) // optional: make buttons equally wide
-                .testTag(EditUserTags.VALIDATE_BUTTON)
+            modifier =
+                Modifier.height(56.dp)
+                    .weight(1f) // optional: make buttons equally wide
+                    .testTag(EditUserTags.VALIDATE_BUTTON)
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Default.ArrowForward,
-                contentDescription = "Save"
-            )
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Save")
             Spacer(modifier = Modifier.width(5.dp))
             Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
         }
