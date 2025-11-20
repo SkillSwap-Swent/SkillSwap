@@ -15,6 +15,8 @@ import com.swent.skillswap.model.Auth.CreateAccountClassicParams
 import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
 import com.swent.skillswap.model.Auth.SignInInterface
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.utils.FCMTokenManager
 import com.swent.skillswap.resources.config.ValidationConfig
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -82,6 +84,8 @@ class CreateAccountViewModel(
     val eventFlow: SharedFlow<CreateAccountEvent> = _eventFlow
 
     val uiState: StateFlow<CreateAccountUIState> = _uiState
+    // FCM token manager for saving push notification tokens
+    private val fcmTokenManager: FCMTokenManager = FCMTokenManager(UserRepoFirestore(db), auth)
 
     /**
      * Checks whether the current user already has a valid account record in Firestore. If so,
@@ -326,6 +330,7 @@ class CreateAccountViewModel(
                             )
                         }
                     )
+                    fcmTokenManager.getAndSaveToken()
                     _eventFlow.emit(CreateAccountEvent.NavigateToMainScreen)
                 } catch (e: Exception) {
                     Log.w("Create Account", "Firestore Error", e)
