@@ -173,11 +173,11 @@ class RequestScreenTest {
         }
 
         // Click submit without filling title
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
         // Error message should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.TITLE_INPUT)
     }
 
     @Test
@@ -193,10 +193,10 @@ class RequestScreenTest {
         // Fill title but not description
         composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Valid Title")
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
     }
 
     // ========== PAYMENT METHOD TESTS ==========
@@ -230,11 +230,11 @@ class RequestScreenTest {
         val chipTag = "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}"
 
         // Click to select
-        composeTestRule.onNodeWithTag(chipTag).performClick()
+        scrollAndClick(chipTag)
         composeTestRule.waitForIdle()
 
         // Click again to deselect
-        composeTestRule.onNodeWithTag(chipTag).performClick()
+        scrollAndClick(chipTag)
         composeTestRule.waitForIdle()
 
         // Should still exist (not removed, just toggled)
@@ -283,9 +283,7 @@ class RequestScreenTest {
             .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
             .assert(hasText(sampleRequest.description))
 
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
-            .assertIsDisplayed()
+        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_CHIP}_REOCCURRING")
     }
 
     // ========== TAG TESTS ==========
@@ -309,17 +307,13 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Verify tag chip appears
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
-            .assertIsDisplayed()
-            .performClick()
+        val tagChipTag = "${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS"
+        scrollAndClick(tagChipTag)
 
         composeTestRule.waitForIdle()
 
         // Verify tag is removed
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
-            .assertDoesNotExist()
+        composeTestRule.onNodeWithTag(tagChipTag).assertDoesNotExist()
     }
 
     // ========== LOADING STATE TESTS ==========
@@ -350,9 +344,7 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Select payment method
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performClick()
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
 
         // Click submit
         scrollAndClick(RequestScreenTags.CREATE_BUTTON)
@@ -380,11 +372,11 @@ class RequestScreenTest {
             .performTextInput("Test Description")
 
         // Submit without tags
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
         // Should show tags error
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.TAGS_INPUT)
     }
 
     // ========== SUCCESS FLOW TEST ==========
@@ -418,10 +410,7 @@ class RequestScreenTest {
         viewModel.addTag(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performScrollTo()
-            .performClick()
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
 
         // Submit
         scrollAndClick(RequestScreenTags.CREATE_BUTTON)
@@ -444,12 +433,8 @@ class RequestScreenTest {
         }
 
         // Select multiple payment methods
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performClick()
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
-            .performClick()
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
 
         // All should remain clickable (for deselection)
         composeTestRule
@@ -479,9 +464,7 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Verify suggestion appears (FLUID_MECHANICS contains "flu")
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
-            .assertIsDisplayed()
+        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
     }
 
     @Test
@@ -503,16 +486,12 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Click on the suggestion
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
-            .performClick()
+        scrollAndClick("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
 
         composeTestRule.waitForIdle()
 
         // Verify tag chip appears
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
-            .assertIsDisplayed()
+        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
 
         // Verify input is cleared
         composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assert(hasText(""))
@@ -595,9 +574,7 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Should still find FLUID_MECHANICS
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
-            .assertIsDisplayed()
+        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
     }
 
     @Test
@@ -611,7 +588,7 @@ class RequestScreenTest {
         }
 
         // 1. Click the button to open photo picker
-        composeTestRule.onNodeWithTag(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
 
         // unable to test any further as this launches a separate android activity
     }
@@ -646,7 +623,7 @@ class RequestScreenTest {
         scrollAndAssertIsDisplayed(tag)
 
         // 3. Click it to remove image
-        composeTestRule.onNodeWithTag(tag).performClick()
+        scrollAndClick(tag)
 
         composeTestRule.waitForIdle()
 
