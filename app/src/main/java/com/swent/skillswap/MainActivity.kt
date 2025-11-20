@@ -44,9 +44,8 @@ import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngine
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
-import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.user.UserRepositery
+import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
@@ -262,11 +261,12 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
                     return@composable
                 }
-                val factory = ChatListViewModelFactory(
-                    chatRepository = ChatRepositoryFirestore(Firebase.firestore),
-                    userRepository = UserRepoFirestore(Firebase.firestore),
-                    postRepository = PostFirestoreRepository(Firebase.firestore)
-                )
+                val factory =
+                    ChatListViewModelFactory(
+                        chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                        userRepository = UserRepoFirestore(Firebase.firestore),
+                        postRepository = PostFirestoreRepository(Firebase.firestore)
+                    )
                 val vm: ChatListViewModel = viewModel(factory = factory)
                 ChatListScreen(
                     viewModel = vm,
