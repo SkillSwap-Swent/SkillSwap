@@ -52,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -440,7 +439,7 @@ fun RequestScreen(
                         CircularProgressIndicator(
                             modifier =
                                 Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
                         Text(text = "Submit", fontSize = 18.sp)
