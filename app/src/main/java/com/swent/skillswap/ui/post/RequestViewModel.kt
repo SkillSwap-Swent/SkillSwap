@@ -175,7 +175,7 @@ class RequestViewModel(
                             ),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
-                        media = emptyList(),
+                        media = emptyList(), // TODO: upload attachments to db and store links
                         location = _uiState.value.location
                     )
 
