@@ -52,8 +52,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.swent.skillswap.R
+import com.swent.skillswap.resources.theme.LoginTextFieldColors
 import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.ui.theme.LoginTextFieldColors
 
 // Shared keyboard options for all password fields
 val PasswordKeyboardOptions =

@@ -14,15 +14,13 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.ui.editUser.EditUserViewModel
-import com.swent.skillswap.ui.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.user.SkillsEditScreen
-import com.swent.skillswap.ui.user.SkillsEditTestTags
-import com.swent.skillswap.ui.user.SkillsEditTestTags.OTHER_SKILLS_BOX
-import com.swent.skillswap.ui.user.SkillsEditTestTags.OTHER_SKILLS_FLOW
-import com.swent.skillswap.ui.user.SkillsEditTestTags.USER_SKILLS_BOX
-import com.swent.skillswap.ui.user.SkillsEditTestTags.USER_SKILLS_FLOW
+import com.swent.skillswap.ui.user.editUser.EditUserViewModel
+import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
+import com.swent.skillswap.ui.user.editUser.SkillsEditTestTags
+import com.swent.skillswap.ui.user.editUser.SkillsEditTestTags.OTHER_SKILLS_BOX
+import com.swent.skillswap.ui.user.editUser.SkillsEditTestTags.USER_SKILLS_BOX
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -153,10 +151,10 @@ class SkillsEditScreenTest : TestCase() {
             val tags =
                 listOf(
                     SkillsEditTestTags.TITLE_YOUR_SKILLS,
-                    SkillsEditTestTags.USER_SKILLS_BOX,
+                    USER_SKILLS_BOX,
                     SkillsEditTestTags.USER_SKILLS_FLOW,
                     SkillsEditTestTags.TITLE_SELECT_NEW,
-                    SkillsEditTestTags.OTHER_SKILLS_BOX,
+                    OTHER_SKILLS_BOX,
                     SkillsEditTestTags.OTHER_SKILLS_FLOW,
                     SkillsEditTestTags.BACK_BUTTON
                 )

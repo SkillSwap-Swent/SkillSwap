@@ -4,6 +4,7 @@ package com.swent.skillswap.model.chat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths.CHATS_COLLECTION
+import com.swent.skillswap.model.utils.deserializeMessage
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking

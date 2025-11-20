@@ -17,7 +17,7 @@ import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.viewModel.CreateAccountViewModel
+import com.swent.skillswap.ui.auth.CreateAccountViewModel
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

@@ -16,7 +16,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.tags.EveryTag
 import com.swent.skillswap.model.user.calculateDistance
-import com.swent.skillswap.utils.RepositoryException
+import com.swent.skillswap.model.utils.RepositoryException
 import kotlinx.coroutines.tasks.await
 
 class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {

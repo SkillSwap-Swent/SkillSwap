@@ -37,8 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import com.swent.skillswap.R
+import com.swent.skillswap.resources.theme.LoginTextFieldColors
 import com.swent.skillswap.ui.auth.CreateAccountTags
-import com.swent.skillswap.ui.theme.LoginTextFieldColors
 
 /**
  * SkillSwap text field — **filled** variant.

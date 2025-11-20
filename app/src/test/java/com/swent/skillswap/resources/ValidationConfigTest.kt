@@ -1,5 +1,6 @@
 package com.swent.skillswap.resources
 
+import com.swent.skillswap.resources.config.ValidationConfig
 import org.junit.Assert.*
 import org.junit.Test
 

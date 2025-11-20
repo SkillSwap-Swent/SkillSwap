@@ -4,6 +4,7 @@
 // and maintains consistency with the Post and User models used throughout the application.
 package com.swent.skillswap.ui.chat
 
+import com.swent.skillswap.model.chat.ChatListScreenData
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag

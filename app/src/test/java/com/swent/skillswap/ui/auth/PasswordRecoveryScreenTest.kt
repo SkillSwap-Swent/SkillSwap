@@ -11,8 +11,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.auth
-import com.swent.skillswap.viewModel.PasswordRecoveryEvent
-import com.swent.skillswap.viewModel.PasswordRecoveryViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -239,9 +237,7 @@ class PasswordRecoveryScreenTest {
             // Access private _uiState field using reflection
             val field = PasswordRecoveryViewModel::class.java.getDeclaredField("_uiState")
             field.isAccessible = true
-            val mutableStateFlow =
-                field.get(viewModel)
-                    as MutableStateFlow<com.swent.skillswap.viewModel.PasswordRecoveryUIState>
+            val mutableStateFlow = field.get(viewModel) as MutableStateFlow<PasswordRecoveryUIState>
             val currentState = mutableStateFlow.value
 
             // Create new state with success message (to test lines 122-144)
@@ -253,11 +249,7 @@ class PasswordRecoveryScreenTest {
                 )
             // Directly set value (MutableStateFlow.value is a var)
             @Suppress("UNCHECKED_CAST")
-            (mutableStateFlow
-                    as
-                    kotlinx.coroutines.flow.MutableStateFlow<
-                        com.swent.skillswap.viewModel.PasswordRecoveryUIState
-                    >)
+            (mutableStateFlow as kotlinx.coroutines.flow.MutableStateFlow<PasswordRecoveryUIState>)
                 .value = newState
 
             // Wait for recomposition
@@ -285,9 +277,7 @@ class PasswordRecoveryScreenTest {
         try {
             val field = PasswordRecoveryViewModel::class.java.getDeclaredField("_uiState")
             field.isAccessible = true
-            val mutableStateFlow =
-                field.get(viewModel)
-                    as MutableStateFlow<com.swent.skillswap.viewModel.PasswordRecoveryUIState>
+            val mutableStateFlow = field.get(viewModel) as MutableStateFlow<PasswordRecoveryUIState>
             val currentState = mutableStateFlow.value
 
             // Set error message directly (to test lines 147-168)
@@ -299,11 +289,7 @@ class PasswordRecoveryScreenTest {
                 )
             // Directly set value (MutableStateFlow.value is a var)
             @Suppress("UNCHECKED_CAST")
-            (mutableStateFlow
-                    as
-                    kotlinx.coroutines.flow.MutableStateFlow<
-                        com.swent.skillswap.viewModel.PasswordRecoveryUIState
-                    >)
+            (mutableStateFlow as kotlinx.coroutines.flow.MutableStateFlow<PasswordRecoveryUIState>)
                 .value = newState
 
             // Wait for recomposition

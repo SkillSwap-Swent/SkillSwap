@@ -4,8 +4,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.utils.RepositoryException
 import com.swent.skillswap.utils.FirebaseEmulator
-import com.swent.skillswap.utils.RepositoryException
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
