@@ -464,7 +464,9 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Verify suggestion appears (FLUID_MECHANICS contains "flu")
-        composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .assertIsDisplayed()
     }
 
     @Test
@@ -578,7 +580,9 @@ class RequestScreenTest {
         composeTestRule.waitForIdle()
 
         // Should still find FLUID_MECHANICS
-        composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
+            .assertIsDisplayed()
     }
 
     @Test
