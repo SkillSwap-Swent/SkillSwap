@@ -421,10 +421,7 @@ fun RequestScreen(
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item {
-                // Submit button at bottom
-                SkillSwapShadowButton(
-                    onClick = { requestViewModel.save(postOperation) },
-                    enable = !uiState.isLoading,
+                Box(
                     modifier =
                         Modifier.fillMaxWidth()
                             .padding(vertical = 16.dp)
@@ -435,14 +432,30 @@ fun RequestScreen(
                                 }
                             )
                 ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier =
-                                Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    } else {
-                        Text(text = "Submit", fontSize = 18.sp)
+                    // Submit button at bottom
+                    SkillSwapShadowButton(
+                        onClick = { requestViewModel.save(postOperation) },
+                        enable = !uiState.isLoading,
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .padding(vertical = 16.dp)
+                                .testTag(
+                                    when (postOperation) {
+                                        PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
+                                        PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
+                                    }
+                                )
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier =
+                                    Modifier.size(24.dp)
+                                        .testTag(RequestScreenTags.LOADING_INDICATOR),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text(text = "Submit", fontSize = 18.sp)
+                        }
                     }
                 }
             }

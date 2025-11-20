@@ -55,9 +55,11 @@ class RequestScreenTest {
         postCreatedCalled = false
     }
 
-    fun assertIsDisplayedWithScroll(tag: String) {
-        composeTestRule.onRoot().performScrollToNode(hasTestTag(tag))
-        composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+    private fun assertIsDisplayedWithScroll(tag: String) {
+        composeTestRule
+            .onNodeWithTag(tag, useUnmergedTree = true)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     // ========== UI VISIBILITY TESTS ==========
