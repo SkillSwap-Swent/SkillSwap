@@ -83,10 +83,6 @@ fun EditUserScreen(
                         url = it
                         vm.setProfilePicture(it)
                     },
-                    onDelete = {
-                        url = ""
-                        vm.deleteProfilePicture()
-                    }
                 )
 
                 Spacer(modifier = Modifier.weight(0.4f))
@@ -102,6 +98,28 @@ fun EditUserScreen(
                     supportText = uiState.usernameError.orEmpty(),
                     modifier = Modifier.fillMaxWidth().testTag(EditUserTags.USERNAME_TEXTFIELD)
                 )
+
+                Spacer(modifier = Modifier.weight(0.05f))
+
+                Button(
+                    onClick = {
+                        url = ""
+                        vm.deleteProfilePicture()
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(0.6f).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                ) {
+                    Text(
+                        text = "Delete Profile Picture",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
@@ -153,7 +171,6 @@ private fun ProfilePictureSection(
     user: User?,
     url: String,
     onChangeUrl: (String) -> Unit,
-    onDelete: () -> Unit
 ) {
     Box(modifier = Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp)) {
         if (url.isNotEmpty()) {
@@ -187,21 +204,6 @@ private fun ProfilePictureSection(
         SkillSwapEditButton(
             onClick = { /* TODO: Open image picker */},
             modifier = Modifier.align(Alignment.BottomEnd)
-        )
-    }
-
-    Spacer(modifier = Modifier.height(6.dp))
-
-    Button(
-        onClick = onDelete,
-        modifier = Modifier.fillMaxWidth(0.6f).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-    ) {
-        Text(
-            text = "Delete Profile Picture",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onError
         )
     }
 }
