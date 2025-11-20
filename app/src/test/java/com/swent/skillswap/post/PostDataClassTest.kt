@@ -90,7 +90,7 @@ open class PostDataClassTest {
         assertFalse(baseRequest.copy(description = "").validate())
 
         // Test invalid Tags
-        assertFalse(baseRequest.copy(tags = emptySet()).validate())
+        assertFalse(baseRequest.copy(skills = emptySet()).validate())
     }
 
     @Test

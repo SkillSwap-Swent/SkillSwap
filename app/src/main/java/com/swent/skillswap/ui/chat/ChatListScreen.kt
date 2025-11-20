@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 
+object ChatListTestTags {
+    const val SCREEN = "ChatListScreen"
+    const val TITLE = "ChatListTitle"
+    const val OFFER = "OfferFilterButton"
+    const val REQUEST = "RequestFilterButton"
+    const val POSTS_LIST = "PostsList"
+    const val EMPTY_STATE = "EmptyState"
+}
 @Composable
 fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),
@@ -30,14 +39,15 @@ fun ChatListScreen(
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
         // Title
         Text(
             text = "Chat",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+            modifier =
+                Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
         )
 
         // Related post type filter buttons
@@ -49,14 +59,14 @@ fun ChatListScreen(
                 text = "Offer",
                 isSelected = selectedPostType == PostType.OFFER,
                 onClick = { selectedPostType = PostType.OFFER },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.OFFER)
             )
 
             PostTypeFilterButton(
                 text = "Request",
                 isSelected = selectedPostType == PostType.REQUEST,
                 onClick = { selectedPostType = PostType.REQUEST },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.REQUEST)
             )
         }
 
@@ -65,7 +75,10 @@ fun ChatListScreen(
         val filteredChats = uiState.chats
         if (filteredChats.isEmpty()) {
             // Empty state
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     text = "No chats available",
                     style = MaterialTheme.typography.bodyLarge,
@@ -74,11 +87,14 @@ fun ChatListScreen(
                 )
             }
         } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
+            ) {
                 items(filteredChats) { chat ->
                     ChatConversationItem(
                         viewModel = viewModel,
-                        currentUserId,
+                        currentUserId = currentUserId,
                         chat = chat,
                         onClick = { onChatClick(chat.id) }
                     )
@@ -143,7 +159,6 @@ fun ChatConversationItem(
         viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
     }
     LaunchedEffect(otherUser) { viewModel.getUsername(otherUser) }
-
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),

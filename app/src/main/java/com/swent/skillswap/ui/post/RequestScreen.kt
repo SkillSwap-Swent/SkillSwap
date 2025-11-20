@@ -168,7 +168,7 @@ fun RequestScreen(
                 modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
             )
 
-            /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
+            /* Skill input. The following is heavily inspired by the implementation in the create account screen. */
             var tagsExpanded by remember { mutableStateOf(false) }
             val tagsQuery = remember { mutableStateOf("") }
             var tagsHasFocus by remember { mutableStateOf(false) }
@@ -230,7 +230,7 @@ fun RequestScreen(
                                     )
                                 },
                                 onClick = {
-                                    requestViewModel.addTag(tag)
+                                    requestViewModel.addSkill(tag)
                                     tagsQuery.value = ""
                                     tagsExpanded = false
                                 },
@@ -244,7 +244,7 @@ fun RequestScreen(
                 }
             }
 
-            // Display selected tags as chips
+            // Display selected skills as chips
             Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
                 val flowScroll = rememberScrollState()
                 FlowRow(
@@ -259,7 +259,7 @@ fun RequestScreen(
                                         color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { requestViewModel.removeTag(skills) }
+                                    .clickable { requestViewModel.removeSkill(skills) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                                     .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
                         ) {
