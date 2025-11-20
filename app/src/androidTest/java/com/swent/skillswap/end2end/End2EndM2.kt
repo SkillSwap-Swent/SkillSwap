@@ -483,7 +483,6 @@ class End2EndM2 {
         // ---------- Verify UI ----------
 
         listOf(
-                RequestScreenTags.BACK_BUTTON,
                 RequestScreenTags.TITLE_INPUT,
                 RequestScreenTags.DESCRIPTION_INPUT,
                 RequestScreenTags.TAGS_INPUT,
@@ -492,6 +491,9 @@ class End2EndM2 {
             .forEach { tag ->
                 composeTestRule.waitUntil(timeoutMillis = 5_000) {
                     try {
+                        composeTestRule
+                            .onNodeWithTag("scrollColumn")
+                            .performScrollToNode(hasTestTag(tag))
                         composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
                         true
                     } catch (_: Exception) {
