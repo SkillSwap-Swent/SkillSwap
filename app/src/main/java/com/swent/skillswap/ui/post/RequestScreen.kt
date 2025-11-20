@@ -439,12 +439,6 @@ fun RequestScreen(
                         modifier =
                             Modifier.fillMaxWidth()
                                 .padding(vertical = 16.dp)
-                                .testTag(
-                                    when (postOperation) {
-                                        PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
-                                        PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
-                                    }
-                                )
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
