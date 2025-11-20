@@ -55,7 +55,7 @@ fun EditUserScreen(
 ) {
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
-    var username by remember { mutableStateOf(user?.username ?: "") }
+    var username by remember { mutableStateOf(user?.username ?: "AnoUser") }
     var url by remember { mutableStateOf(user?.profilePicture ?: "") }
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
