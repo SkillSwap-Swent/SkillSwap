@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.model.user.User
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -47,7 +48,6 @@ object EditUserTags {
     const val DELETE_PROFILE_PICTURE = "edit_user_delete_profile_picture_button"
 }
 
-/** Displays the edit user screen. */
 @Composable
 fun EditUserScreen(
     vm: EditUserViewModel = viewModel(),
@@ -59,7 +59,8 @@ fun EditUserScreen(
     var url by remember { mutableStateOf(user?.profilePicture ?: "") }
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
-    Scaffold() { paddingValues ->
+
+    Scaffold { paddingValues ->
         Box(
             modifier =
                 Modifier.fillMaxSize()
@@ -72,66 +73,33 @@ fun EditUserScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(40.dp))
-                Text(
-                    text = "Edit Profile",
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
+                HeaderTitle("Edit Profile")
                 Spacer(modifier = Modifier.height(10.dp))
 
-                /** Profile picture */
-                Box(modifier = Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp)) {
-                    if (user?.profilePicture != null && user.profilePicture.isNotEmpty()) {
-                        AsyncImage(
-                            model = user.profilePicture,
-                            contentDescription = "Profil picture",
-                            modifier =
-                                Modifier.size(120.dp)
-                                    .clip(CircleShape)
-                                    .align(Alignment.TopCenter)
-                                    .testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        /* No valid url for profile picture */
-                        Box(
-                            modifier =
-                                Modifier.size(120.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                                    .align(Alignment.TopCenter),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Default profile picture",
-                                modifier = Modifier.size(60.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                ProfilePictureSection(
+                    user = user,
+                    url = url,
+                    onChangeUrl = {
+                        url = it
+                        vm.setProfilePicture(it)
+                    },
+                    onDelete = {
+                        url = ""
+                        vm.deleteProfilePicture()
                     }
-                    /** picture edit button */
-                    SkillSwapEditButton(
-                        onClick = { /* TODO Next Sprint: Open image picker to change profile picture */},
-                        modifier = Modifier.align(Alignment.BottomEnd)
-                    )
-                }
+                )
 
                 Spacer(modifier = Modifier.weight(0.4f))
 
-                /** Username Field */
                 SkillSwapOutlinedTextField(
                     value = username,
                     onValueChange = {
                         username = it
-                        vm.setUsername(username)
+                        vm.setUsername(it)
                     },
                     label = "Username",
                     placeholder = "type your new username",
-                    supportText =
-                        if (uiState.usernameError != null) uiState.usernameError!! else "",
+                    supportText = uiState.usernameError.orEmpty(),
                     modifier = Modifier.fillMaxWidth().testTag(EditUserTags.USERNAME_TEXTFIELD)
                 )
 
@@ -141,108 +109,148 @@ fun EditUserScreen(
                     value = url,
                     onValueChange = {
                         url = it
-                        vm.setProfilePicture(url)
+                        vm.setProfilePicture(it)
                     },
                     label = "profile picture URL",
                     placeholder = "Put your profile picture URL here",
-                    supportText =
-                        if (uiState.profilePictureError != null) uiState.profilePictureError!!
-                        else "",
+                    supportText = uiState.profilePictureError.orEmpty(),
                     modifier =
                         Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
                 )
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
-                /** Clear profile picture button */
-                Button(
-                    onClick = {
-                        url = ""
-                        vm.deleteProfilePicture()
-                    },
-                    modifier =
-                        Modifier.fillMaxWidth(0.6f)
-                            .padding(top = 6.dp)
-                            .testTag(EditUserTags.DELETE_PROFILE_PICTURE),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                ) {
-                    Text(
-                        text = "Delete Profile Picture",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onError
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(0.05f))
-
-                /** General Error Message */
-                if (uiState.generalError != null) {
-                    Text(
-                        text = uiState.generalError!!,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 14.sp,
-                        modifier =
-                            Modifier.padding(vertical = 8.dp).testTag(EditUserTags.GENERAL_ERROR)
-                    )
-                }
-
-                /** Success Message */
-                if (uiState.isSaved) {
-                    Text(
-                        text = "Profile updated successfully",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier =
-                            Modifier.padding(vertical = 8.dp).testTag(EditUserTags.SUCCESS_MESSAGE)
-                    )
-                }
+                ErrorMessage(uiState.generalError)
+                SuccessMessage(uiState.isSaved)
 
                 Spacer(modifier = Modifier.weight(0.4f))
 
-                /** Validate Button */
-                SkillSwapShadowButton(
-                    onClick = {
-                        if (!uiState.isLoading) vm.validate()
-                        else {
-                            /*do nothing, validation already pending*/
-                        }
-                    },
-                    modifier = Modifier.height(56.dp).testTag(EditUserTags.VALIDATE_BUTTON),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowForward,
-                        contentDescription = "Save"
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = if (uiState.isLoading) "Loading..." else "Save",
-                        fontSize = 16.sp,
-                    )
-                }
+                ActionButtons(
+                    isLoading = uiState.isLoading,
+                    onValidate = { if (!uiState.isLoading) vm.validate() },
+                    onGoBack = onGoBack
+                )
 
                 Spacer(modifier = Modifier.weight(1f))
-                /** go back button* */
-                SkillSwapShadowButton(
-                    onClick = { onGoBack() },
-                    modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = if (uiState.isLoading) "Loading..." else "Back",
-                        fontSize = 16.sp,
-                    )
-                }
             }
         }
+    }
+}
+
+@Composable
+private fun HeaderTitle(title: String) {
+    Text(
+        text = title,
+        fontSize = 36.sp,
+        fontWeight = FontWeight.Medium,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(bottom = 24.dp)
+    )
+}
+
+@Composable
+private fun ProfilePictureSection(
+    user: User?,
+    url: String,
+    onChangeUrl: (String) -> Unit,
+    onDelete: () -> Unit
+) {
+    Box(modifier = Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp)) {
+        if (!url.isNullOrEmpty()) {
+            AsyncImage(
+                model = url,
+                contentDescription = "Profile picture",
+                modifier =
+                    Modifier.size(120.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.TopCenter)
+                        .testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier =
+                    Modifier.size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .align(Alignment.TopCenter),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Default profile picture",
+                    modifier = Modifier.size(60.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        SkillSwapEditButton(
+            onClick = { /* TODO: Open image picker */},
+            modifier = Modifier.align(Alignment.BottomEnd)
+        )
+    }
+
+    Spacer(modifier = Modifier.height(6.dp))
+
+    Button(
+        onClick = onDelete,
+        modifier = Modifier.fillMaxWidth(0.6f).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+    ) {
+        Text(
+            text = "Delete Profile Picture",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onError
+        )
+    }
+}
+
+@Composable
+private fun ErrorMessage(error: String?) {
+    error?.let {
+        Text(
+            text = it,
+            color = MaterialTheme.colorScheme.error,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(vertical = 8.dp).testTag(EditUserTags.GENERAL_ERROR)
+        )
+    }
+}
+
+@Composable
+private fun SuccessMessage(isSaved: Boolean) {
+    if (isSaved) {
+        Text(
+            text = "Profile updated successfully",
+            color = MaterialTheme.colorScheme.primary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(vertical = 8.dp).testTag(EditUserTags.SUCCESS_MESSAGE)
+        )
+    }
+}
+
+@Composable
+private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: () -> Unit) {
+    SkillSwapShadowButton(
+        onClick = onValidate,
+        modifier = Modifier.height(56.dp).testTag(EditUserTags.VALIDATE_BUTTON)
+    ) {
+        Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Save")
+        Spacer(modifier = Modifier.width(5.dp))
+        Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
+    }
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    SkillSwapShadowButton(
+        onClick = onGoBack,
+        modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON)
+    ) {
+        Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+        Spacer(modifier = Modifier.width(5.dp))
+        Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
     }
 }
 
