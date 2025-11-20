@@ -28,3 +28,7 @@
 
 # Keep Firebase classes (if using Firebase)
 -keep class com.google.firebase.** { *; }
+
+-keep class com.google.firebase.appcheck.interop.** { *; }
+-dontwarn com.google.firebase.appcheck.interop.**
+
