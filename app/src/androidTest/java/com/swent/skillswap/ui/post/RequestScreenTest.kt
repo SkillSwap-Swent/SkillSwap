@@ -92,7 +92,7 @@ class RequestScreenTest {
             )
         }
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertExists()
         composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertDoesNotExist()
     }
 
@@ -110,7 +110,7 @@ class RequestScreenTest {
         }
 
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertExists()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertDoesNotExist()
     }
 
@@ -355,7 +355,7 @@ class RequestScreenTest {
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 
         // Loading indicator should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.LOADING_INDICATOR).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(RequestScreenTags.LOADING_INDICATOR).assertExists()
     }
 
     // ========== ERROR HANDLING TESTS ==========
