@@ -1,6 +1,7 @@
 package com.swent.skillswap.ui.chat
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
@@ -71,5 +72,16 @@ class ChatListViewModel(
                 }
             _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
         }
+    }
+}
+
+class ChatListViewModelFactory(
+    private val chatRepository: ChatRepository,
+    private val userRepository: UserRepositery,
+    private val postRepository: PostRepository
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return ChatListViewModel(chatRepository, userRepository, postRepository) as T
     }
 }
