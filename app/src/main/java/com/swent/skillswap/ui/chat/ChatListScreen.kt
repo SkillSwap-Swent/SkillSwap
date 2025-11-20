@@ -1,9 +1,3 @@
-// AI-Generated: Chat list screen with post-based conversations and filtering
-// This file implements a chat list interface that displays conversations with posts instead of
-// users.
-// Features include filtering by Offer/Request post types, stable UI with proper component
-// architecture,
-// and integration with existing Post and User models from the codebase.
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.foundation.layout.*
@@ -16,23 +10,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.swent.skillswap.model.post.Post
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.swent.skillswap.model.chat.Chat
+import com.swent.skillswap.model.chat.ChatRepository
+import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepositery
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
-/**
- * Chat list screen that displays conversations with posts instead of users. Shows posts in
- * rectangles with username on left and skill on right. Includes filtering by Offer/Request post
- * types.
- */
 @Composable
-fun ChatListScreen(
-    posts: List<Post> = emptyList(),
-    users: Map<String, User> = emptyMap(),
-    onPostClick: (Post) -> Unit = {}
-) {
+fun ChatListScreen(viewModel: ChatListViewModel = viewModel(), onPostClick: (String) -> Unit = {}) {
+    val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -45,7 +38,7 @@ fun ChatListScreen(
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
         )
 
-        // Post Type Filter Buttons
+        // Related post type filter buttons
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -65,15 +58,14 @@ fun ChatListScreen(
             )
         }
 
-        // Posts List
-        val filteredPosts =
-            remember(posts, selectedPostType) { posts.filter { it.type == selectedPostType } }
-
-        if (filteredPosts.isEmpty()) {
+        // Chat List
+        LaunchedEffect(selectedPostType) { viewModel.getChatsOfCurrentUser(selectedPostType) }
+        val filteredChats = uiState.chats
+        if (filteredChats.isEmpty()) {
             // Empty state
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "No ${selectedPostType.name.lowercase()} posts available",
+                    text = "No chats available",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center
@@ -81,11 +73,11 @@ fun ChatListScreen(
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(filteredPosts) { post ->
-                    PostConversationItem(
-                        post = post,
-                        user = users[post.ownerId],
-                        onClick = { onPostClick(post) }
+                items(filteredChats) { chat ->
+                    ChatConversationItem(
+                        viewModel = viewModel,
+                        chat = chat,
+                        onClick = { onPostClick(chat.id) }
                     )
                 }
             }
@@ -131,7 +123,19 @@ fun PostTypeFilterButton(
 
 /** Individual post conversation item */
 @Composable
-fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
+fun ChatConversationItem(viewModel: ChatListViewModel, chat: Chat, onClick: () -> Unit) {
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    // Assuming two participants
+    val otherUser = chat.participants.first { it != currentUser }
+
+    LaunchedEffect(chat.relatedPostId) {
+        viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
+    }
+    LaunchedEffect(otherUser) { viewModel.getUsername(otherUser) }
+
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -143,50 +147,111 @@ fun PostConversationItem(post: Post, user: User?, onClick: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left side - Username
+            // Left side - Related post title
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = user?.username ?: "Unknown User",
+                    text = uiState.postTitles[chat.relatedPostId] ?: "Loading...",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
-                Text(
-                    text = post.title,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
 
-            // Right side - Skill/Tags
+            // Right side - Other chat participant username
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "Skills:",
+                    text = uiState.usernames[otherUser] ?: "Loading...",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                )
-                Text(
-                    text =
-                        if (post.tags.isEmpty()) {
-                            "No skills listed"
-                        } else {
-                            post.tags.take(2).joinToString(", ") {
-                                it.toString().replace("_", " ").lowercase().replaceFirstChar { char
-                                    ->
-                                    if (char.isLowerCase()) char.titlecase() else char.toString()
-                                }
-                            }
-                        },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
                 )
             }
         }
     }
 }
+
+/* @Preview(showBackground = true)
+@Composable
+fun ChatListScreenPreview() {
+    val mockChatRepo =
+        object : ChatRepository {
+            override suspend fun createChat(
+                participants: List<String>,
+                relatedPostId: String,
+                relatedPostType: PostType
+            ) = ""
+
+            override fun streamMessages(chatId: String): Flow<List<Message>> = flowOf(emptyList())
+
+            override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
+
+            override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
+                listOf(
+                    Chat("1", listOf("user1", "user2"), "post1", PostType.OFFER, emptyList()),
+                    Chat("2", listOf("user1", "user3"), "post2", PostType.OFFER, emptyList())
+                )
+        }
+    val mockUserRepo =
+        object : UserRepositery {
+            override fun getNewUid() = ""
+
+            override suspend fun getUser(userID: String) =
+                com.swent.skillswap.model.user.User(
+                    uid = userID,
+                    username = "User_$userID",
+                    email = "$userID@test.com"
+                )
+
+            override suspend fun addUser(user: com.swent.skillswap.model.user.User) {}
+
+            override suspend fun editUser(
+                userID: String,
+                newValue: com.swent.skillswap.model.user.User
+            ) {}
+
+            override suspend fun deleteUser(userID: String) {}
+
+            override suspend fun userExists(userId: String) = false
+        }
+    val mockPostRepo =
+        object : PostRepository {
+            override fun getNewUid(type: PostType) = ""
+
+            override suspend fun getMultiplePosts(
+                numberOfPosts: Long,
+                type: PostType,
+                titleContains: String,
+                ownerId: String,
+                paymentMethod: com.swent.skillswap.model.post.PaymentMethod?,
+                tags: Set<com.swent.skillswap.model.tags.EveryTag>,
+                status: com.swent.skillswap.model.post.PostStatus?,
+                userLocation: com.google.firebase.firestore.GeoPoint?,
+                maxDistanceKm: Double?
+            ) = emptyList<com.swent.skillswap.model.post.Post>()
+
+            override suspend fun getPost(type: PostType, postId: String) =
+                com.swent.skillswap.model.post.Offer(
+                    uid = postId,
+                    title = "Mock Post $postId",
+                    description = "Description",
+                    ownerId = "owner1",
+                    tags = emptySet(),
+                    paymentMethod = com.swent.skillswap.model.post.PaymentMethod.SKILLS,
+                    expiry = com.google.firebase.Timestamp.now(),
+                    creation = com.google.firebase.Timestamp.now(),
+                    status = com.swent.skillswap.model.post.PostStatus.POSTED,
+                    media = emptyList(),
+                    location = com.google.firebase.firestore.GeoPoint(0.0, 0.0)
+                )
+
+            override suspend fun addPost(post: com.swent.skillswap.model.post.Post) {}
+
+            override suspend fun editPost(
+                postId: String,
+                newPost: com.swent.skillswap.model.post.Post
+            ) {}
+
+            override suspend fun deletePost(type: PostType, postId: String) {}
+        }
+
+    ChatListScreen(ChatListViewModel(mockChatRepo, mockUserRepo, mockPostRepo))
+} */
