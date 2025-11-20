@@ -10,6 +10,7 @@ import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class ChatListUIState(
@@ -42,7 +43,7 @@ class ChatListViewModel(
                 } catch (exception: Exception) {
                     emptyList()
                 }
-            _uiState.value = _uiState.value.copy(chats = chats)
+            _uiState.update { it.copy(chats = chats) }
         }
     }
 
@@ -55,8 +56,7 @@ class ChatListViewModel(
                 } catch (exception: Exception) {
                     ""
                 }
-            _uiState.value =
-                _uiState.value.copy(usernames = _uiState.value.usernames + (userId to username))
+            _uiState.update { it.copy(usernames = it.usernames + (userId to username)) }
         }
     }
 
@@ -69,8 +69,7 @@ class ChatListViewModel(
                 } catch (exception: Exception) {
                     ""
                 }
-            _uiState.value =
-                _uiState.value.copy(postTitles = _uiState.value.postTitles + (postId to title))
+            _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
         }
     }
 }
