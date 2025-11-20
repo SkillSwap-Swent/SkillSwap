@@ -48,8 +48,6 @@ import com.swent.skillswap.resources.C
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
 import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
-import com.swent.skillswap.ui.chat.ChatListScreen
-import com.swent.skillswap.ui.chat.ChatListScreenData
 import com.swent.skillswap.ui.editUser.EditUserScreen
 import com.swent.skillswap.ui.editUser.EditUserViewModel
 import com.swent.skillswap.ui.feedScreen.FeedScreen
@@ -267,17 +265,6 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     onGoBack = { navigationActions.goBack() },
                     onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
                     postOperation = PostOperation.ADD,
-                )
-            }
-
-            composable(Screen.Chat.route) {
-                ChatListScreen(
-                    posts = ChatListScreenData.getSamplePosts(),
-                    users = ChatListScreenData.getSampleUsers(),
-                    onPostClick = { post ->
-                        // TODO: Navigate to individual chat with post
-                        println("Clicked on post: ${post.title}")
-                    },
                 )
             }
         }
