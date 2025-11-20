@@ -105,11 +105,15 @@ fun AuthCreateAccountScreen(
     googleAccount: Boolean = FirebaseAuth.getInstance().currentUser != null,
     vm: CreateAccountViewModel = viewModel(factory = CreateAccountVmFactory(googleAccount))
 ) {
+    val navController = rememberNavController()
+
     // Collect one-time events emitted from the ViewModel
     LaunchedEffect(Unit) {
         vm.eventFlow.collect { event ->
             when (event) {
                 is CreateAccountEvent.NavigateToMainScreen -> goToMainScreen()
+                CreateAccountEvent.NavigateToEmail ->
+                    navController.popBackStack(CreateAccountRoutes.EMAIL, inclusive = false)
             }
         }
     }
@@ -119,7 +123,6 @@ fun AuthCreateAccountScreen(
     }
 
     val scroll = rememberScrollState()
-    val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
     LaunchedEffect(route) { vm.onRouteChanged(route) }
