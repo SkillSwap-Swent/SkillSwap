@@ -630,4 +630,33 @@ class RequestScreenTest {
         // 4. Assert it's removed
         composeTestRule.onNodeWithTag(tag).assertDoesNotExist()
     }
+
+    @Test
+    fun add6Image_causesError() {
+        val testViewModel =
+            RequestViewModel(
+                appContext = null,
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = testViewModel
+            )
+        }
+
+        // 1. Simulate picker returning 6 fake URIs
+        val fakeUris = (1..6).map { index -> Uri.parse("content://fake/image$index.png") }
+        testViewModel.addAttachments(fakeUris)
+
+        composeTestRule.waitForIdle()
+
+        // 2. Assert error is displayed
+        scrollAndAssertIsDisplayed(RequestScreenTags.ATTACHMENT_ERROR)
+    }
 }
