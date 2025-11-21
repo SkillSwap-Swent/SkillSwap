@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -101,6 +102,31 @@ class ChatRepositoryFirestoreTest {
         } catch (e: IllegalArgumentException) {
             assertEquals("content cannot be empty", e.message)
         }
+
+        // Test createChat with wrong number of participants (only 1)
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repo.createChat(listOf("user1"), "post1", PostType.REQUEST) }
+        }
+
+        // Test createChat with wrong number of participants (3)
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking {
+                repo.createChat(listOf("user1", "user2", "user3"), "post1", PostType.REQUEST)
+            }
+        }
+
+        // Test createChat with empty relatedPostId
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { repo.createChat(listOf("user1", "user2"), "", PostType.REQUEST) }
+        }
+
+        // Test sendMessage to non-existent chat
+        assertThrows(Exception::class.java) {
+            runBlocking { repo.sendMessage("nonExistentChat", "user1", "content") }
+        }
+
+        // Test streamMessages with empty chatId
+        assertThrows(IllegalArgumentException::class.java) { repo.streamMessages("") }
     }
 
     @Test
@@ -132,5 +158,29 @@ class ChatRepositoryFirestoreTest {
 
         // Verify received messages
         assertTrue(messagesReceived.size >= 2)
+    }
+
+    @Test
+    fun getChatsOfCurrentUser_filtersAndReturnsCorrectChats() = runBlocking {
+        // Sign in to emulator
+        FirebaseEmulator.auth.signInAnonymously().await()
+        val userId = FirebaseEmulator.auth.currentUser!!.uid
+
+        // Create chats with different post types
+        val requestChat = repo.createChat(listOf(userId, "other1"), "post1", PostType.REQUEST)
+        val offerChat = repo.createChat(listOf(userId, "other2"), "post2", PostType.OFFER)
+
+        // Test filtering by REQUEST type
+        val requestChats = repo.getChatsOfCurrentUser(PostType.REQUEST)
+        assertEquals(1, requestChats.size)
+        assertEquals(requestChat, requestChats[0].id)
+
+        // Test filtering by OFFER type
+        val offerChats = repo.getChatsOfCurrentUser(PostType.OFFER)
+        assertEquals(1, offerChats.size)
+        assertEquals(offerChat, offerChats[0].id)
+
+        // Clean up
+        FirebaseEmulator.auth.signOut()
     }
 }
