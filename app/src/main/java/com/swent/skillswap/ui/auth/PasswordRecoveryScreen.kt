@@ -4,7 +4,6 @@
  */
 package com.swent.skillswap.ui.auth
 
-import android.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
