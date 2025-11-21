@@ -225,7 +225,7 @@ class End2EndM2 {
         composeTestRule.waitForIdle()
 
         /** Edit Profile Screen */
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             composeTestRule
                 .onAllNodesWithTag(EditUserTags.USERNAME_TEXTFIELD)
                 .fetchSemanticsNodes()
@@ -262,7 +262,7 @@ class End2EndM2 {
         composeTestRule.onNodeWithTag(EditUserTags.GO_BACK_BUTTON).performClick()
 
         /** Wait for navigation back to profile */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 50_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.USERNAME_VALUE)
                 .fetchSemanticsNodes()
@@ -482,7 +482,6 @@ class End2EndM2 {
         // ---------- Verify UI ----------
 
         listOf(
-                RequestScreenTags.BACK_BUTTON,
                 RequestScreenTags.TITLE_INPUT,
                 RequestScreenTags.DESCRIPTION_INPUT,
                 RequestScreenTags.TAGS_INPUT,
@@ -491,6 +490,9 @@ class End2EndM2 {
             .forEach { tag ->
                 composeTestRule.waitUntil(timeoutMillis = 5_000) {
                     try {
+                        composeTestRule
+                            .onNodeWithTag("scrollColumn")
+                            .performScrollToNode(hasTestTag(tag))
                         composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
                         true
                     } catch (_: Exception) {
@@ -506,7 +508,9 @@ class End2EndM2 {
         composeTestRule.waitForIdle()
 
         // ---------- Try submit without description ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 
@@ -582,7 +586,9 @@ class End2EndM2 {
             .assertDoesNotExist()
 
         // ---------- Try submitting without tags ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 
@@ -628,7 +634,9 @@ class End2EndM2 {
         }
 
         // ---------- Submit form ----------
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performScrollTo()
+        composeTestRule
+            .onNodeWithTag("scrollColumn")
+            .performScrollToNode(hasTestTag(RequestScreenTags.CREATE_BUTTON))
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
 

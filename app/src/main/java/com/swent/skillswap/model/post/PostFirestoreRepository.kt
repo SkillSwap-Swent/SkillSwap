@@ -39,7 +39,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         tags: Set<PostTag>,
         status: PostStatus?,
         userLocation: GeoPoint?,
-        maxDistanceKm: Double?
+        maxDistanceKm: Float
     ): List<Post> {
         return try {
             // Build query and get posts
@@ -56,7 +56,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                 )
             var posts = query.get().await().map { documentToPost(it) }
 
-            if (userLocation != null && maxDistanceKm != null) {
+            if (userLocation != null && maxDistanceKm != 0f) {
                 val epsilon = 0.05
                 posts =
                     posts.filter {

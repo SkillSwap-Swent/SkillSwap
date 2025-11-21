@@ -16,6 +16,8 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.text.toFloat
+import kotlin.times
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -111,12 +113,10 @@ fun deserializePreference(preference: String): Preference {
     return Preference.valueOf(preference)
 }
 
-fun calculateDistance(loc1: GeoPoint, loc2: GeoPoint): Double {
-
+fun calculateDistance(loc1: GeoPoint, loc2: GeoPoint): Float {
     val earthRadiusKm = 6371.0
 
     val dLat = Math.toRadians(loc2.latitude - loc1.latitude)
-
     val dLon = Math.toRadians(loc2.longitude - loc1.longitude)
 
     val a =
@@ -128,5 +128,5 @@ fun calculateDistance(loc1: GeoPoint, loc2: GeoPoint): Double {
 
     val c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-    return earthRadiusKm * c
+    return (earthRadiusKm * c).toFloat() // ⬅️ Convert to Float
 }
