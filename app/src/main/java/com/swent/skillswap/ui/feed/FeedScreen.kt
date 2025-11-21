@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -74,53 +75,17 @@ fun FeedScreen(
     ) {
 
         //  Filter Bar
-        Row(
-            modifier =
-                Modifier.align(Alignment.TopStart)
-                    .padding(top = if (offer == null) 0.dp else 8.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = horizontalPadding),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // DISTANCE FILTER BUTTON
-            Button(
-                onClick = { showDistanceSlider = !showDistanceSlider },
-                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON),
-                shape = MaterialTheme.shapes.extraLarge,
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ),
-                elevation =
-                    ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
-            ) {
-                Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Distance filter")
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text =
-                        if (distance == 0f) "Distance: No limit"
-                        else "Distance: ${distance.toInt()}km"
-                )
-            }
-            // CLEAR FILTERS BUTTON
-            Button(
-                onClick = {
-                    distance = 0f
-                    vm.updateDistanceFilter(0f)
-                },
-                modifier = Modifier.testTag(FeedScreenTestTags.CLEAR_FILTERS_BUTTON),
-                shape = MaterialTheme.shapes.extraLarge,
-                colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ),
-                elevation =
-                    ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
-            ) {
-                Text("Clear Filters")
-            }
-        }
+        FilterBar(
+            offer = offer,
+            horizontalPadding = horizontalPadding,
+            distance = distance,
+            onDistanceFilterClick = { showDistanceSlider = !showDistanceSlider },
+            onClearFiltersClick = {
+                distance = 0f
+                vm.updateDistanceFilter(0f)
+            },
+            modifier = Modifier.align(Alignment.TopStart)
+        )
 
         if (offer == null) {
             // === No Offer Available ===
@@ -384,6 +349,57 @@ fun FeedDistanceFilterButton(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+@Composable
+private fun FilterBar(
+    offer: Any?,
+    horizontalPadding: Dp,
+    distance: Float,
+    onDistanceFilterClick: () -> Unit,
+    onClearFiltersClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier =
+            modifier
+                .padding(top = if (offer == null) 0.dp else 8.dp)
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // DISTANCE FILTER BUTTON
+        Button(
+            onClick = onDistanceFilterClick,
+            modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors =
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            elevation =
+                ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+        ) {
+            Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Distance filter")
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text =
+                    if (distance == 0f) "Distance: No limit" else "Distance: ${distance.toInt()}km"
+            )
+        }
+
+        // CLEAR FILTERS BUTTON
+        Button(
+            onClick = onClearFiltersClick,
+            modifier = Modifier.testTag(FeedScreenTestTags.CLEAR_FILTERS_BUTTON),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors =
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            elevation =
+                ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+        ) {
+            Text("Clear Filters")
         }
     }
 }
