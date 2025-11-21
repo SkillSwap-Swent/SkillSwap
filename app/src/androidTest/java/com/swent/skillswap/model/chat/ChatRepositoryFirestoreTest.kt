@@ -22,15 +22,13 @@ class ChatRepositoryFirestoreTest {
     lateinit var repo: ChatRepositoryFirestore
     lateinit var db: FirebaseFirestore
 
-    init {
-        FirebaseEmulator.startEmulator()
-        db = FirebaseEmulator.firestore // get the firestore instance pointing to the emulator
-        repo = ChatRepositoryFirestore(db) // initialize the repository
-    }
-
     // Clean the users collection before each test
     @Before
     fun setUp() = runBlocking {
+        FirebaseEmulator.startEmulator()
+        db = FirebaseEmulator.firestore
+        repo = ChatRepositoryFirestore(db)
+
         val users = FirebaseEmulator.firestore.collection(CHATS_COLLECTION).get().await()
         for (doc in users.documents) {
             FirebaseEmulator.firestore
