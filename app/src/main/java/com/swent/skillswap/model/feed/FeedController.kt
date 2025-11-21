@@ -25,4 +25,8 @@ interface FeedController {
 
     /** Fetches the thumbnail for a given ID. */
     suspend fun getThumbnail(thumbnailId: String)
+
+    suspend fun updateDistanceFilter(distance: Float)
+
+    suspend fun updateLocation(isLiveLocationOn: Boolean)
 }

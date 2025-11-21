@@ -8,7 +8,7 @@ import org.junit.Test
 class LocationDistanceUnitTest {
 
     // Helper function to assert distance within tolerance (0.1 km)
-    private fun assertDistanceEquals(expected: Double, actual: Double, tolerance: Double = 0.1) {
+    private fun assertDistanceEquals(expected: Float, actual: Float, tolerance: Float = 0.1f) {
         assertEquals(expected, actual, tolerance)
     }
 
@@ -18,7 +18,7 @@ class LocationDistanceUnitTest {
 
         val distance = calculateDistance(epfl, epfl)
 
-        assertEquals(0.0, distance, 0.001)
+        assertEquals(0.0f, distance, 0.001f)
     }
 
     @Test
@@ -29,8 +29,8 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(epfl, nearby)
 
         // Should be less than 0.1 km (100 meters)
-        assert(distance < 0.1)
-        assert(distance > 0.0)
+        assert(distance < 0.1f)
+        assert(distance > 0.0f)
     }
 
     @Test
@@ -41,7 +41,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(paris, london)
 
         // Expected distance: ~344 km
-        assertDistanceEquals(344.0, distance, tolerance = 5.0)
+        assertDistanceEquals(344.0f, distance, tolerance = 5.0f)
     }
 
     @Test
@@ -52,7 +52,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(newYork, losAngeles)
 
         // Expected distance: ~3944 km
-        assertDistanceEquals(3944.0, distance, tolerance = 50.0)
+        assertDistanceEquals(3944.0f, distance, tolerance = 50.0f)
     }
 
     @Test
@@ -63,7 +63,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(northernPoint, southernPoint)
 
         // Expected distance: ~2223 km (20 degrees of latitude)
-        assertDistanceEquals(2223.0, distance, tolerance = 10.0)
+        assertDistanceEquals(2223.0f, distance, tolerance = 10.0f)
     }
 
     @Test
@@ -74,7 +74,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(western, eastern)
 
         // Expected distance: ~2223 km (20 degrees of longitude at equator)
-        assertDistanceEquals(2223.0, distance, tolerance = 10.0)
+        assertDistanceEquals(2223.0f, distance, tolerance = 10.0f)
     }
 
     @Test
@@ -85,7 +85,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(western, eastern)
 
         // Should be ~222 km (2 degrees at equator)
-        assertDistanceEquals(222.0, distance, tolerance = 5.0)
+        assertDistanceEquals(222.0f, distance, tolerance = 5.0f)
     }
 
     @Test
@@ -97,7 +97,7 @@ class LocationDistanceUnitTest {
         val distance2 = calculateDistance(loc2, loc1)
 
         // Distance should be the same in both directions
-        assertEquals(distance1, distance2, 0.001)
+        assertEquals(distance1, distance2, 0.001f)
     }
 
     @Test
@@ -108,7 +108,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(northPole, equator)
 
         // Expected distance: ~10,000 km (quarter of Earth's circumference)
-        assertDistanceEquals(10000.0, distance, tolerance = 50.0)
+        assertDistanceEquals(10000.0f, distance, tolerance = 50.0f)
     }
 
     @Test
@@ -119,7 +119,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(southPole, equator)
 
         // Expected distance: ~10,000 km
-        assertDistanceEquals(10000.0, distance, tolerance = 50.0)
+        assertDistanceEquals(10000.0f, distance, tolerance = 50.0f)
     }
 
     @Test
@@ -130,7 +130,7 @@ class LocationDistanceUnitTest {
         val distance = calculateDistance(point1, point2)
 
         // Should be close to half Earth's circumference (~20,000 km)
-        assert(distance > 19000.0)
-        assert(distance < 21000.0)
+        assert(distance > 19000.0f)
+        assert(distance < 21000.0f)
     }
 }

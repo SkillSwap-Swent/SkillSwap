@@ -55,7 +55,7 @@ fun EditUserScreen(
 ) {
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
-    var username by remember { mutableStateOf(user?.username ?: "") }
+    var username by remember { mutableStateOf(user?.username ?: "AnoUser") }
     var url by remember { mutableStateOf(user?.profilePicture ?: "") }
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
@@ -83,10 +83,6 @@ fun EditUserScreen(
                         url = it
                         vm.setProfilePicture(it)
                     },
-                    onDelete = {
-                        url = ""
-                        vm.deleteProfilePicture()
-                    }
                 )
 
                 Spacer(modifier = Modifier.weight(0.4f))
@@ -117,6 +113,26 @@ fun EditUserScreen(
                     modifier =
                         Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
                 )
+
+                Button(
+                    onClick = {
+                        url = ""
+                        vm.deleteProfilePicture()
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(0.6f).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                ) {
+                    Text(
+                        text = "Delete Profile Picture",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
@@ -153,7 +169,6 @@ private fun ProfilePictureSection(
     user: User?,
     url: String,
     onChangeUrl: (String) -> Unit,
-    onDelete: () -> Unit
 ) {
     Box(modifier = Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp)) {
         if (url.isNotEmpty()) {
@@ -189,21 +204,6 @@ private fun ProfilePictureSection(
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
-
-    Spacer(modifier = Modifier.height(6.dp))
-
-    Button(
-        onClick = onDelete,
-        modifier = Modifier.fillMaxWidth(0.6f).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-    ) {
-        Text(
-            text = "Delete Profile Picture",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onError
-        )
-    }
 }
 
 @Composable
@@ -233,24 +233,30 @@ private fun SuccessMessage(isSaved: Boolean) {
 
 @Composable
 private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: () -> Unit) {
-    SkillSwapShadowButton(
-        onClick = onValidate,
-        modifier = Modifier.height(56.dp).testTag(EditUserTags.VALIDATE_BUTTON)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp), // space between buttons
+        modifier = Modifier.padding(8.dp) // optional padding around the row
     ) {
-        Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Save")
-        Spacer(modifier = Modifier.width(5.dp))
-        Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
-    }
+        SkillSwapShadowButton(
+            onClick = onGoBack,
+            modifier = Modifier.height(56.dp).weight(1f).testTag(EditUserTags.GO_BACK_BUTTON)
+        ) {
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
+        }
 
-    Spacer(modifier = Modifier.height(8.dp))
-
-    SkillSwapShadowButton(
-        onClick = onGoBack,
-        modifier = Modifier.height(56.dp).testTag(EditUserTags.GO_BACK_BUTTON)
-    ) {
-        Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
-        Spacer(modifier = Modifier.width(5.dp))
-        Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
+        SkillSwapShadowButton(
+            onClick = onValidate,
+            modifier =
+                Modifier.height(56.dp)
+                    .weight(1f) // optional: make buttons equally wide
+                    .testTag(EditUserTags.VALIDATE_BUTTON)
+        ) {
+            Icon(imageVector = Icons.AutoMirrored.Default.ArrowForward, contentDescription = "Save")
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(text = if (isLoading) "Loading..." else "Save", fontSize = 16.sp)
+        }
     }
 }
 

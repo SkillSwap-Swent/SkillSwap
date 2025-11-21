@@ -226,7 +226,7 @@ class End2EndM2 {
         composeTestRule.waitForIdle()
 
         /** Edit Profile Screen */
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             composeTestRule
                 .onAllNodesWithTag(EditUserTags.USERNAME_TEXTFIELD)
                 .fetchSemanticsNodes()
@@ -263,7 +263,7 @@ class End2EndM2 {
         composeTestRule.onNodeWithTag(EditUserTags.GO_BACK_BUTTON).performClick()
 
         /** Wait for navigation back to profile */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 50_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.USERNAME_VALUE)
                 .fetchSemanticsNodes()

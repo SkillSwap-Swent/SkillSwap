@@ -450,4 +450,32 @@ class EditUserScreenTest : TestCase() {
             }
         }
     }
+
+    @Test
+    fun testGeneralErrorMessageIsDisplayed() = run {
+        step("Display EditUserScreen") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
+            }
+        }
+
+        step("Wait for user to load") {
+            composeTestRule.waitUntil(timeoutMillis = 5000) {
+                viewModel.uiState.value.editedUser != null
+            }
+        }
+
+        step("Set a general error in the ViewModel") {
+            // Simulate an error occurring in the VM
+            viewModel.setGeneralError("Something went wrong")
+            composeTestRule.waitForIdle()
+        }
+
+        step("Verify the error message is displayed") {
+            composeTestRule
+                .onNodeWithTag(EditUserTags.GENERAL_ERROR)
+                .assertIsDisplayed()
+                .assert(hasText("Something went wrong"))
+        }
+    }
 }
