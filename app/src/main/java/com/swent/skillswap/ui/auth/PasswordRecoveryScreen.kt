@@ -4,7 +4,6 @@
  */
 package com.swent.skillswap.ui.auth
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -25,10 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.swent.skillswap.resources.theme.BrushDirection
-import com.swent.skillswap.resources.theme.getLinearBrush
-import com.swent.skillswap.ui.utils.SkillSwapShadowButton
-import com.swent.skillswap.ui.utils.SkillSwapTextField
+import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
+import com.swent.skillswap.ui.utils.SkillSwapOutlinedTextField
 import kotlinx.coroutines.delay
 
 // ----- UI Test Tags -----
@@ -79,22 +75,24 @@ fun PasswordRecoveryScreen(
         Column(
             modifier =
                 Modifier.padding(padding)
-                    .background(getLinearBrush(BrushDirection.DOWN_TOP))
+                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
                     .verticalScroll(scroll),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.fillMaxHeight(0.25f))
+            Spacer(modifier = Modifier.height(25.dp))
 
             HeaderSection()
 
-            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
+            Spacer(modifier = Modifier.height(25.dp))
 
             EmailField(
                 email = uiState.email,
                 error = uiState.emailError,
                 onEmailChange = { vm.onEmailChange(it) }
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (uiState.successMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -106,11 +104,11 @@ fun PasswordRecoveryScreen(
                 MessageCard(message = uiState.errorMessage, success = false)
             }
 
-            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SendButton(isLoading = uiState.isLoading, onClick = { vm.sendPasswordResetEmail() })
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             BackButton(onClick = goBackToSignIn)
         }
@@ -123,22 +121,23 @@ private fun HeaderSection() {
         text = "Password Recovery",
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface,
+        color = MaterialTheme.colorScheme.onBackground,
         textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+        modifier = Modifier.fillMaxWidth()
     )
+    Spacer(modifier = Modifier.height(18.dp))
     Text(
         text = "Enter your email address and we'll send you a link to reset your password.",
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
         textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 16.dp)
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
 @Composable
 private fun EmailField(email: String, error: String?, onEmailChange: (String) -> Unit) {
-    SkillSwapTextField(
+    SkillSwapOutlinedTextField(
         value = email,
         supportText = error ?: "",
         onValueChange = onEmailChange,
@@ -152,7 +151,6 @@ private fun EmailField(email: String, error: String?, onEmailChange: (String) ->
             ),
         modifier =
             Modifier.wrapContentWidth(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.8f)
                 .testTag(PasswordRecoveryTags.EMAIL_FIELD)
     )
 }
@@ -190,47 +188,23 @@ private fun MessageCard(message: String, success: Boolean) {
 
 @Composable
 private fun SendButton(isLoading: Boolean, onClick: () -> Unit) {
-    SkillSwapShadowButton(
+    SkillSwapButtonOutline(
+        labelText = if (isLoading) "Sending..." else "Send Reset Link",
         onClick = onClick,
+        enabled = !isLoading,
         modifier =
             Modifier.wrapContentWidth(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.4f)
-                .testTag(PasswordRecoveryTags.SEND_BUTTON),
-        enable = !isLoading
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = MaterialTheme.colorScheme.onSurface,
-                strokeWidth = 2.dp
-            )
-        } else {
-            Text(
-                text = "Send Reset Link",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
+                .testTag(PasswordRecoveryTags.SEND_BUTTON)
+    )
 }
 
 @Composable
 private fun BackButton(onClick: () -> Unit) {
-    OutlinedButton(
+    SkillSwapButtonOutline(
+        labelText = "Back to Sign In",
         onClick = onClick,
-        colors =
-            ButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier =
             Modifier.wrapContentWidth(Alignment.CenterHorizontally)
-                .fillMaxWidth(0.6f)
                 .testTag(PasswordRecoveryTags.BACK_BUTTON)
-    ) {
-        Text(text = "Back to Sign In", style = MaterialTheme.typography.bodyMedium)
-    }
+    )
 }
