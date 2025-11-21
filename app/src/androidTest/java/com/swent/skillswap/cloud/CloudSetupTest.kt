@@ -3,11 +3,13 @@ package com.swent.skillswap.cloud
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
+import java.util.concurrent.TimeUnit
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
@@ -15,8 +17,6 @@ import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import com.google.android.gms.tasks.Tasks
-import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class CloudSetupTest {
@@ -36,7 +36,8 @@ class CloudSetupTest {
                 // point to emulator (CI/device emulator localhost)
                 storage.useEmulator("10.0.2.2", 9199)
 
-                val remoteRef = storage.reference.child("$PROFILE_PICTURES_PATH/test_image_instrumented.jpg")
+                val remoteRef =
+                    storage.reference.child("$PROFILE_PICTURES_PATH/test_image_instrumented.jpg")
                 val bytes = "simple-test-bytes".toByteArray()
 
                 val uploadTask = remoteRef.putBytes(bytes)
@@ -57,13 +58,19 @@ class CloudSetupTest {
             withTimeout(60_000) {
                 storage.useEmulator("10.0.2.2", 9199)
 
-                val remoteRef = storage.reference.child("$PROFILE_PICTURES_PATH/test_image_instrumented.jpg")
+                val remoteRef =
+                    storage.reference.child("$PROFILE_PICTURES_PATH/test_image_instrumented.jpg")
 
-                // Ensure the file exists: try a tiny HEAD/getBytes(1), if fails upload a small payload
+                // Ensure the file exists: try a tiny HEAD/getBytes(1), if fails upload a small
+                // payload
                 try {
                     Tasks.await(remoteRef.getBytes(1), 5, TimeUnit.SECONDS)
                 } catch (e: Exception) {
-                    Tasks.await(remoteRef.putBytes("fetch-ensure".toByteArray()), 30, TimeUnit.SECONDS)
+                    Tasks.await(
+                        remoteRef.putBytes("fetch-ensure".toByteArray()),
+                        30,
+                        TimeUnit.SECONDS
+                    )
                 }
 
                 // fetch the file (up to 1MB)
