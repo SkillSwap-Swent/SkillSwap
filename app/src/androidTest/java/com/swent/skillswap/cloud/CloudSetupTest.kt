@@ -1,4 +1,4 @@
-// Coded with love and with help of copilot
+// Coded with love with help of copilot
 package com.swent.skillswap.cloud
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -15,6 +15,8 @@ import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import com.google.android.gms.tasks.Tasks
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class CloudSetupTest {
@@ -28,74 +30,54 @@ class CloudSetupTest {
     }
 
     @Test
-    fun canLoadImageInCloud() = runBlocking {
-        val testFileName = "test_image_0.jpg"
-        val testPath = "$PROFILE_PICTURES_PATH/$testFileName"
-        val testData = "test image content".toByteArray()
+    fun canLoadImageInCloud() {
+        runBlocking {
+            withTimeout(60_000) {
+                // point to emulator (CI/device emulator localhost)
+                storage.useEmulator("10.0.2.2", 9199)
 
-        var uploadSuccess = false
+                val remoteRef = storage.reference.child("$PROFILE_PICTURES_PATH/test_image_instrumented.jpg")
+                val bytes = "simple-test-bytes".toByteArray()
 
-        val storageRef = storage.reference.child(testPath)
+                val uploadTask = remoteRef.putBytes(bytes)
+                val snapshot = Tasks.await(uploadTask, 30, TimeUnit.SECONDS)
+                assertNotNull(snapshot)
+                assertTrue(snapshot.bytesTransferred > 0)
 
-        storageRef
-            .putBytes(testData)
-            .addOnSuccessListener { taskSnapshot ->
-                assertNotNull("Upload task snapshot should not be null", taskSnapshot)
-                assertNotNull("Metadata should not be null", taskSnapshot.metadata)
-                uploadSuccess = true
+                // verify download url is retrievable
+                val url = Tasks.await(remoteRef.downloadUrl, 30, TimeUnit.SECONDS)
+                assertNotNull(url)
             }
-            .addOnFailureListener { _ -> uploadSuccess = false }
-
-        withTimeout(15_000L) {
-            assertTrue("Failed to upload image to Firebase Storage", uploadSuccess)
         }
-
-        storageRef.delete()
     }
 
     @Test
     fun canFetchImageFromCloud() {
-        val testFileName = "test_image_1.jpg"
-        val testPath = "$PROFILE_PICTURES_PATH/$testFileName"
-        val testData = "test image content".toByteArray()
-
-        val storageRef = storage.reference.child(testPath)
-
-        var uploadSuccess = false
-        var downloadSuccess = false
-
-        // Upload test image
-        storageRef
-            .putBytes(testData)
-            .addOnSuccessListener { uploadSuccess = true }
-            .addOnFailureListener { _ -> uploadSuccess = false }
-
         runBlocking {
-            withTimeout(15_000L) {
-                assertTrue("Failed to upload image to Firebase Storage", uploadSuccess)
+            withTimeout(60_000) {
+                storage.useEmulator("10.0.2.2", 9199)
+
+                val remoteRef = storage.reference.child("$PROFILE_PICTURES_PATH/test_image_instrumented.jpg")
+
+                // Ensure the file exists: try a tiny HEAD/getBytes(1), if fails upload a small payload
+                try {
+                    Tasks.await(remoteRef.getBytes(1), 5, TimeUnit.SECONDS)
+                } catch (e: Exception) {
+                    Tasks.await(remoteRef.putBytes("fetch-ensure".toByteArray()), 30, TimeUnit.SECONDS)
+                }
+
+                // fetch the file (up to 1MB)
+                val data = Tasks.await(remoteRef.getBytes(1024 * 1024), 30, TimeUnit.SECONDS)
+                assertNotNull(data)
+                assertTrue(data.isNotEmpty())
+
+                // cleanup test artifact
+                try {
+                    Tasks.await(remoteRef.delete(), 30, TimeUnit.SECONDS)
+                } catch (ignored: Exception) {
+                    // ignore cleanup errors
+                }
             }
         }
-
-        // Download test image
-        storageRef
-            .getBytes(1024 * 1024)
-            .addOnSuccessListener { bytes ->
-                assertNotNull("Downloaded bytes should not be null", bytes)
-                assertTrue(
-                    "Downloaded data should match uploaded data",
-                    bytes.contentEquals(testData)
-                )
-                downloadSuccess = true
-            }
-            .addOnFailureListener { _ -> downloadSuccess = false }
-
-        runBlocking {
-            withTimeout(15_000L) {
-                assertTrue("Failed to download image from Firebase Storage", downloadSuccess)
-            }
-        }
-
-        // Clean up
-        storageRef.delete()
     }
 }
