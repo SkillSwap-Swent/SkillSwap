@@ -14,7 +14,6 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.deserializeSkills
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.chat.ChatListTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreenTags
