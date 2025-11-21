@@ -21,8 +21,10 @@ import com.swent.skillswap.model.user.UserRepositery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -138,6 +140,11 @@ class ChatConversationItemTest {
             }
 
         mockViewModel = ChatListViewModel(mockChatRepo, mockUserRepo, mockPostRepo)
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(FirebaseAuth::class)
     }
 
     private class MockPost(override val uid: String, override val title: String) : Post {
