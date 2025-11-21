@@ -97,7 +97,7 @@ class ChatListViewModelTest {
                         tags: Set<PostTag>,
                         status: com.swent.skillswap.model.post.PostStatus?,
                         userLocation: com.google.firebase.firestore.GeoPoint?,
-                        maxDistanceKm: Double?
+                        maxDistanceKm: Float
                     ) = emptyList<Post>()
 
                     override suspend fun getPost(type: PostType, postId: String) = post
