@@ -77,13 +77,13 @@ class MainActivity : ComponentActivity() {
             permissions ->
             when {
                 permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true -> {
-                    Log.d("MainActivity", "Fine location permission granted")
+                    Log.w("MainActivity", "Fine location permission granted")
                 }
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
-                    Log.d("MainActivity", "Coarse location permission granted")
+                    Log.w("MainActivity", "Coarse location permission granted")
                 }
                 else -> {
-                    Log.d("MainActivity", "Location permissions denied")
+                    Log.w("MainActivity", "Location permissions denied")
                 }
             }
         }

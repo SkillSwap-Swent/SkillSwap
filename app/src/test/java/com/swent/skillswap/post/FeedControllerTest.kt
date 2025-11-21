@@ -83,4 +83,58 @@ open class FeedControllerTest : PostDataClassTest() {
             assertEquals(firstPostUid, ctrl.currentPost.value?.uid)
         }
     }
+
+    @Test
+    fun updateLocationWithLiveLocationOn() {
+        runTest {
+            val repo = FakePostRepository()
+            repo.addPost(request1.copy(uid = "123"))
+            repo.addPost(request1.copy(uid = "456"))
+
+            val ctrl =
+                FeedControllerFactory(
+                        recommendationEngine = RecommendationEngine(),
+                        thumbnailRepository = ThumbnailRepository(),
+                        postRepository = repo,
+                        chatRepository = ChatRepository(),
+                        locationManager = null
+                    )
+                    .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
+
+            val initialFetchCalls = repo.getMultiplePostsCalls
+
+            ctrl.updateLocation(isLiveLocationOn = true)
+
+            // Verify that fetchPosts was called again (queue cleared and refilled)
+            assertEquals(initialFetchCalls + 2, repo.getMultiplePostsCalls)
+            assertNotNull(ctrl.currentPost.value)
+        }
+    }
+
+    @Test
+    fun updateLocationWithLiveLocationOff() {
+        runTest {
+            val repo = FakePostRepository()
+            repo.addPost(request1.copy(uid = "123"))
+            repo.addPost(request1.copy(uid = "456"))
+
+            val ctrl =
+                FeedControllerFactory(
+                        recommendationEngine = RecommendationEngine(),
+                        thumbnailRepository = ThumbnailRepository(),
+                        postRepository = repo,
+                        chatRepository = ChatRepository(),
+                        locationManager = null
+                    )
+                    .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
+
+            val initialFetchCalls = repo.getMultiplePostsCalls
+
+            ctrl.updateLocation(isLiveLocationOn = false)
+
+            // Verify that fetchPosts was called again (queue cleared and refilled)
+            assertEquals(initialFetchCalls + 2, repo.getMultiplePostsCalls)
+            assertNotNull(ctrl.currentPost.value)
+        }
+    }
 }
