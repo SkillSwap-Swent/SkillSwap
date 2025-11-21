@@ -1,9 +1,10 @@
 /**
  * @author Younes Belgroune - Password recovery screen Follows the same design patterns as
- *   SignInMainScreen Made with the help of AI
+ *   SignInMainScreen Made with the help of AI Joey Gugler - refactor using chatGPT
  */
 package com.swent.skillswap.ui.auth
 
+import android.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -36,16 +37,17 @@ object PasswordRecoveryTags {
     const val ERROR_MESSAGE = "PASSWORD_RECOVERY_ERROR_MESSAGE"
 }
 
-// Note: Button colors are defined inline in the composable to access MaterialTheme
-
 /**
  * Password Recovery screen that allows users to reset their password.
  *
  * Provides:
  * - Email input field
  * - Send password reset email button
- * - Success/error messages
+ * - Success and error messages
  * - Navigation back to sign-in screen
+ *
+ * @param goBackToSignIn Lambda called to navigate back to the sign-in screen
+ * @param vm The [PasswordRecoveryViewModel] providing UI state and actions
  */
 @Preview(showBackground = true)
 @Composable
@@ -96,12 +98,24 @@ fun PasswordRecoveryScreen(
 
             if (uiState.successMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                MessageCard(message = uiState.successMessage, success = true)
+                MessageCard(
+                    message = uiState.successMessage,
+                    colors =
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) to
+                            MaterialTheme.colorScheme.onPrimaryContainer,
+                    testTag = PasswordRecoveryTags.SUCCESS_MESSAGE
+                )
             }
 
             if (uiState.errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                MessageCard(message = uiState.errorMessage, success = false)
+                MessageCard(
+                    message = uiState.errorMessage,
+                    colors =
+                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) to
+                            MaterialTheme.colorScheme.onErrorContainer,
+                    testTag = PasswordRecoveryTags.ERROR_MESSAGE
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -114,7 +128,13 @@ fun PasswordRecoveryScreen(
         }
     }
 }
-
+/**
+ * Displays the header section of the Password Recovery screen.
+ *
+ * Includes:
+ * - Screen title
+ * - Instructions for entering an email to reset the password
+ */
 @Composable
 private fun HeaderSection() {
     Text(
@@ -134,7 +154,13 @@ private fun HeaderSection() {
         modifier = Modifier.fillMaxWidth()
     )
 }
-
+/**
+ * Composable for the email input field in the Password Recovery screen.
+ *
+ * @param email Current email value
+ * @param error Optional error message to display below the field
+ * @param onEmailChange Lambda called when the email input changes
+ */
 @Composable
 private fun EmailField(email: String, error: String?, onEmailChange: (String) -> Unit) {
     SkillSwapOutlinedTextField(
@@ -154,38 +180,46 @@ private fun EmailField(email: String, error: String?, onEmailChange: (String) ->
                 .testTag(PasswordRecoveryTags.EMAIL_FIELD)
     )
 }
-
+/**
+ * Displays a message card with a background and content color.
+ *
+ * Can be used for success or error messages.
+ *
+ * @param message The text to display inside the card
+ * @param colors Pair of background color (first) and content color (second)
+ * @param testTag Optional test tag for UI testing
+ */
 @Composable
-private fun MessageCard(message: String, success: Boolean) {
-    val colors =
-        if (success) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) to
-                MaterialTheme.colorScheme.onPrimaryContainer
-        } else {
-            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) to
-                MaterialTheme.colorScheme.onErrorContainer
-        }
+private fun MessageCard(
+    message: String,
+    colors: Pair<androidx.compose.ui.graphics.Color, androidx.compose.ui.graphics.Color>,
+    testTag: String? = null
+) {
+    val (backgroundColor, contentColor) = colors
+
     Card(
         modifier =
             Modifier.wrapContentWidth(Alignment.CenterHorizontally)
                 .fillMaxWidth(0.8f)
-                .testTag(
-                    if (success) PasswordRecoveryTags.SUCCESS_MESSAGE
-                    else PasswordRecoveryTags.ERROR_MESSAGE
-                ),
+                .then(if (testTag != null) Modifier.testTag(testTag) else Modifier),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.first)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Text(
             text = message,
             style = MaterialTheme.typography.bodySmall,
-            color = colors.second,
+            color = contentColor,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(16.dp)
         )
     }
 }
-
+/**
+ * Button for sending the password reset email.
+ *
+ * @param isLoading True if the reset email is currently being sent
+ * @param onClick Lambda called when the button is clicked
+ */
 @Composable
 private fun SendButton(isLoading: Boolean, onClick: () -> Unit) {
     SkillSwapButtonOutline(
@@ -197,7 +231,11 @@ private fun SendButton(isLoading: Boolean, onClick: () -> Unit) {
                 .testTag(PasswordRecoveryTags.SEND_BUTTON)
     )
 }
-
+/**
+ * Button to navigate back to the sign-in screen.
+ *
+ * @param onClick Lambda called when the button is clicked$
+ */
 @Composable
 private fun BackButton(onClick: () -> Unit) {
     SkillSwapButtonOutline(
