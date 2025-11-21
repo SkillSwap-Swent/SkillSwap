@@ -1,5 +1,6 @@
 /* With the help of Sonnet 4.5 for repetitive tasks */
 
+import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -55,6 +56,16 @@ class RequestScreenTest {
         postCreatedCalled = false
     }
 
+    private fun scrollAndAssertIsDisplayed(tag: String) {
+        composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
+        composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+    }
+
+    private fun scrollAndClick(tag: String) {
+        composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
+        composeTestRule.onNodeWithTag(tag).performClick()
+    }
+
     // ========== UI VISIBILITY TESTS ==========
 
     @Test
@@ -68,12 +79,14 @@ class RequestScreenTest {
                 onPostCreated = { postCreatedCalled = true }
             )
         }
-
+        // Can't scroll because not in column
         composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
+
+        scrollAndAssertIsDisplayed(RequestScreenTags.TITLE_INPUT)
+        scrollAndAssertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
+        scrollAndAssertIsDisplayed(RequestScreenTags.TAGS_INPUT)
+        scrollAndAssertIsDisplayed(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
+        scrollAndAssertIsDisplayed(RequestScreenTags.CREATE_BUTTON)
     }
 
     @Test
@@ -85,8 +98,7 @@ class RequestScreenTest {
                 postOperation = PostOperation.ADD
             )
         }
-
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertDoesNotExist()
     }
 
@@ -104,7 +116,7 @@ class RequestScreenTest {
         }
 
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(RequestScreenTags.EDIT_BUTTON).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.EDIT_BUTTON)
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).assertDoesNotExist()
     }
 
@@ -162,11 +174,11 @@ class RequestScreenTest {
         }
 
         // Click submit without filling title
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
         // Error message should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.TITLE_INPUT)
     }
 
     @Test
@@ -182,10 +194,10 @@ class RequestScreenTest {
         // Fill title but not description
         composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Valid Title")
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
     }
 
     // ========== PAYMENT METHOD TESTS ==========
@@ -202,9 +214,7 @@ class RequestScreenTest {
 
         // All payment methods should be displayed
         PaymentMethod.entries.forEach { method ->
-            composeTestRule
-                .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
-                .assertExists()
+            scrollAndAssertIsDisplayed("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
         }
     }
 
@@ -221,11 +231,11 @@ class RequestScreenTest {
         val chipTag = "${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}"
 
         // Click to select
-        composeTestRule.onNodeWithTag(chipTag).performClick()
+        scrollAndClick(chipTag)
         composeTestRule.waitForIdle()
 
         // Click again to deselect
-        composeTestRule.onNodeWithTag(chipTag).performClick()
+        scrollAndClick(chipTag)
         composeTestRule.waitForIdle()
 
         // Should still exist (not removed, just toggled)
@@ -274,16 +284,15 @@ class RequestScreenTest {
             .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
             .assert(hasText(sampleRequest.description))
 
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_MACHINE_DESIGN")
-            .assertIsDisplayed()
+        scrollAndAssertIsDisplayed("${RequestScreenTags.TAG_CHIP}_MACHINE_DESIGN")
     }
 
     // ========== TAG TESTS ==========
 
     @Test
     fun tagChip_displayAndRemove() {
-        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+        val viewModel =
+            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
 
         composeTestRule.setContent {
             RequestScreen(
@@ -295,21 +304,17 @@ class RequestScreenTest {
         }
 
         // Add tag directly via ViewModel
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         // Verify tag chip appears
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
-            .assertIsDisplayed()
-            .performClick()
+        val tagChipTag = "${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS"
+        scrollAndClick(tagChipTag)
 
         composeTestRule.waitForIdle()
 
         // Verify tag is removed
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_CHIP}_FLUID_MECHANICS")
-            .assertDoesNotExist()
+        composeTestRule.onNodeWithTag(tagChipTag).assertDoesNotExist()
     }
 
     // ========== LOADING STATE TESTS ==========
@@ -317,7 +322,8 @@ class RequestScreenTest {
     @Test
     fun submit_showsLoadingIndicator() {
         fakeRepository.setDelay(1000) // Add delay to see loading state
-        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+        val viewModel =
+            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
 
         composeTestRule.setContent {
             RequestScreen(
@@ -335,19 +341,17 @@ class RequestScreenTest {
             .performTextInput("Test Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
         // Select payment method
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performClick()
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
 
         // Click submit
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
 
         // Loading indicator should appear
-        composeTestRule.onNodeWithTag(RequestScreenTags.LOADING_INDICATOR).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.LOADING_INDICATOR)
     }
 
     // ========== ERROR HANDLING TESTS ==========
@@ -369,18 +373,19 @@ class RequestScreenTest {
             .performTextInput("Test Description")
 
         // Submit without tags
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
         // Should show tags error
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).assertIsDisplayed()
+        scrollAndAssertIsDisplayed(RequestScreenTags.TAGS_INPUT)
     }
 
     // ========== SUCCESS FLOW TEST ==========
 
     @Test
     fun submit_success_triggersCallback() {
-        val viewModel = RequestViewModel(fakeRepository, currentUserId = testUserId, postId = null)
+        val viewModel =
+            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
 
         composeTestRule.setContent {
             RequestScreen(
@@ -393,21 +398,23 @@ class RequestScreenTest {
         }
 
         // Fill all required fields
-        composeTestRule.onNodeWithTag(RequestScreenTags.TITLE_INPUT).performTextInput("Valid Title")
+        composeTestRule
+            .onNodeWithTag(RequestScreenTags.TITLE_INPUT)
+            .performScrollTo()
+            .performTextInput("Valid Title")
         composeTestRule
             .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
+            .performScrollTo()
             .performTextInput("Valid Description")
 
         // Add tag directly via ViewModel (avoid dropdown interaction)
-        viewModel.addTag(SkillTag.FLUID_MECHANICS)
+        viewModel.addSkill(SkillTag.FLUID_MECHANICS)
         composeTestRule.waitForIdle()
 
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performClick()
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
 
         // Submit
-        composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
+        scrollAndClick(RequestScreenTags.CREATE_BUTTON)
         composeTestRule.waitForIdle()
 
         // Callback should be triggered
@@ -427,12 +434,8 @@ class RequestScreenTest {
         }
 
         // Select multiple payment methods
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
-            .performClick()
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
-            .performClick()
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.CASH.name}")
+        scrollAndClick("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${PaymentMethod.SKILLS.name}")
 
         // All should remain clickable (for deselection)
         composeTestRule
@@ -581,5 +584,88 @@ class RequestScreenTest {
         composeTestRule
             .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_FLUID_MECHANICS")
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun addPhoto_triggersPicker() {
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+            )
+        }
+
+        // 1. Click the button to open photo picker
+        scrollAndClick(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
+
+        // unable to test any further as this launches a separate android activity
+    }
+
+    @Test
+    fun addImage_andRemoveImage_UIElementsUpdate() {
+        val testViewModel =
+            RequestViewModel(
+                appContext = null,
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = testViewModel
+            )
+        }
+
+        // 1. Simulate picker returning URIs
+        val fakeUri = Uri.parse("content://fake/image1.png")
+        testViewModel.addAttachments(listOf(fakeUri))
+
+        composeTestRule.waitForIdle()
+
+        val tag = "${RequestScreenTags.ATTACHMENT_PREVIEW}_$fakeUri"
+        // 2. Assert the image is displayed
+        scrollAndAssertIsDisplayed(tag)
+
+        // 3. Click it to remove image
+        scrollAndClick(tag)
+
+        composeTestRule.waitForIdle()
+
+        // 4. Assert it's removed
+        composeTestRule.onNodeWithTag(tag).assertDoesNotExist()
+    }
+
+    @Test
+    fun add6Image_causesError() {
+        val testViewModel =
+            RequestViewModel(
+                appContext = null,
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
+
+        composeTestRule.setContent {
+            RequestScreen(
+                postRepository = fakeRepository,
+                currentUserId = testUserId,
+                postOperation = PostOperation.ADD,
+                requestViewModel = testViewModel
+            )
+        }
+
+        // 1. Simulate picker returning 6 fake URIs
+        val fakeUris = (1..6).map { index -> Uri.parse("content://fake/image$index.png") }
+        testViewModel.addAttachments(fakeUris)
+
+        composeTestRule.waitForIdle()
+
+        // 2. Assert error is displayed
+        scrollAndAssertIsDisplayed(RequestScreenTags.ATTACHMENT_ERROR)
     }
 }

@@ -5,8 +5,10 @@ object FirestorePaths {
     const val REQUESTS_COLLECTION = "requests"
     const val USERS_COLLECTION = "users"
     const val CHATS_COLLECTION = "chats"
+    const val NOTIFICATIONS_COLLECTION = "notifications"
 }
 
 object FirestoreSettings {
     const val MAX_SEARCH_KEYS = 10
+    const val MAX_ATTACHMENTS = 5
 }

@@ -7,13 +7,18 @@
 
 package com.swent.skillswap.ui.post
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,9 +46,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,13 +60,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.utils.GradientButton
+import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object RequestScreenTags {
     const val BACK_BUTTON = "backButton"
@@ -72,6 +82,10 @@ object RequestScreenTags {
     const val EDIT_BUTTON = "editButton"
     const val ERROR_MESSAGE = "errorMessage"
     const val LOADING_INDICATOR = "loadingIndicator"
+    const val CHOOSE_ATTACHMENT_BUTTON = "chooseAttachmentButton"
+    const val ATTACHMENT_PREVIEW = "attachmentPreview"
+    const val ATTACHMENT_ERROR = "attachmentError"
+    const val SCROLL_COLUMN = "scrollColumn"
 }
 
 /*
@@ -101,6 +115,7 @@ fun RequestScreen(
         viewModel(
             factory =
                 RequestViewModelFactory(
+                    appContext = LocalContext.current.applicationContext,
                     postRepository = postRepository,
                     currentUserId = currentUserId,
                     postId = uid
@@ -111,6 +126,12 @@ fun RequestScreen(
     postOperation: PostOperation,
 ) {
     val uiState by requestViewModel.uiState.collectAsState()
+    val pickMultipleMedia =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickMultipleVisualMedia(FirestoreSettings.MAX_ATTACHMENTS)
+        ) { uris ->
+            requestViewModel.addAttachments(uris)
+        }
 
     LaunchedEffect(uiState.isSubmitSuccessful) {
         if (uiState.isSubmitSuccessful) {
@@ -135,7 +156,11 @@ fun RequestScreen(
         )
 
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            modifier =
+                Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+                    .testTag(RequestScreenTags.SCROLL_COLUMN),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Title Input
@@ -168,7 +193,7 @@ fun RequestScreen(
                 modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
             )
 
-            /* Tag input. The following is heavily inspired by the implementation in the create account screen. */
+            /* Skill input. The following is heavily inspired by the implementation in the create account screen. */
             var tagsExpanded by remember { mutableStateOf(false) }
             val tagsQuery = remember { mutableStateOf("") }
             var tagsHasFocus by remember { mutableStateOf(false) }
@@ -230,7 +255,7 @@ fun RequestScreen(
                                     )
                                 },
                                 onClick = {
-                                    requestViewModel.addTag(tag)
+                                    requestViewModel.addSkill(tag)
                                     tagsQuery.value = ""
                                     tagsExpanded = false
                                 },
@@ -244,7 +269,7 @@ fun RequestScreen(
                 }
             }
 
-            // Display selected tags as chips
+            // Display selected skills as chips
             Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
                 val flowScroll = rememberScrollState()
                 FlowRow(
@@ -259,7 +284,7 @@ fun RequestScreen(
                                         color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = RoundedCornerShape(16.dp)
                                     )
-                                    .clickable { requestViewModel.removeTag(skills) }
+                                    .clickable { requestViewModel.removeSkill(skills) }
                                     .padding(horizontal = 12.dp, vertical = 6.dp)
                                     .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
                         ) {
@@ -270,6 +295,66 @@ fun RequestScreen(
                             )
                         }
                     }
+                }
+            }
+
+            // Add a photo
+            Text(
+                text = "Photos: ${uiState.attachments.size}/${FirestoreSettings.MAX_ATTACHMENTS}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            if (uiState.attachments.isNotEmpty()) {
+                Row(
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    uiState.attachments.forEach { uri ->
+                        Box(
+                            modifier =
+                                Modifier.size(80.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { requestViewModel.removeAttachments(setOf(uri)) }
+                                    .testTag("${RequestScreenTags.ATTACHMENT_PREVIEW}_${uri}")
+                        ) {
+                            AsyncImage(
+                                model = uri,
+                                contentDescription = "Selected photo",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (uiState.attachmentsError.isNotBlank()) {
+                Text(
+                    text = uiState.attachmentsError,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.testTag(RequestScreenTags.ATTACHMENT_ERROR)
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                SkillSwapShadowButton(
+                    onClick = {
+                        pickMultipleMedia.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    modifier =
+                        Modifier.testTag(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
+                            .fillMaxWidth(0.4f)
+                            .height(55.dp)
+                ) {
+                    Text(text = "Add photos")
                 }
             }
 
@@ -314,11 +399,11 @@ fun RequestScreen(
                 }
             }
 
-            // Submit button at bottom
             Spacer(modifier = Modifier.height(16.dp))
-            GradientButton(
+
+            SkillSwapShadowButton(
                 onClick = { requestViewModel.save(postOperation) },
-                enabled = !uiState.isLoading,
+                enable = !uiState.isLoading,
                 modifier =
                     Modifier.fillMaxWidth()
                         .padding(vertical = 16.dp)
@@ -333,12 +418,13 @@ fun RequestScreen(
                     CircularProgressIndicator(
                         modifier =
                             Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
-                    Text(text = "Submit", fontSize = 18.sp)
+                    Text("Submit", fontSize = 18.sp)
                 }
             }
+
             // Show error if submission failed
             if (uiState.submitError != null) {
                 Text(
@@ -358,7 +444,8 @@ fun NewRequestScreenPreview() {
     // Create a fake repository for preview
     val fakeRepository = FakePostRepository()
 
-    val viewModel = RequestViewModel(fakeRepository, currentUserId = "preview-user", postId = null)
+    val viewModel =
+        RequestViewModel(null, fakeRepository, currentUserId = "preview-user", postId = null)
 
     SkillSwapAppTheme {
         RequestScreen(

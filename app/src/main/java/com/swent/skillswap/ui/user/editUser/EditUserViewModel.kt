@@ -4,6 +4,7 @@
  */
 package com.swent.skillswap.ui.user.editUser
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
@@ -179,6 +180,11 @@ class EditUserViewModel(
             },
             clearError = { it.copy(skillSetError = null) }
         )
+    }
+
+    @VisibleForTesting
+    fun setGeneralError(message: String?) {
+        _uiState.update { it.copy(generalError = message) }
     }
 
     /*

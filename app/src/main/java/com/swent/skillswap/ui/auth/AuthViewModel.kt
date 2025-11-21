@@ -7,10 +7,13 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.model.Auth.AuthClassicModel
 import com.swent.skillswap.model.Auth.AuthGoogleModel
 import com.swent.skillswap.model.Auth.SignInClassicParams
 import com.swent.skillswap.model.Auth.SignInGoogleParams
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.utils.FCMTokenManager
 import com.swent.skillswap.resources.config.ValidationConfig
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,6 +68,9 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
     // Unlike StateFlow, SharedFlow won't re-emit old events when the UI recomposes.
     private val _eventFlow = MutableSharedFlow<SignInEvent>()
     val eventFlow: SharedFlow<SignInEvent> = _eventFlow // Public read-only access
+    // FCM token manager for saving push notification tokens
+    private val fcmTokenManager: FCMTokenManager =
+        FCMTokenManager(UserRepoFirestore(FirebaseFirestore.getInstance()), auth)
     /**
      * Checks whether the current user already has a valid account record in Firestore. If so,
      * automatically navigates to the main screen.
@@ -78,13 +84,17 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
             if (isGoogleUser == true) {
                 viewModelScope.launch {
                     if (googleModel.googleAccountInfoAreSavedInFirestore()) {
+                        fcmTokenManager.getAndSaveToken()
                         _eventFlow.emit(SignInEvent.NavigateToMainScreen)
                     } else {
                         _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
                     }
                 }
             } else {
-                viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToMainScreen) }
+                viewModelScope.launch {
+                    fcmTokenManager.getAndSaveToken()
+                    _eventFlow.emit(SignInEvent.NavigateToMainScreen)
+                }
             }
         }
     }
@@ -105,9 +115,10 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
                 // Perform Google sign-in using provided credentials.
                 googleModel.signIn(SignInGoogleParams(activity, credentialManager))
                 try {
-                    // Check if user’s Google account info already exists in Firestore.
+                    // Check if user's Google account info already exists in Firestore.
                     if (googleModel.googleAccountInfoAreSavedInFirestore()) {
-                        // User exists → go to main app.
+                        // User exists → save FCM token and go to main app.
+                        fcmTokenManager.getAndSaveToken()
                         _eventFlow.emit(SignInEvent.NavigateToMainScreen)
                     } else {
                         // New Google user → go to account creation.
@@ -139,6 +150,7 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
                     classicModel.signIn(
                         SignInClassicParams(uiState.value.email, uiState.value.password)
                     )
+                    fcmTokenManager.getAndSaveToken()
                     _eventFlow.emit(SignInEvent.NavigateToMainScreen)
                 } catch (e: Exception) {
                     _uiState.update { it.copy(passwordError = "Email or password incorrect") }

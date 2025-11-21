@@ -89,6 +89,14 @@ open class FeedScreenViewModel(
     fun reportOffer(offer: FeedOffer) {
         // TODO: Replace with backend reporting logic
     }
+    /* Sets the maxDistance value for the location filtering */
+    fun updateDistanceFilter(distance: Float) {
+        viewModelScope.launch { controller.updateDistanceFilter(distance) }
+    }
+
+    fun toggleLiveLocation(isLiveLocationOn: Boolean) {
+        viewModelScope.launch { controller.updateLocation(isLiveLocationOn) }
+    }
 
     /**
      * Converts a [Post] object into a [FeedOffer] for display on the feed.

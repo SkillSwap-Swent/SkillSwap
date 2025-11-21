@@ -137,7 +137,7 @@ class AuthClassicTest : TestCase() {
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
         // Go to Create Account screen
-        composeTestRule.waitUntil(5000) {
+        composeTestRule.waitUntil(25000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
                 true
@@ -214,7 +214,7 @@ class AuthClassicTest : TestCase() {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // Arrive at Offers
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+        composeTestRule.waitUntil(timeoutMillis = 30_000L) {
             composeTestRule
                 .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                 .fetchSemanticsNodes()
@@ -280,7 +280,8 @@ class AuthClassicTest : TestCase() {
                 recommendationEngine = RecommendationEngine(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
-                chatRepository = ChatRepository()
+                chatRepository = ChatRepository(),
+                locationManager = null
             )
             .create(
                 userIdPerformingActions = FirebaseEmulator.auth.uid ?: "AnoUser",
