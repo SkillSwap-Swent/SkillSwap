@@ -51,7 +51,7 @@ interface PostRepository {
         tags: Set<PostTag> = emptySet(),
         status: PostStatus? = null,
         userLocation: GeoPoint? = null,
-        maxDistanceKm: Double? = null
+        maxDistanceKm: Float = 0f
     ): List<Post>
 
     /**

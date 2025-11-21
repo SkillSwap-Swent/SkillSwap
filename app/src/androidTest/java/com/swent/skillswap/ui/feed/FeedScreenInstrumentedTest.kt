@@ -60,8 +60,13 @@ class FeedScreenInstrumentedTest {
     private val REQUESTS_COLLECTION = "requests"
 
     /** Helper: create a valid SerializablePost for tests */
-    private fun createValidPost(uid: String, title: String, ownerId: String = "authorId"): Post {
-        val now = Timestamp.now()
+    private fun createValidPost(
+        uid: String,
+        title: String,
+        ownerId: String = "authorId",
+        location: GeoPoint? = null,
+        creation: Timestamp? = null
+    ): Post {
         val expiry = Timestamp(Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 7) }.time)
 
         return SerializablePost(
@@ -72,9 +77,9 @@ class FeedScreenInstrumentedTest {
             skills = setOf(SkillTag.MACHINE_DESIGN).toList(),
             tags = setOf(PostTag.ONE_TIME).toList(),
             expiry = expiry,
-            creation = now,
+            creation = creation ?: Timestamp.now(),
             status = PostStatus.POSTED,
-            location = GeoPoint(0.0, 0.0),
+            location = location ?: GeoPoint(0.0, 0.0),
             media = listOf("https://picsum.photos/200"),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             type = PostType.REQUEST,
@@ -150,7 +155,8 @@ class FeedScreenInstrumentedTest {
                 recommendationEngine = RecommendationEngine(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
-                chatRepository = ChatRepository()
+                chatRepository = ChatRepository(),
+                locationManager = null
             )
 
         runBlocking { testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid }
@@ -411,5 +417,171 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
         composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
+    }
+
+    @Test
+    fun distanceFilter_FiltersPostsByDistanceFromDefaultLocation() = runBlocking {
+        // Default device location: GeoPoint(46.5191, 6.5668) - EPFL, Lausanne
+
+        // Post 1: Very close (~0 km) - EPFL Campus (oldest post)
+        val postNearby =
+            createValidPost(
+                uid = "post1",
+                title = "Nearby Post",
+                ownerId = "author1",
+                location = GeoPoint(46.5191, 6.5668),
+                creation =
+                    Timestamp(Calendar.getInstance().apply { add(Calendar.SECOND, -10) }.time)
+            )
+
+        // Post 2: Medium distance (~8 km) - Lausanne center (middle post)
+        val postMedium =
+            createValidPost(
+                uid = "post2",
+                title = "Medium Distance Post",
+                ownerId = "author2",
+                location = GeoPoint(46.5197, 6.6323),
+                creation = Timestamp(Calendar.getInstance().apply { add(Calendar.SECOND, -5) }.time)
+            )
+
+        // Post 3: Far away (~15 km) - Montreux area (newest post)
+        val postFar =
+            createValidPost(
+                uid = "post3",
+                title = "Far Post",
+                ownerId = "author3",
+                location = GeoPoint(46.4312, 6.9106),
+                creation = Timestamp.now()
+            )
+
+        // Add posts to emulator
+        addPostToEmulator(postNearby)
+        addPostToEmulator(postMedium)
+        addPostToEmulator(postFar)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
+
+        composeTestRule.setContent {
+            val vm: FeedScreenViewModel = viewModel(factory = factory)
+            Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
+        }
+
+        // Wait for initial post to load
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Initially, postFar should be visible (newest post, no filter)
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains(postFar.title, substring = true, ignoreCase = true)
+
+        // Open distance filter slider
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for distance filter popup to fully render
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER)
+                    .assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+                    .assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Assert all elements are displayed
+        composeTestRule.onNodeWithText("Use Live Location").assertIsDisplayed()
+        composeTestRule.onNodeWithText("1-20 km").assertIsDisplayed()
+
+        // Set filter to 10 km (should exclude postFar at ~15 km)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.DISTANCE_SLIDER).performTouchInput {
+            val sliderWidth = width.toFloat()
+            val targetPosition = sliderWidth * (9f / 19f) // (10-1)/(20-1)
+            click(center.copy(x = left + targetPosition))
+        }
+
+        // Wait for the slider value to update before checking
+        composeTestRule.waitForIdle()
+        Thread.sleep(500) // Give extra time for UI to stabilize
+
+        // Wait until distance value text updates to ~10 km
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                val distanceText =
+                    composeTestRule
+                        .onNodeWithTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+                        .fetchSemanticsNode()
+                        .getTextString() ?: ""
+                distanceText.contains("10 km", ignoreCase = true)
+            } catch (e: Exception) {
+                false
+            }
+        }
+
+        // Dismiss the slider by clicking outside of it
+        composeTestRule.onRoot().performTouchInput { click(bottomCenter) }
+        composeTestRule.waitForIdle()
+
+        // After filter applied, feed should refresh showing postMedium (newest within 10km)
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                val skillGiveNode = composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
+                text.contains(postMedium.title, ignoreCase = true)
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Verify postMedium is shown first (newest filtered post)
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains(postMedium.title, substring = true, ignoreCase = true)
+
+        // Press decline to move to next filtered post
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.DECLINE_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for postNearby to appear (second filtered post)
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                val skillGiveNode = composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
+                text.contains(postNearby.title, ignoreCase = true)
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Verify postNearby is shown (oldest filtered post)
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains(postNearby.title, substring = true, ignoreCase = true)
+
+        // Verify postFar was never shown after filtering
+        val finalText =
+            composeTestRule
+                .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .fetchSemanticsNode()
+                .getTextString() ?: ""
+        assert(!finalText.contains(postFar.title, ignoreCase = true)) {
+            "Post at ~15 km should remain filtered out"
+        }
     }
 }

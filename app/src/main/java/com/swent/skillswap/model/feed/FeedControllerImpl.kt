@@ -1,6 +1,8 @@
 package com.swent.skillswap.model.feed
 
+import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.post.Post
@@ -9,6 +11,8 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.utils.LocationManager
+import kotlin.text.clear
 
 const val NUMB_POSTS_TO_FETCH = 10L
 const val PRELOAD_THRESHOLD = 3
@@ -20,6 +24,7 @@ private class FeedControllerImpl(
     private val chatRepository: ChatRepository,
     override val userIdPerformingActions: String,
     override val feedType: PostType,
+    private val locationManager: LocationManager?
 ) : FeedController {
     private val postQueue: MutableList<Post> = mutableListOf()
 
@@ -29,11 +34,22 @@ private class FeedControllerImpl(
     private val _currentThumbnail = mutableStateOf<Image?>(null)
     override val currentThumbnail: State<Image?> = _currentThumbnail
 
+    // Use EPFL location as reference by default
+    private val currentUserLocation = mutableStateOf(LocationManager.DEFAULT_LOCATION)
+    private val maxDistance = mutableFloatStateOf(0f)
+
     /**
      * Initializes the controller by preloading the first batch of posts. This should be called from
      * a CoroutineScope, typically in a ViewModel.
      */
     suspend fun initialLoad() {
+        fetchPosts()
+        _currentPost.value = getNextPost()
+    }
+
+    override suspend fun updateDistanceFilter(distance: Float) {
+        maxDistance.floatValue = distance
+        postQueue.clear()
         fetchPosts()
         _currentPost.value = getNextPost()
     }
@@ -72,9 +88,31 @@ private class FeedControllerImpl(
         _currentThumbnail.value = Image()
     }
 
+    override suspend fun updateLocation(isLiveLocationOn: Boolean) {
+        when (isLiveLocationOn) {
+            true -> {
+                if (locationManager != null)
+                    currentUserLocation.value = locationManager.getCurrentLocationSync()
+            }
+            false -> {
+                currentUserLocation.value = LocationManager.DEFAULT_LOCATION
+                Log.d("FeedController", "Using default location")
+            }
+        }
+        postQueue.clear()
+        fetchPosts()
+        _currentPost.value = getNextPost()
+    }
+
     private suspend fun fetchPosts() {
         // Fetch posts and add them to the queue
-        val newPosts = postRepository.getMultiplePosts(NUMB_POSTS_TO_FETCH, feedType)
+        val newPosts =
+            postRepository.getMultiplePosts(
+                NUMB_POSTS_TO_FETCH,
+                feedType,
+                userLocation = currentUserLocation.value,
+                maxDistanceKm = maxDistance.floatValue
+            )
         postQueue.addAll(newPosts)
     }
 
@@ -107,6 +145,7 @@ class FeedControllerFactory(
     private val thumbnailRepository: ThumbnailRepository,
     private val postRepository: PostRepository,
     private val chatRepository: ChatRepository,
+    private val locationManager: LocationManager?
 ) {
     /**
      * Creates a new instance of [FeedController].
@@ -123,7 +162,8 @@ class FeedControllerFactory(
                 postRepository = postRepository,
                 chatRepository = chatRepository,
                 userIdPerformingActions = userIdPerformingActions,
-                feedType = feedType
+                feedType = feedType,
+                locationManager = locationManager
             )
         fc.initialLoad()
         return fc
