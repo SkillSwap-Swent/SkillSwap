@@ -280,7 +280,8 @@ class AuthClassicTest : TestCase() {
                 recommendationEngine = RecommendationEngine(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
-                chatRepository = ChatRepository()
+                chatRepository = ChatRepository(),
+                locationManager = null
             )
             .create(
                 userIdPerformingActions = FirebaseEmulator.auth.uid ?: "AnoUser",

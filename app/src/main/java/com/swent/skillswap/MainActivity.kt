@@ -1,9 +1,11 @@
 package com.swent.skillswap
 
+import android.Manifest
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,10 +47,12 @@ import com.swent.skillswap.model.feed.RecommendationEngine
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.utils.LocationManager
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
+import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feed.FeedScreen
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
@@ -67,8 +71,42 @@ import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
 
 class MainActivity : ComponentActivity() {
+
+    /* Function used to call for the location permission request */
+    private val requestLocationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            permissions ->
+            when {
+                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true -> {
+                    Log.w("MainActivity", "Fine location permission granted")
+                }
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
+                    Log.w("MainActivity", "Coarse location permission granted")
+                }
+                else -> {
+                    Log.w("MainActivity", "Location permissions denied")
+                }
+            }
+        }
+
+    private fun requestLocationPermissions() {
+        requestLocationPermissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val locationManager = LocationManager(this)
+
+        // Request location permissions on app start if not already granted
+        if (!locationManager.hasLocationPermission() && !BuildConfig.IS_TESTING) {
+            requestLocationPermissions()
+        }
 
         /*For testing purposes on sign in*/
         // FirebaseAuth.getInstance().signOut()
@@ -80,7 +118,7 @@ class MainActivity : ComponentActivity() {
                         Modifier.fillMaxSize().semantics { testTag = C.Tag.main_screen_container },
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SkillSwapApp()
+                    SkillSwapApp(locationManager = locationManager)
                 }
             }
         }
@@ -89,7 +127,10 @@ class MainActivity : ComponentActivity() {
 
 // Enabling navController to be passed as an argument to facilitate testing
 @Composable
-fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
+fun SkillSwapApp(
+    navController: NavHostController = rememberNavController(),
+    locationManager: LocationManager? = null
+) {
     val focusManager = LocalFocusManager.current
 
     val navigationActions = remember(navController) { NavigationActions(navController) }
@@ -109,7 +150,8 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                     recommendationEngine = RecommendationEngine(),
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
-                    chatRepository = ChatRepository()
+                    chatRepository = ChatRepository(),
+                    locationManager = locationManager
                 )
                 .create(
                     userIdPerformingActions = Firebase.auth.uid ?: "AnoUser",
@@ -161,6 +203,13 @@ fun SkillSwapApp(navController: NavHostController = rememberNavController()) {
                 composable(Screen.CreateAccount.route) {
                     AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
+                    )
+                }
+                composable(Screen.PasswordRecovery.route) {
+                    PasswordRecoveryScreen(
+                        goBackToSignIn = {
+                            navigationActions.goBack() // or navigateTo(Screen.AuthMain)
+                        }
                     )
                 }
             }

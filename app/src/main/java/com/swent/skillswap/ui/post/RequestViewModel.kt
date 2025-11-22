@@ -1,10 +1,13 @@
 package com.swent.skillswap.ui.post
 
-import android.util.Log
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -43,16 +46,21 @@ data class RequestUIState(
     val titleError: String = "",
     val descriptionError: String = "",
     val tagsError: String = "",
+    val attachmentsError: String = "",
     val paymentMethodsError: String = "",
     val expiryError: String = "",
 
     // Submission state
     val isLoading: Boolean = false,
     val submitError: String? = null,
-    val isSubmitSuccessful: Boolean = false
+    val isSubmitSuccessful: Boolean = false,
+
+    // photo picker
+    val attachments: Set<Uri> = emptySet()
 )
 
 class RequestViewModel(
+    private val appContext: Context? = null,
     private val postRepository: PostRepository,
     private val currentUserId: String,
     private val postId: String? = null // Only necessary if postOperation is edit
@@ -191,10 +199,9 @@ class RequestViewModel(
                             ),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
-                        media = emptyList(),
+                        media = emptyList(), // TODO: upload attachments to db and store links
                         location = _uiState.value.location
                     )
-                Log.d("RequestViewModel", "save - Request object skills: ${request.skills}")
 
                 // Will call validate() internally
                 when (postOperation) {
@@ -211,5 +218,45 @@ class RequestViewModel(
                 }
             }
         }
+    }
+
+    // photo picker
+    fun addAttachments(uris: Collection<Uri>) {
+        val combined = _uiState.value.attachments + uris
+
+        // TODO: also perform file size check when that is decided with image repo impl
+        if (combined.size > FirestoreSettings.MAX_ATTACHMENTS) {
+            _uiState.update { it.copy(attachmentsError = "You can attach up to 5 photos.") }
+            return
+        }
+
+        // Check permissions on new uris, fail on error
+        for (uri in uris) {
+            if (!grantPersistablePermission(uri)) {
+                return // error state is set by the helper
+            }
+        }
+
+        _uiState.update { it.copy(attachments = combined.toSet(), attachmentsError = "") }
+    }
+
+    // used to signal to android we want persistent access to these files
+    // prevents crashes during app recomposition
+    private fun grantPersistablePermission(uri: Uri): Boolean {
+        val resolver = appContext?.contentResolver ?: return true // skip in preview/tests
+
+        return try {
+            resolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            true
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(attachmentsError = "Failed getting permission for attachment: $e")
+            }
+            false
+        }
+    }
+
+    fun removeAttachments(uris: Collection<Uri>) {
+        _uiState.update { it.copy(attachments = it.attachments - uris, attachmentsError = "") }
     }
 }

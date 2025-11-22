@@ -7,8 +7,12 @@
 
 package com.swent.skillswap.ui.post
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,9 +44,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,13 +58,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.utils.GradientButton
+import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object RequestScreenTags {
     const val BACK_BUTTON = "backButton"
@@ -71,6 +80,10 @@ object RequestScreenTags {
     const val EDIT_BUTTON = "editButton"
     const val ERROR_MESSAGE = "errorMessage"
     const val LOADING_INDICATOR = "loadingIndicator"
+    const val CHOOSE_ATTACHMENT_BUTTON = "chooseAttachmentButton"
+    const val ATTACHMENT_PREVIEW = "attachmentPreview"
+    const val ATTACHMENT_ERROR = "attachmentError"
+    const val SCROLL_COLUMN = "scrollColumn"
 }
 
 /*
@@ -100,6 +113,7 @@ fun RequestScreen(
         viewModel(
             factory =
                 RequestViewModelFactory(
+                    appContext = LocalContext.current.applicationContext,
                     postRepository = postRepository,
                     currentUserId = currentUserId,
                     postId = uid
@@ -110,6 +124,12 @@ fun RequestScreen(
     postOperation: PostOperation,
 ) {
     val uiState by requestViewModel.uiState.collectAsState()
+    val pickMultipleMedia =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickMultipleVisualMedia(FirestoreSettings.MAX_ATTACHMENTS)
+        ) { uris ->
+            requestViewModel.addAttachments(uris)
+        }
 
     LaunchedEffect(uiState.isSubmitSuccessful) { if (uiState.isSubmitSuccessful) onPostCreated() }
 
@@ -117,7 +137,11 @@ fun RequestScreen(
         RequestTopBar(postOperation = postOperation, onGoBack = onGoBack)
 
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            modifier =
+                Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+                    .testTag(RequestScreenTags.SCROLL_COLUMN),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             TitleInput(uiState.title, uiState.titleError) { requestViewModel.setTitle(it) }
@@ -377,7 +401,8 @@ fun NewRequestScreenPreview() {
     // Create a fake repository for preview
     val fakeRepository = FakePostRepository()
 
-    val viewModel = RequestViewModel(fakeRepository, currentUserId = "preview-user", postId = null)
+    val viewModel =
+        RequestViewModel(null, fakeRepository, currentUserId = "preview-user", postId = null)
 
     SkillSwapAppTheme {
         RequestScreen(

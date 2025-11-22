@@ -4,6 +4,7 @@ package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +30,7 @@ import coil.compose.AsyncImage
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
+import kotlin.text.toInt
 
 /**
  * Displays the main FeedOffer screen.
@@ -45,6 +49,9 @@ fun FeedScreen(
     val uiState by vm.uiState.collectAsState()
     val offer = uiState
     var showMenu by remember { mutableStateOf(false) }
+    var showDistanceSlider by remember { mutableStateOf(false) }
+    var distance by remember { mutableFloatStateOf(0f) }
+    var isLiveLocationEnabled by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -58,9 +65,28 @@ fun FeedScreen(
     Box(
         modifier =
             Modifier.fillMaxSize()
-                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                .pointerInput(showDistanceSlider) {
+                    if (showDistanceSlider) {
+                        detectTapGestures { showDistanceSlider = false }
+                    }
+                },
         contentAlignment = Alignment.Center
     ) {
+
+        //  Filter Bar
+        FilterBar(
+            offer = offer,
+            horizontalPadding = horizontalPadding,
+            distance = distance,
+            onDistanceFilterClick = { showDistanceSlider = !showDistanceSlider },
+            onClearFiltersClick = {
+                distance = 0f
+                vm.updateDistanceFilter(0f)
+            },
+            modifier = Modifier.align(Alignment.TopStart)
+        )
+
         if (offer == null) {
             // === No Offer Available ===
             Text(
@@ -226,6 +252,24 @@ fun FeedScreen(
                 }
             }
         }
+        // Distance Filter Button - positioned at top
+        if (showDistanceSlider) {
+            FeedDistanceFilterButton(
+                distance = distance,
+                onDistanceChange = {
+                    distance = it
+                    vm.updateDistanceFilter(it)
+                },
+                modifier =
+                    Modifier.align(Alignment.TopCenter)
+                        .padding(top = if (offer == null) 0.dp else 8.dp),
+                onLiveLocationClicked = {
+                    isLiveLocationEnabled = !isLiveLocationEnabled
+                    vm.toggleLiveLocation(isLiveLocationEnabled)
+                },
+                checked = isLiveLocationEnabled
+            )
+        }
     }
 }
 
@@ -251,5 +295,111 @@ fun FeedOfferMenu(onBlockUser: () -> Unit, onReportOffer: () -> Unit, onDismiss:
                 onDismiss()
             }
         )
+    }
+}
+
+@Composable
+fun FeedDistanceFilterButton(
+    distance: Float,
+    onDistanceChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+    onLiveLocationClicked: () -> Unit,
+    checked: Boolean
+) {
+    Card(
+        modifier = modifier.widthIn(min = 240.dp, max = 300.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
+        colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "${distance.toInt()} km",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            // Live Location Checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = checked,
+                    onCheckedChange = { onLiveLocationClicked() },
+                    modifier = Modifier.testTag(FeedScreenTestTags.LIVE_LOCATION_CHECKBOX)
+                )
+                Text(text = "Use Live Location", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Slider(
+                value = distance,
+                onValueChange = onDistanceChange,
+                valueRange = 1f..20f,
+                steps = 20,
+                modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_SLIDER)
+            )
+
+            Text(
+                text = "1-20 km",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilterBar(
+    offer: Any?,
+    horizontalPadding: Dp,
+    distance: Float,
+    onDistanceFilterClick: () -> Unit,
+    onClearFiltersClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier =
+            modifier
+                .padding(top = if (offer == null) 0.dp else 8.dp)
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // DISTANCE FILTER BUTTON
+        Button(
+            onClick = onDistanceFilterClick,
+            modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_FILTER_BUTTON),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors =
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            elevation =
+                ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+        ) {
+            Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Distance filter")
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text =
+                    if (distance == 0f) "Distance: No limit" else "Distance: ${distance.toInt()}km"
+            )
+        }
+
+        // CLEAR FILTERS BUTTON
+        Button(
+            onClick = onClearFiltersClick,
+            modifier = Modifier.testTag(FeedScreenTestTags.CLEAR_FILTERS_BUTTON),
+            shape = MaterialTheme.shapes.extraLarge,
+            colors =
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            elevation =
+                ButtonDefaults.buttonElevation(defaultElevation = 6.dp, pressedElevation = 8.dp)
+        ) {
+            Text("Clear Filters")
+        }
     }
 }
