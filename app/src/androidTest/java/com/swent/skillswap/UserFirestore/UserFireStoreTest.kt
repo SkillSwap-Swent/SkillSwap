@@ -7,6 +7,7 @@
 
 package com.swent.skillswap.UserFirestore
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
@@ -44,7 +45,6 @@ class UserFireStoreTest {
             FirebaseEmulator.firestore.collection("users").document(doc.id).delete().await()
         }
     }
-
     // Helper functions
     private fun createAvailability(
         day: DayOfWeek,
@@ -71,7 +71,8 @@ class UserFireStoreTest {
         rating: Float = 5.0f,
         availability: List<com.swent.skillswap.model.user.Availability> = listOf(),
         preference: Preference = Preference.SKILLS,
-        location: GeoPoint = GeoPoint(0.0, 0.0)
+        location: GeoPoint = GeoPoint(0.0, 0.0),
+        blockedUsers: Set<String> = setOf()
     ) =
         User(
             uid = uid,
@@ -82,7 +83,8 @@ class UserFireStoreTest {
             rating = rating,
             availability = availability,
             preference = preference,
-            location = location
+            location = location,
+            blockedUsers = blockedUsers
         )
 
     @Test
@@ -316,5 +318,38 @@ class UserFireStoreTest {
 
         assertEquals(Preference.SKILLS, repo.getUser(uid1).preference)
         assertEquals(Preference.MONEY, repo.getUser(uid2).preference)
+    }
+    @Test
+    fun testAddAndRetreiveBlockedUser() = runBlocking {
+        val uid0 = repo.getNewUid()
+        val uid1 = repo.getNewUid()
+        val uid2 = repo.getNewUid()
+        val userWithBlockedUser =
+            createUser(
+                uid = uid0,
+                username = "skillsuser",
+                email = "skills@test.com",
+                blockedUsers = setOf(uid1,uid2)
+            )
+        repo.addUser(userWithBlockedUser)
+        assert( repo.getUser(uid0).blockedUsers.contains(uid1), { Log.w("Test","retrieve: " + repo.getUser(uid0).blockedUsers) })
+        assert( repo.getUser(uid0).blockedUsers.contains(uid2),{ Log.w("Test","retrieve: " + repo.getUser(uid0).blockedUsers) })
+    }
+    @Test
+    fun  testCanEditBlockedUser() = runBlocking {
+        val uid0 = repo.getNewUid()
+        val uid1 = repo.getNewUid()
+        val uid2 = repo.getNewUid()
+        val userWithBlockedUser =
+            createUser(
+                uid = uid0,
+                username = "skillsuser",
+                email = "skills@test.com",
+                blockedUsers = setOf(uid1)
+            )
+        repo.addUser(userWithBlockedUser)
+        assert( repo.getUser(uid0).blockedUsers.contains(uid1))
+        repo.editUser(uid0, repo.getUser(uid0).copy(blockedUsers = setOf(uid2)))
+        assert( repo.getUser(uid0).blockedUsers.contains(uid2), { Log.w("Test","retrieve: " + repo.getUser(uid0).blockedUsers) })
     }
 }
