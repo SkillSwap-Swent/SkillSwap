@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
@@ -14,6 +15,7 @@ import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,12 +23,44 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CloudSetupTest {
     private lateinit var storage: FirebaseStorage
+    private lateinit var auth: FirebaseAuth
 
     @Before
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         FirebaseApp.initializeApp(context)
         storage = Firebase.storage
+        auth = FirebaseAuth.getInstance()
+        auth.useEmulator("10.0.2.2", 9099)
+        createOrSignInTestUser()
+    }
+
+    /**
+     * Creates a test user with the given email and password, or signs in if the user already exists.
+     * AI-generated code
+     */
+    fun createOrSignInTestUser(email: String = "test@local.com", password: String = "Password123") {
+        try {
+            Tasks.await(auth.createUserWithEmailAndPassword(email, password), 15, TimeUnit.SECONDS)
+            Tasks.await(auth.signInWithEmailAndPassword(email, password), 15, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            //if the user already exists, just sign in
+            Tasks.await(auth.signInWithEmailAndPassword(email, password), 15, TimeUnit.SECONDS)
+        }
+    }
+
+    /**
+     * Clears the authentication state by deleting the current user and signing out.
+     * AI-generated code
+     */
+    @After
+    fun clearAuth() {
+        try {
+            auth.currentUser?.let { Tasks.await(it.delete(), 10, TimeUnit.SECONDS) }
+        } catch (_: Exception) {
+        } finally {
+            auth.signOut()
+        }
     }
 
     @Test
