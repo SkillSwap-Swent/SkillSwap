@@ -51,13 +51,16 @@ data class SerializableAvailability(
 fun serializeBlockedUsers(blockedUsers: Set<String>): String {
     return blockedUsers.joinToString(separator = "|")
 }
+
 fun deserializeBlockedUsers(blockedUsers: String): Set<String> {
     if (blockedUsers.isEmpty()) return setOf()
     return blockedUsers.split("|").toSet()
 }
+
 fun serializeSkills(skillSet: Set<Skill>): String {
     return skillSet.map { serializeSingleSkill(it) }.joinToString(separator = "|")
 }
+
 fun deserializeSkills(skillSet: String): Set<Skill> {
     if (skillSet.isEmpty()) return setOf()
     return skillSet.split("|").map { deserializeSingleSkill(it) }.toSet()

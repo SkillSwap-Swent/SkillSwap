@@ -20,7 +20,7 @@ data class User(
     val availability: List<Availability> = emptyList(),
     val preference: Preference = Preference.SKILLS,
     val location: GeoPoint = GeoPoint(46.5191, 6.5668), // EPFL default location
-    val blockedUsers : Set<String> = setOf(),
+    val blockedUsers: Set<String> = setOf(),
     val fcmToken: String? = null
     // val offerSet: Set<Offer>,
     // val favoriteOffers: Set<Offer>

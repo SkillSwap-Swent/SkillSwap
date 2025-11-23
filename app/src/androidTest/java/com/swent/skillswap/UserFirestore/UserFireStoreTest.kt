@@ -319,6 +319,7 @@ class UserFireStoreTest {
         assertEquals(Preference.SKILLS, repo.getUser(uid1).preference)
         assertEquals(Preference.MONEY, repo.getUser(uid2).preference)
     }
+
     @Test
     fun testAddAndRetreiveBlockedUser() = runBlocking {
         val uid0 = repo.getNewUid()
@@ -329,14 +330,21 @@ class UserFireStoreTest {
                 uid = uid0,
                 username = "skillsuser",
                 email = "skills@test.com",
-                blockedUsers = setOf(uid1,uid2)
+                blockedUsers = setOf(uid1, uid2)
             )
         repo.addUser(userWithBlockedUser)
-        assert( repo.getUser(uid0).blockedUsers.contains(uid1), { Log.w("Test","retrieve: " + repo.getUser(uid0).blockedUsers) })
-        assert( repo.getUser(uid0).blockedUsers.contains(uid2),{ Log.w("Test","retrieve: " + repo.getUser(uid0).blockedUsers) })
+        assert(
+            repo.getUser(uid0).blockedUsers.contains(uid1),
+            { Log.w("Test", "retrieve: " + repo.getUser(uid0).blockedUsers) }
+        )
+        assert(
+            repo.getUser(uid0).blockedUsers.contains(uid2),
+            { Log.w("Test", "retrieve: " + repo.getUser(uid0).blockedUsers) }
+        )
     }
+
     @Test
-    fun  testCanEditBlockedUser() = runBlocking {
+    fun testCanEditBlockedUser() = runBlocking {
         val uid0 = repo.getNewUid()
         val uid1 = repo.getNewUid()
         val uid2 = repo.getNewUid()
@@ -348,8 +356,11 @@ class UserFireStoreTest {
                 blockedUsers = setOf(uid1)
             )
         repo.addUser(userWithBlockedUser)
-        assert( repo.getUser(uid0).blockedUsers.contains(uid1))
+        assert(repo.getUser(uid0).blockedUsers.contains(uid1))
         repo.editUser(uid0, repo.getUser(uid0).copy(blockedUsers = setOf(uid2)))
-        assert( repo.getUser(uid0).blockedUsers.contains(uid2), { Log.w("Test","retrieve: " + repo.getUser(uid0).blockedUsers) })
+        assert(
+            repo.getUser(uid0).blockedUsers.contains(uid2),
+            { Log.w("Test", "retrieve: " + repo.getUser(uid0).blockedUsers) }
+        )
     }
 }

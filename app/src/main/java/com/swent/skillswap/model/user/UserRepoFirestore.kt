@@ -84,7 +84,6 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                     "location" to newValue.location,
                     "blockedUsers" to serializeBlockedUsers(newValue.blockedUsers),
                     "fcmToken" to (newValue.fcmToken ?: ""),
-
                 ),
                 SetOptions.merge()
             )
