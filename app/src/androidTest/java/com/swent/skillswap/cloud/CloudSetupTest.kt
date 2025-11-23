@@ -36,29 +36,28 @@ class CloudSetupTest {
     }
 
     /**
-     * Creates a test user with the given email and password, or signs in if the user already exists.
-     * AI-generated code
+     * Creates a test user with the given email and password, or signs in if the user already
+     * exists. AI-generated code
      */
     fun createOrSignInTestUser(email: String = "test@local.com", password: String = "Password123") {
         try {
             Tasks.await(auth.createUserWithEmailAndPassword(email, password), 15, TimeUnit.SECONDS)
             Tasks.await(auth.signInWithEmailAndPassword(email, password), 15, TimeUnit.SECONDS)
         } catch (e: Exception) {
-            //if the user already exists, just sign in
+            // if the user already exists, just sign in
             Tasks.await(auth.signInWithEmailAndPassword(email, password), 15, TimeUnit.SECONDS)
         }
     }
 
     /**
-     * Clears the authentication state by deleting the current user and signing out.
-     * AI-generated code
+     * Clears the authentication state by deleting the current user and signing out. AI-generated
+     * code
      */
     @After
     fun clearAuth() {
         try {
             auth.currentUser?.let { Tasks.await(it.delete(), 10, TimeUnit.SECONDS) }
-        } catch (_: Exception) {
-        } finally {
+        } catch (_: Exception) {} finally {
             auth.signOut()
         }
     }
