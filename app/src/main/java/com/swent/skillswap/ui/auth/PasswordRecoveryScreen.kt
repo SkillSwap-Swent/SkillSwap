@@ -1,10 +1,9 @@
 /**
  * @author Younes Belgroune - Password recovery screen Follows the same design patterns as
- *   SignInMainScreen Made with the help of AI
+ *   SignInMainScreen Made with the help of AI Joey Gugler - refactor using chatGPT
  */
 package com.swent.skillswap.ui.auth
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -25,10 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.swent.skillswap.resources.theme.BrushDirection
-import com.swent.skillswap.resources.theme.getLinearBrush
-import com.swent.skillswap.ui.utils.SkillSwapShadowButton
-import com.swent.skillswap.ui.utils.SkillSwapTextField
+import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
+import com.swent.skillswap.ui.utils.SkillSwapOutlinedTextField
 import kotlinx.coroutines.delay
 
 // ----- UI Test Tags -----
@@ -40,16 +36,17 @@ object PasswordRecoveryTags {
     const val ERROR_MESSAGE = "PASSWORD_RECOVERY_ERROR_MESSAGE"
 }
 
-// Note: Button colors are defined inline in the composable to access MaterialTheme
-
 /**
  * Password Recovery screen that allows users to reset their password.
  *
  * Provides:
  * - Email input field
  * - Send password reset email button
- * - Success/error messages
+ * - Success and error messages
  * - Navigation back to sign-in screen
+ *
+ * @param goBackToSignIn Lambda called to navigate back to the sign-in screen
+ * @param vm The [PasswordRecoveryViewModel] providing UI state and actions
  */
 @Preview(showBackground = true)
 @Composable
@@ -60,20 +57,17 @@ fun PasswordRecoveryScreen(
     val scroll = rememberScrollState()
     val uiState by vm.uiState.collectAsState()
 
-    // Listen for one-time events from the ViewModel
-    // Also handle navigation when success message is shown (user can navigate after seeing success)
+    // One-time events
     LaunchedEffect(Unit) {
         vm.eventFlow.collect { event ->
-            when (event) {
-                is PasswordRecoveryEvent.NavigateToSignIn -> goBackToSignIn()
-            }
+            if (event is PasswordRecoveryEvent.NavigateToSignIn) goBackToSignIn()
         }
     }
 
-    // Auto-navigate after success message is shown (replaces hardcoded delay in ViewModel)
+    // Auto-navigate after showing success
     LaunchedEffect(uiState.successMessage) {
         if (uiState.successMessage.isNotEmpty()) {
-            delay(2000) // Show success message for 2 seconds
+            delay(2000)
             goBackToSignIn()
         }
     }
@@ -82,144 +76,172 @@ fun PasswordRecoveryScreen(
         Column(
             modifier =
                 Modifier.padding(padding)
-                    .background(getLinearBrush(BrushDirection.DOWN_TOP))
+                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize()
-                    .verticalScroll(scroll)
+                    .verticalScroll(scroll),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Title - using aspect ratio for spacing instead of magic numbers
-            Spacer(modifier = Modifier.fillMaxHeight(0.25f))
-            Text(
-                text = "Password Recovery",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            Spacer(modifier = Modifier.height(25.dp))
+
+            HeaderSection()
+
+            Spacer(modifier = Modifier.height(25.dp))
+
+            EmailField(
+                email = uiState.email,
+                error = uiState.emailError,
+                onEmailChange = { vm.onEmailChange(it) }
             )
 
-            Text(
-                text = "Enter your email address and we'll send you a link to reset your password.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Email field - using aspect ratio for spacing
-            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
-            SkillSwapTextField(
-                value = uiState.email,
-                supportText = uiState.emailError,
-                onValueChange = { vm.onEmailChange(it) },
-                label = "Email",
-                placeholder = "your.email@gmail.com",
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        capitalization = KeyboardCapitalization.None,
-                        imeAction = ImeAction.Done
-                    ),
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.8f)
-                        .testTag(PasswordRecoveryTags.EMAIL_FIELD)
-            )
-
-            // Success message
             if (uiState.successMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Card(
-                    modifier =
-                        Modifier.align(Alignment.CenterHorizontally)
-                            .fillMaxWidth(0.8f)
-                            .testTag(PasswordRecoveryTags.SUCCESS_MESSAGE),
-                    shape = RoundedCornerShape(8.dp),
+                MessageCard(
+                    message = uiState.successMessage,
                     colors =
-                        CardDefaults.cardColors(
-                            containerColor =
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                        )
-                ) {
-                    Text(
-                        text = uiState.successMessage,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) to
+                            MaterialTheme.colorScheme.onPrimaryContainer,
+                    testTag = PasswordRecoveryTags.SUCCESS_MESSAGE
+                )
             }
 
-            // Error message
             if (uiState.errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Card(
-                    modifier =
-                        Modifier.align(Alignment.CenterHorizontally)
-                            .fillMaxWidth(0.8f)
-                            .testTag(PasswordRecoveryTags.ERROR_MESSAGE),
-                    shape = RoundedCornerShape(8.dp),
+                MessageCard(
+                    message = uiState.errorMessage,
                     colors =
-                        CardDefaults.cardColors(
-                            containerColor =
-                                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
-                        )
-                ) {
-                    Text(
-                        text = uiState.errorMessage,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f) to
+                            MaterialTheme.colorScheme.onErrorContainer,
+                    testTag = PasswordRecoveryTags.ERROR_MESSAGE
+                )
             }
 
-            // Send button - using aspect ratio for spacing
-            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
-            SkillSwapShadowButton(
-                onClick = { vm.sendPasswordResetEmail() },
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .testTag(PasswordRecoveryTags.SEND_BUTTON)
-                        .fillMaxWidth(0.4f),
-                enable = !uiState.isLoading
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = "Send Reset Link",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Back to sign-in button
-            Spacer(modifier = Modifier.height(20.dp))
-            OutlinedButton(
-                onClick = { goBackToSignIn() },
-                colors =
-                    ButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                        disabledContainerColor = Color.Transparent,
-                        disabledContentColor =
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                modifier =
-                    Modifier.align(Alignment.CenterHorizontally)
-                        .fillMaxWidth(0.6f)
-                        .testTag(PasswordRecoveryTags.BACK_BUTTON)
-            ) {
-                Text(text = "Back to Sign In", style = MaterialTheme.typography.bodyMedium)
-            }
+            SendButton(isLoading = uiState.isLoading, onClick = { vm.sendPasswordResetEmail() })
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            BackButton(onClick = goBackToSignIn)
         }
     }
+}
+/**
+ * Displays the header section of the Password Recovery screen.
+ *
+ * Includes:
+ * - Screen title
+ * - Instructions for entering an email to reset the password
+ */
+@Composable
+private fun HeaderSection() {
+    Text(
+        text = "Password Recovery",
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onBackground,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+    Spacer(modifier = Modifier.height(18.dp))
+    Text(
+        text = "Enter your email address and we'll send you a link to reset your password.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+/**
+ * Composable for the email input field in the Password Recovery screen.
+ *
+ * @param email Current email value
+ * @param error Optional error message to display below the field
+ * @param onEmailChange Lambda called when the email input changes
+ */
+@Composable
+private fun EmailField(email: String, error: String?, onEmailChange: (String) -> Unit) {
+    SkillSwapOutlinedTextField(
+        value = email,
+        supportText = error ?: "",
+        onValueChange = onEmailChange,
+        label = "Email",
+        placeholder = "your.email@gmail.com",
+        keyboardOptions =
+            KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                capitalization = KeyboardCapitalization.None,
+                imeAction = ImeAction.Done
+            ),
+        modifier =
+            Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                .testTag(PasswordRecoveryTags.EMAIL_FIELD)
+    )
+}
+/**
+ * Displays a message card with a background and content color.
+ *
+ * Can be used for success or error messages.
+ *
+ * @param message The text to display inside the card
+ * @param colors Pair of background color (first) and content color (second)
+ * @param testTag Optional test tag for UI testing
+ */
+@Composable
+private fun MessageCard(
+    message: String,
+    colors: Pair<androidx.compose.ui.graphics.Color, androidx.compose.ui.graphics.Color>,
+    testTag: String? = null
+) {
+    val (backgroundColor, contentColor) = colors
+
+    Card(
+        modifier =
+            Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                .fillMaxWidth(0.8f)
+                .then(if (testTag != null) Modifier.testTag(testTag) else Modifier),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodySmall,
+            color = contentColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+/**
+ * Button for sending the password reset email.
+ *
+ * @param isLoading True if the reset email is currently being sent
+ * @param onClick Lambda called when the button is clicked
+ */
+@Composable
+private fun SendButton(isLoading: Boolean, onClick: () -> Unit) {
+    SkillSwapButtonOutline(
+        labelText = if (isLoading) "Sending..." else "Send Reset Link",
+        onClick = onClick,
+        enabled = !isLoading,
+        modifier =
+            Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                .testTag(PasswordRecoveryTags.SEND_BUTTON)
+    )
+}
+/**
+ * Button to navigate back to the sign-in screen.
+ *
+ * @param onClick Lambda called when the button is clicked$
+ */
+@Composable
+private fun BackButton(onClick: () -> Unit) {
+    SkillSwapButtonOutline(
+        labelText = "Back to Sign In",
+        onClick = onClick,
+        modifier =
+            Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                .testTag(PasswordRecoveryTags.BACK_BUTTON)
+    )
 }
