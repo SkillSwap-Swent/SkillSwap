@@ -43,7 +43,8 @@ android {
         debug {
             enableUnitTestCoverage = true
             enableAndroidTestCoverage = true
-            proguardFiles("proguard-rules.pro") // was : buildConfigField("Boolean", "IS_TESTING", "true")
+            proguardFiles("proguard-rules.pro")
+            buildConfigField("Boolean", "IS_TESTING", "true")
         }
     }
     packaging {
