@@ -19,6 +19,8 @@ import com.swent.skillswap.model.tags.SkillTag
  * - Supports additional dynamic filters for custom post filtering logic.
  * - Automatically filters posts from blocked users.
  * - Provides ranked post lists prioritizing whitelisted skills.
+ *
+ * @author Joey Gugler using ChatGPT
  */
 class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var userId: String
@@ -183,6 +185,8 @@ class RecommendationEngineImpl : RecommendationEngine {
  * Factory class for creating and initializing instances of [RecommendationEngineImpl].
  *
  * Provides default thresholds for undesired and desired skill ratios.
+ *
+ * @author Joey Gugler using ChatGPT
  */
 class RecommendationEngineFactory(
     private val undesiredSkillThreshold: Float = 0.3f,

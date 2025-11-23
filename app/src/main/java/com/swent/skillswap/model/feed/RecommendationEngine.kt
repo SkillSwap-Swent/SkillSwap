@@ -13,6 +13,8 @@ import com.swent.skillswap.model.post.PostType
  * - Tracks user interactions to update blacklisted/whitelisted skills.
  * - Supports dynamic filters that are always applied when filtering posts.
  * - Provides filtering and ranking utilities for post feeds.
+ *
+ * @author Joey Gugler using ChatGPT
  */
 interface RecommendationEngine {
 

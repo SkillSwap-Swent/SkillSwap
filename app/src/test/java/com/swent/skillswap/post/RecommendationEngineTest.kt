@@ -23,7 +23,6 @@ class RecommendationEngineTest {
     // Sample skills
     private val skillA = SkillTag.ENGINEERING_ETHICS
     private val skillB = SkillTag.ENGINEERING_ETHICS
-    private val skillC = SkillTag.CALCULUS
 
     private val blockedUserId = "user_blocked"
     private val activeUserId = "user_active"
