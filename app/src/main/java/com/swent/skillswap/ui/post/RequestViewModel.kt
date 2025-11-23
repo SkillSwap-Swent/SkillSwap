@@ -123,26 +123,6 @@ class RequestViewModel(
         }
     }
 
-    fun addTag(tag: PostTag) {
-        _uiState.update { current ->
-            if (tag !in current.tags) {
-                current.copy(tags = current.tags + tag, tagsError = "")
-            } else {
-                current
-            }
-        }
-    }
-
-    fun removeTag(tag: PostTag) {
-        _uiState.update { current ->
-            if (tag in current.tags) {
-                current.copy(tags = current.tags - tag)
-            } else {
-                current
-            }
-        }
-    }
-
     fun addSkill(skill: SkillTag) {
         _uiState.update { current ->
             if (skill !in current.skills) {

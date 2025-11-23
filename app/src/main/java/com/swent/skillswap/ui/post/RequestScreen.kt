@@ -8,11 +8,9 @@
 package com.swent.skillswap.ui.post
 
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,11 +43,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -58,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.post.FakePostRepository
@@ -66,7 +61,7 @@ import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
-import com.swent.skillswap.ui.utils.SkillSwapShadowButton
+import com.swent.skillswap.ui.utils.GradientButton
 
 object RequestScreenTags {
     const val BACK_BUTTON = "backButton"
@@ -151,8 +146,8 @@ fun RequestScreen(
             TagInputSection(
                 uiState.skills.toList(),
                 uiState.tagsError,
-                { requestViewModel.addTag(it) },
-                { requestViewModel.removeTag(it) }
+                { requestViewModel.addSkill(it) },
+                { requestViewModel.removeSkill(it) }
             )
             PaymentMethodSelection(uiState.paymentMethod) {
                 requestViewModel.togglePaymentMethod(it)
@@ -195,9 +190,7 @@ private fun TitleInput(value: String, error: String, onValueChange: (String) -> 
         supportingText = {
             if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag(RequestScreenTags.TITLE_INPUT)
+        modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
     )
 }
 // Description Input
@@ -249,13 +242,13 @@ private fun TagInputSection(
             supportingText = {
                 if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .onFocusChanged {
-                    tagsHasFocus = it.isFocused
-                    if (it.isFocused && tagsQuery.isNotBlank()) tagsExpanded = true
-                }
-                .testTag(RequestScreenTags.TAGS_INPUT)
+            modifier =
+                Modifier.fillMaxWidth()
+                    .onFocusChanged {
+                        tagsHasFocus = it.isFocused
+                        if (it.isFocused && tagsQuery.isNotBlank()) tagsExpanded = true
+                    }
+                    .testTag(RequestScreenTags.TAGS_INPUT)
         )
 
         DropdownMenu(
@@ -284,11 +277,7 @@ private fun TagInputSection(
         }
 
         // Display selected tags as chips
-        Box(
-            modifier = Modifier
-                .height(100.dp)
-                .fillMaxWidth()
-        ) {
+        Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
             val scroll = rememberScrollState()
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -297,14 +286,14 @@ private fun TagInputSection(
             ) {
                 selectedTags.forEach { tag ->
                     Box(
-                        modifier = Modifier
-                            .background(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                RoundedCornerShape(16.dp)
-                            )
-                            .clickable { onRemoveTag(tag) }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                            .testTag("${RequestScreenTags.TAG_CHIP}_$tag")
+                        modifier =
+                            Modifier.background(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    RoundedCornerShape(16.dp)
+                                )
+                                .clickable { onRemoveTag(tag) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .testTag("${RequestScreenTags.TAG_CHIP}_$tag")
                     ) {
                         Text(
                             tag.name.replace("_", " "),
@@ -374,7 +363,7 @@ private fun SubmitButton(isLoading: Boolean, postOperation: PostOperation, onCli
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
-                color = Color.White
+                color = MaterialTheme.colorScheme.primary
             )
         } else {
             Text(text = "Submit", fontSize = 18.sp)
