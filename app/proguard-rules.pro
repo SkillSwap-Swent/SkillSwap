@@ -28,3 +28,5 @@
 
 # Keep Firebase classes (if using Firebase)
 -keep class com.google.firebase.** { *; }
+
+
