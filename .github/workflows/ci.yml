@@ -73,7 +73,7 @@ jobs:
       - name: Start Firebase emulators
         run: |
           if [ -e "firebase.json" ] && jq -e '.emulators' firebase.json >/dev/null; then
-            firebase emulators:start --only auth,firestore &
+            firebase emulators:start --only auth,firestore,storage &
           else
             echo "Firebase emulators not configured, skipping..."
           fi
