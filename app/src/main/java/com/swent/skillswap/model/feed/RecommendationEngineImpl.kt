@@ -3,6 +3,8 @@ package com.swent.skillswap.model.feed
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.UserRepositery
 
 /**
  * Implementation of [RecommendationEngine] that provides dynamic skill-based post recommendations
@@ -25,6 +27,7 @@ import com.swent.skillswap.model.tags.SkillTag
 class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var userId: String
     private lateinit var feedType: PostType
+    private lateinit var userRepository: UserRepositery
     private var blockedUsers: Set<String> = emptySet()
 
     private var undesiredSkillThreshold: Float = 0.3f
@@ -57,12 +60,14 @@ class RecommendationEngineImpl : RecommendationEngine {
         userId: String,
         feedType: PostType,
         blockedUsers: Set<String>,
+        userRepository: UserRepositery,
         undesiredSkillThreshold: Float,
         desiredSkillThreshold: Float
     ) {
         this.userId = userId
         this.feedType = feedType
         this.blockedUsers = blockedUsers
+        this.userRepository = userRepository
         this.undesiredSkillThreshold = undesiredSkillThreshold
         this.desiredSkillThreshold = desiredSkillThreshold
 
@@ -174,6 +179,75 @@ class RecommendationEngineImpl : RecommendationEngine {
         )
     }
 
+    /**
+     * Infers the most relevant skill associated with a given post, depending on the feed type.
+     *
+     * For OFFER feeds:
+     * - The provider explicitly advertises one or more skills.
+     * - The relevance is trivial: we return the first advertised skill.
+     *
+     * For REQUEST feeds:
+     * - The requester provides a list of skills they possess.
+     * - The engine must decide which of those skills is most relevant for matching.
+     * - Delegates to [inferSkillForRequest] to select a suitable skill based on user preferences,
+     *   skip/accept history, and blacklist rules.
+     *
+     * @param post The post for which a relevant skill must be inferred.
+     * @return The skill most relevant for recommendation purposes.
+     */
+    override suspend fun inferRelevantSkill(post: Post): Skill {
+        return when (feedType) {
+            PostType.OFFER ->
+                Skill(
+                    post.skills.first(),
+                    0f,
+                    ""
+                ) // TODO Will address this when making the request Screen
+            PostType.REQUEST -> inferSkillForRequest(post)
+        }
+    }
+    /**
+     * Determines the most relevant skill for a REQUEST post by analyzing the requester's skill set
+     * and the user's personal preference history.
+     *
+     * This method performs the following steps:
+     * 1. Fetches the requester from Firestore using [userRepository] to access their full skill
+     *    set.
+     * 2. Extracts all skills the requester possesses.
+     * 3. Filters out:
+     *     - Skills that have been blacklisted based on the user's skip history.
+     *     - Skills with undesired skip frequency.
+     * 4. If no valid skills remain:
+     *     - Returns a random skill from the requester's set (DISCOVER mode).
+     * 5. If valid skills remain:
+     *     - Selects the most desirable one, based on the highest accept ratio stored in
+     *       [desiredSkillCounts].
+     *
+     * This logic ensures the feed:
+     * - Avoids repeatedly showing unwanted skills.
+     * - Favors skills the user has shown interest toward.
+     * - Still provides exploration opportunities when no preference is clear.
+     *
+     * @param post The REQUEST-type post for which a relevant skill must be inferred.
+     * @return The skill most relevant to display for this post.
+     * @throws Exception if requester data cannot be retrieved from the repository.
+     */
+    private suspend fun inferSkillForRequest(post: Post): Skill {
+        val requester = userRepository.getUser(post.ownerId)
+        val requesterSkills = requester.skillSet.map { it.name }
+
+        val filtered =
+            requesterSkills.filter { skill ->
+                skill !in blacklistedSkills && (undesiredSkillCounts[skill] ?: 0) == 0
+            }
+
+        if (filtered.isEmpty()) {
+            return requester.skillSet.random()
+        }
+        val tag = filtered.maxByOrNull { desiredSkillCounts[it] ?: 0 }!!
+        return requester.skillSet.first { skill -> skill.name == tag }
+    }
+
     // Internal wrapper for skill-based filter
     private inner class SkillFilter(private val skill: SkillTag) : (Post) -> Boolean {
         override fun invoke(post: Post): Boolean {
@@ -189,18 +263,10 @@ class RecommendationEngineImpl : RecommendationEngine {
  * @author Joey Gugler using ChatGPT
  */
 class RecommendationEngineFactory(
+    private val userRepository: UserRepositery,
     private val undesiredSkillThreshold: Float = 0.3f,
     private val desiredSkillThreshold: Float = 0.6f
 ) {
-
-    /**
-     * Creates a new [RecommendationEngineImpl] instance and initializes it.
-     *
-     * @param userId The ID of the current user performing actions.
-     * @param feedType The type of posts the engine will handle (REQUEST or OFFER).
-     * @param blockedUsers A set of user IDs whose posts should never be displayed.
-     * @return A fully initialized [RecommendationEngineImpl] ready for use.
-     */
     suspend fun create(
         userId: String,
         feedType: PostType,
@@ -211,6 +277,7 @@ class RecommendationEngineFactory(
             userId = userId,
             feedType = feedType,
             blockedUsers = blockedUsers,
+            userRepository = userRepository,
             undesiredSkillThreshold = undesiredSkillThreshold,
             desiredSkillThreshold = desiredSkillThreshold
         )

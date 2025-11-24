@@ -47,6 +47,7 @@ import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.LocationManager
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
@@ -147,7 +148,7 @@ fun SkillSwapApp(
     LaunchedEffect(Unit) {
         // TODO: Temporary will be connected in next PR
         val recommendationEngine =
-            RecommendationEngineFactory()
+            RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
                 .create(
                     userId = Firebase.auth.uid ?: "AnonUser",
                     feedType = PostType.REQUEST,

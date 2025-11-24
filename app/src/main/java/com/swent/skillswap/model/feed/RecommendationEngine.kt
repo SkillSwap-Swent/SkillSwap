@@ -2,6 +2,8 @@ package com.swent.skillswap.model.feed
 
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.UserRepositery
 
 /**
  * Interface defining a recommendation engine for skill-based feeds.
@@ -24,6 +26,7 @@ interface RecommendationEngine {
      * @param userId The ID of the current user performing actions.
      * @param feedType The type of posts this engine will handle (REQUEST or OFFER).
      * @param blockedUsers A set of user IDs whose posts should never be displayed.
+     * @param userRepository The user repository instance
      * @param undesiredSkillThreshold Ratio of skipped posts for a skill above which it becomes
      *   blacklisted.
      * @param desiredSkillThreshold Ratio of accepted posts for a skill above which it becomes
@@ -33,6 +36,7 @@ interface RecommendationEngine {
         userId: String,
         feedType: PostType,
         blockedUsers: Set<String>,
+        userRepository: UserRepositery,
         undesiredSkillThreshold: Float,
         desiredSkillThreshold: Float
     )
@@ -102,4 +106,21 @@ interface RecommendationEngine {
      * @return A new list of posts sorted according to ranking logic.
      */
     fun rankPosts(posts: List<Post>): List<Post>
+
+    /**
+     * Infers the most relevant skill associated with the given post based on the engine's internal
+     * state (whitelist, blacklist, user preferences) and the feed type.
+     *
+     * Behavior:
+     * - **For OFFER posts**: Returns the skill that is most likely to interest the current user,
+     *   based on accumulated accept/skip behavior and whitelist/blacklist signals.
+     * - **For REQUEST posts**: Uses exploration logic to avoid polarization:
+     *     - Excludes undesired skills first.
+     *     - If none remain, returns a random “discovery” skill.
+     *     - Otherwise, returns a skill chosen from the neutral set in a controlled-random manner.
+     *
+     * @param post The post for which the engine must infer the most relevant skill.
+     * @return The Skill the feed should emphasize when displaying this post.
+     */
+    suspend fun inferRelevantSkill(post: Post): Skill
 }
