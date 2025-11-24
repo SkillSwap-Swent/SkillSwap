@@ -3,6 +3,7 @@
 package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -44,6 +45,7 @@ import kotlin.text.toInt
 @Composable
 fun FeedScreen(
     swipeThreshold: Float = 50f,
+    navigateToRequester: (String) -> Unit = {},
     vm: FeedScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
@@ -136,6 +138,7 @@ fun FeedScreen(
                             modifier =
                                 Modifier.size(avatarSize)
                                     .clip(CircleShape)
+                                    .clickable { navigateToRequester(offer.authorID) }
                                     .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
                         )
 
