@@ -43,10 +43,11 @@ import com.swent.skillswap.model.chat.ChatListScreenData
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.RecommendationEngine
+import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.LocationManager
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
@@ -145,16 +146,25 @@ fun SkillSwapApp(
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
     LaunchedEffect(Unit) {
+        // TODO: Temporary will be connected in next PR
+        val recommendationEngine =
+            RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
+                .create(
+                    userId = Firebase.auth.uid ?: "AnonUser",
+                    feedType = PostType.REQUEST,
+                    blockedUsers = setOf()
+                )
+
         controller =
             FeedControllerFactory(
-                    recommendationEngine = RecommendationEngine(),
+                    recommendationEngine = recommendationEngine,
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
                     chatRepository = ChatRepository(),
                     locationManager = locationManager
                 )
                 .create(
-                    userIdPerformingActions = Firebase.auth.uid ?: "AnoUser",
+                    userIdPerformingActions = Firebase.auth.uid ?: "AnonUser",
                     feedType = PostType.REQUEST
                 )
     }

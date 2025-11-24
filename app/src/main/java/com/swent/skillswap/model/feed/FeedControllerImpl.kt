@@ -170,8 +170,6 @@ class FeedControllerFactory(
     }
 }
 
-class RecommendationEngine
-
 class ThumbnailRepository
 
 class ChatRepository

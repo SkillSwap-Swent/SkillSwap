@@ -21,7 +21,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.RecommendationEngine
+import com.swent.skillswap.model.feed.RecommendationEngineImpl
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
@@ -104,7 +104,7 @@ class AuthGoogleTest : TestCase() {
 
         val controller = runBlocking {
             FeedControllerFactory(
-                    recommendationEngine = RecommendationEngine(),
+                    recommendationEngine = RecommendationEngineImpl(),
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
                     chatRepository = ChatRepository(),

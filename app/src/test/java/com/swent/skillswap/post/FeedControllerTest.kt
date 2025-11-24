@@ -19,7 +19,7 @@ open class FeedControllerTest : PostDataClassTest() {
 
         val ctrl =
             FeedControllerFactory(
-                    recommendationEngine = RecommendationEngine(),
+                    recommendationEngine = RecommendationEngineImpl(),
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = repo,
                     chatRepository = ChatRepository(),
@@ -93,7 +93,7 @@ open class FeedControllerTest : PostDataClassTest() {
 
             val ctrl =
                 FeedControllerFactory(
-                        recommendationEngine = RecommendationEngine(),
+                        recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
                         chatRepository = ChatRepository(),
@@ -120,7 +120,7 @@ open class FeedControllerTest : PostDataClassTest() {
 
             val ctrl =
                 FeedControllerFactory(
-                        recommendationEngine = RecommendationEngine(),
+                        recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
                         chatRepository = ChatRepository(),

@@ -277,7 +277,7 @@ class AuthClassicTest : TestCase() {
      */
     private fun createFeedController(): FeedController = runBlocking {
         FeedControllerFactory(
-                recommendationEngine = RecommendationEngine(),
+                recommendationEngine = RecommendationEngineImpl(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
                 chatRepository = ChatRepository(),
