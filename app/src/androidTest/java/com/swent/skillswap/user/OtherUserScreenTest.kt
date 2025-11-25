@@ -1,3 +1,4 @@
+/** FactoryTest with help of ChatGPT */
 package com.swent.skillswap.user
 
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,6 +19,7 @@ import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.OtherUserScreen
 import com.swent.skillswap.ui.user.OtherUserViewModel
+import com.swent.skillswap.ui.user.OtherUserViewModelFactory
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
@@ -111,9 +113,6 @@ class OtherUserScreenTest : TestCase() {
         repo.addUser(otherUser)
 
         viewModel = OtherUserViewModel(userId = otherUser.uid, repo = repo, onGoBack = {})
-
-        composeTestRule.setContent { SkillSwapAppTheme { OtherUserScreen(vm = viewModel) } }
-        composeTestRule.waitForIdle()
     }
 
     private fun waitForNodeToExist(tag: String, timeoutMillis: Long = 10_000) {
@@ -129,6 +128,9 @@ class OtherUserScreenTest : TestCase() {
 
     @Test
     fun profileScreen_displaysAllElements() = run {
+        composeTestRule.setContent { SkillSwapAppTheme { OtherUserScreen(vm = viewModel) } }
+        composeTestRule.waitForIdle()
+
         step("Verify all profile elements are displayed") {
             val tags =
                 listOf(
@@ -146,5 +148,26 @@ class OtherUserScreenTest : TestCase() {
                 composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
             }
         }
+    }
+
+    @Test
+    fun viewModelFactory_createsViewModel() = run {
+        var didGoBack = false
+
+        val factory =
+            OtherUserViewModelFactory(
+                userId = otherUser.uid,
+                repo = repo,
+                onGoBack = { didGoBack = true }
+            )
+
+        val vm = factory.create(OtherUserViewModel::class.java)
+
+        // Verify correct userId passed in
+        assert(vm.userId == otherUser.uid)
+
+        // Verify callback works
+        vm.navigateBack()
+        assert(didGoBack)
     }
 }
