@@ -59,6 +59,7 @@ object FirebaseEmulator {
 
     init {
         if (isRunning) {
+            FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
             auth.useEmulator(HOST, AUTH_PORT)
             firestore.useEmulator(HOST, FIRESTORE_PORT)
             assert(Firebase.firestore.firestoreSettings.host.contains(HOST)) {
