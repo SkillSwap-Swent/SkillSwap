@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,12 +17,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.utils.SkillPill
 
@@ -72,44 +69,7 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
 
         Spacer(modifier = Modifier.height(10.dp))
         /** Profile picture Section */
-        Box(
-            modifier =
-                Modifier.align(Alignment.CenterHorizontally)
-                    .height(150.dp)
-                    .width(280.dp)
-                    .padding(8.dp)
-                    .testTag(OtherUserScreenTestTags.PROFILE_PICTURE_BOX)
-        ) {
-            if (uiState.profilePicture.isNotEmpty()) {
-                AsyncImage(
-                    model = uiState.profilePicture,
-                    contentDescription = "Profile picture",
-                    modifier =
-                        Modifier.testTag(OtherUserScreenTestTags.PROFILE_PICTURE_IMAGE)
-                            .size(140.dp)
-                            .clip(CircleShape)
-                            .align(Alignment.TopCenter),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier =
-                        Modifier.size(120.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
-                            .align(Alignment.TopCenter),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile picture placeholder",
-                        modifier =
-                            Modifier.size(60.dp)
-                                .testTag(OtherUserScreenTestTags.PROFILE_PICTURE_IMAGE),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
+        ProfilePictureBox(uiState)
 
         Spacer(Modifier.height(40.dp))
         /** Info card */
