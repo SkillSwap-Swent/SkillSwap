@@ -25,10 +25,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.ui.post.RequestScreenTags
-import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
-import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
-import com.swent.skillswap.ui.user.ProfileTestTags.PROFILE_PICTURE_IMAGE
-import com.swent.skillswap.ui.user.ProfileTestTags.USERNAME_VALUE
 import com.swent.skillswap.ui.utils.SkillPill
 
 object OtherUserScreenTestTags {
@@ -37,21 +33,11 @@ object OtherUserScreenTestTags {
     // Profile picture
     const val PROFILE_PICTURE_BOX = "profile_picture_box"
     const val PROFILE_PICTURE_IMAGE = "profile_picture_image"
-    const val EDIT_PROFILE_BUTTON = "edit_profile_button"
 
     // Info card
     const val INFO_CARD = "profile_info_card"
     const val EMAIL_VALUE = "profile_email_value"
     const val USERNAME_VALUE = "profile_username_value"
-
-    // Preference
-    const val PREFERENCE_SWITCH = "profile_preference_switch"
-
-    // Buttons
-    const val SKILLS_BUTTON = "profile_skills_button"
-    const val MY_POSTS_BUTTON = "profile_my_posts_button"
-    const val ADD_POST_BUTTON = "profile_add_post_button"
-    const val LOGOUT_BUTTON = "profile_logout_button"
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -65,7 +51,12 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TopAppBar(
-            title = { Text("Profile Info") },
+            title = {
+                Text(
+                    text = "Profile Info",
+                    modifier = Modifier.testTag(OtherUserScreenTestTags.PROFILE_TITLE)
+                )
+            },
             navigationIcon = {
                 IconButton(
                     onClick = { onGoBack() },
@@ -87,14 +78,14 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
                     .height(150.dp)
                     .width(280.dp)
                     .padding(8.dp)
-                    .testTag(ProfileTestTags.PROFILE_PICTURE_BOX)
+                    .testTag(OtherUserScreenTestTags.PROFILE_PICTURE_BOX)
         ) {
             if (uiState.profilePicture.isNotEmpty()) {
                 AsyncImage(
                     model = uiState.profilePicture,
                     contentDescription = "Profile picture",
                     modifier =
-                        Modifier.testTag(PROFILE_PICTURE_IMAGE)
+                        Modifier.testTag(OtherUserScreenTestTags.PROFILE_PICTURE_IMAGE)
                             .size(140.dp)
                             .clip(CircleShape)
                             .align(Alignment.TopCenter),
@@ -111,7 +102,9 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Profile picture placeholder",
-                        modifier = Modifier.size(60.dp).testTag(PROFILE_PICTURE_IMAGE),
+                        modifier =
+                            Modifier.size(60.dp)
+                                .testTag(OtherUserScreenTestTags.PROFILE_PICTURE_IMAGE),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -128,7 +121,7 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
                         color = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(16.dp)
                     )
-                    .testTag(INFO_CARD)
+                    .testTag(OtherUserScreenTestTags.INFO_CARD)
                     .clip(RoundedCornerShape(16.dp))
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
                     .padding(24.dp, 25.dp, 24.dp, 5.dp)
@@ -146,7 +139,7 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
                         text = uiState.email,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.testTag(EMAIL_VALUE)
+                        modifier = Modifier.testTag(OtherUserScreenTestTags.EMAIL_VALUE)
                     )
                 }
                 Spacer(modifier = Modifier.height(25.dp))
@@ -162,7 +155,7 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
                         text = uiState.username,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.testTag(USERNAME_VALUE)
+                        modifier = Modifier.testTag(OtherUserScreenTestTags.USERNAME_VALUE)
                     )
                 }
                 Spacer(modifier = Modifier.height(25.dp))
