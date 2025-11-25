@@ -45,7 +45,6 @@ import kotlin.text.toInt
 @Composable
 fun FeedScreen(
     swipeThreshold: Float = 50f,
-    navigateToRequester: (String) -> Unit = {},
     vm: FeedScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
@@ -138,7 +137,7 @@ fun FeedScreen(
                             modifier =
                                 Modifier.size(avatarSize)
                                     .clip(CircleShape)
-                                    .clickable { navigateToRequester(offer.authorID) }
+                                    .clickable { vm.goToProfile(offer.authorID) }
                                     .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
                         )
 
