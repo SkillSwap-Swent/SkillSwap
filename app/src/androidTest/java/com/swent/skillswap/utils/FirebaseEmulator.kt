@@ -86,7 +86,9 @@ object FirebaseEmulator {
     fun reinitialize() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         // Sign out first to stop any pending auth background tasks
-        try { Firebase.auth.signOut() } catch (_: Exception) {}
+        try {
+            Firebase.auth.signOut()
+        } catch (_: Exception) {}
         FirebaseApp.getApps(context).forEach { it.delete() }
 
         // Create fresh app

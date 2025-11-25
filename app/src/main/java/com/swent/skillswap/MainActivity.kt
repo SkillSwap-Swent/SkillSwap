@@ -348,7 +348,11 @@ fun SkillSwapApp(
                             chatId = chatId
                         )
                     }
-                ChatScreen(viewModel = viewModel, currentUserId = currentUserId, onGoBack = { navigationActions.goBack() })
+                ChatScreen(
+                    viewModel = viewModel,
+                    currentUserId = currentUserId,
+                    onGoBack = { navigationActions.goBack() }
+                )
             }
 
             composable(Screen.AddRequest.route) {
