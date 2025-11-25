@@ -51,6 +51,7 @@ class OtherUserViewModel(
                 _userState.value = user
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error while getting user", e)
+                navigateBack()
             }
         }
     }
