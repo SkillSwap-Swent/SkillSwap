@@ -24,7 +24,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.RecommendationEngine
+import com.swent.skillswap.model.feed.RecommendationEngineImpl
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
@@ -152,7 +152,7 @@ class FeedScreenInstrumentedTest {
         postRepository = PostFirestoreRepository(FirebaseEmulator.firestore)
         controllerFactory =
             FeedControllerFactory(
-                recommendationEngine = RecommendationEngine(),
+                recommendationEngine = RecommendationEngineImpl(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
                 chatRepository = ChatRepository(),

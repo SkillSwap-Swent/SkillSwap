@@ -43,7 +43,7 @@ import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.RecommendationEngine
+import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
@@ -53,6 +53,7 @@ import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
+import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.chat.ChatListViewModel
 import com.swent.skillswap.ui.chat.ChatListViewModelFactory
@@ -149,16 +150,25 @@ fun SkillSwapApp(
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
     LaunchedEffect(Unit) {
+        // TODO: Temporary will be connected in next PR
+        val recommendationEngine =
+            RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
+                .create(
+                    userId = Firebase.auth.uid ?: "AnonUser",
+                    feedType = PostType.REQUEST,
+                    blockedUsers = setOf()
+                )
+
         controller =
             FeedControllerFactory(
-                    recommendationEngine = RecommendationEngine(),
+                    recommendationEngine = recommendationEngine,
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
                     chatRepository = ChatRepository(),
                     locationManager = locationManager
                 )
                 .create(
-                    userIdPerformingActions = Firebase.auth.uid ?: "AnoUser",
+                    userIdPerformingActions = Firebase.auth.uid ?: "AnonUser",
                     feedType = PostType.REQUEST
                 )
     }
@@ -207,6 +217,13 @@ fun SkillSwapApp(
                 composable(Screen.CreateAccount.route) {
                     AuthCreateAccountScreen(
                         goToMainScreen = { navigationActions.navigateTo(Screen.Profile) },
+                    )
+                }
+                composable(Screen.PasswordRecovery.route) {
+                    PasswordRecoveryScreen(
+                        goBackToSignIn = {
+                            navigationActions.goBack() // or navigateTo(Screen.AuthMain)
+                        }
                     )
                 }
             }
