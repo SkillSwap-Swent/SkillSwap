@@ -56,6 +56,7 @@ import com.swent.skillswap.ui.auth.AuthMainScreen
 import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feed.FeedScreen
+import com.swent.skillswap.ui.feed.FeedScreenNavigation
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
 import com.swent.skillswap.ui.feed.FeedScreenViewModelFactory
 import com.swent.skillswap.ui.navigation.BottomNavigationMenu
@@ -304,20 +305,19 @@ fun SkillSwapApp(
                             CircularProgressIndicator()
                         }
                     } else {
+                        val navigation = FeedScreenNavigation { userId ->
+                            navController.navigate(Screen.OtherUser.createRoute(userId))
+                        }
+
                         val factory =
                             remember(controller) {
                                 FeedScreenViewModelFactory(
-                                    navigation = { /* TODO: implement navigation to other user profile */},
+                                    navigation = navigation,
                                     controller = controller!!
                                 )
                             }
                         val vm: FeedScreenViewModel = viewModel(factory = factory)
-                        FeedScreen(
-                            navigateToRequester = { userId ->
-                                navController.navigate(Screen.OtherUser.createRoute(userId))
-                            },
-                            vm = vm
-                        )
+                        FeedScreen(vm = vm)
                     }
                 }
                 composable(
