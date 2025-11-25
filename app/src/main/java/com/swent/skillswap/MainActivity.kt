@@ -328,6 +328,7 @@ fun SkillSwapApp(
                 val vm: ChatListViewModel = viewModel(factory = factory)
                 ChatListScreen(
                     viewModel = vm,
+                    currentUserId = currentUserId,
                     onChatClick = { chatId ->
                         navController.navigate(Screen.ChatScreen.createRoute(chatId))
                     }
@@ -339,6 +340,7 @@ fun SkillSwapApp(
                 arguments = listOf(navArgument("chatId") { type = NavType.StringType })
             ) {
                 val chatId = it.arguments?.getString("chatId") ?: return@composable
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@composable
                 val viewModel =
                     remember(chatId) {
                         ChatViewModel(
@@ -346,7 +348,7 @@ fun SkillSwapApp(
                             chatId = chatId
                         )
                     }
-                ChatScreen(viewModel = viewModel, onGoBack = { navigationActions.goBack() })
+                ChatScreen(viewModel = viewModel, currentUserId = currentUserId, onGoBack = { navigationActions.goBack() })
             }
 
             composable(Screen.AddRequest.route) {

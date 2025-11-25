@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.Message
 
 // Encapsulating object for test tags
@@ -63,12 +62,7 @@ object ChatScreenTags {
 fun ChatScreen(
     viewModel: ChatViewModel,
     chatTitle: String = "Chat",
-    currentUserId: String =
-        try {
-            FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        } catch (e: Exception) {
-            ""
-        },
+    currentUserId: String = "",
     onGoBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()

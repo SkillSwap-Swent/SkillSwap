@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 
@@ -29,12 +28,7 @@ object ChatListTestTags {
 @Composable
 fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),
-    currentUserId: String =
-        try {
-            FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        } catch (e: Exception) {
-            ""
-        },
+    currentUserId: String = "",
     onChatClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
