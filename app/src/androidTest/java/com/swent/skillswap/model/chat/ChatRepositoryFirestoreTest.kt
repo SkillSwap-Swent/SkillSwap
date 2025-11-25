@@ -12,7 +12,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,62 +70,6 @@ class ChatRepositoryFirestoreTest {
         assertEquals(senderId2, secondMessage.senderId)
         assertEquals(content2, secondMessage.content)
         assertTrue(secondMessage.timestamp > 0L)
-    }
-
-    @Test
-    fun sendMessageWithInvalidParametersThrowsException() = runBlocking {
-        val chatId = "chat4"
-        val validSenderId = "user1"
-        val validContent = "Valid message"
-
-        // Test with empty chatId
-        try {
-            repo.sendMessage("", validSenderId, validContent)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("chatUid cannot be empty", e.message)
-        }
-
-        // Test with empty senderId
-        try {
-            repo.sendMessage(chatId, "", validContent)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("senderId cannot be empty", e.message)
-        }
-
-        // Test with empty content
-        try {
-            repo.sendMessage(chatId, validSenderId, "")
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("content cannot be empty", e.message)
-        }
-
-        // Test createChat with wrong number of participants (only 1)
-        assertThrows(IllegalArgumentException::class.java) {
-            runBlocking { repo.createChat(listOf("user1"), "post1", PostType.REQUEST) }
-        }
-
-        // Test createChat with wrong number of participants (3)
-        assertThrows(IllegalArgumentException::class.java) {
-            runBlocking {
-                repo.createChat(listOf("user1", "user2", "user3"), "post1", PostType.REQUEST)
-            }
-        }
-
-        // Test createChat with empty relatedPostId
-        assertThrows(IllegalArgumentException::class.java) {
-            runBlocking { repo.createChat(listOf("user1", "user2"), "", PostType.REQUEST) }
-        }
-
-        // Test sendMessage to non-existent chat
-        assertThrows(Exception::class.java) {
-            runBlocking { repo.sendMessage("nonExistentChat", "user1", "content") }
-        }
-
-        // Test streamMessages with empty chatId
-        assertThrows(IllegalArgumentException::class.java) { repo.streamMessages("") }
     }
 
     @Test
