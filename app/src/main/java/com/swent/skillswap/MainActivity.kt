@@ -325,9 +325,15 @@ fun SkillSwapApp(
                     arguments = listOf(navArgument("userId") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val userId = backStackEntry.arguments?.getString("userId") ?: ""
-                    val factory = remember(userId) { OtherUserViewModelFactory(userId) }
+                    val factory =
+                        remember(userId) {
+                            OtherUserViewModelFactory(
+                                userId = userId,
+                                onGoBack = { navigationActions.goBack() }
+                            )
+                        }
                     val vm: OtherUserViewModel = viewModel(factory = factory)
-                    OtherUserScreen(onGoBack = { navigationActions.goBack() }, vm = vm)
+                    OtherUserScreen(vm = vm)
                 }
             }
 

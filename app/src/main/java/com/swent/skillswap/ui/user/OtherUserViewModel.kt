@@ -21,8 +21,9 @@ import kotlinx.coroutines.launch
  * @param repo The UserRepoFirestore instance for database operations
  */
 class OtherUserViewModel(
+    val userId: String,
     private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance()),
-    val userId: String = ""
+    private val onGoBack: () -> Unit = {},
 ) : ViewModel() {
 
     /** Mutable state flow for internal user state updates */
@@ -53,16 +54,22 @@ class OtherUserViewModel(
             }
         }
     }
+
+    fun navigateBack() {
+        onGoBack()
+    }
 }
 
 class OtherUserViewModelFactory(
-    private val userId: String,
-    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
+    val userId: String,
+    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance()),
+    private val onGoBack: () -> Unit,
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(OtherUserViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST") return OtherUserViewModel(repo, userId) as T
+            @Suppress("UNCHECKED_CAST")
+            return OtherUserViewModel(userId = userId, repo = repo, onGoBack = onGoBack) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

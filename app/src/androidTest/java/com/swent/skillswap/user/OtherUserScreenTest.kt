@@ -110,7 +110,7 @@ class OtherUserScreenTest : TestCase() {
         repo.addUser(userToAdd)
         repo.addUser(otherUser)
 
-        viewModel = OtherUserViewModel(repo, otherUser.uid)
+        viewModel = OtherUserViewModel(userId = otherUser.uid, repo = repo, onGoBack = {})
 
         composeTestRule.setContent { SkillSwapAppTheme { OtherUserScreen(vm = viewModel) } }
         composeTestRule.waitForIdle()

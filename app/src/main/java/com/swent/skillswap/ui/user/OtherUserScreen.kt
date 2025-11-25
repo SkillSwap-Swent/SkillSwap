@@ -44,7 +44,7 @@ import com.swent.skillswap.ui.utils.SkillPill
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewModel()) {
+fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
 
     val uiState by vm.userState.collectAsState()
     val scroll = rememberScrollState()
@@ -61,7 +61,7 @@ fun OtherUserScreen(onGoBack: () -> Unit = {}, vm: OtherUserViewModel = viewMode
             },
             navigationIcon = {
                 IconButton(
-                    onClick = { onGoBack() },
+                    onClick = { vm.navigateBack() },
                     modifier = Modifier.testTag(RequestScreenTags.BACK_BUTTON)
                 ) {
                     Icon(
