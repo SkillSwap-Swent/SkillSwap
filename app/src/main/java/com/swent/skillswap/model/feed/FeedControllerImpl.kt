@@ -11,6 +11,7 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.LocationManager
 import kotlin.text.clear
 
@@ -22,6 +23,7 @@ private class FeedControllerImpl(
     private val thumbnailRepository: ThumbnailRepository,
     private val postRepository: PostRepository,
     private val chatRepository: ChatRepository,
+    private val userRepository: UserRepositery,
     override val userIdPerformingActions: String,
     override val feedType: PostType,
     private val locationManager: LocationManager?
@@ -104,6 +106,14 @@ private class FeedControllerImpl(
         _currentPost.value = getNextPost()
     }
 
+    override suspend fun blockUser(blockedUserUID: String) {
+        val user = userRepository.getUser(userIdPerformingActions)
+        userRepository.editUser(
+            userIdPerformingActions,
+            user.copy(blockedUsers = user.blockedUsers + blockedUserUID)
+        )
+    }
+
     private suspend fun fetchPosts() {
         // Fetch posts and add them to the queue
         val newPosts =
@@ -145,6 +155,7 @@ class FeedControllerFactory(
     private val thumbnailRepository: ThumbnailRepository,
     private val postRepository: PostRepository,
     private val chatRepository: ChatRepository,
+    private val userRepository: UserRepositery,
     private val locationManager: LocationManager?
 ) {
     /**
@@ -161,6 +172,7 @@ class FeedControllerFactory(
                 thumbnailRepository = thumbnailRepository,
                 postRepository = postRepository,
                 chatRepository = chatRepository,
+                userRepository = userRepository,
                 userIdPerformingActions = userIdPerformingActions,
                 feedType = feedType,
                 locationManager = locationManager
