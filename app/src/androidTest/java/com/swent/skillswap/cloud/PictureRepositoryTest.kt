@@ -17,6 +17,7 @@ import com.swent.skillswap.firebase.CloudReferences
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
 import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.utils.FirebaseEmulator
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.compareTo
@@ -40,10 +41,8 @@ class PictureRepositoryTest {
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         FirebaseApp.initializeApp(context)
-        storage = Firebase.storage
-        storage.useEmulator("10.0.2.2", 9199)
-        auth = FirebaseAuth.getInstance()
-        auth.useEmulator("10.0.2.2", 9099)
+        storage = FirebaseEmulator.storage
+        auth = FirebaseEmulator.auth
         createOrSignInTestUser()
 
         pictureRepo = PictureRepository(storage)
