@@ -83,7 +83,8 @@ class FeedScreenInstrumentedTest {
             media = listOf("https://picsum.photos/200"),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             type = PostType.REQUEST,
-            postReplies = emptyList()
+            postReplies = emptyList(),
+            reportCount = 0L
         )
     }
 

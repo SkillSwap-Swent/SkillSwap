@@ -10,6 +10,7 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
@@ -58,8 +59,12 @@ class PostFirestoreRepositoryTest {
     fun setUp() {
         FirebaseEmulator.startEmulator()
         assertTrue("Firestore emulator must be running", FirebaseEmulator.isRunning)
-        FirebaseEmulator.clearFirestoreEmulator()
         repo = PostFirestoreRepository(FirebaseEmulator.firestore)
+    }
+
+    @After
+    fun end() {
+        FirebaseEmulator.clearFirestoreEmulator()
     }
 
     @Test
@@ -358,5 +363,82 @@ class PostFirestoreRepositoryTest {
     @Test
     fun getUid_Offer_fails() {
         assertThrows(NotImplementedError::class.java) { repo.getNewUid(PostType.OFFER) }
+    }
+
+    @Test
+    fun correctly_store_and_fetch_reportCount_from_post() = runBlocking {
+        val zeroReportId = repo.getNewUid(PostType.REQUEST)
+        val zeroReport =
+            request1.copy(
+                uid = zeroReportId,
+                title = "Kotlin Expert Needed",
+                location = lausanneLocation,
+                reportCount = 0L
+            )
+
+        val tenReportId = repo.getNewUid(PostType.REQUEST)
+        val tenReport =
+            request1.copy(
+                uid = tenReportId,
+                title = "Kotlin Help Required",
+                location = genevaLocation,
+                reportCount = 10L
+            )
+
+        val tenThousandReportId = repo.getNewUid(PostType.REQUEST)
+        val tenThousandReport =
+            request1.copy(
+                uid = tenThousandReportId,
+                title = "Python Programming",
+                location = epflLocation,
+                reportCount = 10000L
+            )
+
+        repo.addPost(zeroReport)
+        repo.addPost(tenReport)
+        repo.addPost(tenThousandReport)
+        assert(repo.getPost(PostType.REQUEST, zeroReportId).reportCount == 0L)
+        assert(repo.getPost(PostType.REQUEST, tenReportId).reportCount == 10L)
+        assert(repo.getPost(PostType.REQUEST, tenThousandReportId).reportCount == 10000L)
+    }
+
+    @Test
+    fun correctly_store_and_edit_reportCount_from_post() = runBlocking {
+        val zeroReportId = repo.getNewUid(PostType.REQUEST)
+        val zeroReport =
+            request1.copy(
+                uid = zeroReportId,
+                title = "Kotlin Expert Needed",
+                location = lausanneLocation,
+                reportCount = 10L
+            )
+
+        val tenReportId = repo.getNewUid(PostType.REQUEST)
+        val tenReport =
+            request1.copy(
+                uid = tenReportId,
+                title = "Kotlin Help Required",
+                location = genevaLocation,
+                reportCount = 0L
+            )
+
+        val tenThousandReportId = repo.getNewUid(PostType.REQUEST)
+        val tenThousandReport =
+            request1.copy(
+                uid = tenThousandReportId,
+                title = "Python Programming",
+                location = epflLocation,
+                reportCount = 0L
+            )
+
+        repo.addPost(zeroReport)
+        repo.addPost(tenReport)
+        repo.addPost(tenThousandReport)
+        repo.editPost(zeroReportId, zeroReport.copy(reportCount = 0))
+        repo.editPost(tenReportId, tenReport.copy(reportCount = 10))
+        repo.editPost(tenThousandReportId, tenThousandReport.copy(reportCount = 10000))
+        assert(repo.getPost(PostType.REQUEST, zeroReportId).reportCount == 0L)
+        assert(repo.getPost(PostType.REQUEST, tenReportId).reportCount == 10L)
+        assert(repo.getPost(PostType.REQUEST, tenThousandReportId).reportCount == 10000L)
     }
 }
