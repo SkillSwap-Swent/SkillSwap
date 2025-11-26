@@ -6,7 +6,8 @@ import java.net.URL
 /**
  * Repository interface to manage picture uploads and retrieval, of pictures from a data source.
  * STORING POLICY : Pictures are stored under specific paths defined in CloudReferences. And have a
- * unique identifier as name. This uid should be guaranteed to be unique at least in the path scope. That way we can easily manage and retrieve them.
+ * unique identifier as name. This uid should be guaranteed to be unique at least in the path scope.
+ * That way we can easily manage and retrieve them.
  */
 interface PictureRepositoryInterface {
     /**
@@ -19,7 +20,8 @@ interface PictureRepositoryInterface {
      */
     suspend fun uploadPicture(uid: String, imageURI: Uri, path: String): URL
 
-    /** Deletes a picture from the data source.
+    /**
+     * Deletes a picture from the data source.
      *
      * @param uid The unique identifier for the picture.
      * @param path The storage path where the picture is located.
