@@ -51,9 +51,7 @@ object FirebaseEmulator {
         "http://${HOST}:$AUTH_PORT/emulator/v1/projects/$projectID/accounts"
     }
 
-    private val storageEndpoint by lazy {
-        "http://${HOST}:$STORAGE_PORT/storage/v1/b/$projectID/o"
-    }
+    private val storageEndpoint by lazy { "http://${HOST}:$STORAGE_PORT/storage/v1/b/$projectID/o" }
 
     private val emulatorsEndpoint = "http://$HOST:$EMULATORS_PORT/emulators"
 
