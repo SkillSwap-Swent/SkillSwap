@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
  *
  * @property navigation The navigation handler for transitioning to other screens.
  * @property controller The data source used to retrieve and update offers.
- * @property db The firestore dataBase instance used to instanciate userRepoFirestore
  * @author Joey Gugler using chatGPT
  */
 open class FeedScreenViewModel(
