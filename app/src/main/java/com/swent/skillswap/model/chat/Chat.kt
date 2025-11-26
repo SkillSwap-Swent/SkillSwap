@@ -1,6 +1,7 @@
 package com.swent.skillswap.model.chat
 
 import android.annotation.SuppressLint
+import com.swent.skillswap.model.post.PostType
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,3 +15,22 @@ import kotlinx.serialization.Serializable
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 class Message(val id: String, val senderId: String, val content: String, val timestamp: Long)
+
+/**
+ * Data class representing a chat.
+ *
+ * @property id The unique identifier of the chat
+ * @property participants The list of user IDs participating in the chat
+ * @property relatedPostId The ID of the post related to the chat
+ * @property relatedPostType The type of the post related to the chat (OFFER or REQUEST)
+ * @property messages The list of messages in the chat
+ */
+class Chat(
+    val id: String,
+    val participants: List<String>,
+    val relatedPostId: String,
+    val relatedPostType: PostType,
+    val messages: List<Message>
+)
+
+const val NUMBER_OF_CHAT_PARTICIPANTS = 2

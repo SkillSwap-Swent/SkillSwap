@@ -1,9 +1,3 @@
-// AI-Generated: Chat list screen with post-based conversations and filtering
-// This file implements a chat list interface that displays conversations with posts instead of
-// users.
-// Features include filtering by Offer/Request post types, stable UI with proper component
-// architecture,
-// and integration with existing Post and User models from the codebase.
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.foundation.layout.*
@@ -17,11 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.swent.skillswap.model.post.Post
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.user.User
 
 object ChatListTestTags {
     const val SCREEN = "ChatListScreen"
@@ -32,17 +25,13 @@ object ChatListTestTags {
     const val EMPTY_STATE = "EmptyState"
 }
 
-/**
- * Chat list screen that displays conversations with posts instead of users. Shows posts in
- * rectangles with username on left and skill on right. Includes filtering by Offer/Request post
- * types.
- */
 @Composable
 fun ChatListScreen(
-    posts: List<Post> = emptyList(),
-    users: Map<String, User> = emptyMap(),
-    onPostClick: (Post) -> Unit = {}
+    viewModel: ChatListViewModel = viewModel(),
+    currentUserId: String = "",
+    onChatClick: (String) -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
@@ -56,7 +45,7 @@ fun ChatListScreen(
                 Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
         )
 
-        // Post Type Filter Buttons
+        // Related post type filter buttons
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -76,18 +65,17 @@ fun ChatListScreen(
             )
         }
 
-        // Posts List
-        val filteredPosts =
-            remember(posts, selectedPostType) { posts.filter { it.type == selectedPostType } }
-
-        if (filteredPosts.isEmpty()) {
+        // Chat List
+        LaunchedEffect(selectedPostType) { viewModel.getChatsOfCurrentUser(selectedPostType) }
+        val filteredChats = uiState.chats
+        if (filteredChats.isEmpty()) {
             // Empty state
             Box(
                 modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No ${selectedPostType.name.lowercase()} posts available",
+                    text = "No chats available",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center
@@ -98,11 +86,12 @@ fun ChatListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
             ) {
-                items(filteredPosts) { post ->
-                    PostConversationItem(
-                        post = post,
-                        user = users[post.ownerId],
-                        onClick = { onPostClick(post) }
+                items(filteredChats) { chat ->
+                    ChatConversationItem(
+                        viewModel = viewModel,
+                        currentUserId = currentUserId,
+                        chat = chat,
+                        onClick = { onChatClick(chat.id) }
                     )
                 }
             }
@@ -146,17 +135,28 @@ fun PostTypeFilterButton(
     }
 }
 
-/** Individual post conversation item */
+/** Individual chat conversation item */
 @Composable
-fun PostConversationItem(
-    post: Post,
-    user: User?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+fun ChatConversationItem(
+    viewModel: ChatListViewModel,
+    currentUserId: String,
+    chat: Chat,
+    onClick: () -> Unit
 ) {
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    val currentUser = currentUserId
+    // Assuming two participants
+    val otherUser = chat.participants.first { it != currentUser }
+
+    LaunchedEffect(chat.relatedPostId) {
+        viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
+    }
+    LaunchedEffect(otherUser) { viewModel.getUsername(otherUser) }
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -165,48 +165,22 @@ fun PostConversationItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left side - Username
+            // Left side - Related post title
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = user?.username ?: "Unknown User",
+                    text = uiState.postTitles[chat.relatedPostId] ?: "Loading...",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
-                Text(
-                    text = post.title,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
 
-            // Right side - Skill/Tags
+            // Right side - Other chat participant username
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "Skills:",
+                    text = uiState.usernames[otherUser] ?: "Loading...",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                )
-                Text(
-                    text =
-                        if (post.skills.isEmpty()) {
-                            "No skills listed"
-                        } else {
-                            post.skills.take(2).joinToString(", ") {
-                                it.toString().replace("_", " ").lowercase().replaceFirstChar { char
-                                    ->
-                                    if (char.isLowerCase()) char.titlecase() else char.toString()
-                                }
-                            }
-                        },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
                 )
             }
         }
