@@ -116,7 +116,8 @@ class FeedScreenInstrumentedTest {
                             "replyStatus" to reply.replyStatus.toString()
                         )
                     },
-                "searchKeys" to buildSearchKeysForPost(post)
+                "searchKeys" to buildSearchKeysForPost(post),
+                "reportCount" to post.reportCount
             )
 
         FirebaseEmulator.firestore
