@@ -58,6 +58,7 @@ open class FeedScreenViewModel(
                         .onFailure { e -> Log.e("FeedScreenViewModel", "Error updating post", e) }
                 }
         }
+        Log.d("VM", "Current post at init: ${controller.currentPost.value}")
     }
 
     /** Accepts the specified offer on behalf of the current user. */
@@ -105,17 +106,27 @@ open class FeedScreenViewModel(
      * @param userId The ID of the current user.
      * @return A corresponding [FeedOffer] object.
      */
-    private fun toFeedOffer(post: Post, userId: String): FeedOffer {
+    private suspend fun toFeedOffer(post: Post, userId: String): FeedOffer {
+        val skillRequested =
+            try {
+                controller.inferRelevantSkill().name.toString()
+            } catch (e: Exception) {
+                "None"
+            }
+
+        Log.e("YOLO", "EE")
         return FeedOffer(
-            skillProvided = post.title,
+            skillProvided =
+                post
+                    .title, // TODO this is wrong and need to be change to
+                            // "post.skills.firstOrNull()?.name ?: "None"
             authorID = post.ownerId,
             authorName = "AnoUser",
             // TODO Need to modify the post structure to handle this or use external object
             //  (decrease duplicate data)
             requesterAvatar = "https://picsum.photos/200",
             receiverName = userId,
-            skillRequested =
-                "TODO : Implement", // TODO this should be provided by the recommendation algo
+            skillRequested = skillRequested,
             thumbnail = post.media.firstOrNull() ?: "",
             specification = post.description,
             description = post.description

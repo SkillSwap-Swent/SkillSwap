@@ -25,7 +25,6 @@ interface RecommendationEngine {
      *
      * @param userId The ID of the current user performing actions.
      * @param feedType The type of posts this engine will handle (REQUEST or OFFER).
-     * @param blockedUsers A set of user IDs whose posts should never be displayed.
      * @param userRepository The user repository instance
      * @param undesiredSkillThreshold Ratio of skipped posts for a skill above which it becomes
      *   blacklisted.
@@ -35,7 +34,6 @@ interface RecommendationEngine {
     suspend fun initialize(
         userId: String,
         feedType: PostType,
-        blockedUsers: Set<String>,
         userRepository: UserRepositery,
         undesiredSkillThreshold: Float,
         desiredSkillThreshold: Float
@@ -123,4 +121,13 @@ interface RecommendationEngine {
      * @return The Skill the feed should emphasize when displaying this post.
      */
     suspend fun inferRelevantSkill(post: Post): Skill
+
+    /**
+     * Notifies the recommendation engine that the caller's blocked-users list has been updated in
+     * the repository.
+     *
+     * @return The updated set of blocked user IDs.
+     * @throws Exception if the updated user information cannot be retrieved from the repository.
+     */
+    suspend fun updateBlockedUser(): Set<String>
 }

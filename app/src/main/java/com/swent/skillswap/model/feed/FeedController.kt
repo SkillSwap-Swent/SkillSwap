@@ -3,6 +3,7 @@ package com.swent.skillswap.model.feed
 import androidx.compose.runtime.State
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.user.Skill
 
 interface FeedController {
     /** The current post being displayed in the UI. */
@@ -29,4 +30,6 @@ interface FeedController {
     suspend fun updateDistanceFilter(distance: Float)
 
     suspend fun updateLocation(isLiveLocationOn: Boolean)
+
+    suspend fun inferRelevantSkill(): Skill
 }

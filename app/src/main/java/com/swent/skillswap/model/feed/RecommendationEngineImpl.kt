@@ -24,7 +24,7 @@ import com.swent.skillswap.model.user.UserRepositery
  *
  * @author Joey Gugler using ChatGPT
  */
-class RecommendationEngineImpl : RecommendationEngine {
+open class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var userId: String
     private lateinit var feedType: PostType
     private lateinit var userRepository: UserRepositery
@@ -45,6 +45,8 @@ class RecommendationEngineImpl : RecommendationEngine {
     // Dynamic filters
     private val dynamicFilters = mutableListOf<(Post) -> Boolean>()
 
+    private var lastError: Exception? = null
+
     /**
      * Initializes the recommendation engine for a specific user and feed type.
      *
@@ -59,14 +61,19 @@ class RecommendationEngineImpl : RecommendationEngine {
     override suspend fun initialize(
         userId: String,
         feedType: PostType,
-        blockedUsers: Set<String>,
         userRepository: UserRepositery,
         undesiredSkillThreshold: Float,
         desiredSkillThreshold: Float
     ) {
         this.userId = userId
         this.feedType = feedType
-        this.blockedUsers = blockedUsers
+        blockedUsers =
+            try {
+                userRepository.getUser(userId).blockedUsers
+            } catch (e: Exception) {
+                lastError = e
+                emptySet()
+            }
         this.userRepository = userRepository
         this.undesiredSkillThreshold = undesiredSkillThreshold
         this.desiredSkillThreshold = desiredSkillThreshold
@@ -75,6 +82,30 @@ class RecommendationEngineImpl : RecommendationEngine {
         addFilter { post -> post.ownerId !in blockedUsers }
     }
 
+    /**
+     * Notifies the recommendation engine that the caller's blocked-users list has been updated in
+     * the repository.
+     *
+     * This refreshes internal filtering rules so that:
+     * - Newly blocked users are excluded from future recommendations.
+     * - Newly unblocked users are allowed again (unless filtered by other rules).
+     *
+     * The method fetches the updated user profile from [userRepository], updates the internal
+     * [blockedUsers] set, and re-applies the blocked-users filter.
+     *
+     * @return The updated set of blocked user IDs.
+     * @throws Exception if the updated user information cannot be retrieved from the repository.
+     */
+    override suspend fun updateBlockedUser(): Set<String> {
+        blockedUsers =
+            try {
+                userRepository.getUser(userId).blockedUsers
+            } catch (e: Exception) {
+                emptySet()
+            }
+        addFilter { post -> post.ownerId !in blockedUsers }
+        return blockedUsers
+    }
     /**
      * Registers that the current user skipped a post.
      *
@@ -276,7 +307,6 @@ class RecommendationEngineFactory(
         engine.initialize(
             userId = userId,
             feedType = feedType,
-            blockedUsers = blockedUsers,
             userRepository = userRepository,
             undesiredSkillThreshold = undesiredSkillThreshold,
             desiredSkillThreshold = desiredSkillThreshold
