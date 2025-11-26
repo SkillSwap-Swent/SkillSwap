@@ -39,7 +39,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.swent.skillswap.model.chat.ChatListScreenData
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
@@ -55,6 +55,10 @@ import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
 import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.chat.ChatListViewModel
+import com.swent.skillswap.ui.chat.ChatListViewModelFactory
+import com.swent.skillswap.ui.chat.ChatScreen
+import com.swent.skillswap.ui.chat.ChatViewModel
 import com.swent.skillswap.ui.feed.FeedScreen
 import com.swent.skillswap.ui.feed.FeedScreenNavigation
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
@@ -337,6 +341,48 @@ fun SkillSwapApp(
                 }
             }
 
+            composable(Screen.Chat.route) {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUserId == null) {
+                    Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
+                    return@composable
+                }
+                val factory =
+                    ChatListViewModelFactory(
+                        chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                        userRepository = UserRepoFirestore(Firebase.firestore),
+                        postRepository = PostFirestoreRepository(Firebase.firestore)
+                    )
+                val vm: ChatListViewModel = viewModel(factory = factory)
+                ChatListScreen(
+                    viewModel = vm,
+                    currentUserId = currentUserId,
+                    onChatClick = { chatId ->
+                        navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                    }
+                )
+            }
+
+            composable(
+                route = Screen.ChatScreen.route,
+                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
+            ) {
+                val chatId = it.arguments?.getString("chatId") ?: return@composable
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@composable
+                val viewModel =
+                    remember(chatId) {
+                        ChatViewModel(
+                            chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                            chatId = chatId
+                        )
+                    }
+                ChatScreen(
+                    viewModel = viewModel,
+                    currentUserId = currentUserId,
+                    onGoBack = { navigationActions.goBack() }
+                )
+            }
+
             composable(Screen.AddRequest.route) {
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                 if (currentUserId == null) {
@@ -350,17 +396,6 @@ fun SkillSwapApp(
                     onGoBack = { navigationActions.goBack() },
                     onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
                     postOperation = PostOperation.ADD,
-                )
-            }
-
-            composable(Screen.Chat.route) {
-                ChatListScreen(
-                    posts = ChatListScreenData.getSamplePosts(),
-                    users = ChatListScreenData.getSampleUsers(),
-                    onPostClick = { post ->
-                        // TODO: Navigate to individual chat with post
-                        println("Clicked on post: ${post.title}")
-                    },
                 )
             }
         }

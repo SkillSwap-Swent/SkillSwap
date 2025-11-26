@@ -1,5 +1,6 @@
 package com.swent.skillswap.model.chat
 
+import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -7,6 +8,21 @@ import kotlinx.coroutines.flow.Flow
  * messages
  */
 interface ChatRepository {
+
+    /**
+     * Creates a new chat between two users.
+     *
+     * @param participants The list of user IDs participating in the chat
+     * @param relatedPostId The ID of the post related to the chat
+     * @param relatedPostType The type of the post related to the chat (OFFER or REQUEST)
+     * @return The ID of the newly created chat
+     * @throws Exception will throw db exceptions
+     */
+    suspend fun createChat(
+        participants: List<String>,
+        relatedPostId: String,
+        relatedPostType: PostType
+    ): String
 
     /**
      * Streams messages in a chat with real-time updates.
@@ -24,4 +40,11 @@ interface ChatRepository {
      * @param content The message content
      */
     suspend fun sendMessage(chatId: String, senderId: String, content: String)
+
+    /**
+     * Gets the list of chats for the current user filtered by post type.
+     *
+     * @param relatedPostType The type of post linked to the chats to be retrieved
+     */
+    suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat>
 }
