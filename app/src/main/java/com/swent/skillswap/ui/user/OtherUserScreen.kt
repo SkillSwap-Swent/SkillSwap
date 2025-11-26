@@ -1,3 +1,4 @@
+/** Some code from ProfileScreen */
 package com.swent.skillswap.ui.user
 
 import androidx.compose.foundation.background
