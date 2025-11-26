@@ -1,20 +1,24 @@
+/* With the help of Sonnet 4.5 for repetitive tasks */
+
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.GeoPoint
-import com.swent.skillswap.model.post.Offer
-import com.swent.skillswap.model.post.PaymentMethod
+import com.swent.skillswap.model.chat.Chat
+import com.swent.skillswap.model.chat.ChatRepository
+import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.Post
-import com.swent.skillswap.model.post.PostStatus
+import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepositery
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,157 +28,245 @@ class ChatListScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    private fun now() = Timestamp.now().seconds
+    // Minimal fake implementations
+    private class FakeChatRepository(private val chats: Map<PostType, List<Chat>> = emptyMap()) :
+        ChatRepository {
+        override suspend fun createChat(
+            participants: List<String>,
+            relatedPostId: String,
+            relatedPostType: PostType
+        ) = "chat1"
 
-    private fun futureTs() = Timestamp(now() + 86400, 0)
+        override fun streamMessages(chatId: String): Flow<List<Message>> = flowOf(emptyList())
 
-    private fun pastTs() = Timestamp(now() - 10, 0)
+        override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
 
-    private val testLocation = GeoPoint(46.5191, 6.5668)
+        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
+            chats[relatedPostType] ?: emptyList()
+    }
 
-    private fun samplePosts(): List<Post> =
-        listOf(
-            Offer(
-                "o1",
-                "Graphic Design Help",
-                "desc",
-                "u2",
-                setOf(SkillTag.MACHINE_DESIGN),
-                emptySet(),
-                PaymentMethod.SKILLS,
-                futureTs(),
-                pastTs(),
-                PostStatus.POSTED,
-                emptyList(),
-                location = testLocation
+    private class FakeUserRepository(private val users: Map<String, User>) : UserRepositery {
+        override fun getNewUid() = "user-${System.currentTimeMillis()}"
+
+        override suspend fun getUser(userID: String) =
+            users[userID] ?: User(userID, "Unknown User", "", "", emptySet(), 0f, emptyList())
+
+        override suspend fun addUser(user: User) {}
+
+        override suspend fun editUser(userID: String, newValue: User) {}
+
+        override suspend fun deleteUser(userID: String) {}
+
+        override suspend fun userExists(userId: String) = users.containsKey(userId)
+
+        override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+    }
+
+    private class FakePostRepository(private val posts: Map<String, Post>) : PostRepository {
+        override fun getNewUid(type: PostType) = "post-${System.currentTimeMillis()}"
+
+        override suspend fun getMultiplePosts(
+            numberOfPosts: Long,
+            type: PostType,
+            titleContains: String,
+            ownerId: String,
+            paymentMethod: com.swent.skillswap.model.post.PaymentMethod?,
+            skills: Set<SkillTag>,
+            tags: Set<PostTag>,
+            status: com.swent.skillswap.model.post.PostStatus?,
+            userLocation: com.google.firebase.firestore.GeoPoint?,
+            maxDistanceKm: Float
+        ) = emptyList<Post>()
+
+        override suspend fun getPost(type: PostType, postId: String) =
+            posts[postId] ?: throw Exception("Post not found")
+
+        override suspend fun addPost(post: Post) {}
+
+        override suspend fun editPost(postId: String, newPost: Post) {}
+
+        override suspend fun deletePost(type: PostType, postId: String) {}
+    }
+
+    // Test data factories
+    private fun createChat(id: String, postId: String, type: PostType, user: String = "u2") =
+        Chat(id, listOf("u1", user), postId, type, emptyList())
+
+    private fun createViewModel(
+        offerChats: List<Chat> = emptyList(),
+        requestChats: List<Chat> = emptyList(),
+        users: Map<String, User> = emptyMap(),
+        posts: Map<String, Post> = emptyMap()
+    ) =
+        ChatListViewModel(
+            FakeChatRepository(
+                mapOf(PostType.OFFER to offerChats, PostType.REQUEST to requestChats)
             ),
-            Request(
-                "r1",
-                "Need Math Tutor",
-                "desc",
-                "u1",
-                setOf(SkillTag.MACHINE_DESIGN),
-                emptySet(),
-                PaymentMethod.SKILLS,
-                futureTs(),
-                pastTs(),
-                PostStatus.POSTED,
-                emptyList(),
-                location = testLocation
-            )
+            FakeUserRepository(users),
+            FakePostRepository(posts)
         )
 
-    private fun users(): Map<String, User> =
-        mapOf(
-            "u1" to User("u1", "Alex Johnson", "", "", emptySet(), 4.5f, emptyList()),
-            "u2" to User("u2", "Sarah Chen", "", "", emptySet(), 4.8f, emptyList())
-        )
+    // Minimal mock posts for titles
+    private class MockPost(override val uid: String, override val title: String) : Post {
+        override val description = ""
+        override val ownerId = ""
+        override val skills = emptySet<SkillTag>()
+        override val tags = emptySet<PostTag>()
+        override val paymentMethod = com.swent.skillswap.model.post.PaymentMethod.SKILLS
+        override val expiry = Timestamp.now()
+        override val creation = Timestamp.now()
+        override val status = com.swent.skillswap.model.post.PostStatus.POSTED
+        override val media = emptyList<String>()
+        override val location = com.google.firebase.firestore.GeoPoint(0.0, 0.0)
+        override val type = PostType.OFFER
+        override val postReplies = emptyList<com.swent.skillswap.model.post.PostReply>()
+        override val searchKeys = listOf<String>()
+    }
 
     @Test
-    fun shows_title_and_filters_and_list() {
+    fun shows_filters_and_empty_state_by_default() {
         composeRule.setContent {
-            MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
+            MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") }
         }
-
-        // composeRule.onNodeWithText("Chat").assertExists()
+        composeRule.onNodeWithText("Chat").assertExists()
         composeRule.onNodeWithText("Offer").assertExists()
         composeRule.onNodeWithText("Request").assertExists()
-        // default is Offer selected, should show offer title
-        composeRule.onNodeWithText("Graphic Design Help").assertExists()
+        composeRule.onNodeWithText("No chats available").assertExists()
     }
 
     @Test
-    fun clicking_request_filter_shows_request_posts() {
+    fun displays_offer_chats_and_switches_to_request_chats() {
+        val offerChat = createChat("c1", "p1", PostType.OFFER)
+        val requestChat = createChat("c2", "p2", PostType.REQUEST)
+        val users = mapOf("u2" to User("u2", "Sarah", "", "", emptySet(), 4.5f, emptyList()))
+        val posts =
+            mapOf("p1" to MockPost("p1", "Offer Title"), "p2" to MockPost("p2", "Request Title"))
+
+        val viewModel =
+            createViewModel(
+                offerChats = listOf(offerChat),
+                requestChats = listOf(requestChat),
+                users = users,
+                posts = posts
+            )
+
         composeRule.setContent {
-            MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
+        // Trigger initial load for offers
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getUsername("u2")
+        viewModel.getPostTitle("p1", PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // Check offer content
+        composeRule.onNodeWithText("Sarah").assertExists()
+        composeRule.onNodeWithText("Offer Title").assertExists()
+
+        // Switch to requests
         composeRule.onNodeWithText("Request").performClick()
-        composeRule.onNodeWithText("Need Math Tutor").assertExists()
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
+        viewModel.getPostTitle("p2", PostType.REQUEST)
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Request Title").assertExists()
     }
 
     @Test
-    fun empty_state_when_no_posts_for_filter() {
-        val onlyOffers = samplePosts().filter { it.type == PostType.OFFER }
-        composeRule.setContent {
-            MaterialTheme { ChatListScreen(posts = onlyOffers, users = users()) }
-        }
+    fun chat_click_triggers_callback() {
+        var clickedChatId = ""
+        val chat = createChat("c1", "p1", PostType.OFFER)
+        val viewModel = createViewModel(offerChats = listOf(chat))
 
-        // Switch to Request to force empty state
-        composeRule.onNodeWithText("Request").performClick()
-        composeRule.onNodeWithText("No request posts available").assertExists()
-    }
-
-    @Test
-    fun unknown_user_fallback_is_displayed() {
-        val posts = samplePosts()
-        val noUsers = emptyMap<String, User>()
-        composeRule.setContent { MaterialTheme { ChatListScreen(posts = posts, users = noUsers) } }
-        composeRule.onNodeWithText("Unknown User").assertExists()
-    }
-
-    @Test
-    fun post_item_click_triggers_callback() {
-        var clicks = 0
         composeRule.setContent {
             MaterialTheme {
-                ChatListScreen(posts = samplePosts(), users = users(), onPostClick = { clicks++ })
+                ChatListScreen(
+                    viewModel = viewModel,
+                    currentUserId = "u1",
+                    onChatClick = { clickedChatId = it }
+                )
             }
         }
-        // Default screen shows offer "Graphic Design Help"
-        composeRule.onNodeWithText("Graphic Design Help").performClick()
-        assert(clicks == 1)
+
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // Click any card (filter buttons are also clickable, so get the last one which is the chat)
+        val clickableNodes = composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes()
+        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 1].performClick()
+        assert(clickedChatId == "c1")
     }
 
     @Test
-    fun toggling_filters_multiple_times_updates_list() {
+    fun handles_loading_state_for_usernames_and_titles() {
+        val chat = createChat("c1", "p1", PostType.OFFER)
+        val viewModel = createViewModel(offerChats = listOf(chat))
+
         composeRule.setContent {
-            MaterialTheme { ChatListScreen(posts = samplePosts(), users = users()) }
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
-        // Offer visible first
-        composeRule.onNodeWithText("Graphic Design Help").assertExists()
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // With fake repos, verify chat item is rendered (at least 3: 2 filter buttons + 1 chat)
+        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3)
+    }
+
+    @Test
+    fun empty_state_changes_based_on_filter() {
+        val requestChat = createChat("c1", "p1", PostType.REQUEST)
+        val viewModel = createViewModel(requestChats = listOf(requestChat))
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+
+        // Default is offers - should be empty
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("No chats available").assertExists()
+
+        // Switch to requests - should have content
         composeRule.onNodeWithText("Request").performClick()
-        composeRule.onNodeWithText("Need Math Tutor").assertExists()
-        composeRule.onNodeWithText("Offer").performClick()
-        composeRule.onNodeWithText("Graphic Design Help").assertExists()
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
+        composeRule.waitForIdle()
+        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3)
     }
 
     @Test
-    fun clicking_item_in_request_mode_calls_callback() {
-        var clicks = 0
-        composeRule.setContent {
-            MaterialTheme {
-                ChatListScreen(posts = samplePosts(), users = users(), onPostClick = { clicks++ })
-            }
-        }
-        composeRule.onNodeWithText("Request").performClick()
-        composeRule.onNodeWithText("Need Math Tutor").performClick()
-        assert(clicks == 1)
-    }
+    fun multiple_chats_render_correctly() {
+        val chats =
+            listOf(
+                createChat("c1", "p1", PostType.OFFER, "u2"),
+                createChat("c2", "p2", PostType.OFFER, "u3")
+            )
+        val users =
+            mapOf(
+                "u2" to User("u2", "User Two", "", "", emptySet(), 4.5f, emptyList()),
+                "u3" to User("u3", "User Three", "", "", emptySet(), 4.8f, emptyList())
+            )
+        val posts =
+            mapOf("p1" to MockPost("p1", "First Post"), "p2" to MockPost("p2", "Second Post"))
 
-    @Test
-    fun empty_state_when_no_offers() {
-        val onlyRequests = samplePosts().filter { it.type == PostType.REQUEST }
-        composeRule.setContent {
-            MaterialTheme { ChatListScreen(posts = onlyRequests, users = users()) }
-        }
-        // Offer tab is default; should show empty for offers
-        composeRule.onNodeWithText("No offer posts available").assertExists()
-    }
+        val viewModel = createViewModel(offerChats = chats, users = users, posts = posts)
 
-    @Test
-    fun mixed_known_and_unknown_users_render() {
-        // Provide users map missing one of the owners
-        val partialUsers =
-            mapOf("u1" to User("u1", "Alex Johnson", "", "", emptySet(), 4.5f, emptyList()))
         composeRule.setContent {
-            MaterialTheme { ChatListScreen(posts = samplePosts(), users = partialUsers) }
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
-        // Offer owner is u2 (unknown) → shows Unknown User
-        composeRule.onNodeWithText("Unknown User").assertExists()
-        // Switch to request (owner u1) → shows known user
-        composeRule.onNodeWithText("Request").performClick()
-        composeRule.onNodeWithText("Alex Johnson").assertExists()
+
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        chats.forEach { chat ->
+            val otherUser = chat.participants.first { it != "u1" }
+            viewModel.getUsername(otherUser)
+            viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("User Two").assertExists()
+        composeRule.onNodeWithText("User Three").assertExists()
+        composeRule.onNodeWithText("First Post").assertExists()
+        composeRule.onNodeWithText("Second Post").assertExists()
     }
 }

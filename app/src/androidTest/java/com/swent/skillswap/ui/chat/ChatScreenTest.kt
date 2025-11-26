@@ -6,8 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
@@ -29,8 +31,21 @@ class ChatScreenTest {
                         senderId: String,
                         content: String
                     ) {}
+
+                    override suspend fun createChat(
+                        participants: List<String>,
+                        relatedPostId: String,
+                        relatedPostType: PostType
+                    ): String {
+                        return "fake-chat-id"
+                    }
+
+                    override suspend fun getChatsOfCurrentUser(
+                        relatedPostType: PostType
+                    ): List<Chat> {
+                        return emptyList()
+                    }
                 },
-            currentUserId = "user1",
             chatId = "chat1"
         )
     }

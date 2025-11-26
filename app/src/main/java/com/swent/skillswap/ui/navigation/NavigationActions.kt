@@ -36,6 +36,10 @@ sealed class Screen(
 
     object Chat : Screen(route = "chat", name = "Chat", isTopLevelDestination = true)
 
+    object ChatScreen : Screen(route = "chat/{chatId}", name = "Chat Screen") {
+        fun createRoute(chatId: String) = "chat/$chatId"
+    }
+
     object AddRequest : Screen(route = "addRequest", name = "Add Request")
 }
 
