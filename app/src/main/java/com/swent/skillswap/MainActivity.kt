@@ -56,6 +56,7 @@ import com.swent.skillswap.ui.auth.AuthMainScreen
 import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
 import com.swent.skillswap.ui.feed.FeedScreen
+import com.swent.skillswap.ui.feed.FeedScreenNavigation
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
 import com.swent.skillswap.ui.feed.FeedScreenViewModelFactory
 import com.swent.skillswap.ui.navigation.BottomNavigationMenu
@@ -65,6 +66,9 @@ import com.swent.skillswap.ui.navigation.Tab
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreen
+import com.swent.skillswap.ui.user.OtherUserScreen
+import com.swent.skillswap.ui.user.OtherUserViewModel
+import com.swent.skillswap.ui.user.OtherUserViewModelFactory
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.ProfileViewModel
 import com.swent.skillswap.ui.user.editUser.EditUserScreen
@@ -291,21 +295,45 @@ fun SkillSwapApp(
                 }
             }
 
-            composable(Screen.Feed.route) {
-                if (controller == null) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+            navigation(startDestination = Screen.Feed.route, route = Screen.Feed.name) {
+                composable(Screen.Feed.route) {
+                    if (controller == null) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        val navigation = FeedScreenNavigation { userId ->
+                            navController.navigate(Screen.OtherUser.createRoute(userId))
+                        }
+
+                        val factory =
+                            remember(controller) {
+                                FeedScreenViewModelFactory(
+                                    navigation = navigation,
+                                    controller = controller!!
+                                )
+                            }
+                        val vm: FeedScreenViewModel = viewModel(factory = factory)
+                        FeedScreen(vm = vm)
                     }
-                } else {
+                }
+                composable(
+                    Screen.OtherUser.route,
+                    arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getString("userId") ?: ""
                     val factory =
-                        remember(controller) {
-                            FeedScreenViewModelFactory(
-                                navigation = { /* TODO: implement navigation to other user profile */},
-                                controller = controller!!
+                        remember(userId) {
+                            OtherUserViewModelFactory(
+                                userId = userId,
+                                onGoBack = { navigationActions.goBack() }
                             )
                         }
-                    val vm: FeedScreenViewModel = viewModel(factory = factory)
-                    FeedScreen(vm = vm)
+                    val vm: OtherUserViewModel = viewModel(factory = factory)
+                    OtherUserScreen(vm = vm)
                 }
             }
 

@@ -18,6 +18,10 @@ sealed class Screen(
 
     object Feed : Screen(route = "feed", name = "Feed", isTopLevelDestination = true)
 
+    object OtherUser : Screen(route = "other_user/{userId}", name = "Other User") {
+        fun createRoute(userId: String) = "other_user/$userId"
+    }
+
     object Profile : Screen(route = "profile", name = "Profile", isTopLevelDestination = true)
 
     object EditProfile : Screen(route = "edit_profile", name = "Edit profile")
