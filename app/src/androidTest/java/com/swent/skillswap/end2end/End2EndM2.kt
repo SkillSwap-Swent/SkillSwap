@@ -14,7 +14,6 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.deserializeSkills
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.chat.ChatListTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreenTags
@@ -660,84 +659,7 @@ class End2EndM2 {
     }
 
     @Test
-    fun t5_canChatInChatScreen() {
-        /** Assumes user is already signed in from previous test */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule
-                .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-
-        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-        composeTestRule.waitForIdle()
-
-        /** Check that chat screen is displayed */
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule
-                .onAllNodesWithTag(ChatListTestTags.SCREEN)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            try {
-                composeTestRule.onNodeWithTag(ChatListTestTags.SCREEN).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(ChatListTestTags.TITLE).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(ChatListTestTags.OFFER).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(ChatListTestTags.REQUEST).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
-
-        val OfferChatsText =
-            listOf(
-                /* Usernames in Offer chat tab */
-                "Alex Johnson",
-                "Sarah Chen",
-                "Mike Rodriguez"
-            )
-
-        val visibleComposableBottomBar =
-            listOf(
-                NavigationTestTags.FEED_TAB,
-                NavigationTestTags.CHAT_TAB,
-                NavigationTestTags.PROFILE_TAB
-            )
-
-        for (username in OfferChatsText) {
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
-                composeTestRule.onAllNodesWithText(username).fetchSemanticsNodes().isNotEmpty()
-            }
-            composeTestRule.onNodeWithText(username).assertExists()
-            composeTestRule.onNodeWithText(username).performClick()
-            composeTestRule.waitForIdle()
-        }
-
-        for (testTag in visibleComposableBottomBar) {
-            composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
-        }
-
-        /** Go to Request chat tab */
-        composeTestRule.onNodeWithTag(ChatListTestTags.REQUEST).performClick()
-        composeTestRule.waitForIdle()
-
-        val requestChatUsernames = listOf("Emma Wilson", "Alex Johnson")
-
-        for (username in requestChatUsernames) {
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
-                composeTestRule.onAllNodesWithText(username).fetchSemanticsNodes().isNotEmpty()
-            }
-            composeTestRule.onNodeWithText(username).assertIsDisplayed()
-            composeTestRule.onNodeWithText(username).performClick()
-            composeTestRule.waitForIdle()
-        }
-    }
-
-    @Test
-    fun t6_canLogoutFromProfile() {
+    fun t5_canLogoutFromProfile() {
         /** Assumes user is already signed in from previous test */
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule

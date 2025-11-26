@@ -40,6 +40,12 @@ object FirebaseEmulator {
 
     fun startEmulator() {
         FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
+        if (isRunning) {
+            try {
+                auth.useEmulator(HOST, AUTH_PORT)
+                firestore.useEmulator(HOST, FIRESTORE_PORT)
+            } catch (_: Exception) {}
+        }
     }
 
     private val httpClient = OkHttpClient()
@@ -67,6 +73,7 @@ object FirebaseEmulator {
 
     init {
         if (isRunning) {
+            FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
             auth.useEmulator(HOST, AUTH_PORT)
             firestore.useEmulator(HOST, FIRESTORE_PORT)
             storage.useEmulator(HOST, STORAGE_PORT)
@@ -97,8 +104,11 @@ object FirebaseEmulator {
     }
 
     fun reinitialize() {
-        // Delete old apps
         val context = ApplicationProvider.getApplicationContext<Context>()
+        // Sign out first to stop any pending auth background tasks
+        try {
+            Firebase.auth.signOut()
+        } catch (_: Exception) {}
         FirebaseApp.getApps(context).forEach { it.delete() }
 
         // Create fresh app

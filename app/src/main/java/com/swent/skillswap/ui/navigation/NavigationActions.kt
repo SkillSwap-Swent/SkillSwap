@@ -18,6 +18,10 @@ sealed class Screen(
 
     object Feed : Screen(route = "feed", name = "Feed", isTopLevelDestination = true)
 
+    object OtherUser : Screen(route = "other_user/{userId}", name = "Other User") {
+        fun createRoute(userId: String) = "other_user/$userId"
+    }
+
     object Profile : Screen(route = "profile", name = "Profile", isTopLevelDestination = true)
 
     object EditProfile : Screen(route = "edit_profile", name = "Edit profile")
@@ -31,6 +35,10 @@ sealed class Screen(
     }
 
     object Chat : Screen(route = "chat", name = "Chat", isTopLevelDestination = true)
+
+    object ChatScreen : Screen(route = "chat/{chatId}", name = "Chat Screen") {
+        fun createRoute(chatId: String) = "chat/$chatId"
+    }
 
     object AddRequest : Screen(route = "addRequest", name = "Add Request")
 }
