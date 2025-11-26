@@ -59,7 +59,12 @@ object ChatScreenTags {
 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: () -> Unit = {}) {
+fun ChatScreen(
+    viewModel: ChatViewModel,
+    chatTitle: String = "Chat",
+    currentUserId: String = "",
+    onGoBack: () -> Unit = {}
+) {
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
 
@@ -101,7 +106,7 @@ fun ChatScreen(viewModel: ChatViewModel, chatTitle: String = "Chat", onGoBack: (
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(uiState.messages) { message ->
-                MessageBubble(message = message, message.senderId == viewModel.getCurrentUserId())
+                MessageBubble(message = message, message.senderId == currentUserId)
             }
         }
 

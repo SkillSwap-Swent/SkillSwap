@@ -39,7 +39,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.swent.skillswap.model.chat.ChatListScreenData
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
@@ -55,7 +55,12 @@ import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.AuthMainScreen
 import com.swent.skillswap.ui.auth.PasswordRecoveryScreen
 import com.swent.skillswap.ui.chat.ChatListScreen
+import com.swent.skillswap.ui.chat.ChatListViewModel
+import com.swent.skillswap.ui.chat.ChatListViewModelFactory
+import com.swent.skillswap.ui.chat.ChatScreen
+import com.swent.skillswap.ui.chat.ChatViewModel
 import com.swent.skillswap.ui.feed.FeedScreen
+import com.swent.skillswap.ui.feed.FeedScreenNavigation
 import com.swent.skillswap.ui.feed.FeedScreenViewModel
 import com.swent.skillswap.ui.feed.FeedScreenViewModelFactory
 import com.swent.skillswap.ui.navigation.BottomNavigationMenu
@@ -65,6 +70,9 @@ import com.swent.skillswap.ui.navigation.Tab
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreen
+import com.swent.skillswap.ui.user.OtherUserScreen
+import com.swent.skillswap.ui.user.OtherUserViewModel
+import com.swent.skillswap.ui.user.OtherUserViewModelFactory
 import com.swent.skillswap.ui.user.ProfileScreen
 import com.swent.skillswap.ui.user.ProfileViewModel
 import com.swent.skillswap.ui.user.editUser.EditUserScreen
@@ -291,22 +299,88 @@ fun SkillSwapApp(
                 }
             }
 
-            composable(Screen.Feed.route) {
-                if (controller == null) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+            navigation(startDestination = Screen.Feed.route, route = Screen.Feed.name) {
+                composable(Screen.Feed.route) {
+                    if (controller == null) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        val navigation = FeedScreenNavigation { userId ->
+                            navController.navigate(Screen.OtherUser.createRoute(userId))
+                        }
+
+                        val factory =
+                            remember(controller) {
+                                FeedScreenViewModelFactory(
+                                    navigation = navigation,
+                                    controller = controller!!
+                                )
+                            }
+                        val vm: FeedScreenViewModel = viewModel(factory = factory)
+                        FeedScreen(vm = vm)
                     }
-                } else {
+                }
+                composable(
+                    Screen.OtherUser.route,
+                    arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val userId = backStackEntry.arguments?.getString("userId") ?: ""
                     val factory =
-                        remember(controller) {
-                            FeedScreenViewModelFactory(
-                                navigation = { /* TODO: implement navigation to other user profile */},
-                                controller = controller!!
+                        remember(userId) {
+                            OtherUserViewModelFactory(
+                                userId = userId,
+                                onGoBack = { navigationActions.goBack() }
                             )
                         }
-                    val vm: FeedScreenViewModel = viewModel(factory = factory)
-                    FeedScreen(vm = vm)
+                    val vm: OtherUserViewModel = viewModel(factory = factory)
+                    OtherUserScreen(vm = vm)
                 }
+            }
+
+            composable(Screen.Chat.route) {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUserId == null) {
+                    Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
+                    return@composable
+                }
+                val factory =
+                    ChatListViewModelFactory(
+                        chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                        userRepository = UserRepoFirestore(Firebase.firestore),
+                        postRepository = PostFirestoreRepository(Firebase.firestore)
+                    )
+                val vm: ChatListViewModel = viewModel(factory = factory)
+                ChatListScreen(
+                    viewModel = vm,
+                    currentUserId = currentUserId,
+                    onChatClick = { chatId ->
+                        navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                    }
+                )
+            }
+
+            composable(
+                route = Screen.ChatScreen.route,
+                arguments = listOf(navArgument("chatId") { type = NavType.StringType })
+            ) {
+                val chatId = it.arguments?.getString("chatId") ?: return@composable
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@composable
+                val viewModel =
+                    remember(chatId) {
+                        ChatViewModel(
+                            chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                            chatId = chatId
+                        )
+                    }
+                ChatScreen(
+                    viewModel = viewModel,
+                    currentUserId = currentUserId,
+                    onGoBack = { navigationActions.goBack() }
+                )
             }
 
             composable(Screen.AddRequest.route) {
@@ -322,17 +396,6 @@ fun SkillSwapApp(
                     onGoBack = { navigationActions.goBack() },
                     onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
                     postOperation = PostOperation.ADD,
-                )
-            }
-
-            composable(Screen.Chat.route) {
-                ChatListScreen(
-                    posts = ChatListScreenData.getSamplePosts(),
-                    users = ChatListScreenData.getSampleUsers(),
-                    onPostClick = { post ->
-                        // TODO: Navigate to individual chat with post
-                        println("Clicked on post: ${post.title}")
-                    },
                 )
             }
         }

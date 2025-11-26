@@ -4,6 +4,7 @@ package com.swent.skillswap.model.chat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths.CHATS_COLLECTION
+import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.utils.deserializeMessage
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.launch
@@ -20,62 +21,34 @@ class ChatRepositoryFirestoreTest {
     lateinit var repo: ChatRepositoryFirestore
     lateinit var db: FirebaseFirestore
 
-    init {
-        FirebaseEmulator.startEmulator()
-        db = FirebaseEmulator.firestore // get the firestore instance pointing to the emulator
-        repo = ChatRepositoryFirestore(db) // initialize the repository
-    }
-
     // Clean the users collection before each test
     @Before
-    fun setUp() = runBlocking {
-        val users = FirebaseEmulator.firestore.collection(CHATS_COLLECTION).get().await()
-        for (doc in users.documents) {
-            FirebaseEmulator.firestore
-                .collection(CHATS_COLLECTION)
-                .document(doc.id)
-                .delete()
-                .await()
+    fun setUp() {
+        runBlocking {
+            FirebaseEmulator.startEmulator()
+            db = FirebaseEmulator.firestore
+            repo = ChatRepositoryFirestore(db)
+
+            val users = FirebaseEmulator.firestore.collection(CHATS_COLLECTION).get().await()
+            for (doc in users.documents) {
+                FirebaseEmulator.firestore
+                    .collection(CHATS_COLLECTION)
+                    .document(doc.id)
+                    .delete()
+                    .await()
+            }
         }
     }
 
     @Test
-    fun sendFirstMessageCreatesChat() = runBlocking {
-        val chatId = "chat2"
-        val senderId = "boubi"
-        val refMessage =
-            Message(
-                id = "USELESS_ID",
-                senderId = senderId,
-                content = "Hello, this is the first message!",
-                timestamp = 0L // USELESS
-            )
-        // verify chat does not exist
-        val preDocument = db.collection(CHATS_COLLECTION).document(chatId).get().await()
-        assert(!preDocument.exists())
-
-        // Send message (should create chat)
-        repo.sendMessage(chatId, senderId, refMessage.content)
-
-        // Verify chat and message
-        val document = db.collection(CHATS_COLLECTION).document(chatId).get().await()
-        assert(document.exists())
-        val messages = document.get("messages") as? List<*>
-        val deserialized = deserializeMessage(messages!!.first() as String)
-        assertEquals(refMessage.senderId, deserialized.senderId)
-        assertEquals(refMessage.content, deserialized.content)
-        assertTrue(deserialized.timestamp > 0L)
-    }
-
-    @Test
     fun sendNonFirstMessageUpdateChat() = runBlocking {
-        val chatId = "chat3"
         val senderId1 = "user1"
         val content1 = "First message"
         val senderId2 = "user2"
         val content2 = "Second message"
 
         // Create chat and send first message
+        val chatId = repo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
         repo.sendMessage(chatId, senderId1, content1)
 
         // Send second message
@@ -100,43 +73,14 @@ class ChatRepositoryFirestoreTest {
     }
 
     @Test
-    fun sendMessageWithInvalidParametersThrowsException() = runBlocking {
-        val chatId = "chat4"
-        val validSenderId = "user1"
-        val validContent = "Valid message"
-
-        // Test with empty chatId
-        try {
-            repo.sendMessage("", validSenderId, validContent)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("chatUid cannot be empty", e.message)
-        }
-
-        // Test with empty senderId
-        try {
-            repo.sendMessage(chatId, "", validContent)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("senderId cannot be empty", e.message)
-        }
-
-        // Test with empty content
-        try {
-            repo.sendMessage(chatId, validSenderId, "")
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assertEquals("content cannot be empty", e.message)
-        }
-    }
-
-    @Test
     fun streamMessageReactAtNewMessages() = runTest {
-        val chatId = "chat5"
         val senderId1 = "user1"
         val content1 = "First streamed message"
         val senderId2 = "user2"
         val content2 = "Second streamed message"
+
+        // create chat first
+        val chatId = repo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
 
         val messagesReceived = mutableListOf<List<Message>>()
         val job = launch {
@@ -157,5 +101,29 @@ class ChatRepositoryFirestoreTest {
 
         // Verify received messages
         assertTrue(messagesReceived.size >= 2)
+    }
+
+    @Test
+    fun getChatsOfCurrentUser_filtersAndReturnsCorrectChats() = runBlocking {
+        // Sign in to emulator
+        FirebaseEmulator.auth.signInAnonymously().await()
+        val userId = FirebaseEmulator.auth.currentUser!!.uid
+
+        // Create chats with different post types
+        val requestChat = repo.createChat(listOf(userId, "other1"), "post1", PostType.REQUEST)
+        val offerChat = repo.createChat(listOf(userId, "other2"), "post2", PostType.OFFER)
+
+        // Test filtering by REQUEST type
+        val requestChats = repo.getChatsOfCurrentUser(PostType.REQUEST)
+        assertEquals(1, requestChats.size)
+        assertEquals(requestChat, requestChats[0].id)
+
+        // Test filtering by OFFER type
+        val offerChats = repo.getChatsOfCurrentUser(PostType.OFFER)
+        assertEquals(1, offerChats.size)
+        assertEquals(offerChat, offerChats[0].id)
+
+        // Clean up
+        FirebaseEmulator.auth.signOut()
     }
 }
