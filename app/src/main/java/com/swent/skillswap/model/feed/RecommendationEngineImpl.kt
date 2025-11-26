@@ -43,7 +43,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
     private val whitelistedSkills = mutableSetOf<SkillTag>()
 
     // Dynamic filters
-    private val dynamicFilters = mutableListOf<(Post) -> Boolean>()
+    private val dynamicFilters = mutableSetOf<(Post) -> Boolean>()
 
     private var lastError: Exception? = null
 

@@ -124,6 +124,7 @@ private class FeedControllerImpl(
                 maxDistanceKm = maxDistance.floatValue
             )
         recommendationEngine.filterPosts(newPosts)
+        recommendationEngine.rankPosts(newPosts)
         postQueue.addAll(newPosts)
     }
 

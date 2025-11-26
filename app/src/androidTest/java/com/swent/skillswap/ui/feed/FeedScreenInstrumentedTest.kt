@@ -254,7 +254,7 @@ class FeedScreenInstrumentedTest {
             // Set up UI content
             composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-            val expectedText = "You will get: ${post1.title}"
+            val expectedText = post1.title
             composeTestRule.waitUntil(timeoutMillis = 10_000) {
                 composeTestRule.onAllNodesWithText(expectedText).fetchSemanticsNodes().isNotEmpty()
             }
@@ -305,7 +305,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -321,7 +321,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -331,7 +331,7 @@ class FeedScreenInstrumentedTest {
 
         // Final explicit check
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
         return@runBlocking
     }
@@ -360,7 +360,9 @@ class FeedScreenInstrumentedTest {
         // Wait until a skill title appears
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -371,7 +373,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -387,7 +389,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -397,7 +399,7 @@ class FeedScreenInstrumentedTest {
 
         // Final explicit check
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
         return@runBlocking
     }
@@ -529,7 +531,9 @@ class FeedScreenInstrumentedTest {
         // Wait for initial post to load
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -538,7 +542,7 @@ class FeedScreenInstrumentedTest {
 
         // Initially, postFar should be visible (newest post, no filter)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(postFar.title, substring = true, ignoreCase = true)
 
         // Open distance filter slider
@@ -599,7 +603,8 @@ class FeedScreenInstrumentedTest {
         // After filter applied, feed should refresh showing postMedium (newest within 10km)
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                val skillGiveNode = composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                val skillGiveNode =
+                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                 val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
                 text.contains(postMedium.title, ignoreCase = true)
             } catch (e: AssertionError) {
@@ -609,7 +614,7 @@ class FeedScreenInstrumentedTest {
 
         // Verify postMedium is shown first (newest filtered post)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(postMedium.title, substring = true, ignoreCase = true)
 
         // Press decline to move to next filtered post
@@ -619,7 +624,8 @@ class FeedScreenInstrumentedTest {
         // Wait for postNearby to appear (second filtered post)
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                val skillGiveNode = composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                val skillGiveNode =
+                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                 val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
                 text.contains(postNearby.title, ignoreCase = true)
             } catch (e: AssertionError) {
@@ -629,13 +635,13 @@ class FeedScreenInstrumentedTest {
 
         // Verify postNearby is shown (oldest filtered post)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(postNearby.title, substring = true, ignoreCase = true)
 
         // Verify postFar was never shown after filtering
         val finalText =
             composeTestRule
-                .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                 .fetchSemanticsNode()
                 .getTextString() ?: ""
         assert(!finalText.contains(postFar.title, ignoreCase = true)) {
@@ -667,9 +673,7 @@ class FeedScreenInstrumentedTest {
         // Wait until the SKILL_REQUESTED node is displayed
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
-                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -677,14 +681,13 @@ class FeedScreenInstrumentedTest {
         }
 
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
             .assertTextContains(knownSkill.toString(), substring = true, ignoreCase = true)
         return@runBlocking
     }
 
     @Test
     fun feedScreen_displaysInferredSkillNoUserFound() = runBlocking {
-        val knownSkill = SkillTag.CALCULUS
         val post =
             createValidPost(
                 uid = "post1",
@@ -706,9 +709,7 @@ class FeedScreenInstrumentedTest {
         // Wait until the SKILL_REQUESTED node is displayed
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
-                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -716,7 +717,7 @@ class FeedScreenInstrumentedTest {
         }
 
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
             .assertTextContains("None", substring = true, ignoreCase = true)
         return@runBlocking
     }

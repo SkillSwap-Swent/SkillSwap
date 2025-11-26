@@ -10,6 +10,7 @@ import com.google.firebase.auth.auth
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
+import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -106,26 +107,30 @@ open class FeedScreenViewModel(
      * @return A corresponding [FeedOffer] object.
      */
     private suspend fun toFeedOffer(post: Post, userId: String): FeedOffer {
-        val skillRequested =
-            try {
-                controller.inferRelevantSkill().name.toString()
-            } catch (e: Exception) {
-                "None"
+        when (post.type) {
+            PostType.REQUEST -> {
+                val skillProvided =
+                    try {
+                        controller.inferRelevantSkill().name.toString()
+                    } catch (e: Exception) {
+                        "None"
+                    }
+                return FeedOffer(
+                    skillProvided = skillProvided,
+                    authorID = post.ownerId,
+                    authorName = "AnoUser",
+                    // TODO Need to modify the post structure to handle this or use external object
+                    //  (decrease duplicate data)
+                    requesterAvatar = "https://picsum.photos/200",
+                    receiverName = userId,
+                    skillRequested = post.title, // Ensure title refer to skill expected
+                    thumbnail = post.media.firstOrNull() ?: "",
+                    specification = post.description,
+                    description = post.description
+                )
             }
-        return FeedOffer(
-            skillProvided = post.title, // TODO this is wrong and need to be change to
-            // "post.skills.firstOrNull()?.name ?: "None"
-            authorID = post.ownerId,
-            authorName = "AnoUser",
-            // TODO Need to modify the post structure to handle this or use external object
-            //  (decrease duplicate data)
-            requesterAvatar = "https://picsum.photos/200",
-            receiverName = userId,
-            skillRequested = skillRequested,
-            thumbnail = post.media.firstOrNull() ?: "",
-            specification = post.description,
-            description = post.description
-        )
+            PostType.OFFER -> TODO()
+        }
     }
 }
 /**
