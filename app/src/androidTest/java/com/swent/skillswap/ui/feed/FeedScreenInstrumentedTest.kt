@@ -618,7 +618,9 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
         composeTestRule.onNodeWithText("Block User").performClick()
         composeTestRule.waitForIdle()
-
-        assert(userRepository.getUser(testUserId).blockedUsers.contains(userId2))
+        composeTestRule.waitUntil(
+            10_000L,
+            { runBlocking { userRepository.getUser(testUserId).blockedUsers.contains(userId2) } }
+        )
     }
 }
