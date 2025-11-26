@@ -58,7 +58,6 @@ open class FeedScreenViewModel(
                         .onFailure { e -> Log.e("FeedScreenViewModel", "Error updating post", e) }
                 }
         }
-        Log.d("VM", "Current post at init: ${controller.currentPost.value}")
     }
 
     /** Accepts the specified offer on behalf of the current user. */
@@ -113,13 +112,9 @@ open class FeedScreenViewModel(
             } catch (e: Exception) {
                 "None"
             }
-
-        Log.e("YOLO", "EE")
         return FeedOffer(
-            skillProvided =
-                post
-                    .title, // TODO this is wrong and need to be change to
-                            // "post.skills.firstOrNull()?.name ?: "None"
+            skillProvided = post.title, // TODO this is wrong and need to be change to
+            // "post.skills.firstOrNull()?.name ?: "None"
             authorID = post.ownerId,
             authorName = "AnoUser",
             // TODO Need to modify the post structure to handle this or use external object
