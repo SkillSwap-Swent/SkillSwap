@@ -15,6 +15,7 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.utils.LocationManager
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -181,6 +182,10 @@ class RequestViewModel(
                         PostOperation.ADD -> postRepository.getNewUid(PostType.REQUEST)
                         PostOperation.EDIT -> postId!!
                     }
+                if (postOperation == PostOperation.ADD && appContext != null) {
+                    setLocation(LocationManager(appContext).getCurrentLocationSync())
+                }
+
                 val request =
                     Request(
                         uid = uid,
@@ -200,7 +205,7 @@ class RequestViewModel(
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
                         media = emptyList(), // TODO: upload attachments to db and store links
-                        location = _uiState.value.location
+                        location = location
                     )
 
                 // Will call validate() internally
