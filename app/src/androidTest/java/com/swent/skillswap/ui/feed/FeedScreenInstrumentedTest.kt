@@ -652,7 +652,9 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
 
         // Dismiss menu
-        composeTestRule.onRoot().performTouchInput { click(center) }
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
+            click(center)
+        }
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
         composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
