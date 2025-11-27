@@ -651,9 +651,6 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
         composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
 
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-
         // Dismiss menu
         composeTestRule.onRoot().performTouchInput { click(center) }
         composeTestRule.waitForIdle()
