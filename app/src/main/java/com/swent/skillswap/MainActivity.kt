@@ -1,6 +1,7 @@
 package com.swent.skillswap
 
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -40,11 +41,11 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
-import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
+import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -67,6 +68,7 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.notification.NotificationViewModel
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreen
@@ -107,6 +109,14 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun requestNotificationPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestLocationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -115,6 +125,7 @@ class MainActivity : ComponentActivity() {
         // Request location permissions on app start if not already granted
         if (!locationManager.hasLocationPermission() && !BuildConfig.IS_TESTING) {
             requestLocationPermissions()
+            requestNotificationPermissions()
         }
 
         /*For testing purposes on sign in*/
@@ -150,6 +161,7 @@ fun SkillSwapApp(
 
     val editProfileViewModel: EditUserViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val notificationViewModel: NotificationViewModel = viewModel()
 
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
@@ -166,7 +178,7 @@ fun SkillSwapApp(
                     recommendationEngine = recommendationEngine,
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
-                    chatRepository = ChatRepository(),
+                    chatRepository = ChatRepositoryFirestore(Firebase.firestore),
                     userRepository = UserRepoFirestore(Firebase.firestore),
                     locationManager = locationManager
                 )
@@ -191,7 +203,8 @@ fun SkillSwapApp(
                     selectedTab = tab,
                     onTabSelected = { selectedTab ->
                         navigationActions.navigateTo(selectedTab.destination)
-                    }
+                    },
+                    notificationViewModel = notificationViewModel
                 )
             }
         }
@@ -262,7 +275,6 @@ fun SkillSwapApp(
                     )
                 }
                 composable(Screen.PersonalPosts.route) {
-                    val postRepository = PostFirestoreRepository(Firebase.firestore)
                     PersonalPostsScreen(
                         onGoBack = { navigationActions.goBack() },
                         onEditPost = { post ->
@@ -372,7 +384,9 @@ fun SkillSwapApp(
                     remember(chatId) {
                         ChatViewModel(
                             chatRepository = ChatRepositoryFirestore(Firebase.firestore),
-                            chatId = chatId
+                            notificationRepository =
+                                NotificationRepositoryFirestore(Firebase.firestore),
+                            chatId = chatId,
                         )
                     }
                 ChatScreen(

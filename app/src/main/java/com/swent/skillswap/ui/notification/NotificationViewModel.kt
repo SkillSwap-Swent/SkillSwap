@@ -5,9 +5,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
+import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,8 +24,10 @@ data class NotificationUiState(
     val showUnreadOnly: Boolean = false
 )
 
-class NotificationViewModel(private val notificationRepository: NotificationRepository) :
-    ViewModel() {
+class NotificationViewModel(
+    private val notificationRepository: NotificationRepository =
+        NotificationRepositoryFirestore(FirebaseFirestore.getInstance())
+) : ViewModel() {
 
     private val TAG = "NotificationViewModel"
     private val _uiState = MutableStateFlow(NotificationUiState())

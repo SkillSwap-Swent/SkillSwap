@@ -18,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.*
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
@@ -281,7 +282,7 @@ class AuthClassicTest : TestCase() {
                 recommendationEngine = RecommendationEngineImpl(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
-                chatRepository = ChatRepository(),
+                chatRepository = ChatRepositoryFirestore(FirebaseEmulator.firestore),
                 userRepository = UserRepoFirestore(FirebaseEmulator.firestore),
                 locationManager = null
             )

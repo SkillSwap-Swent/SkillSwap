@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.notification.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,8 +28,11 @@ data class ChatUIState(
    It includes functionality to stream messages and send new messages.
    Each ChatViewModel instance is tied to a specific chat identified by chatId.
 */
-class ChatViewModel(private val chatRepository: ChatRepository, private val chatId: String) :
-    ViewModel() {
+class ChatViewModel(
+    private val chatRepository: ChatRepository,
+    private val notificationRepository: NotificationRepository,
+    private val chatId: String
+) : ViewModel() {
     private val _uiState = MutableStateFlow(ChatUIState())
     val uiState: StateFlow<ChatUIState> = _uiState.asStateFlow()
 

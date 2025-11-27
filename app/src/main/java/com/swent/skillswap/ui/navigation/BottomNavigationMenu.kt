@@ -1,11 +1,14 @@
 package com.swent.skillswap.ui.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -13,10 +16,14 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.swent.skillswap.ui.notification.NotificationViewModel
 
 object NavigationTestTags {
     const val BOTTOM_NAVIGATION_MENU = "BottomNavigationMenu"
@@ -47,7 +54,12 @@ fun BottomNavigationMenu(
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit,
     modifier: Modifier = Modifier,
+    notificationViewModel: NotificationViewModel
 ) {
+    val uiState by notificationViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) { notificationViewModel.loadNotifications() }
+
     NavigationBar(
         modifier =
             modifier
@@ -58,7 +70,23 @@ fun BottomNavigationMenu(
     ) {
         tabs.forEach { tab ->
             NavigationBarItem(
-                icon = { Icon(imageVector = tab.icon, contentDescription = null) },
+                icon = {
+                    if (tab is Tab.Chat) {
+                        Box {
+                            Icon(imageVector = tab.icon, contentDescription = null)
+                            if (uiState.notifications.isNotEmpty()) {
+                                Badge(modifier = Modifier.offset(x = 16.dp, y = (-4).dp)) {
+                                    Text(
+                                        text = uiState.notifications.size.toString(),
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Icon(imageVector = tab.icon, contentDescription = null)
+                    }
+                },
                 label = { Text(tab.name) },
                 selected = tab == selectedTab,
                 onClick = { onTabSelected(tab) },

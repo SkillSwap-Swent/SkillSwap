@@ -1,11 +1,16 @@
 package com.swent.skillswap.model.feed
 
+import com.swent.skillswap.model.chat.Chat
+import com.swent.skillswap.model.chat.ChatRepository
+import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.user.FakeUserRepository
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.post.PostDataClassTest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -13,6 +18,22 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 open class FeedControllerTest : PostDataClassTest() {
+
+    private class FakeChatRepository(private val chats: Map<PostType, List<Chat>> = emptyMap()) :
+        ChatRepository {
+        override suspend fun createChat(
+            participants: List<String>,
+            relatedPostId: String,
+            relatedPostType: PostType
+        ) = "chat1"
+
+        override fun streamMessages(chatId: String): Flow<List<Message>> = flowOf(emptyList())
+
+        override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
+
+        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
+            chats[relatedPostType] ?: emptyList()
+    }
 
     suspend fun initController(): Pair<FakePostRepository, FeedController> {
         val repo = FakePostRepository()
@@ -24,7 +45,7 @@ open class FeedControllerTest : PostDataClassTest() {
                     recommendationEngine = RecommendationEngineImpl(),
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = repo,
-                    chatRepository = ChatRepository(),
+                    chatRepository = FakeChatRepository(),
                     userRepository = FakeUserRepository(),
                     locationManager = null
                 )
@@ -99,7 +120,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
-                        chatRepository = ChatRepository(),
+                        chatRepository = FakeChatRepository(),
                         userRepository = FakeUserRepository(),
                         locationManager = null
                     )
@@ -127,7 +148,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
-                        chatRepository = ChatRepository(),
+                        chatRepository = FakeChatRepository(),
                         locationManager = null,
                         userRepository = FakeUserRepository()
                     )
@@ -152,7 +173,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
-                        chatRepository = ChatRepository(),
+                        chatRepository = FakeChatRepository(),
                         userRepository = FakeUserRepository(),
                         locationManager = null
                     )
@@ -181,7 +202,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = FakePostRepository(),
-                        chatRepository = ChatRepository(),
+                        chatRepository = FakeChatRepository(),
                         userRepository = repo,
                         locationManager = null
                     )
