@@ -85,9 +85,16 @@ open class FeedScreenViewModel(
         viewModelScope.launch { controller.blockUser(userId) }
     }
 
-    /** Temporarily reports an offer by adding it to an in-memory list. */
+    /** Report an offer and then decline it if reporting worked. */
+    // TODO naming logic of function will need to be adjust the Request/Offer mess start to be hard
+    // to follow
     fun reportOffer(offer: FeedOffer) {
-        // TODO: Replace with backend reporting logic
+        try {
+            viewModelScope.launch { controller.reportPost(offer.offerId, PostType.REQUEST) }
+            decline(offer)
+        } catch (e: Exception) {
+            return
+        }
     }
     /* Sets the maxDistance value for the location filtering */
     fun updateDistanceFilter(distance: Float) {
@@ -115,6 +122,7 @@ open class FeedScreenViewModel(
                         "None"
                     }
                 return FeedOffer(
+                    offerId = post.uid,
                     skillProvided = skillProvided,
                     authorID = post.ownerId,
                     authorName = "AnoUser",
@@ -140,7 +148,7 @@ open class FeedScreenViewModel(
  */
 class FeedScreenViewModelFactory(
     private val navigation: FeedScreenNavigation,
-    private val controller: FeedController,
+    private val controller: FeedController
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
