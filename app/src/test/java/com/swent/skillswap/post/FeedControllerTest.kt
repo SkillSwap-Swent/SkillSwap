@@ -152,7 +152,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
-                        chatRepository = ChatRepository(),
+                        chatRepository = FakeChatRepository(),
                         locationManager = null,
                         userRepository = FakeUserRepository()
                     )
