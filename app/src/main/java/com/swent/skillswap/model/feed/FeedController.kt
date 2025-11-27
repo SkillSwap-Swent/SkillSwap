@@ -29,4 +29,11 @@ interface FeedController {
     suspend fun updateDistanceFilter(distance: Float)
 
     suspend fun updateLocation(isLiveLocationOn: Boolean)
+
+    /**
+     * block a specific user for the user performing the action
+     *
+     * @param blockedUserUID uid of the user being blocked
+     */
+    suspend fun blockUser(blockedUserUID: String)
 }

@@ -169,6 +169,7 @@ fun SkillSwapApp(
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
                     chatRepository = ChatRepository(),
+                    userRepository = UserRepoFirestore(Firebase.firestore),
                     locationManager = locationManager
                 )
                 .create(
