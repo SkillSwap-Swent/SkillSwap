@@ -252,7 +252,9 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
+            .assertIsDisplayed()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
@@ -455,7 +457,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -474,8 +476,9 @@ class FeedScreenInstrumentedTest {
         // Wait until the next post is displayed
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
+                composeTestRule.waitForIdle()
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED, useUnmergedTree = true)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -518,9 +521,10 @@ class FeedScreenInstrumentedTest {
         // Scroll each scrollable node into view and assert displayed
         scrollableTags.forEach { tag ->
             try {
-                composeTestRule.onNodeWithTag(tag).performScrollTo()
                 composeTestRule.waitForIdle()
-                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
             }
@@ -541,7 +545,8 @@ class FeedScreenInstrumentedTest {
 
         visibleTags.forEach { tag ->
             try {
-                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
             }
