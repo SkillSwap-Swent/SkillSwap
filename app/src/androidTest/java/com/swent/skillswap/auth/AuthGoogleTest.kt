@@ -19,7 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.auth.GoogleAuthProvider
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
-import com.swent.skillswap.model.feed.ChatRepository
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineImpl
 import com.swent.skillswap.model.feed.ThumbnailRepository
@@ -107,7 +107,7 @@ class AuthGoogleTest : TestCase() {
                     recommendationEngine = RecommendationEngineImpl(),
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
-                    chatRepository = ChatRepository(),
+                    chatRepository = ChatRepositoryFirestore(FirebaseEmulator.firestore),
                     userRepository = UserRepoFirestore(FirebaseEmulator.firestore),
                     locationManager = null
                 )

@@ -22,7 +22,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
-import com.swent.skillswap.model.feed.ChatRepository
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
@@ -220,7 +220,7 @@ class FeedScreenInstrumentedTest {
                 recommendationEngine = engine,
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
-                chatRepository = ChatRepository(),
+                chatRepository = ChatRepositoryFirestore(FirebaseEmulator.firestore),
                 userRepository = userRepository,
                 locationManager = null
             )
