@@ -245,7 +245,7 @@ fun ProfileScreen(
 @Composable
 fun ColumnScope.ProfilePictureBox(
     uiState: User,
-    onEditProfileClick: () -> Unit = {},
+    onEditProfileClick: (() -> Unit)? = null,
 ) {
     Box(
         modifier =
@@ -283,7 +283,7 @@ fun ColumnScope.ProfilePictureBox(
             }
         }
         /** Edit button overlay */
-        if (onEditProfileClick != {}) {
+        if (onEditProfileClick != null) {
             SkillSwapEditButton(
                 onClick = { onEditProfileClick() },
                 modifier = Modifier.align(Alignment.BottomEnd).testTag(EDIT_PROFILE_BUTTON)

@@ -1,3 +1,4 @@
+/** Some code from ProfileScreenVM */
 package com.swent.skillswap.ui.user
 
 import android.util.Log
@@ -26,10 +27,10 @@ class OtherUserViewModel(
     private val onGoBack: () -> Unit = {},
 ) : ViewModel() {
 
-    /** Mutable state flow for internal user state updates */
+    /** Mutable state flow for internal user state */
     private val _userState = MutableStateFlow(User())
 
-    /** Public immutable state flow for observing user data changes */
+    /** Public immutable state flow for observing user data */
     val userState: StateFlow<User> = _userState
 
     init {
@@ -37,11 +38,10 @@ class OtherUserViewModel(
     }
 
     /**
-     * Loads the currently authenticated user from Firestore.
+     * Loads specified user from Firestore.
      *
-     * Retrieves the current user's UID from Firebase Authentication and fetches their profile data
-     * from the repository. Updates [_userState] with the fetched data. Logs warnings if no user is
-     * authenticated and errors if the database operation fails.
+     * Fetches their profile data from the repository. Updates [_userState] with the fetched data.
+     * Navigates backwards on fail.
      */
     fun loadUser() {
 
