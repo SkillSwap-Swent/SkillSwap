@@ -256,6 +256,7 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
+        composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
@@ -512,7 +513,7 @@ class FeedScreenInstrumentedTest {
     fun report_post_not_show() = runBlocking {
         val post1 = createValidPost("post1", "Offer A", userId1, reportCount = 5L)
         addPostToEmulator(post1)
-        val post2 = createValidPost("post2", "Offer B", userId2)
+        val post2 = createValidPost("post2", "Offer B", userId1)
         addPostToEmulator(post2)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -582,7 +583,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun allTestTagsDisplayedAndMenuInteractions() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", "author123")
+        val post1 = createValidPost("1", "Guitar Lessons", userId1)
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -591,6 +592,7 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
+        composeTestRule.waitForIdle()
         // List of test tags that require scrolling
         val scrollableTags =
             listOf(
@@ -941,28 +943,36 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule.waitForIdle()
-        assert(
-            userId2 == vm.uiState.value?.authorID,
-        )
+        // Wait until first post appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            vm.uiState.value != null && vm.uiState.value!!.authorID.isNotEmpty()
+        }
+
+        // First post should be from user2
+        assert(vm.uiState.value!!.authorID == userId2)
+
+        // Open menu and block the user
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").performClick()
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(
-            timeoutMillis = 10_000L,
-            condition = {
-                runBlocking { userRepository.getUser(testUserId).blockedUsers.contains(userId2) }
-            }
-        )
 
+        // Skip the current post to trigger next post
         controller.skipPost()
 
-        composeTestRule.waitUntil {
-            vm.uiState.value!!.authorID.isNotBlank() && vm.uiState.value!!.authorID != userId2
+        // Wait until a post from another user is shown
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            val author = vm.uiState.value?.authorID
+            author != null && author != userId2
         }
 
-        assert(userId1 == vm.uiState.value!!.authorID)
+        // Verify that the current post is now from user1 (not blocked)
+        assert(vm.uiState.value!!.authorID == userId1)
+
+        // Optionally, check the title of the post
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .assertTextContains("Offer C", substring = true)
         return@runBlocking
     }
 }

@@ -133,6 +133,8 @@ private class FeedControllerImpl(
             user.copy(blockedUsers = user.blockedUsers + blockedUserUID)
         )
         recommendationEngine.updateBlockedUser()
+        postQueue.removeAll { it.ownerId == blockedUserUID }
+        _currentPost.value = getNextPost()
     }
 
     private suspend fun fetchPosts() {
