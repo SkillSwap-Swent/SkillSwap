@@ -28,14 +28,13 @@ import kotlinx.coroutines.launch
  */
 open class FeedScreenViewModel(
     private val navigation: FeedScreenNavigation,
-    private val controller: FeedController
+    private val controller: FeedController,
 ) : ViewModel() {
 
     /**
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
      */
     private val uid: String = Firebase.auth.uid ?: "AnoUser"
-
     /** Internal state of the FeedOffer screen. */
     private val _uiState = MutableStateFlow<FeedOffer?>(null)
 
@@ -82,7 +81,7 @@ open class FeedScreenViewModel(
     }
     /** Temporarily blocks a user by adding their ID to an in-memory list. */
     fun blockUser(userId: String) {
-        // TODO: Replace with persistent backend logic
+        viewModelScope.launch { controller.blockUser(userId) }
     }
 
     /** Temporarily reports an offer by adding it to an in-memory list. */
@@ -130,7 +129,7 @@ open class FeedScreenViewModel(
  */
 class FeedScreenViewModelFactory(
     private val navigation: FeedScreenNavigation,
-    private val controller: FeedController
+    private val controller: FeedController,
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")

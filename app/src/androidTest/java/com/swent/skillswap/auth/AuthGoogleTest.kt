@@ -108,6 +108,7 @@ class AuthGoogleTest : TestCase() {
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
                     chatRepository = ChatRepository(),
+                    userRepository = UserRepoFirestore(FirebaseEmulator.firestore),
                     locationManager = null
                 )
                 .create(
