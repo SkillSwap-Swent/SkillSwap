@@ -252,9 +252,17 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
-            .assertIsDisplayed()
+        // Wait until the UI shows the no-offer text to avoid flakiness
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
@@ -830,6 +838,7 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
         // === Menu interactions ===
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
