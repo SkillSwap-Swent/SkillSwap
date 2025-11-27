@@ -40,7 +40,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
-import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
@@ -167,7 +166,7 @@ fun SkillSwapApp(
                     recommendationEngine = recommendationEngine,
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
-                    chatRepository = ChatRepository(),
+                    chatRepository = ChatRepositoryFirestore(Firebase.firestore),
                     userRepository = UserRepoFirestore(Firebase.firestore),
                     locationManager = locationManager
                 )
@@ -263,7 +262,6 @@ fun SkillSwapApp(
                     )
                 }
                 composable(Screen.PersonalPosts.route) {
-                    val postRepository = PostFirestoreRepository(Firebase.firestore)
                     PersonalPostsScreen(
                         onGoBack = { navigationActions.goBack() },
                         onEditPost = { post ->
