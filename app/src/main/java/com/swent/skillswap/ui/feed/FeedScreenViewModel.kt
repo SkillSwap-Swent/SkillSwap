@@ -93,6 +93,7 @@ open class FeedScreenViewModel(
             viewModelScope.launch { controller.reportPost(offer.offerId, PostType.REQUEST) }
             decline(offer)
         } catch (e: Exception) {
+            Log.e("ReportPostError", "failed to report the post cause: ", e)
             return
         }
     }
