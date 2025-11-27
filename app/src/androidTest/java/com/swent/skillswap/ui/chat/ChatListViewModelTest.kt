@@ -43,6 +43,7 @@ class ChatListViewModelTest {
             override val location = com.google.firebase.firestore.GeoPoint(0.0, 0.0)
             override val type = PostType.OFFER
             override val postReplies = emptyList<com.swent.skillswap.model.post.PostReply>()
+            override val reportCount: Long = 0L
             override val searchKeys = listOf<String>()
         }
 
