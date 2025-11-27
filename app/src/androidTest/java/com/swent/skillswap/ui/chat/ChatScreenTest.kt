@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.notification.FakeNotificationRepository
 import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
@@ -45,7 +46,12 @@ class ChatScreenTest {
                     ): List<Chat> {
                         return emptyList()
                     }
+
+                    override suspend fun getChatFromId(chatId: String): Chat? {
+                        return null // Not used
+                    }
                 },
+            notificationRepository = FakeNotificationRepository(),
             chatId = "chat1"
         )
     }

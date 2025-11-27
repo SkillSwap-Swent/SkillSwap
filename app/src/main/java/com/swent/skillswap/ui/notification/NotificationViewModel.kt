@@ -21,7 +21,7 @@ data class NotificationUiState(
     val notifications: List<Notification> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
-    val showUnreadOnly: Boolean = true
+    val showUnreadOnly: Boolean = false
 )
 
 class NotificationViewModel(
