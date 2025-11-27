@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.model.user.Preference
+import com.swent.skillswap.model.user.User
 import com.swent.skillswap.ui.user.ProfileTestTags.ADD_POST_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
@@ -90,47 +91,7 @@ fun ProfileScreen(
         )
         Spacer(modifier = Modifier.height(10.dp))
         /** Profile picture Section */
-        Box(
-            modifier =
-                Modifier.align(Alignment.CenterHorizontally)
-                    .height(150.dp)
-                    .width(280.dp)
-                    .padding(8.dp)
-                    .testTag(ProfileTestTags.PROFILE_PICTURE_BOX)
-        ) {
-            if (uiState.profilePicture.isNotEmpty()) {
-                AsyncImage(
-                    model = uiState.profilePicture,
-                    contentDescription = "Profile picture",
-                    modifier =
-                        Modifier.testTag(PROFILE_PICTURE_IMAGE)
-                            .size(140.dp)
-                            .clip(CircleShape)
-                            .align(Alignment.TopCenter),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier =
-                        Modifier.size(120.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
-                            .align(Alignment.TopCenter),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile picture placeholder",
-                        modifier = Modifier.size(60.dp).testTag(PROFILE_PICTURE_IMAGE),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-            /** Edit button overlay */
-            SkillSwapEditButton(
-                onClick = { onEditProfileClick() },
-                modifier = Modifier.align(Alignment.BottomEnd).testTag(EDIT_PROFILE_BUTTON)
-            )
-        }
+        ProfilePictureBox(uiState, onEditProfileClick)
 
         Spacer(Modifier.height(40.dp))
         /** Info card */
@@ -276,6 +237,56 @@ fun ProfileScreen(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onError
+            )
+        }
+    }
+}
+
+@Composable
+fun ColumnScope.ProfilePictureBox(
+    uiState: User,
+    onEditProfileClick: (() -> Unit)? = null,
+) {
+    Box(
+        modifier =
+            Modifier.align(Alignment.CenterHorizontally)
+                .height(150.dp)
+                .width(280.dp)
+                .padding(8.dp)
+                .testTag(ProfileTestTags.PROFILE_PICTURE_BOX)
+    ) {
+        if (uiState.profilePicture.isNotEmpty()) {
+            AsyncImage(
+                model = uiState.profilePicture,
+                contentDescription = "Profile picture",
+                modifier =
+                    Modifier.testTag(PROFILE_PICTURE_IMAGE)
+                        .size(140.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.TopCenter),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Box(
+                modifier =
+                    Modifier.size(120.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        .align(Alignment.TopCenter),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile picture placeholder",
+                    modifier = Modifier.size(60.dp).testTag(PROFILE_PICTURE_IMAGE),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        /** Edit button overlay */
+        if (onEditProfileClick != null) {
+            SkillSwapEditButton(
+                onClick = { onEditProfileClick() },
+                modifier = Modifier.align(Alignment.BottomEnd).testTag(EDIT_PROFILE_BUTTON)
             )
         }
     }

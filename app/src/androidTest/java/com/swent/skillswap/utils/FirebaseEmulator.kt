@@ -7,6 +7,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
+import com.google.firebase.storage.storage
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -25,15 +26,26 @@ object FirebaseEmulator {
     val firestore
         get() = Firebase.firestore
 
+    val storage
+        get() = Firebase.storage
+
     const val HOST = "10.0.2.2"
     const val EMULATORS_PORT = 4400
     const val FIRESTORE_PORT = 8080
     const val AUTH_PORT = 9099
 
+    const val STORAGE_PORT = 9199
+
     val projectID by lazy { FirebaseApp.getInstance().options.projectId }
 
     fun startEmulator() {
         FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
+        if (isRunning) {
+            try {
+                auth.useEmulator(HOST, AUTH_PORT)
+                firestore.useEmulator(HOST, FIRESTORE_PORT)
+            } catch (_: Exception) {}
+        }
     }
 
     private val httpClient = OkHttpClient()
@@ -44,6 +56,8 @@ object FirebaseEmulator {
     private val authEndpoint by lazy {
         "http://${HOST}:$AUTH_PORT/emulator/v1/projects/$projectID/accounts"
     }
+
+    private val storageEndpoint by lazy { "http://${HOST}:$STORAGE_PORT/storage/v1/b/$projectID/o" }
 
     private val emulatorsEndpoint = "http://$HOST:$EMULATORS_PORT/emulators"
 
@@ -59,8 +73,10 @@ object FirebaseEmulator {
 
     init {
         if (isRunning) {
+            FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext<Context>())
             auth.useEmulator(HOST, AUTH_PORT)
             firestore.useEmulator(HOST, FIRESTORE_PORT)
+            storage.useEmulator(HOST, STORAGE_PORT)
             assert(Firebase.firestore.firestoreSettings.host.contains(HOST)) {
                 "Failed to connect to Firebase Firestore Emulator."
             }
@@ -83,9 +99,16 @@ object FirebaseEmulator {
         clearEmulator(firestoreEndpoint)
     }
 
+    fun clearStorageEmulator() {
+        clearEmulator(storageEndpoint)
+    }
+
     fun reinitialize() {
-        // Delete old apps
         val context = ApplicationProvider.getApplicationContext<Context>()
+        // Sign out first to stop any pending auth background tasks
+        try {
+            Firebase.auth.signOut()
+        } catch (_: Exception) {}
         FirebaseApp.getApps(context).forEach { it.delete() }
 
         // Create fresh app
@@ -95,6 +118,7 @@ object FirebaseEmulator {
         if (isRunning) {
             auth.useEmulator(HOST, AUTH_PORT)
             firestore.useEmulator(HOST, FIRESTORE_PORT)
+            storage.useEmulator(HOST, STORAGE_PORT)
         }
     }
 

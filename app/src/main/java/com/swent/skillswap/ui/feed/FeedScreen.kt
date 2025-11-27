@@ -3,6 +3,7 @@
 package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -136,6 +137,7 @@ fun FeedScreen(
                             modifier =
                                 Modifier.size(avatarSize)
                                     .clip(CircleShape)
+                                    .clickable { vm.goToProfile(offer.authorID) }
                                     .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
                         )
 
