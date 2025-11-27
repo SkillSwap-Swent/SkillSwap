@@ -125,17 +125,21 @@ private class FeedControllerImpl(
     }
 
     private suspend fun fetchPosts() {
-        // Fetch posts and add them to the queue
-        val newPosts =
-            postRepository.getMultiplePosts(
-                NUMB_POSTS_TO_FETCH,
-                feedType,
-                userLocation = currentUserLocation.value,
-                maxDistanceKm = maxDistance.floatValue
-            )
-        recommendationEngine.filterPosts(newPosts)
-        recommendationEngine.rankPosts(newPosts)
-        postQueue.addAll(newPosts)
+        try {
+            // Fetch posts and add them to the queue
+            val newPosts =
+                postRepository.getMultiplePosts(
+                    NUMB_POSTS_TO_FETCH,
+                    feedType,
+                    userLocation = currentUserLocation.value,
+                    maxDistanceKm = maxDistance.floatValue
+                )
+            recommendationEngine.filterPosts(newPosts)
+            recommendationEngine.rankPosts(newPosts)
+            postQueue.addAll(newPosts)
+        } catch (_: Exception) {
+            // TODO: Handle UI
+        }
     }
 
     /**

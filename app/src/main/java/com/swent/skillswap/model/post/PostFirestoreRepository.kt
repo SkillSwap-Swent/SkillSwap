@@ -54,7 +54,11 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                     tags,
                     numberOfPosts
                 )
-            var posts = query.get().await().map { documentToPost(it) }
+
+            var posts = query.get().await()
+                .mapNotNull { doc ->
+                    runCatching { documentToPost(doc) }.getOrNull()
+                }
 
             if (userLocation != null && maxDistanceKm != 0f) {
                 val epsilon = 0.05
