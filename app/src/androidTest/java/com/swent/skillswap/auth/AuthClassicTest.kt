@@ -22,6 +22,7 @@ import com.swent.skillswap.model.feed.*
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.ui.auth.*
 import com.swent.skillswap.ui.auth.CreateAccountViewModel
 import com.swent.skillswap.ui.auth.SignInViewModel
@@ -281,6 +282,7 @@ class AuthClassicTest : TestCase() {
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
                 chatRepository = ChatRepository(),
+                userRepository = UserRepoFirestore(FirebaseEmulator.firestore),
                 locationManager = null
             )
             .create(

@@ -33,6 +33,7 @@ import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Calendar
 import kotlinx.coroutines.runBlocking
@@ -60,7 +61,9 @@ class FeedScreenInstrumentedTest {
     private lateinit var navigation: FakeFeedNavigation
     private lateinit var postRepository: PostRepository
     private lateinit var controllerFactory: FeedControllerFactory
+    private lateinit var userRepository: UserRepositery
     private lateinit var testUserId: String
+    private lateinit var userId2: String
     private val REQUESTS_COLLECTION = "requests"
 
     /** Helper: create a valid SerializablePost for tests */
@@ -150,7 +153,7 @@ class FeedScreenInstrumentedTest {
     }
 
     @Before
-    fun setUp() {
+    fun setUp() = runBlocking {
         FirebaseEmulator.startEmulator()
 
         navigation = FakeFeedNavigation()
@@ -210,14 +213,25 @@ class FeedScreenInstrumentedTest {
                 blockedUsers = emptySet()
             )
         }
+        userId2 = userRepository.getNewUid()
+        userRepository.addUser(User(uid = userId2))
         controllerFactory =
             FeedControllerFactory(
                 recommendationEngine = engine,
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
                 chatRepository = ChatRepository(),
+                userRepository = userRepository,
                 locationManager = null
             )
+
+        testUserId =
+            FirebaseEmulator.auth
+                .createUserWithEmailAndPassword("hello@gmail.com", "123456")
+                .await()
+                .user
+                ?.uid ?: ""
+        userRepository.addUser(User(uid = testUserId))
     }
 
     @After
@@ -720,5 +734,29 @@ class FeedScreenInstrumentedTest {
             .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
             .assertTextContains("None", substring = true, ignoreCase = true)
         return@runBlocking
+    }
+    
+    @test
+    fun can_block_user() = runBlocking {
+        // Arrange: create a feed offer
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        // === Menu interactions ===
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Block User").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(
+            10_000L,
+            { runBlocking { userRepository.getUser(testUserId).blockedUsers.contains(userId2) } }
+        )
     }
 }

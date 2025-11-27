@@ -3,6 +3,8 @@ package com.swent.skillswap.model.feed
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.user.FakeUserRepository
+import com.swent.skillswap.model.user.User
 import com.swent.skillswap.post.PostDataClassTest
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -23,6 +25,7 @@ open class FeedControllerTest : PostDataClassTest() {
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = repo,
                     chatRepository = ChatRepository(),
+                    userRepository = FakeUserRepository(),
                     locationManager = null
                 )
                 .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
@@ -97,6 +100,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
                         chatRepository = ChatRepository(),
+                        userRepository = FakeUserRepository(),
                         locationManager = null
                     )
                     .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
@@ -124,6 +128,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
                         chatRepository = ChatRepository(),
+                        userRepository = FakeUserRepository(),
                         locationManager = null
                     )
                     .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
@@ -135,6 +140,33 @@ open class FeedControllerTest : PostDataClassTest() {
             // Verify that fetchPosts was called again (queue cleared and refilled)
             assertEquals(initialFetchCalls + 2, repo.getMultiplePostsCalls)
             assertNotNull(ctrl.currentPost.value)
+        }
+    }
+
+    @Test
+    fun canBlockUser() {
+        runTest {
+            val repo = FakeUserRepository()
+            val uid1 = "User1"
+            val uid2 = "User2"
+            repo.addUser(User(uid = uid1))
+            repo.addUser(User(uid = uid2))
+            val ctrl =
+                FeedControllerFactory(
+                        recommendationEngine = RecommendationEngineImpl(),
+                        thumbnailRepository = ThumbnailRepository(),
+                        postRepository = FakePostRepository(),
+                        chatRepository = ChatRepository(),
+                        userRepository = repo,
+                        locationManager = null
+                    )
+                    .create(userIdPerformingActions = uid1, feedType = PostType.REQUEST)
+
+            ctrl.blockUser(uid2)
+
+            // Verify that the user uid2 as been correctly blocked by user uid1
+            assert(repo.getUser(uid1).blockedUsers.isNotEmpty())
+            assert(repo.getUser(uid1).blockedUsers.contains(uid2))
         }
     }
 }
