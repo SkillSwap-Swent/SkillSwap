@@ -159,7 +159,7 @@ class FeedScreenInstrumentedTest {
         navigation = FakeFeedNavigation()
         postRepository = PostFirestoreRepository(FirebaseEmulator.firestore)
 
-        val userRepository = UserRepoFirestore(FirebaseEmulator.firestore)
+        userRepository = UserRepoFirestore(FirebaseEmulator.firestore)
 
         // Create the test user in Firestore
         runBlocking {
@@ -735,8 +735,8 @@ class FeedScreenInstrumentedTest {
             .assertTextContains("None", substring = true, ignoreCase = true)
         return@runBlocking
     }
-    
-    @test
+
+    @Test
     fun can_block_user() = runBlocking {
         // Arrange: create a feed offer
         val post1 = createValidPost("1", "Guitar Lessons", userId2)

@@ -114,6 +114,8 @@ private class FeedControllerImpl(
                     "Cannot infer skill: no active post is currently loaded."
                 )
         return recommendationEngine.inferRelevantSkill(post)
+    }
+
     override suspend fun blockUser(blockedUserUID: String) {
         val user = userRepository.getUser(userIdPerformingActions)
         userRepository.editUser(
