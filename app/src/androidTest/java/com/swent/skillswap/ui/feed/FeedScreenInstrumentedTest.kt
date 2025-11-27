@@ -90,7 +90,8 @@ class FeedScreenInstrumentedTest {
             media = listOf("https://picsum.photos/200"),
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             type = PostType.REQUEST,
-            postReplies = emptyList()
+            postReplies = emptyList(),
+            reportCount = 0L
         )
     }
 
@@ -122,7 +123,8 @@ class FeedScreenInstrumentedTest {
                             "replyStatus" to reply.replyStatus.toString()
                         )
                     },
-                "searchKeys" to buildSearchKeysForPost(post)
+                "searchKeys" to buildSearchKeysForPost(post),
+                "reportCount" to post.reportCount
             )
 
         FirebaseEmulator.firestore

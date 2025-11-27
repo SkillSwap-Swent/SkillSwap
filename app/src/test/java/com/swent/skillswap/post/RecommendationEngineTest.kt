@@ -83,6 +83,7 @@ class RecommendationEngineTest {
             override val location = GeoPoint(0.0, 0.0)
             override val searchKeys = emptyList<String>()
             override val postReplies = emptyList<PostReply>()
+            override val reportCount: Long = 0
         }
 
     private val post2Blocked =
@@ -102,6 +103,7 @@ class RecommendationEngineTest {
             override val location = GeoPoint(0.0, 0.0)
             override val searchKeys = emptyList<String>()
             override val postReplies = emptyList<PostReply>()
+            override val reportCount: Long = 0
         }
 
     @Before
