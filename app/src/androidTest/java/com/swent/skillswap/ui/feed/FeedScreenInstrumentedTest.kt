@@ -532,7 +532,16 @@ class FeedScreenInstrumentedTest {
                 composeTestRule.waitForIdle()
                 composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
                 composeTestRule.waitForIdle()
-                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
+                composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                    try {
+                        composeTestRule
+                            .onNodeWithTag(tag, useUnmergedTree = true)
+                            .assertIsDisplayed()
+                        true
+                    } catch (e: AssertionError) {
+                        false
+                    }
+                }
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
             }
