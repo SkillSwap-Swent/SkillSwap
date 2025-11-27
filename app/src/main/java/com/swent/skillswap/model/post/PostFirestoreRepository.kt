@@ -196,6 +196,7 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
         val expiry = requireField("expiry", document.getTimestamp("expiry"))
         val creation = requireField("creation", document.getTimestamp("creation"))
         val location = requireField("location", document.getGeoPoint("location"))
+        val reportCount = requireField("reportCount", document.getLong("reportCount"))
         val skills =
             requireField(
                 "skills",
@@ -270,7 +271,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                         status,
                         media,
                         postReplies,
-                        location
+                        location,
+                        reportCount
                     )
                 // TODO("Replace with Offer when it's implemented")
                 PostType.OFFER -> throw NotImplementedError("FeedOffer posts are not supported yet")
@@ -343,7 +345,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
             media = post.media,
             type = post.type,
             location = post.location,
-            postReplies = post.postReplies.toList()
+            postReplies = post.postReplies.toList(),
+            reportCount = post.reportCount
         )
     }
 }

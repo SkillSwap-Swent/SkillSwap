@@ -141,6 +141,31 @@ open class FeedControllerTest : PostDataClassTest() {
     }
 
     @Test
+    fun updateReportCountByReportingRequest() {
+        runTest {
+            val repo = FakePostRepository()
+            repo.addPost(request1.copy(uid = "123"))
+            repo.addPost(request1.copy(uid = "456"))
+
+            val ctrl =
+                FeedControllerFactory(
+                        recommendationEngine = RecommendationEngineImpl(),
+                        thumbnailRepository = ThumbnailRepository(),
+                        postRepository = repo,
+                        chatRepository = ChatRepository(),
+                        locationManager = null,
+                        userRepository = FakeUserRepository()
+                    )
+                    .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
+            ctrl.reportPost("123", PostType.REQUEST)
+            ctrl.reportPost("456", PostType.REQUEST)
+            ctrl.reportPost("456", PostType.REQUEST)
+            assertEquals(2L, repo.getPost(PostType.REQUEST, "456").reportCount)
+            assertEquals(1L, repo.getPost(PostType.REQUEST, "123").reportCount)
+        }
+    }
+
+    @Test
     fun updateLocationWithLiveLocationOff() {
         runTest {
             val repo = FakePostRepository()

@@ -26,6 +26,13 @@ interface FeedController {
 
     /** Fetches the thumbnail for a given ID. */
     suspend fun getThumbnail(thumbnailId: String)
+    /**
+     * add a report to the specified post
+     *
+     * @param offerId the postId that we reported
+     * @param postType the post type either request or offer
+     */
+    suspend fun reportPost(postId: String, postType: PostType)
 
     suspend fun updateDistanceFilter(distance: Float)
 

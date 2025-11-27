@@ -111,7 +111,10 @@ class ChatListScreenTest {
         )
 
     // Minimal mock posts for titles
-    private class MockPost(override val uid: String, override val title: String) : Post {
+    private class MockPost(
+        override val uid: String,
+        override val title: String,
+    ) : Post {
         override val description = ""
         override val ownerId = ""
         override val skills = emptySet<SkillTag>()
@@ -125,6 +128,7 @@ class ChatListScreenTest {
         override val type = PostType.OFFER
         override val postReplies = emptyList<com.swent.skillswap.model.post.PostReply>()
         override val searchKeys = listOf<String>()
+        override val reportCount: Long = 0L
     }
 
     @Test

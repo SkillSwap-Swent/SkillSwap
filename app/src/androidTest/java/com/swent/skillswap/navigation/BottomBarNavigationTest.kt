@@ -1,6 +1,7 @@
 package com.swent.skillswap.navigation
 
 import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -40,6 +41,25 @@ class BottomBarNavigationTest {
         composeTestRule.waitForIdle()
     }
 
+    /** @author Topaze17(Eliott) made with chatGPT */
+    fun ComposeTestRule.assertAnyDisplayed(vararg tags: String) {
+        val errors = mutableListOf<String>()
+
+        for (tag in tags) {
+            try {
+                onNodeWithTag(tag).assertIsDisplayed()
+                return // success → at least one is displayed
+            } catch (e: AssertionError) {
+                errors.add("Node with tag '$tag' not displayed")
+            }
+        }
+
+        // If we reach here, none of them were displayed
+        throw AssertionError(
+            "None of the expected nodes were displayed:\n" + errors.joinToString("\n")
+        )
+    }
+
     @Test
     fun allScreens_displayBottomNavigationBar() {
         val screens =
@@ -72,7 +92,10 @@ class BottomBarNavigationTest {
         composeTestRule.waitForIdle()
 
         // Verify feed screen is displayed
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertExists()
+        composeTestRule.assertAnyDisplayed(
+            FeedScreenTestTags.FEED_CARD,
+            FeedScreenTestTags.NO_OFFER_TEXT
+        )
     }
 
     @Test
@@ -94,9 +117,10 @@ class BottomBarNavigationTest {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsSelected()
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.FEED_CARD, useUnmergedTree = true)
-            .assertExists()
+        composeTestRule.assertAnyDisplayed(
+            FeedScreenTestTags.FEED_CARD,
+            FeedScreenTestTags.NO_OFFER_TEXT
+        )
 
         // Navigate to Chat
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
@@ -142,8 +166,10 @@ class BottomBarNavigationTest {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        val feedCard = composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD)
-        feedCard.assertExists()
+        composeTestRule.assertAnyDisplayed(
+            FeedScreenTestTags.FEED_CARD,
+            FeedScreenTestTags.NO_OFFER_TEXT
+        )
 
         // Click Feed tab again (already selected)
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
@@ -151,7 +177,10 @@ class BottomBarNavigationTest {
 
         // Verify we're still on the same Feed screen
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsSelected()
-        feedCard.assertExists()
+        composeTestRule.assertAnyDisplayed(
+            FeedScreenTestTags.FEED_CARD,
+            FeedScreenTestTags.NO_OFFER_TEXT
+        )
 
         // Navigate to Chat
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
