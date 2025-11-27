@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -656,8 +657,8 @@ class FeedScreenInstrumentedTest {
             click(center)
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Block User").assertIsNotDisplayed()
+        composeTestRule.onNodeWithText("Report Offer").assertIsNotDisplayed()
     }
 
     @Test
