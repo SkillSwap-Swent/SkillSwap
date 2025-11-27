@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.notification.Notification
+import com.swent.skillswap.model.notification.NotificationRepository
+import com.swent.skillswap.model.notification.NotificationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,8 +30,11 @@ data class ChatUIState(
    It includes functionality to stream messages and send new messages.
    Each ChatViewModel instance is tied to a specific chat identified by chatId.
 */
-class ChatViewModel(private val chatRepository: ChatRepository, private val chatId: String) :
-    ViewModel() {
+class ChatViewModel(
+    private val chatRepository: ChatRepository,
+    private val notificationRepository: NotificationRepository,
+    private val chatId: String
+) : ViewModel() {
     private val _uiState = MutableStateFlow(ChatUIState())
     val uiState: StateFlow<ChatUIState> = _uiState.asStateFlow()
 
@@ -60,15 +66,26 @@ class ChatViewModel(private val chatRepository: ChatRepository, private val chat
 
         viewModelScope.launch {
             try {
-                chatRepository.sendMessage(
-                    chatId,
-                    try {
-                        FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                    } catch (e: Exception) {
-                        ""
-                    },
-                    content
-                )
+                val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                chatRepository.sendMessage(chatId, senderId, content)
+
+                val chat = chatRepository.getChatFromId(chatId)
+                val recipientId =
+                    chat?.participants?.firstOrNull { it != senderId }
+                        ?: throw Exception("Receiver ID not found")
+
+                // Create notification for recipient
+                val notification =
+                    Notification(
+                        uid = notificationRepository.getNewUid(),
+                        userId = recipientId,
+                        title = "New Message",
+                        message = content,
+                        type = NotificationType.MESSAGE,
+                        relatedId = chatId,
+                        isRead = false,
+                    )
+                notificationRepository.addNotification(notification)
             } catch (exception: Exception) {
                 _uiState.update { it.copy(error = exception.message, isLoading = false) }
             }
