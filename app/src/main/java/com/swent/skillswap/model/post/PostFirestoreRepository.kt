@@ -55,8 +55,8 @@ class PostFirestoreRepository(db: FirebaseFirestore) : PostRepository {
                     numberOfPosts
                 )
 
-            var posts = query.get().await()
-                .mapNotNull { doc ->
+            var posts =
+                query.get().await().mapNotNull { doc ->
                     runCatching { documentToPost(doc) }.getOrNull()
                 }
 
