@@ -5,6 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.Timestamp
+import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
@@ -14,7 +15,6 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.LocationManager
-import kotlin.text.clear
 
 const val NUMB_POSTS_TO_FETCH = 10L
 const val PRELOAD_THRESHOLD = 3
@@ -75,7 +75,11 @@ private class FeedControllerImpl(
             )
 
         postRepository.editPost(post.uid, post.copy(postReplies = post.postReplies + postReply))
-        // TODO: send a chat message with reply
+        chatRepository.createChat(
+            listOf(userIdPerformingActions, post.ownerId),
+            post.uid,
+            post.type
+        )
         recommendationEngine.registerAccept(post)
         _currentPost.value = getNextPost()
     }
@@ -205,7 +209,5 @@ class FeedControllerFactory(
 }
 
 class ThumbnailRepository
-
-class ChatRepository
 
 class Image

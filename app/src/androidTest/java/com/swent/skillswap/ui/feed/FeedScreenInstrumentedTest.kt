@@ -22,7 +22,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
-import com.swent.skillswap.model.feed.ChatRepository
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
@@ -222,7 +222,7 @@ class FeedScreenInstrumentedTest {
                 recommendationEngine = engine,
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
-                chatRepository = ChatRepository(),
+                chatRepository = ChatRepositoryFirestore(FirebaseEmulator.firestore),
                 userRepository = userRepository,
                 locationManager = null
             )
@@ -252,9 +252,17 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
-            .assertIsDisplayed()
+        // Wait until the UI shows the no-offer text to avoid flakiness
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
@@ -524,7 +532,16 @@ class FeedScreenInstrumentedTest {
                 composeTestRule.waitForIdle()
                 composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
                 composeTestRule.waitForIdle()
-                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
+                composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                    try {
+                        composeTestRule
+                            .onNodeWithTag(tag, useUnmergedTree = true)
+                            .assertIsDisplayed()
+                        true
+                    } catch (e: AssertionError) {
+                        false
+                    }
+                }
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
             }
@@ -830,6 +847,7 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
         // === Menu interactions ===
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
