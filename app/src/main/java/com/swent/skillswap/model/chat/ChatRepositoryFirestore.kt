@@ -10,7 +10,6 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.utils.deserializeMessage
 import com.swent.skillswap.model.utils.serializeMessage
 import java.util.UUID
-import kotlin.text.get
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -121,21 +120,6 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             }
         /** Clean up listener on flow cancellation */
         awaitClose { registration.remove() }
-    }
-
-    override suspend fun getChatFromId(chatId: String): Chat? {
-        require(chatId.isNotEmpty()) { "chatId cannot be empty" }
-        return try {
-            val document =
-                db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId).get().await()
-            if (document.exists()) {
-                documentToChat(document)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            null
-        }
     }
 
     override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {

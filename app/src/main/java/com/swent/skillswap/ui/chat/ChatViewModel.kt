@@ -5,9 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
-import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
-import com.swent.skillswap.model.notification.NotificationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -66,26 +64,15 @@ class ChatViewModel(
 
         viewModelScope.launch {
             try {
-                val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                chatRepository.sendMessage(chatId, senderId, content)
-
-                val chat = chatRepository.getChatFromId(chatId)
-                val recipientId =
-                    chat?.participants?.firstOrNull { it != senderId }
-                        ?: throw Exception("Receiver ID not found")
-
-                // Create notification for recipient
-                val notification =
-                    Notification(
-                        uid = notificationRepository.getNewUid(),
-                        userId = recipientId,
-                        title = "New Message",
-                        message = content,
-                        type = NotificationType.MESSAGE,
-                        relatedId = chatId,
-                        isRead = false,
-                    )
-                notificationRepository.addNotification(notification)
+                chatRepository.sendMessage(
+                    chatId,
+                    try {
+                        FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                    } catch (e: Exception) {
+                        ""
+                    },
+                    content
+                )
             } catch (exception: Exception) {
                 _uiState.update { it.copy(error = exception.message, isLoading = false) }
             }

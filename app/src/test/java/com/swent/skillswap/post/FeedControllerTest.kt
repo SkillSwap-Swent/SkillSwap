@@ -33,10 +33,6 @@ open class FeedControllerTest : PostDataClassTest() {
 
         override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
             chats[relatedPostType] ?: emptyList()
-
-        override suspend fun getChatFromId(chatId: String): Chat? {
-            return null // Not used here
-        }
     }
 
     suspend fun initController(): Pair<FakePostRepository, FeedController> {

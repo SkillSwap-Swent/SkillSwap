@@ -96,10 +96,6 @@ class ChatViewModelTest {
             return emptyList()
         }
 
-        override suspend fun getChatFromId(chatId: String): Chat? {
-            return null // not used
-        }
-
         fun addMessages(messages: List<Message>) {
             messagesFlow.value = messages
         }

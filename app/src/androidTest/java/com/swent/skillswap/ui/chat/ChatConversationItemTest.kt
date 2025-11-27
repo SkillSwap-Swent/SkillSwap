@@ -70,10 +70,6 @@ class ChatConversationItemTest {
 
                 override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
                     emptyList<Chat>()
-
-                override suspend fun getChatFromId(chatId: String): Chat? {
-                    return null // not used
-                }
             }
 
         mockUserRepo =

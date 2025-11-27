@@ -69,10 +69,6 @@ class ChatListViewModelTest {
 
                     override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
                         listOf(chat)
-
-                    override suspend fun getChatFromId(chatId: String): Chat? {
-                        return null // not used
-                    }
                 },
                 object : UserRepositery {
                     override fun getNewUid() = ""

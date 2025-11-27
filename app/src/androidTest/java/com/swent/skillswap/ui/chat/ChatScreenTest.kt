@@ -46,10 +46,6 @@ class ChatScreenTest {
                     ): List<Chat> {
                         return emptyList()
                     }
-
-                    override suspend fun getChatFromId(chatId: String): Chat? {
-                        return null // Not used
-                    }
                 },
             notificationRepository = FakeNotificationRepository(),
             chatId = "chat1"
