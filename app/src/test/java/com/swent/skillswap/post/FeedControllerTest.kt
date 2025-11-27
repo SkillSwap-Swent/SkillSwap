@@ -128,7 +128,8 @@ open class FeedControllerTest : PostDataClassTest() {
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = repo,
                         chatRepository = ChatRepository(),
-                        locationManager = null
+                        locationManager = null,
+                        userRepository = FakeUserRepository()
                     )
                     .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
             ctrl.reportPost("123", PostType.REQUEST)
