@@ -24,11 +24,13 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.feed.ChatRepository
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.RecommendationEngineImpl
+import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Preference
+import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
@@ -79,7 +81,7 @@ class FeedScreenInstrumentedTest {
             title = title,
             description = "Valid description for $title",
             ownerId = ownerId,
-            skills = setOf(SkillTag.MACHINE_DESIGN).toList(),
+            skills = setOf(SkillTag.CALCULUS).toList(),
             tags = setOf(PostTag.ONE_TIME).toList(),
             expiry = expiry,
             creation = creation ?: Timestamp.now(),
@@ -153,14 +155,69 @@ class FeedScreenInstrumentedTest {
     @Before
     fun setUp() = runBlocking {
         FirebaseEmulator.startEmulator()
+
         navigation = FakeFeedNavigation()
         postRepository = PostFirestoreRepository(FirebaseEmulator.firestore)
+
         userRepository = UserRepoFirestore(FirebaseEmulator.firestore)
+
+        // Create the test user in Firestore
+        runBlocking {
+            testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid
+
+            val user =
+                User(
+                    uid = testUserId,
+                    username = "TestUser",
+                    email = "test@example.com",
+                    profilePicture = "",
+                    skillSet = emptySet(),
+                    rating = 0f,
+                    availability = emptyList(),
+                    preference = Preference.SKILLS,
+                    location = GeoPoint(0.0, 0.0),
+                    blockedUsers = emptySet(),
+                    fcmToken = null
+                )
+            val user2 =
+                User(
+                    uid = "TestUser2",
+                    username = "TestUser2",
+                    email = "test@example.com",
+                    profilePicture = "",
+                    skillSet = setOf(Skill(SkillTag.CALCULUS, 0f, "")),
+                    rating = 0f,
+                    availability = emptyList(),
+                    preference = Preference.SKILLS,
+                    location = GeoPoint(0.0, 0.0),
+                    blockedUsers = emptySet(),
+                    fcmToken = null
+                )
+
+            userRepository.addUser(user)
+            userRepository.addUser(user2)
+        }
+
+        // Build RE factory with the REAL repo
+        val recommendationEngineFactory =
+            RecommendationEngineFactory(
+                userRepository = userRepository,
+                undesiredSkillThreshold = 0.5f,
+                desiredSkillThreshold = 0.5f
+            )
+
+        val engine = runBlocking {
+            recommendationEngineFactory.create(
+                userId = testUserId,
+                feedType = PostType.REQUEST,
+                blockedUsers = emptySet()
+            )
+        }
         userId2 = userRepository.getNewUid()
         userRepository.addUser(User(uid = userId2))
         controllerFactory =
             FeedControllerFactory(
-                recommendationEngine = RecommendationEngineImpl(),
+                recommendationEngine = engine,
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
                 chatRepository = ChatRepository(),
@@ -211,7 +268,7 @@ class FeedScreenInstrumentedTest {
             // Set up UI content
             composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-            val expectedText = "You will get: ${post1.title}"
+            val expectedText = post1.title
             composeTestRule.waitUntil(timeoutMillis = 10_000) {
                 composeTestRule.onAllNodesWithText(expectedText).fetchSemanticsNodes().isNotEmpty()
             }
@@ -262,7 +319,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -278,7 +335,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -288,7 +345,7 @@ class FeedScreenInstrumentedTest {
 
         // Final explicit check
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
         return@runBlocking
     }
@@ -317,7 +374,9 @@ class FeedScreenInstrumentedTest {
         // Wait until a skill title appears
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -328,7 +387,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -344,7 +403,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -354,7 +413,7 @@ class FeedScreenInstrumentedTest {
 
         // Final explicit check
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
         return@runBlocking
     }
@@ -486,7 +545,9 @@ class FeedScreenInstrumentedTest {
         // Wait for initial post to load
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -495,7 +556,7 @@ class FeedScreenInstrumentedTest {
 
         // Initially, postFar should be visible (newest post, no filter)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(postFar.title, substring = true, ignoreCase = true)
 
         // Open distance filter slider
@@ -556,7 +617,8 @@ class FeedScreenInstrumentedTest {
         // After filter applied, feed should refresh showing postMedium (newest within 10km)
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                val skillGiveNode = composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                val skillGiveNode =
+                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                 val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
                 text.contains(postMedium.title, ignoreCase = true)
             } catch (e: AssertionError) {
@@ -566,7 +628,7 @@ class FeedScreenInstrumentedTest {
 
         // Verify postMedium is shown first (newest filtered post)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(postMedium.title, substring = true, ignoreCase = true)
 
         // Press decline to move to next filtered post
@@ -576,7 +638,8 @@ class FeedScreenInstrumentedTest {
         // Wait for postNearby to appear (second filtered post)
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                val skillGiveNode = composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                val skillGiveNode =
+                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                 val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
                 text.contains(postNearby.title, ignoreCase = true)
             } catch (e: AssertionError) {
@@ -586,18 +649,91 @@ class FeedScreenInstrumentedTest {
 
         // Verify postNearby is shown (oldest filtered post)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
             .assertTextContains(postNearby.title, substring = true, ignoreCase = true)
 
         // Verify postFar was never shown after filtering
         val finalText =
             composeTestRule
-                .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                 .fetchSemanticsNode()
                 .getTextString() ?: ""
         assert(!finalText.contains(postFar.title, ignoreCase = true)) {
             "Post at ~15 km should remain filtered out"
         }
+    }
+
+    @Test
+    fun feedScreen_displaysInferredSkill() = runBlocking {
+        val knownSkill = SkillTag.CALCULUS
+        val post =
+            createValidPost(
+                uid = "post1",
+                title = "Learn Calculus",
+                ownerId = "TestUser2",
+            )
+        // Add post to emulator
+        addPostToEmulator(post)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        // Create controller and ViewModel
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val viewModelFactory = FeedScreenViewModelFactory(navigation, controller)
+        composeTestRule.setContent {
+            val vm: FeedScreenViewModel = viewModel(factory = viewModelFactory)
+            Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
+        }
+
+        // Wait until the SKILL_REQUESTED node is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains(knownSkill.toString(), substring = true, ignoreCase = true)
+        return@runBlocking
+    }
+
+    @Test
+    fun feedScreen_displaysInferredSkillNoUserFound() = runBlocking {
+        val post =
+            createValidPost(
+                uid = "post1",
+                title = "Learn Calculus",
+                ownerId = "INVALIDE_USER_ID",
+            )
+        // Add post to emulator
+        addPostToEmulator(post)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        // Create controller and ViewModel
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val viewModelFactory = FeedScreenViewModelFactory(navigation, controller)
+        composeTestRule.setContent {
+            val vm: FeedScreenViewModel = viewModel(factory = viewModelFactory)
+            Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
+        }
+
+        // Wait until the SKILL_REQUESTED node is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+            .assertTextContains("None", substring = true, ignoreCase = true)
+        return@runBlocking
     }
 
     @Test

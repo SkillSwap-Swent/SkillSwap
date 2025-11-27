@@ -148,7 +148,6 @@ class RecommendationEngineTest {
                     it.initialize(
                         userId = activeUserId,
                         feedType = PostType.REQUEST,
-                        blockedUsers = setOf(blockedUserId),
                         userRepository = userRepo,
                         undesiredSkillThreshold = 0.5f,
                         desiredSkillThreshold = 0.5f
@@ -287,5 +286,69 @@ class RecommendationEngineTest {
 
         val inferredSkill = engine.inferRelevantSkill(post)
         assert(inferredSkill in post.ownerId.let { userRepo.getUser(it).skillSet })
+    }
+
+    @Test
+    fun testUpdateBlockedUser() = runBlocking {
+        val mutableActiveUser = activeUser.copy(blockedUsers = emptySet())
+        var currentActiveUser = mutableActiveUser
+
+        val testRepo =
+            object : UserRepositery {
+                override suspend fun getUser(userID: String): User =
+                    when (userID) {
+                        activeUserId -> currentActiveUser
+                        blockedUserId -> blockedUser
+                        else -> throw Exception("User not found")
+                    }
+
+                override suspend fun addUser(user: User) {}
+
+                override suspend fun editUser(userID: String, newValue: User) {}
+
+                override suspend fun deleteUser(userID: String) {}
+
+                override suspend fun userExists(userId: String): Boolean = true
+
+                override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+
+                override fun getNewUid(): String = UUID.randomUUID().toString()
+            }
+
+        engineFactory =
+            RecommendationEngineFactory(
+                undesiredSkillThreshold = 0.5f,
+                desiredSkillThreshold = 0.5f,
+                userRepository = testRepo
+            )
+        engine =
+            engineFactory
+                .create(
+                    userId = activeUserId,
+                    feedType = PostType.REQUEST,
+                    blockedUsers = emptySet()
+                )
+                .also {
+                    it.initialize(
+                        userId = activeUserId,
+                        feedType = PostType.REQUEST,
+                        userRepository = testRepo,
+                        undesiredSkillThreshold = 0.5f,
+                        desiredSkillThreshold = 0.5f
+                    )
+                }
+
+        var updatedBlockedUsers = engine.updateBlockedUser()
+        assert(updatedBlockedUsers.isEmpty())
+
+        currentActiveUser = activeUser.copy(blockedUsers = setOf(blockedUserId))
+
+        updatedBlockedUsers = engine.updateBlockedUser()
+
+        assert(updatedBlockedUsers.contains(blockedUserId))
+
+        val filtered = engine.filterPosts(listOf(post1, post2Blocked))
+        assert(filtered.contains(post1))
+        assert(!filtered.contains(post2Blocked))
     }
 }
