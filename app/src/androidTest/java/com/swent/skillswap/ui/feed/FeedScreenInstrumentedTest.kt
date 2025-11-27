@@ -475,7 +475,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_GIVE)
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
