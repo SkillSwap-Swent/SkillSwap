@@ -144,7 +144,6 @@ class RecommendationEngineTest {
                 .create(
                     userId = activeUserId,
                     feedType = PostType.REQUEST,
-                    blockedUsers = setOf(blockedUserId)
                 )
                 .also {
                     it.initialize(
@@ -328,7 +327,6 @@ class RecommendationEngineTest {
                 .create(
                     userId = activeUserId,
                     feedType = PostType.REQUEST,
-                    blockedUsers = emptySet()
                 )
                 .also {
                     it.initialize(

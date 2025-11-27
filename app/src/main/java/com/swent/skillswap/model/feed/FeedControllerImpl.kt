@@ -81,8 +81,7 @@ private class FeedControllerImpl(
     }
 
     override suspend fun skipPost() {
-        // Impossible to call skip on null post so '!!' is safe
-        recommendationEngine.registerSkip(_currentPost.value!!)
+        if (_currentPost.value != null) recommendationEngine.registerSkip(_currentPost.value!!)
         _currentPost.value = getNextPost()
     }
 
@@ -98,7 +97,7 @@ private class FeedControllerImpl(
                 is Request -> postRepository.getPost(postType, postId) as Request
                 else -> throw Error("not supported type of the post")
             }
-
+        recommendationEngine.reportPost(postId)
         postRepository.editPost(postId, post.copy(reportCount = post.reportCount + 1))
     }
 
@@ -133,6 +132,7 @@ private class FeedControllerImpl(
             userIdPerformingActions,
             user.copy(blockedUsers = user.blockedUsers + blockedUserUID)
         )
+        recommendationEngine.updateBlockedUser()
     }
 
     private suspend fun fetchPosts() {
@@ -144,9 +144,9 @@ private class FeedControllerImpl(
                 userLocation = currentUserLocation.value,
                 maxDistanceKm = maxDistance.floatValue
             )
-        recommendationEngine.filterPosts(newPosts)
-        recommendationEngine.rankPosts(newPosts)
-        postQueue.addAll(newPosts)
+        val filtered = recommendationEngine.filterPosts(newPosts)
+        val ranked = recommendationEngine.rankPosts(filtered)
+        postQueue.addAll(ranked)
     }
 
     /**
