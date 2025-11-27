@@ -252,7 +252,9 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
+            .assertIsDisplayed()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
@@ -421,6 +423,82 @@ class FeedScreenInstrumentedTest {
     }
 
     @Test
+    fun correctly_report_post() = runBlocking {
+        val post1 = createValidPost("post1", "Learn Guitar", "author1")
+        val post2 = createValidPost("post2", "Learn Piano", "author2")
+
+        // Add posts (order may not be deterministic)
+        addPostToEmulator(post1)
+        addPostToEmulator(post2)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        // Create controller and ViewModel via factory
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
+
+        composeTestRule.setContent {
+            Box(Modifier.fillMaxSize()) {
+                val vm: FeedScreenViewModel = viewModel(factory = factory)
+                FeedScreen(vm = vm)
+            }
+        }
+
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Determine which post is shown first
+        val shownIsPost1 =
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .assertTextContains(post1.title, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+
+        val expectedNextTitle = if (shownIsPost1) post2.title else post1.title
+        // === Menu interactions ===
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        // click on report to report offer
+        composeTestRule.onNodeWithText("Report Offer").performClick()
+        composeTestRule.waitForIdle()
+        // Wait until the next post is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.waitForIdle()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED, useUnmergedTree = true)
+                    .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        // click on report to report offer
+        composeTestRule.onNodeWithText("Report Offer").performClick()
+        composeTestRule.waitForIdle()
+        // Final explicit check
+        assert(postRepository.getPost(PostType.REQUEST, "post1").reportCount == 1L)
+
+        assert(postRepository.getPost(PostType.REQUEST, "post2").reportCount == 1L)
+        return@runBlocking
+    }
+
+    @Test
     fun allTestTagsDisplayedAndMenuInteractions() = runBlocking {
         // Arrange: create a feed offer
         val post1 = createValidPost("1", "Guitar Lessons", "author123")
@@ -443,9 +521,10 @@ class FeedScreenInstrumentedTest {
         // Scroll each scrollable node into view and assert displayed
         scrollableTags.forEach { tag ->
             try {
-                composeTestRule.onNodeWithTag(tag).performScrollTo()
                 composeTestRule.waitForIdle()
-                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
             }
@@ -466,7 +545,8 @@ class FeedScreenInstrumentedTest {
 
         visibleTags.forEach { tag ->
             try {
-                composeTestRule.onNodeWithTag(tag).assertIsDisplayed()
+                composeTestRule.waitForIdle()
+                composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
             }

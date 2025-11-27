@@ -91,6 +91,17 @@ private class FeedControllerImpl(
         _currentThumbnail.value = Image()
     }
 
+    override suspend fun reportPost(postId: String, postType: PostType) {
+        /*for the times being only request possible*/
+        val post =
+            when (_currentPost.value) {
+                is Request -> postRepository.getPost(postType, postId) as Request
+                else -> throw Error("not supported type of the post")
+            }
+
+        postRepository.editPost(postId, post.copy(reportCount = post.reportCount + 1))
+    }
+
     override suspend fun updateLocation(isLiveLocationOn: Boolean) {
         when (isLiveLocationOn) {
             true -> {
