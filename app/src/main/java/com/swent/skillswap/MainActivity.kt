@@ -154,7 +154,6 @@ fun SkillSwapApp(
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
     LaunchedEffect(Unit) {
-        // TODO: Temporary will be connected in next PR
         val recommendationEngine =
             RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
                 .create(

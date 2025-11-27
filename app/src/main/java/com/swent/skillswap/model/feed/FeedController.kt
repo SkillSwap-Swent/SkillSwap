@@ -3,6 +3,7 @@ package com.swent.skillswap.model.feed
 import androidx.compose.runtime.State
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.user.Skill
 
 interface FeedController {
     /** The current post being displayed in the UI. */
@@ -30,6 +31,7 @@ interface FeedController {
 
     suspend fun updateLocation(isLiveLocationOn: Boolean)
 
+    suspend fun inferRelevantSkill(): Skill
     /**
      * block a specific user for the user performing the action
      *

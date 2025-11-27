@@ -10,6 +10,7 @@ import com.google.firebase.auth.auth
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
+import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -104,21 +105,31 @@ open class FeedScreenViewModel(
      * @param userId The ID of the current user.
      * @return A corresponding [FeedOffer] object.
      */
-    private fun toFeedOffer(post: Post, userId: String): FeedOffer {
-        return FeedOffer(
-            skillProvided = post.title,
-            authorID = post.ownerId,
-            authorName = "AnoUser",
-            // TODO Need to modify the post structure to handle this or use external object
-            //  (decrease duplicate data)
-            requesterAvatar = "https://picsum.photos/200",
-            receiverName = userId,
-            skillRequested =
-                "TODO : Implement", // TODO this should be provided by the recommendation algo
-            thumbnail = post.media.firstOrNull() ?: "",
-            specification = post.description,
-            description = post.description
-        )
+    private suspend fun toFeedOffer(post: Post, userId: String): FeedOffer {
+        when (post.type) {
+            PostType.REQUEST -> {
+                val skillProvided =
+                    try {
+                        controller.inferRelevantSkill().name.toString()
+                    } catch (e: Exception) {
+                        "None"
+                    }
+                return FeedOffer(
+                    skillProvided = skillProvided,
+                    authorID = post.ownerId,
+                    authorName = "AnoUser",
+                    // TODO Need to modify the post structure to handle this or use external object
+                    //  (decrease duplicate data)
+                    requesterAvatar = "https://picsum.photos/200",
+                    receiverName = userId,
+                    skillRequested = post.title, // Ensure title refer to skill expected
+                    thumbnail = post.media.firstOrNull() ?: "",
+                    specification = post.description,
+                    description = post.description
+                )
+            }
+            PostType.OFFER -> TODO()
+        }
     }
 }
 /**

@@ -11,6 +11,7 @@ import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.LocationManager
 import kotlin.text.clear
@@ -75,13 +76,13 @@ private class FeedControllerImpl(
 
         postRepository.editPost(post.uid, post.copy(postReplies = post.postReplies + postReply))
         // TODO: send a chat message with reply
-        // TODO: Update recommendation engine
-
+        recommendationEngine.registerAccept(post)
         _currentPost.value = getNextPost()
     }
 
     override suspend fun skipPost() {
-        // TODO: Update recommendation engine
+        // Impossible to call skip on null post so '!!' is safe
+        recommendationEngine.registerSkip(_currentPost.value!!)
         _currentPost.value = getNextPost()
     }
 
@@ -106,6 +107,15 @@ private class FeedControllerImpl(
         _currentPost.value = getNextPost()
     }
 
+    override suspend fun inferRelevantSkill(): Skill {
+        val post =
+            currentPost.value
+                ?: throw IllegalStateException(
+                    "Cannot infer skill: no active post is currently loaded."
+                )
+        return recommendationEngine.inferRelevantSkill(post)
+    }
+
     override suspend fun blockUser(blockedUserUID: String) {
         val user = userRepository.getUser(userIdPerformingActions)
         userRepository.editUser(
@@ -123,6 +133,8 @@ private class FeedControllerImpl(
                 userLocation = currentUserLocation.value,
                 maxDistanceKm = maxDistance.floatValue
             )
+        recommendationEngine.filterPosts(newPosts)
+        recommendationEngine.rankPosts(newPosts)
         postQueue.addAll(newPosts)
     }
 
@@ -141,7 +153,6 @@ private class FeedControllerImpl(
         if (postQueue.size <= PRELOAD_THRESHOLD) {
             fetchPosts()
         }
-
         return postQueue.removeAt(0)
     }
 }
