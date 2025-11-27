@@ -17,6 +17,7 @@ import com.google.firebase.firestore.GeoPoint
  * @property location The meeting location of the offer (defaults to EPFL location).
  */
 data class FeedOffer(
+    val offerId: String = "",
     val skillProvided: String = "",
     val authorID: String = "",
     val authorName: String = "",
