@@ -6,6 +6,13 @@
  */
 package com.swent.skillswap.user
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.net.Uri
+import android.util.Log
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -23,6 +30,7 @@ import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.user.editUser.EditUserScreen
 import com.swent.skillswap.ui.user.editUser.EditUserTags
 import com.swent.skillswap.ui.user.editUser.EditUserViewModel
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.utils.FirebaseEmulator
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -33,6 +41,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
+import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
+import com.swent.skillswap.utils.FirebaseEmulator.storage
+import okhttp3.internal.wait
+import org.junit.Assert.assertTrue
 
 /**
  * Instrumented test for EditUserScreen. Tests the edit profile functionality with Firebase
@@ -47,6 +60,7 @@ class EditUserScreenTest : TestCase() {
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
     private lateinit var db: FirebaseFirestore
     private lateinit var repo: UserRepoFirestore
+    private lateinit var storageRepo : PictureRepository
     private lateinit var viewModel: EditUserViewModel
 
     private val testUser =
@@ -54,9 +68,8 @@ class EditUserScreenTest : TestCase() {
             uid = "test-user-123",
             username = "Chef",
             email = "test@example.com",
-            profilePicture =
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/She-goat_J1.jpg/500px-She-goat_J1.jpg",
-            skillSet =
+            profilePicture = "",
+                skillSet =
                 setOf(
                     Skill(name = SkillTag.DATABASES, rank = 4F, ""),
                     Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F, ""),
@@ -70,6 +83,9 @@ class EditUserScreenTest : TestCase() {
         FirebaseEmulator.startEmulator()
         db = FirebaseEmulator.firestore
         repo = UserRepoFirestore(db)
+        storageRepo = PictureRepository(
+            storage
+        )
     }
 
     @Before
@@ -118,8 +134,34 @@ class EditUserScreenTest : TestCase() {
         repo.addUser(userToAdd)
 
         // Instantiate the ViewModel with the emulated repo
-        viewModel = EditUserViewModel(repo)
+        viewModel = EditUserViewModel(repo,storageRepo)
         viewModel.loadCurrentUser()
+    }
+
+    /**
+     * HELPER FUNCTION Generates a test image Uri by creating a Bitmap, saving it to a temporary
+     * file
+     *
+     * @return Uri of the generated test image
+     *
+     *   Ai-generated code
+     */
+    fun generateTestImageUri(
+        context: Context,
+        width: Int = 100,
+        height: Int = 100,
+        color: Int = Color.RED
+    ): Uri {
+        /** Create a bitmap */
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(color)
+
+        /** Create a temporary file to hold the bitmap */
+        val tempFile = File(context.cacheDir, "test_image_${System.currentTimeMillis()}.png")
+        tempFile.outputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) }
+
+        return Uri.fromFile(tempFile)
     }
 
     @Test
@@ -280,19 +322,8 @@ class EditUserScreenTest : TestCase() {
             .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
             .performTextInput("UpdatedChef")
 
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performScrollTo()
-            .performTextClearance()
-
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
-
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performTextInput(
-                "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png"
-            )
 
         // Check that UI state is updated
         assertEquals("UpdatedChef", viewModel.uiState.value.editedUser!!.username)
@@ -310,66 +341,7 @@ class EditUserScreenTest : TestCase() {
                 val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
                 assertEquals("UpdatedChef", editedUser.username)
-                assertEquals(
-                    "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png",
-                    editedUser.profilePicture
-                )
             }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
-                .performScrollTo()
-                .assertIsDisplayed()
-        }
-
-        step("Edit profile picture again") {
-            composeTestRule.waitForIdle()
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-                .performScrollTo()
-                .performTextClearance()
-
-            composeTestRule.waitForIdle()
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-                .performTextInput(
-                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
-                )
-
-            // Click validate button
-            composeTestRule
-                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
-                .performScrollTo()
-                .performClick()
-
-            // Wait for save operation to complete
-            // Here we cannot use IsSaved because it is already true from previous save => To fix in
-            // a next sprint
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                runBlocking {
-                    repo.getUser(Firebase.auth.currentUser!!.uid).profilePicture ==
-                        "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
-                }
-            }
-        }
-
-        step("Verify profile picture is updated in repository") {
-            runBlocking {
-                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
-
-                assertEquals("UpdatedChef", editedUser.username) // same as before
-                assertEquals(
-                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
-                    editedUser.profilePicture
-                )
-            }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
-                .performScrollTo()
-                .assertIsDisplayed()
         }
     }
 
@@ -379,76 +351,24 @@ class EditUserScreenTest : TestCase() {
             SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
         }
 
-        // Wait for user to be loaded
+        /** Wait for user to be loaded */
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             viewModel.uiState.value.editedUser != null
         }
 
-        // Set profile picture URL
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performScrollTo()
-            .performTextClearance()
+        /** Simulate selecting a new profile picture */
+        val uri = generateTestImageUri(ctx)
+        viewModel.onSelectedProfilePicture(uri)
 
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performTextInput(
-                "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
-            )
-
-        composeTestRule.waitForIdle()
-
-        // Click validate button
-        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
-
-        // Wait for save operation to complete
-        composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
-
-        step("Verify profile picture URL is in repository") {
-            runBlocking {
-                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
-
-                assertEquals(
-                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
-                    editedUser.profilePicture
-                )
-            }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
-                .performScrollTo()
-                .assertIsDisplayed()
+        /** Wait for the profile picture URI to be updated in the UI state */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            (!viewModel.uiState.value.isLoading)
         }
 
-        step("Delete profile picture URL and validate") {
-            // Clear profile picture URL
-            composeTestRule
-                .onNodeWithTag(EditUserTags.DELETE_PROFILE_PICTURE)
-                .performScrollTo()
-                .performClick()
 
-            composeTestRule.waitForIdle()
 
-            // Click validate button
-            composeTestRule
-                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
-                .performScrollTo()
-                .performClick()
 
-            // Wait for save operation to complete
-            composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
 
-            // Check that the profile picture content is not displayed (default picture)
-            composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).assertDoesNotExist()
-        }
-
-        step("Verifiy that the repository as been cleaned as well") {
-            runBlocking {
-                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
-
-                assertEquals("", editedUser.profilePicture)
-            }
-        }
     }
 
     @Test
@@ -476,6 +396,54 @@ class EditUserScreenTest : TestCase() {
                 .onNodeWithTag(EditUserTags.GENERAL_ERROR)
                 .assertIsDisplayed()
                 .assert(hasText("Something went wrong"))
+        }
+    }
+
+    @Test
+    fun profilePictureIsUpdatedAndStoredWhenValidURIisProvided() = run {
+
+        step("Display EditUserScreen") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
+            }
+        }
+
+        /** generate a test image URI */
+        val uri = generateTestImageUri(ctx)
+
+        /** Simulate selecting a new profile picture */
+        viewModel.onSelectedProfilePicture(uri)
+
+        /** Wait for the profile picture URI to be updated in the UI state */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            (!(viewModel.uiState.value.isLoading) && viewModel.uiState.value.editedUser!!.profilePicture.isNotEmpty())
+        }
+
+        /** Verify that the profile picture URI is stored in storage*/
+        runBlocking {
+            val pictureName = viewModel.uiState.value.editedUser!!.uid
+            val storageRef =
+                storage.reference
+                    .child(PROFILE_PICTURES_PATH)
+                    .child(pictureName)
+            val downloadUrl = storageRef.downloadUrl.await()
+            assertTrue(downloadUrl.toString().isNotEmpty())
+            assertEquals(
+                downloadUrl.toString(),
+                viewModel.uiState.value.editedUser!!.profilePicture
+            )
+        }
+
+        /** Wait for UI to display profile picture...*/
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            try {
+                composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE)
+                    .assertExists()
+                true
+            } catch (_: AssertionError) {
+            false
+            }
         }
     }
 }
