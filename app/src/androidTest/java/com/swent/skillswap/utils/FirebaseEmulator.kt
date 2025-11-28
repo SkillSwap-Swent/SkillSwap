@@ -44,6 +44,7 @@ object FirebaseEmulator {
             try {
                 auth.useEmulator(HOST, AUTH_PORT)
                 firestore.useEmulator(HOST, FIRESTORE_PORT)
+                storage.useEmulator(HOST, STORAGE_PORT)
             } catch (_: Exception) {}
         }
     }
