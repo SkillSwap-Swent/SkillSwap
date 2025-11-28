@@ -4,12 +4,16 @@
  */
 package com.swent.skillswap.ui.user.editUser
 
+import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -49,7 +53,8 @@ data class EditUserUiState(
 
 class EditUserViewModel(
     // val navigation:
-    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
+    private val repo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance()),
+    private val storageRepo: PictureRepository = PictureRepository(FirebaseStorage.getInstance())
 ) : ViewModel() {
 
     /** Internal state of the Edit User screen. */
@@ -149,21 +154,26 @@ class EditUserViewModel(
     fun setProfilePicture(url: String) {
         setField(
             input = url,
-            precondition = { it.isNotBlank() },
+            precondition = {
+                true
+            }, // no specific precondition, the url returned by storage is valid
             applyToUser = { user, value -> user.copy(profilePicture = value) },
-            applyToError = { _uiState.update { it.copy(profilePictureError = "Invalid URL") } },
+            applyToError = {},
             clearError = { it.copy(profilePictureError = null) }
         )
     }
 
     /** delete the actual profile picture */
     fun deleteProfilePicture() {
+        /** update the user profile picture to empty */
         setField(
             input = "",
             precondition = { true },
             applyToUser = { user, value -> user.copy(profilePicture = value) },
             applyToError = {
-                _uiState.update { it.copy(generalError = "Error while deleting profile picture") }
+                _uiState.update {
+                    it.copy(generalError = "Error while deleting profile picture")
+                }
             },
             clearError = { it.copy(generalError = null) }
         )
@@ -201,6 +211,30 @@ class EditUserViewModel(
     }
      */
 
+    fun onSelectedProfilePicture(uri: Uri) {
+        /** Preconditions */
+        require(uri.toString().startsWith("content://") || uri.toString().startsWith("file://"))
+
+        /** Fetch the uid of the edited user, do nothing if user is not connected */
+        val uid = _uiState.value.editedUser?.uid ?: return
+
+        /** Proceed to upload the picture */
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true, profilePictureError = null) }
+                val url = storageRepo.uploadPicture(uid, uri, PROFILE_PICTURES_PATH)
+                setProfilePicture(url.toString())
+                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        profilePictureError = "Failed to upload profile picture: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
     /** Updates the edited user in the state with new values. */
     fun validate() {
 
@@ -234,6 +268,12 @@ class EditUserViewModel(
                 _uiState.update {
                     it.copy(isLoading = false, generalError = "Failed to edit user: ${e.message}")
                 }
+            }
+
+            /** delete profile picture from storage if needed */
+            if(editedUser.profilePicture == ""){
+                val uid = _uiState.value.editedUser?.uid ?: return@launch
+                storageRepo.deletePicture(uid, PROFILE_PICTURES_PATH)
             }
         }
     }

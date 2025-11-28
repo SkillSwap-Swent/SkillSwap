@@ -5,7 +5,10 @@
  */
 package com.swent.skillswap.ui.user.editUser
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -33,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.model.user.User
 import com.swent.skillswap.ui.utils.*
 
 object EditUserTags {
@@ -43,7 +45,6 @@ object EditUserTags {
     const val PROFILE_PICTURE = "edit_user_profile_picture"
     const val GENERAL_ERROR = "edit_user_general_error"
     const val SUCCESS_MESSAGE = "edit_user_success_message"
-    const val PROFILE_PICTURE_TEXTFIELD = "edit_user_profile_picture_textfield"
     const val PROFILE_PICTURE_CONTENT = "edit_user_profile_picture_content"
     const val DELETE_PROFILE_PICTURE = "edit_user_delete_profile_picture_button"
 }
@@ -56,7 +57,12 @@ fun EditUserScreen(
     val uiState by vm.uiState.collectAsState()
     val user = uiState.editedUser
     var username by remember { mutableStateOf(user?.username ?: "AnoUser") }
-    var url by remember { mutableStateOf(user?.profilePicture ?: "") }
+
+    /** Image picker launcher */
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+            uri?.let { vm.onSelectedProfilePicture(it) }
+        }
 
     DisposableEffect(Unit) { onDispose { vm.clearLoadedState() } }
 
@@ -76,14 +82,8 @@ fun EditUserScreen(
                 HeaderTitle("Edit Profile")
                 Spacer(modifier = Modifier.height(10.dp))
 
-                ProfilePictureSection(
-                    user = user,
-                    url = url,
-                    onChangeUrl = {
-                        url = it
-                        vm.setProfilePicture(it)
-                    },
-                )
+                /** If no profile picture, send empty string to display default one */
+                ProfilePictureSection(url = user?.profilePicture ?: "" , onPickImage = { launcher.launch("image/*") })
 
                 Spacer(modifier = Modifier.weight(0.4f))
 
@@ -101,22 +101,8 @@ fun EditUserScreen(
 
                 Spacer(modifier = Modifier.weight(0.05f))
 
-                SkillSwapOutlinedTextField(
-                    value = url,
-                    onValueChange = {
-                        url = it
-                        vm.setProfilePicture(it)
-                    },
-                    label = "profile picture URL",
-                    placeholder = "Put your profile picture URL here",
-                    supportText = uiState.profilePictureError.orEmpty(),
-                    modifier =
-                        Modifier.fillMaxWidth().testTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-                )
-
                 Button(
                     onClick = {
-                        url = ""
                         vm.deleteProfilePicture()
                     },
                     modifier =
@@ -165,12 +151,11 @@ private fun HeaderTitle(title: String) {
 }
 
 @Composable
-private fun ProfilePictureSection(
-    user: User?,
-    url: String,
-    onChangeUrl: (String) -> Unit,
-) {
-    Box(modifier = Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp)) {
+private fun ProfilePictureSection(url: String, onPickImage: () -> Unit) {
+    Box(
+        modifier =
+            Modifier.testTag(EditUserTags.PROFILE_PICTURE).width(180.dp).clickable { onPickImage() }
+    ) {
         if (url.isNotEmpty()) {
             AsyncImage(
                 model = url,
@@ -178,8 +163,7 @@ private fun ProfilePictureSection(
                 modifier =
                     Modifier.size(120.dp)
                         .clip(CircleShape)
-                        .align(Alignment.TopCenter)
-                        .testTag(EditUserTags.PROFILE_PICTURE_CONTENT),
+                        .align(Alignment.TopCenter),
                 contentScale = ContentScale.Crop
             )
         } else {
@@ -200,7 +184,7 @@ private fun ProfilePictureSection(
             }
         }
         SkillSwapEditButton(
-            onClick = { /* TODO: Open image picker */},
+            onClick = { onPickImage() },
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
@@ -243,7 +227,7 @@ private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: 
         ) {
             Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
             Spacer(modifier = Modifier.width(5.dp))
-            Text(text = if (isLoading) "Loading..." else "Back", fontSize = 16.sp)
+            Text(text = "Back", fontSize = 16.sp)
         }
 
         SkillSwapShadowButton(
