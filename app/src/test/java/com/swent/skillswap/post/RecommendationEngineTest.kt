@@ -85,6 +85,44 @@ class RecommendationEngineTest {
             override val postReplies = emptyList<PostReply>()
             override val reportCount: Long = 0
         }
+    private val post2 =
+        object : Post {
+            override val uid = "post2"
+            override val title = "Post 2"
+            override val description = "Description"
+            override val ownerId = activeUserId
+            override val skills = listOf(skillA)
+            override val tags = emptyList<PostTag>()
+            override val paymentMethod = PaymentMethod.SKILLS
+            override val expiry = Timestamp.now()
+            override val creation = Timestamp.now()
+            override val status = PostStatus.POSTED
+            override val media = emptyList<String>()
+            override val type = PostType.REQUEST
+            override val location = GeoPoint(0.0, 0.0)
+            override val searchKeys = emptyList<String>()
+            override val postReplies = emptyList<PostReply>()
+            override val reportCount: Long = 0
+        }
+    private val post3 =
+        object : Post {
+            override val uid = "post3"
+            override val title = "Post 3"
+            override val description = "Description"
+            override val ownerId = activeUserId
+            override val skills = listOf(skillB)
+            override val tags = emptyList<PostTag>()
+            override val paymentMethod = PaymentMethod.SKILLS
+            override val expiry = Timestamp.now()
+            override val creation = Timestamp.now()
+            override val status = PostStatus.POSTED
+            override val media = emptyList<String>()
+            override val type = PostType.REQUEST
+            override val location = GeoPoint(0.0, 0.0)
+            override val searchKeys = emptyList<String>()
+            override val postReplies = emptyList<PostReply>()
+            override val reportCount: Long = 0
+        }
 
     private val post2Blocked =
         object : Post {
@@ -165,12 +203,11 @@ class RecommendationEngineTest {
 
     @Test
     fun testAcceptWhitelistsSkill() {
-        runBlocking { repeat(2) { engine.registerAccept(post1) } }
-
-        val filtered = engine.filterPosts(listOf(post1))
-        assert(filtered.contains(post1))
+        runBlocking { engine.registerAccept(post1) }
+        val filtered = engine.filterPosts(listOf(post1, post2, post3))
+        assert(!filtered.contains(post1))
         val ranked = engine.rankPosts(filtered)
-        assert(post1 == ranked.first())
+        assert(post2 == ranked.first())
     }
 
     @Test
