@@ -30,7 +30,8 @@ open class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var feedType: PostType
     private lateinit var userRepository: UserRepositery
     private var blockedUsers: Set<String> = emptySet()
-    private val blockedPost: MutableSet<String> = mutableSetOf()
+    private val blockedPosts: MutableSet<String> = mutableSetOf()
+    private val viewedPosts: MutableSet<String> = mutableSetOf()
     private var undesiredSkillThreshold: Float = 0.3f
     private var desiredSkillThreshold: Float = 0.6f
 
@@ -80,8 +81,8 @@ open class RecommendationEngineImpl : RecommendationEngine {
         this.desiredSkillThreshold = desiredSkillThreshold
 
         // Always apply a filter for blocked users
-        addFilter { post -> post.ownerId !in blockedUsers }
-        addFilter { post -> post.reportCount < report_treshold }
+        addFilter { it.ownerId !in blockedUsers }
+        addFilter { it.reportCount < report_treshold }
     }
 
     /**
@@ -118,8 +119,8 @@ open class RecommendationEngineImpl : RecommendationEngine {
      * @param postId The [Post] to report and block.
      */
     override suspend fun reportPost(postId: String) {
-        blockedPost.add(postId)
-        addFilter { post -> post.ownerId !in blockedPost }
+        blockedPosts.add(postId)
+        addFilter { post -> post.ownerId !in blockedPosts }
     }
 
     /**
@@ -164,6 +165,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
             }
         }
         updateSkillFilters()
+        viewedPosts.add(post.uid)
     }
 
     private fun updateSkillFilters() {
@@ -292,9 +294,13 @@ open class RecommendationEngineImpl : RecommendationEngine {
             return requester.skillSet.random()
         }
         val tag = filtered.maxByOrNull { desiredSkillCounts[it] ?: 0 }!!
-        return requester.skillSet.first { skill -> skill.name == tag }
+        return requester.skillSet.first { it.name == tag }
     }
 
+    private fun addAViewedPost(uid: String) {
+        viewedPosts.add(uid)
+        addFilter { it.uid !in viewedPosts }
+    }
     // Internal wrapper for skill-based filter
     private inner class SkillFilter(private val skill: SkillTag) : (Post) -> Boolean {
         override fun invoke(post: Post): Boolean {
