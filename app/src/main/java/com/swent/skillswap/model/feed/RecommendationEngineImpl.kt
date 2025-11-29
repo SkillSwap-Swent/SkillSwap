@@ -143,6 +143,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
             }
         }
         updateSkillFilters()
+        addViewedPost(post.uid)
     }
 
     /**
@@ -165,7 +166,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
             }
         }
         updateSkillFilters()
-        viewedPosts.add(post.uid)
+        addViewedPost(post.uid)
     }
 
     private fun updateSkillFilters() {
@@ -297,7 +298,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
         return requester.skillSet.first { it.name == tag }
     }
 
-    private fun addAViewedPost(uid: String) {
+    private fun addViewedPost(uid: String) {
         viewedPosts.add(uid)
         addFilter { it.uid !in viewedPosts }
     }
