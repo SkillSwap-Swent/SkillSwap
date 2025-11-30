@@ -150,7 +150,8 @@ private class FeedControllerImpl(
                 userLocation = currentUserLocation.value,
                 maxDistanceKm = maxDistance.floatValue
             )
-        val filtered = recommendationEngine.filterPosts(newPosts)
+        val filtered =
+            recommendationEngine.filterPosts(newPosts.filter { post -> !postQueue.contains(post) })
         val ranked = recommendationEngine.rankPosts(filtered)
         postQueue.addAll(ranked)
     }
