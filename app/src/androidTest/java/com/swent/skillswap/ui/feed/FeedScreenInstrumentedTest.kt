@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -252,17 +253,23 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        // Wait until the UI shows the no-offer text to avoid flakiness
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
-                    .assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
+        // Ensure initial composition settles
+        composeTestRule.waitForIdle()
+
+        // Wait until the UI shows the no-offer text AND there are no feed cards.
+        val noOfferTag = FeedScreenTestTags.NO_OFFER_TEXT
+        val feedCardTag = FeedScreenTestTags.FEED_CARD
+
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            val noOfferPresent =
+                composeTestRule.onAllNodesWithTag(noOfferTag).fetchSemanticsNodes().isNotEmpty()
+            val feedCardAbsent =
+                composeTestRule.onAllNodesWithTag(feedCardTag).fetchSemanticsNodes().isEmpty()
+            noOfferPresent && feedCardAbsent
         }
+
+        // Final explicit checks
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
