@@ -14,7 +14,6 @@ import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
@@ -50,12 +49,16 @@ open class FeedScreenViewModel(
                     }
                 }
                 .onFailure { e -> Log.e("FeedScreenViewModel", "Error loading initial post", e) }
-
             snapshotFlow { controller.currentPost.value }
-                .filterNotNull()
                 .collect { post ->
-                    runCatching { _uiState.value = toFeedOffer(post, uid) }
-                        .onFailure { e -> Log.e("FeedScreenViewModel", "Error updating post", e) }
+                    if (post == null) {
+                        _uiState.value = null
+                    } else {
+                        runCatching { _uiState.value = toFeedOffer(post, uid) }
+                            .onFailure { e ->
+                                Log.e("FeedScreenViewModel", "Error updating post", e)
+                            }
+                    }
                 }
         }
     }

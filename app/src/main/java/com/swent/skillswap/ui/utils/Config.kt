@@ -8,3 +8,4 @@ val stroke_disable_button_alpha = 0.1f
 val container_field_alpha = 0.6f
 val shadow_opacity = 120
 val pill_shape = RoundedCornerShape(50)
+val report_treshold = 3L

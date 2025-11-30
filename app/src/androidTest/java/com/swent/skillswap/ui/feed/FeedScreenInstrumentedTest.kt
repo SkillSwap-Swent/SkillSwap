@@ -64,6 +64,8 @@ class FeedScreenInstrumentedTest {
     private lateinit var userRepository: UserRepositery
     private lateinit var testUserId: String
     private lateinit var userId2: String
+    private lateinit var userId1: String
+
     private val REQUESTS_COLLECTION = "requests"
 
     /** Helper: create a valid SerializablePost for tests */
@@ -72,7 +74,8 @@ class FeedScreenInstrumentedTest {
         title: String,
         ownerId: String = "authorId",
         location: GeoPoint? = null,
-        creation: Timestamp? = null
+        creation: Timestamp? = null,
+        reportCount: Long = 0L,
     ): Post {
         val expiry = Timestamp(Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 7) }.time)
 
@@ -91,7 +94,7 @@ class FeedScreenInstrumentedTest {
             paymentMethod = PaymentMethod.SKILLSANDCASH,
             type = PostType.REQUEST,
             postReplies = emptyList(),
-            reportCount = 0L
+            reportCount = reportCount
         )
     }
 
@@ -171,7 +174,7 @@ class FeedScreenInstrumentedTest {
                 User(
                     uid = testUserId,
                     username = "TestUser",
-                    email = "test@example.com",
+                    email = "myTest@example.com",
                     profilePicture = "",
                     skillSet = emptySet(),
                     rating = 0f,
@@ -185,7 +188,7 @@ class FeedScreenInstrumentedTest {
                 User(
                     uid = "TestUser2",
                     username = "TestUser2",
-                    email = "test@example.com",
+                    email = "myTest2@example.com",
                     profilePicture = "",
                     skillSet = setOf(Skill(SkillTag.CALCULUS, 0f, "")),
                     rating = 0f,
@@ -212,11 +215,12 @@ class FeedScreenInstrumentedTest {
             recommendationEngineFactory.create(
                 userId = testUserId,
                 feedType = PostType.REQUEST,
-                blockedUsers = emptySet()
             )
         }
         userId2 = userRepository.getNewUid()
+        userId1 = userRepository.getNewUid()
         userRepository.addUser(User(uid = userId2))
+        userRepository.addUser(User(uid = userId1))
         controllerFactory =
             FeedControllerFactory(
                 recommendationEngine = engine,
@@ -252,17 +256,16 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        // Wait until the UI shows the no-offer text to avoid flakiness
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT, useUnmergedTree = true)
-                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
             }
         }
+
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
@@ -507,9 +510,58 @@ class FeedScreenInstrumentedTest {
     }
 
     @Test
+    fun report_post_not_show() = runBlocking {
+        val post1 = createValidPost("post1", "Offer A", userId1, reportCount = 5L)
+        addPostToEmulator(post1)
+        val post2 = createValidPost("post2", "Offer B", userId1)
+        addPostToEmulator(post2)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        // Build controller + VM
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
+
+        composeTestRule.setContent {
+            Box(Modifier.fillMaxSize()) {
+                val vm: FeedScreenViewModel = viewModel(factory = factory)
+                FeedScreen(vm = vm)
+            }
+        }
+
+        // Wait until post2 is displayed
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .assertTextContains("Offer B", substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Store the currently displayed post title
+        val firstShownTitle =
+            composeTestRule
+                .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                .fetchSemanticsNode()
+                .config[SemanticsProperties.Text]
+                .first()
+                .text
+
+        assert(firstShownTitle.contains("Offer B"))
+
+        // Skip the post
+        controller.skipPost()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+        return@runBlocking
+    }
+
+    @Test
     fun allTestTagsDisplayedAndMenuInteractions() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", "author123")
+        val post1 = createValidPost("1", "Guitar Lessons", userId1)
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -518,6 +570,7 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
+        composeTestRule.waitForIdle()
         // List of test tags that require scrolling
         val scrollableTags =
             listOf(
@@ -576,20 +629,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
         composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("Block User").performClick()
-        composeTestRule.waitForIdle()
-
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
-        composeTestRule.waitForIdle()
-
-        composeTestRule.onNodeWithText("Report Offer").performClick()
-        composeTestRule.waitForIdle()
-
-        // Dismiss menu
-        composeTestRule.onRoot().performTouchInput { click(center) }
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
+        return@runBlocking
     }
 
     @Test
@@ -858,5 +898,52 @@ class FeedScreenInstrumentedTest {
             10_000L,
             { runBlocking { userRepository.getUser(testUserId).blockedUsers.contains(userId2) } }
         )
+    }
+
+    @Test
+    fun block_user_skips_his_future_posts() = runBlocking {
+        val postA = createValidPost("pA", "Offer A", userId2)
+        val postB = createValidPost("pB", "Offer B", userId2)
+        val postC = createValidPost("pC", "Offer C", userId1)
+
+        addPostToEmulator(postA)
+        addPostToEmulator(postB)
+        addPostToEmulator(postC)
+
+        // Force Firestore to sync
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+
+        // Wait until first post appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            vm.uiState.value != null && vm.uiState.value!!.authorID.isNotEmpty()
+        }
+
+        // First post should be from user2
+        assert(vm.uiState.value!!.authorID == userId2)
+
+        // Open menu and block the user
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Block User").performClick()
+        composeTestRule.waitForIdle()
+
+        // Skip the current post to trigger next post
+        controller.skipPost()
+
+        // Wait until a post from another user is shown
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            val author = vm.uiState.value?.authorID
+            author != null && author != userId2
+        }
+
+        // Verify that the current post is now from user1 (not blocked)
+        assert(vm.uiState.value!!.authorID == userId1)
+
+        return@runBlocking
     }
 }

@@ -130,4 +130,14 @@ interface RecommendationEngine {
      * @throws Exception if the updated user information cannot be retrieved from the repository.
      */
     suspend fun updateBlockedUser(): Set<String>
+
+    /**
+     * Reports a post, marking it as blocked for the current user.
+     *
+     * This method adds the given post's ID to the internal blocked set, so it will be filtered out
+     * from the feed in future fetches.
+     *
+     * @param postId The [Post] to report and block.
+     */
+    suspend fun reportPost(postId: String)
 }
