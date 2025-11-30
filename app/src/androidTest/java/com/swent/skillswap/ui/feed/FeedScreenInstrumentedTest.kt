@@ -254,23 +254,16 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        // Ensure initial composition settles
         composeTestRule.waitForIdle()
-
-        // Wait until the UI shows the no-offer text AND there are no feed cards.
-        val noOfferTag = FeedScreenTestTags.NO_OFFER_TEXT
-        val feedCardTag = FeedScreenTestTags.FEED_CARD
-
-        composeTestRule.waitUntil(timeoutMillis = 25_000) {
-            val noOfferPresent =
-                composeTestRule.onAllNodesWithTag(noOfferTag).fetchSemanticsNodes().isNotEmpty()
-            val feedCardAbsent =
-                composeTestRule.onAllNodesWithTag(feedCardTag).fetchSemanticsNodes().isEmpty()
-            noOfferPresent && feedCardAbsent
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
 
-        // Final explicit checks
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
 
