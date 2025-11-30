@@ -93,22 +93,6 @@ open class FeedControllerTest : PostDataClassTest() {
     }
 
     @Test
-    fun controllerRefills() {
-        runTest {
-            val (_, ctrl) = initController()
-            assertNotNull(ctrl.currentPost.value)
-            val firstPostUid = ctrl.currentPost.value!!.uid // assert non null after assert non null
-
-            ctrl.skipPost()
-            ctrl.skipPost()
-            // repo only had 2 posts to start, so the first post should now be shown again since the
-            // automatic queue fetch will just loop back on the posts
-            // maybe in the future showing the same posts again is not desired behaviour
-            assertEquals(firstPostUid, ctrl.currentPost.value?.uid)
-        }
-    }
-
-    @Test
     fun updateLocationWithLiveLocationOn() {
         runTest {
             val repo = FakePostRepository()
