@@ -50,6 +50,7 @@ import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.LocationManager
+import com.swent.skillswap.model.utils.PermissionHandler
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
@@ -87,21 +88,7 @@ class MainActivity : ComponentActivity() {
     private val requestAllPermissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             permissions ->
-            if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
-                Log.w("MainActivity", "Fine location permission granted")
-            }
-            if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-                Log.w("MainActivity", "Coarse location permission granted")
-            }
-            if (
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                    permissions[Manifest.permission.POST_NOTIFICATIONS] == true
-            ) {
-                Log.w("MainActivity", "Notification permission granted")
-            }
-            if (permissions.values.none { it }) {
-                Log.w("MainActivity", "No permissions granted")
-            }
+            PermissionHandler.handlePermissionsResult(permissions)
         }
 
     private fun requestAllPermissionsIfNeeded(locationManager: LocationManager) {
