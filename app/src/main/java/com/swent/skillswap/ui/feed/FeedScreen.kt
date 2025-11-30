@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
@@ -53,7 +56,8 @@ fun FeedScreen(
     var showDistanceSlider by remember { mutableStateOf(false) }
     var distance by remember { mutableFloatStateOf(0f) }
     var isLiveLocationEnabled by remember { mutableStateOf(false) }
-
+    val showReportOfferAlert = remember { mutableStateOf(false) }
+    val showBlockUserAlert = remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val screenHeightDp = configuration.screenHeightDp.dp
@@ -62,7 +66,28 @@ fun FeedScreen(
     val verticalPadding = screenHeightDp * 0.03f
     val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
     val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
-
+    LaunchedEffect(Unit) {
+        vm.eventFlow.collect { event ->
+            when (event) {
+                is FeedScreenEvent.SuccessFullBlock -> showBlockUserAlert.value = true
+                FeedScreenEvent.SuccessFullReport -> showReportOfferAlert.value = true
+            }
+        }
+    }
+    /** alert for successful report of a post* */
+    FeedScreenAlertDialog(
+        title = "Successful report",
+        text = "Successfully reported offer from " + uiState?.authorName,
+        showState = showReportOfferAlert,
+        modifier = Modifier.testTag(POP_UP_REPORT)
+    )
+    /** alert for successful blocking of a user* */
+    FeedScreenAlertDialog(
+        title = "Successful block",
+        text = "Successfully blocked " + uiState?.authorName,
+        showState = showBlockUserAlert,
+        modifier = Modifier.testTag(POP_UP_BLOCK)
+    )
     Box(
         modifier =
             Modifier.fillMaxSize()
@@ -403,5 +428,35 @@ private fun FilterBar(
         ) {
             Text("Clear Filters")
         }
+    }
+}
+
+@Composable
+fun FeedScreenAlertDialog(
+    title: String = "Successful report",
+    text: String = "Successfully blocked User1",
+    showState: MutableState<Boolean> = mutableStateOf(true),
+    onConfirm: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val show = showState.value
+    if (show) {
+        AlertDialog(
+            onDismissRequest = { showState.value = false },
+            title = { Text(title) },
+            text = { Text(text) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onConfirm
+                        showState.value = false
+                    },
+                    modifier = Modifier.testTag(POP_UP_CONFIRM_BUTTON)
+                ) {
+                    Text("Confirm")
+                }
+            },
+            modifier = modifier
+        )
     }
 }

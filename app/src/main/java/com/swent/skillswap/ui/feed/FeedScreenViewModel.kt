@@ -11,12 +11,25 @@ import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
+/**
+ * Represents one-time events (usually blocking or reporting other user/offer) that occur during
+ * FeedScreenFlow
+ */
+sealed class FeedScreenEvent() {
+
+    /** Event indicating that the user has successfully block a user */
+    object SuccessFullBlock : FeedScreenEvent()
+    /** Event indicating that the user has successfully report an offer */
+    object SuccessFullReport : FeedScreenEvent()
+}
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
  *
@@ -38,7 +51,10 @@ open class FeedScreenViewModel(
     private val uid: String = Firebase.auth.uid ?: "AnoUser"
     /** Internal state of the FeedOffer screen. */
     private val _uiState = MutableStateFlow<FeedOffer?>(null)
-
+    /** internal event handler* */
+    private val _eventFlow = MutableSharedFlow<FeedScreenEvent>()
+    /** outside event notifier* */
+    val eventFlow: SharedFlow<FeedScreenEvent> = _eventFlow
     /** Publicly exposed, read-only state of the FeedOffer screen. */
     open val uiState: StateFlow<FeedOffer?> = _uiState.asStateFlow()
 
@@ -82,19 +98,29 @@ open class FeedScreenViewModel(
     }
     /** Temporarily blocks a user by adding their ID to an in-memory list. */
     fun blockUser(userId: String) {
-        viewModelScope.launch { controller.blockUser(userId) }
+        viewModelScope.launch {
+            try {
+                controller.blockUser(userId)
+                _eventFlow.emit(FeedScreenEvent.SuccessFullBlock)
+            } catch (e: Exception) {
+                Log.e("BlockUserError", "failed to user. Cause: ", e)
+            }
+        }
     }
 
     /** Report an offer and then decline it if reporting worked. */
     // TODO naming logic of function will need to be adjust the Request/Offer mess start to be hard
     // to follow
     fun reportOffer(offer: FeedOffer) {
-        try {
-            viewModelScope.launch { controller.reportPost(offer.offerId, PostType.REQUEST) }
-            decline(offer)
-        } catch (e: Exception) {
-            Log.e("ReportPostError", "failed to report the post cause: ", e)
-            return
+
+        viewModelScope.launch {
+            try {
+                controller.reportPost(offer.offerId, PostType.REQUEST)
+                decline(offer)
+                _eventFlow.emit(FeedScreenEvent.SuccessFullReport)
+            } catch (e: Exception) {
+                Log.e("ReportPostError", "failed to report the post cause: ", e)
+            }
         }
     }
     /* Sets the maxDistance value for the location filtering */
