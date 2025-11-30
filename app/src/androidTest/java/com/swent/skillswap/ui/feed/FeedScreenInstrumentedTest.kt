@@ -158,6 +158,9 @@ class FeedScreenInstrumentedTest {
 
     @Before
     fun setUp() = runBlocking {
+        // Clear emulator state before each test to ensure isolation
+        FirebaseEmulator.clearAuthEmulator()
+        FirebaseEmulator.clearFirestoreEmulator()
         FirebaseEmulator.startEmulator()
 
         navigation = FakeFeedNavigation()
