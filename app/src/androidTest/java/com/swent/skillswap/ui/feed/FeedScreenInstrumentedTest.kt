@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.test.espresso.Espresso.pressBack
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestorePaths
@@ -525,6 +526,18 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
+        // Wait until feed card is present to ensure initial content has loaded
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            } catch (e: Exception) {
+                false
+            }
+        }
+
         // List of test tags that require scrolling
         val scrollableTags =
             listOf(
@@ -537,6 +550,17 @@ class FeedScreenInstrumentedTest {
         scrollableTags.forEach { tag ->
             try {
                 composeTestRule.waitForIdle()
+                // Wait until the node exists in the tree (may be offscreen)
+                composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+                    try {
+                        composeTestRule
+                            .onAllNodesWithTag(tag, useUnmergedTree = true)
+                            .fetchSemanticsNodes()
+                            .isNotEmpty()
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
                 composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
                 composeTestRule.waitForIdle()
                 composeTestRule.waitUntil(timeoutMillis = 5_000) {
@@ -570,6 +594,17 @@ class FeedScreenInstrumentedTest {
         visibleTags.forEach { tag ->
             try {
                 composeTestRule.waitForIdle()
+                // Wait until the node is present and displayed
+                composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+                    try {
+                        composeTestRule
+                            .onAllNodesWithTag(tag, useUnmergedTree = true)
+                            .fetchSemanticsNodes()
+                            .isNotEmpty()
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
                 composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
@@ -580,21 +615,65 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
+        // Wait for menu items to appear (dropdown can be asynchronous)
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                composeTestRule
+                    .onAllNodesWithText("Block User")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty() &&
+                    composeTestRule
+                        .onAllNodesWithText("Report Offer")
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+            } catch (e: Exception) {
+                false
+            }
+        }
+
+        // Assert and interact with menu items, waiting for dismissal after each action
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
         composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Block User").performClick()
         composeTestRule.waitForIdle()
+        // menu should dismiss; if not, press back as a fallback
+        try {
+            composeTestRule.waitUntil(timeoutMillis = 3_000L) {
+                composeTestRule.onAllNodesWithText("Block User").fetchSemanticsNodes().isEmpty()
+            }
+        } catch (e: Exception) {
+            // fallback dismiss
+            pressBack()
+        }
 
+        // Re-open menu and report
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                composeTestRule
+                    .onAllNodesWithText("Report Offer")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            } catch (e: Exception) {
+                false
+            }
+        }
+
         composeTestRule.onNodeWithText("Report Offer").performClick()
         composeTestRule.waitForIdle()
+        // ensure menu dismissed
+        try {
+            composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+                composeTestRule.onAllNodesWithText("Report Offer").fetchSemanticsNodes().isEmpty()
+            }
+        } catch (e: Exception) {
+            pressBack()
+        }
 
-        // Dismiss menu
-        composeTestRule.onRoot().performTouchInput { click(center) }
-        composeTestRule.waitForIdle()
+        // Final assert menu items are gone
         composeTestRule.onNodeWithText("Block User").assertDoesNotExist()
         composeTestRule.onNodeWithText("Report Offer").assertDoesNotExist()
     }
