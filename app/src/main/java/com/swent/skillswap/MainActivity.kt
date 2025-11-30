@@ -165,7 +165,6 @@ fun SkillSwapApp(
                 .create(
                     userId = Firebase.auth.uid ?: "AnonUser",
                     feedType = PostType.REQUEST,
-                    blockedUsers = setOf()
                 )
 
         controller =
