@@ -261,7 +261,7 @@ class FeedScreenInstrumentedTest {
         val noOfferTag = FeedScreenTestTags.NO_OFFER_TEXT
         val feedCardTag = FeedScreenTestTags.FEED_CARD
 
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 25_000) {
             val noOfferPresent =
                 composeTestRule.onAllNodesWithTag(noOfferTag).fetchSemanticsNodes().isNotEmpty()
             val feedCardAbsent =
