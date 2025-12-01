@@ -152,10 +152,12 @@ private class FeedControllerImpl(
                     maxDistanceKm = maxDistance.floatValue
                 )
             val filtered =
-                recommendationEngine.filterPosts(newPosts.filter { post -> !postQueue.contains(post) })
+                recommendationEngine.filterPosts(
+                    newPosts.filter { post -> !postQueue.contains(post) }
+                )
             val ranked = recommendationEngine.rankPosts(filtered)
             postQueue.addAll(ranked)
-        } catch (_: Exception){
+        } catch (_: Exception) {
             // TODO: Notify UI
         }
     }
