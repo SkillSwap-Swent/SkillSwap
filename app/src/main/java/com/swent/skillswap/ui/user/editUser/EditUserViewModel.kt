@@ -211,8 +211,7 @@ class EditUserViewModel(
 
     fun onSelectedProfilePicture(uri: Uri) {
         /** Preconditions */
-        require(uri.toString().startsWith("content://") || uri.toString().startsWith("file://"))
-
+        require(uri.toString().isNotEmpty())
         /** Fetch the uid of the edited user, do nothing if user is not connected */
         val uid = _uiState.value.editedUser?.uid ?: return
 
