@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -945,5 +946,86 @@ class FeedScreenInstrumentedTest {
         assert(vm.uiState.value!!.authorID == userId1)
 
         return@runBlocking
+    }
+
+    @Test
+    fun successful_block_show_correct_pop_up_and_can_click_on_it() = runBlocking {
+        // Arrange: create a feed offer
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // === Menu interactions ===
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Block User").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_BLOCK)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON)
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_BLOCK)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun successful_reporting_offer_show_correct_pop_up_and_can_click_on_it() = runBlocking {
+        // Arrange: create a feed offer
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // === Menu interactions ===
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        // click on report to report offer
+        composeTestRule.onNodeWithText("Report Offer").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_REPORT)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON)
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_REPORT)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 }
