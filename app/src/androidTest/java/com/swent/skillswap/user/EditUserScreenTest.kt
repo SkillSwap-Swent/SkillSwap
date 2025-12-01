@@ -543,15 +543,13 @@ class EditUserScreenTest : TestCase() {
             val pictureName = viewModel.uiState.value.editedUser!!.uid
             val storageRef = storage.reference.child(PROFILE_PICTURES_PATH).child(pictureName)
             assertThrows(com.google.firebase.storage.StorageException::class.java) {
-                runBlocking {
-                    storageRef.downloadUrl.await()
-                }
+                runBlocking { storageRef.downloadUrl.await() }
             }
         }
     }
 
     @Test
-    fun selectNoMediaThrowException(){
+    fun selectNoMediaThrowException() {
         assertThrows(IllegalArgumentException::class.java) {
             viewModel.onSelectedProfilePicture(Uri.parse(""))
         }
