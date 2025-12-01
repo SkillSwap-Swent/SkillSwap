@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 /**
- * Represents one-time events (usually blocking or reporting other user/offer) that occur during
+ * Represents events (usually blocking or reporting other user/offer) that occur during
  * FeedScreenFlow
  */
 sealed class FeedScreenEvent() {
