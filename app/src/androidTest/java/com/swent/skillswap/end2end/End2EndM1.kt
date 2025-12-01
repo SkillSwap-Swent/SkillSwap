@@ -6,6 +6,7 @@ package com.swent.skillswap.end2end
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.rule.GrantPermissionRule
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.ui.auth.CreateAccountTags
@@ -65,6 +66,14 @@ class End2EndM1 {
     fun setup() {
         db = FirebaseEmulator.firestore
     }
+
+    @get:Rule
+    val grantPermissionRule: GrantPermissionRule =
+        GrantPermissionRule.grant(
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.POST_NOTIFICATIONS
+        )
 
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
