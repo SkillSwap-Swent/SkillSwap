@@ -83,7 +83,10 @@ fun EditUserScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 /** If no profile picture, send empty string to display default one */
-                ProfilePictureSection(url = user?.profilePicture ?: "" , onPickImage = { launcher.launch("image/*") })
+                ProfilePictureSection(
+                    url = user?.profilePicture ?: "",
+                    onPickImage = { launcher.launch("image/*") }
+                )
 
                 Spacer(modifier = Modifier.weight(0.4f))
 
@@ -102,9 +105,7 @@ fun EditUserScreen(
                 Spacer(modifier = Modifier.weight(0.05f))
 
                 Button(
-                    onClick = {
-                        vm.deleteProfilePicture()
-                    },
+                    onClick = { vm.deleteProfilePicture() },
                     modifier =
                         Modifier.fillMaxWidth(0.6f).testTag(EditUserTags.DELETE_PROFILE_PICTURE),
                     colors =
@@ -160,10 +161,7 @@ private fun ProfilePictureSection(url: String, onPickImage: () -> Unit) {
             AsyncImage(
                 model = url,
                 contentDescription = "Profile picture",
-                modifier =
-                    Modifier.size(120.dp)
-                        .clip(CircleShape)
-                        .align(Alignment.TopCenter),
+                modifier = Modifier.size(120.dp).clip(CircleShape).align(Alignment.TopCenter),
                 contentScale = ContentScale.Crop
             )
         } else {

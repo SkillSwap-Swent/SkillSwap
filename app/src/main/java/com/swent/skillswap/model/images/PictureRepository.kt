@@ -1,7 +1,6 @@
 package com.swent.skillswap.model.images
 
 import android.net.Uri
-import android.util.Log
 import com.swent.skillswap.firebase.CloudReferences
 import java.net.URL
 import kotlinx.coroutines.tasks.await
@@ -47,8 +46,8 @@ class PictureRepository(private val storage: com.google.firebase.storage.Firebas
         try {
             val storageRef = storage.reference.child("${path}/${uid}")
             storageRef.delete().await()
-        }catch (e: Exception) {
-            if(e is com.google.firebase.storage.StorageException){
+        } catch (e: Exception) {
+            if (e is com.google.firebase.storage.StorageException) {
                 /** exception likely be thrown because picture does not exist, nothing to delete */
                 return
             } else {

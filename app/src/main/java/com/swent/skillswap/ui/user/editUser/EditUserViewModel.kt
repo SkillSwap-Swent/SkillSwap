@@ -171,9 +171,7 @@ class EditUserViewModel(
             precondition = { true },
             applyToUser = { user, value -> user.copy(profilePicture = value) },
             applyToError = {
-                _uiState.update {
-                    it.copy(generalError = "Error while deleting profile picture")
-                }
+                _uiState.update { it.copy(generalError = "Error while deleting profile picture") }
             },
             clearError = { it.copy(generalError = null) }
         )
@@ -271,7 +269,7 @@ class EditUserViewModel(
             }
 
             /** delete profile picture from storage if needed */
-            if(editedUser.profilePicture == ""){
+            if (editedUser.profilePicture == "") {
                 val uid = _uiState.value.editedUser?.uid ?: return@launch
                 storageRepo.deletePicture(uid, PROFILE_PICTURES_PATH)
             }
