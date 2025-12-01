@@ -5,6 +5,7 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.UserRepositery
+import com.swent.skillswap.ui.utils.report_treshold
 
 /**
  * Implementation of [RecommendationEngine] that provides dynamic skill-based post recommendations
@@ -29,7 +30,8 @@ open class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var feedType: PostType
     private lateinit var userRepository: UserRepositery
     private var blockedUsers: Set<String> = emptySet()
-
+    private val blockedPosts: MutableSet<String> = mutableSetOf()
+    private val viewedPosts: MutableSet<String> = mutableSetOf()
     private var undesiredSkillThreshold: Float = 0.3f
     private var desiredSkillThreshold: Float = 0.6f
 
@@ -79,7 +81,8 @@ open class RecommendationEngineImpl : RecommendationEngine {
         this.desiredSkillThreshold = desiredSkillThreshold
 
         // Always apply a filter for blocked users
-        addFilter { post -> post.ownerId !in blockedUsers }
+        addFilter { it.ownerId !in blockedUsers }
+        addFilter { it.reportCount < report_treshold }
     }
 
     /**
@@ -106,6 +109,20 @@ open class RecommendationEngineImpl : RecommendationEngine {
         addFilter { post -> post.ownerId !in blockedUsers }
         return blockedUsers
     }
+
+    /**
+     * Reports a post, marking it as blocked for the current user.
+     *
+     * This method adds the given post's ID to the internal blocked set, so it will be filtered out
+     * from the feed in future fetches.
+     *
+     * @param postId The [Post] to report and block.
+     */
+    override suspend fun reportPost(postId: String) {
+        blockedPosts.add(postId)
+        addFilter { post -> post.ownerId !in blockedPosts }
+    }
+
     /**
      * Registers that the current user skipped a post.
      *
@@ -126,6 +143,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
             }
         }
         updateSkillFilters()
+        addViewedPost(post.uid)
     }
 
     /**
@@ -148,6 +166,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
             }
         }
         updateSkillFilters()
+        addViewedPost(post.uid)
     }
 
     private fun updateSkillFilters() {
@@ -276,9 +295,13 @@ open class RecommendationEngineImpl : RecommendationEngine {
             return requester.skillSet.random()
         }
         val tag = filtered.maxByOrNull { desiredSkillCounts[it] ?: 0 }!!
-        return requester.skillSet.first { skill -> skill.name == tag }
+        return requester.skillSet.first { it.name == tag }
     }
 
+    private fun addViewedPost(uid: String) {
+        viewedPosts.add(uid)
+        addFilter { it.uid !in viewedPosts }
+    }
     // Internal wrapper for skill-based filter
     private inner class SkillFilter(private val skill: SkillTag) : (Post) -> Boolean {
         override fun invoke(post: Post): Boolean {
@@ -301,7 +324,6 @@ class RecommendationEngineFactory(
     suspend fun create(
         userId: String,
         feedType: PostType,
-        blockedUsers: Set<String>
     ): RecommendationEngineImpl {
         val engine = RecommendationEngineImpl()
         engine.initialize(
