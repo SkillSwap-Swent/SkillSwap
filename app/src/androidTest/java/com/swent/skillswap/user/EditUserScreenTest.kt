@@ -516,4 +516,44 @@ class EditUserScreenTest : TestCase() {
             }
         }
     }
+
+    @Test
+    fun selectWrongMediaSetProfilePictureErrorAndDoesNothing() {
+        /** Wait for user to be loaded */
+        composeTestRule.setContent {
+            SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            viewModel.uiState.value.editedUser != null
+        }
+
+        val wrongURI = Uri.parse("ftp://invalid_uri.com/image.png")
+        viewModel.onSelectedProfilePicture(wrongURI)
+
+        /** wait until isLoading is false */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            viewModel.uiState.value.profilePictureError != null
+        }
+
+        assertTrue(viewModel.uiState.value.profilePictureError != null)
+
+        /** Check storage to ensure no picture was uploaded */
+        runBlocking {
+            val pictureName = viewModel.uiState.value.editedUser!!.uid
+            val storageRef = storage.reference.child(PROFILE_PICTURES_PATH).child(pictureName)
+            assertThrows(com.google.firebase.storage.StorageException::class.java) {
+                runBlocking {
+                    storageRef.downloadUrl.await()
+                }
+            }
+        }
+    }
+
+    @Test
+    fun selectNoMediaThrowException(){
+        assertThrows(IllegalArgumentException::class.java) {
+            viewModel.onSelectedProfilePicture(Uri.parse(""))
+        }
+    }
 }
