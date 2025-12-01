@@ -46,6 +46,8 @@ import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
 import com.swent.skillswap.utils.FirebaseEmulator.storage
 import okhttp3.internal.wait
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
+import java.net.URL
 
 /**
  * Instrumented test for EditUserScreen. Tests the edit profile functionality with Firebase
@@ -346,7 +348,7 @@ class EditUserScreenTest : TestCase() {
     }
 
     @Test
-    fun deleteProfilePictureRemoveURLFromRepoAndDisplayDefaultProfilePicture() = run {
+    fun deleteProfilePictureRemoveURLFromBothRepoAndStorageAndDisplayDefaultProfilePicture() = run {
         composeTestRule.setContent {
             SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
         }
@@ -362,13 +364,74 @@ class EditUserScreenTest : TestCase() {
 
         /** Wait for the profile picture URI to be updated in the UI state */
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            (!viewModel.uiState.value.isLoading)
+            (viewModel.uiState.value.editedUser!!.profilePicture != "")
         }
 
+        /** Check precondition for validate function*/
+        assertTrue(viewModel.uiState.value.usernameError == null)
+        assertTrue(viewModel.uiState.value.emailError == null)
+        assertTrue(viewModel.uiState.value.profilePictureError == null)
+        assertTrue(viewModel.uiState.value.skillSetError == null)
+        assertTrue(viewModel.uiState.value.ratingError == null)
+        assertTrue(viewModel.uiState.value.availabilityError == null)
+        assertTrue(!viewModel.uiState.value.isLoading)
 
+        /** Validate profile picture upload */
+        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+            .performScrollTo()
+            .performClick()
 
+        /** Wait for save operation to complete */
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            runBlocking { repo.getUser(viewModel.uiState.value.editedUser!!.uid).profilePicture.isNotEmpty() }
+        }
 
+        /** check that profile picture is set in firebase */
+        val userAfterPictureSet = runBlocking { repo.getUser(viewModel.uiState.value.editedUser!!.uid) }
+        assertTrue(userAfterPictureSet.profilePicture.isNotEmpty())
 
+        /** delete the profile picture */
+        composeTestRule.onNodeWithTag(EditUserTags.DELETE_PROFILE_PICTURE)
+            .performScrollTo()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
+            .performScrollTo()
+            .performClick()
+
+        /** Wait for save operation to complete */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            runBlocking {
+                repo.getUser(viewModel.uiState.value.editedUser!!.uid).profilePicture == ""
+            }
+        }
+
+        /** Verify that the profile picture URL is removed from the user repository and storage */
+        runBlocking {
+            val editedUserFromRepo = repo.getUser(viewModel.uiState.value.editedUser!!.uid)
+            assertTrue(editedUserFromRepo.profilePicture == "")
+
+            /** Verify that the picture is removed from storage */
+            val pictureName = viewModel.uiState.value.editedUser!!.uid
+
+            // Attempting to get the download URL should throw an exception if the picture has been deleted
+            assertThrows(com.google.firebase.storage.StorageException::class.java) {
+                runBlocking {
+                    val storageRef =
+                        storage.reference
+                            .child(PROFILE_PICTURES_PATH)
+                            .child(pictureName)
+                    storageRef.downloadUrl.await()
+                    }
+            }
+        }
+
+        /** Verify that the default profile picture is displayed in the UI */
+        composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
@@ -398,6 +461,7 @@ class EditUserScreenTest : TestCase() {
                 .assert(hasText("Something went wrong"))
         }
     }
+
 
     @Test
     fun profilePictureIsUpdatedAndStoredWhenValidURIisProvided() = run {
