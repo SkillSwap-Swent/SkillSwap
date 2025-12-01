@@ -50,6 +50,7 @@ import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.LocationManager
+import com.swent.skillswap.model.utils.PermissionHandler
 import com.swent.skillswap.resources.C
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
@@ -84,36 +85,37 @@ import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
 class MainActivity : ComponentActivity() {
 
     /* Function used to call for the location permission request */
-    private val requestLocationPermissionLauncher =
+    private val requestAllPermissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             permissions ->
-            when {
-                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true -> {
-                    Log.w("MainActivity", "Fine location permission granted")
-                }
-                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
-                    Log.w("MainActivity", "Coarse location permission granted")
-                }
-                else -> {
-                    Log.w("MainActivity", "Location permissions denied")
-                }
-            }
+            PermissionHandler.handlePermissionsResult(permissions)
         }
 
-    private fun requestLocationPermissions() {
-        requestLocationPermissionLauncher.launch(
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        )
-    }
+    private fun requestAllPermissionsIfNeeded(locationManager: LocationManager) {
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val requestedOnce = prefs.getBoolean("permissions_requested_once", false)
+        if (requestedOnce) return
 
-    private fun requestNotificationPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestLocationPermissionLauncher.launch(
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS)
-            )
+        val permissionsToRequest = mutableListOf<String>()
+        // Location permissions via LocationManager
+        if (!locationManager.hasLocationPermission()) {
+            permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
+        // Notification permission (Android 13+) checked directly here
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                androidx.core.content.ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        // Set the flag BEFORE launching the request to guarantee only one pop-up ever
+        prefs.edit().putBoolean("permissions_requested_once", true).apply()
+        if (permissionsToRequest.isNotEmpty()) {
+            requestAllPermissionsLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
 
@@ -121,15 +123,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val locationManager = LocationManager(this)
-
-        // Request location permissions on app start if not already granted
-        if (!locationManager.hasLocationPermission() && !BuildConfig.IS_TESTING) {
-            requestLocationPermissions()
-            requestNotificationPermissions()
-        }
-
-        /*For testing purposes on sign in*/
-        // FirebaseAuth.getInstance().signOut()
+        requestAllPermissionsIfNeeded(locationManager)
         setContent {
             SkillSwapAppTheme() {
                 // A surface container using the 'background' color from the theme

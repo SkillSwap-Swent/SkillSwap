@@ -37,14 +37,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("Boolean", "IS_TESTING", "false")
         }
 
         debug {
             enableUnitTestCoverage = true
             enableAndroidTestCoverage = true
             proguardFiles("proguard-rules.pro")
-            buildConfigField("Boolean", "IS_TESTING", "true")
         }
     }
     packaging {
