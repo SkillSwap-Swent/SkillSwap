@@ -904,11 +904,9 @@ class FeedScreenInstrumentedTest {
     fun block_user_skips_his_future_posts() = runBlocking {
         val postA = createValidPost("pA", "Offer A", userId2)
         val postB = createValidPost("pB", "Offer B", userId2)
-        val postC = createValidPost("pC", "Offer C", userId1)
 
         addPostToEmulator(postA)
         addPostToEmulator(postB)
-        addPostToEmulator(postC)
 
         // Force Firestore to sync
         FirebaseEmulator.firestore.collection("requests").get().await()
@@ -925,6 +923,8 @@ class FeedScreenInstrumentedTest {
 
         // First post should be from user2
         assert(vm.uiState.value!!.authorID == userId2)
+        val postC = createValidPost("pC", "Offer C", userId1)
+        addPostToEmulator(postC)
 
         // Open menu and block the user
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
