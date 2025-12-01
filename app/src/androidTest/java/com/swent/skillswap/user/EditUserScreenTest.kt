@@ -45,6 +45,7 @@ import java.io.File
 import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
 import com.swent.skillswap.utils.FirebaseEmulator.storage
 import okhttp3.internal.wait
+import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertThrows
 import java.net.URL
@@ -138,6 +139,20 @@ class EditUserScreenTest : TestCase() {
         // Instantiate the ViewModel with the emulated repo
         viewModel = EditUserViewModel(repo,storageRepo)
         viewModel.loadCurrentUser()
+    }
+
+    @After
+    fun tearDown() = runBlocking {
+        /** Clean all emulators */
+        FirebaseEmulator.clearAuthEmulator()
+        FirebaseEmulator.clearFirestoreEmulator()
+
+        /** Clean up storage manually */
+        val storageRef = storage.reference.child(PROFILE_PICTURES_PATH)
+        val listResult = storageRef.listAll().await()
+        for (item in listResult.items) {
+            item.delete().await()
+        }
     }
 
     /**
@@ -364,7 +379,7 @@ class EditUserScreenTest : TestCase() {
 
         /** Wait for the profile picture URI to be updated in the UI state */
         composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            (viewModel.uiState.value.editedUser!!.profilePicture != "")
+            (viewModel.uiState.value.editedUser!!.profilePicture != "" && !viewModel.uiState.value.isLoading)
         }
 
         /** Check precondition for validate function*/
