@@ -986,9 +986,6 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Block User").performClick()
         composeTestRule.waitForIdle()
 
-        // Skip the current post to trigger next post
-        controller.skipPost()
-
         // Wait until a post from another user is shown
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             val author = vm.uiState.value?.authorID
