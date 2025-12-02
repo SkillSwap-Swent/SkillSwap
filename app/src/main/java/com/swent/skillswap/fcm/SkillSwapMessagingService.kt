@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.swent.skillswap.R
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
@@ -105,7 +106,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
 
         val builder =
             NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(android.R.drawable.ic_dialog_email)
+                .setSmallIcon(R.drawable.logo)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setAutoCancel(true)
