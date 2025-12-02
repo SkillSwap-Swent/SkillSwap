@@ -14,12 +14,10 @@ import com.swent.skillswap.model.Auth.AuthGoogleModel
 import com.swent.skillswap.model.Auth.CreateAccountClassicParams
 import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
 import com.swent.skillswap.model.Auth.SignInInterface
-import com.swent.skillswap.model.user.Skill
-import com.swent.skillswap.model.user.SkillRank
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.FCMTokenManager
 import com.swent.skillswap.resources.config.ValidationConfig
-import com.swent.skillswap.ui.utils.nextPillRankOrNull
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -53,7 +51,7 @@ data class CreateAccountUIState(
     val username: String = "",
     val password: String = "",
     val confirmPassword: String = "",
-    val skills: Set<Skill> = setOf(),
+    val skills: Set<SkillTag> = setOf<SkillTag>(),
     val emailError: String = "",
     val usernameError: String = "",
     val passwordError: String = "",
@@ -145,42 +143,21 @@ class CreateAccountViewModel(
     }
 
     /** Adds a single skill to the selected skills set. */
-    private fun addSkill(skill: Skill) {
-        _uiState.update { current ->
-            current.copy(
-                skills =
-                    current.skills
-                        .filterNot {
-                            it.name == skill.name
-                        } // remove old skill with same tag if exists
-                        .toSet() + skill
-            )
-        }
+    private fun addSkill(skill: SkillTag) {
+        _uiState.update { current -> current.copy(skills = current.skills + skill) }
     }
 
     /** Removes a single skill from the selected skills set. */
-    private fun removeSkill(skill: Skill) {
-        _uiState.update { current ->
-            current.copy(skills = current.skills.filterNot { it.name == skill.name }.toSet())
-        }
+    private fun removeSkill(skill: SkillTag) {
+        _uiState.update { current -> current.copy(skills = current.skills - skill) }
     }
 
     /**
      * Toggles a skill selection — if already selected, remove it; otherwise, add it to the skill
      * set.
      */
-    fun clickSkill(skill: Skill) {
-        if (_uiState.value.skills.contains(skill)) {
-            val nextRank = nextPillRankOrNull(skill.rank)
-
-            if (nextRank == null) {
-                // At EXPERT -> remove the skill entirely
-                removeSkill(skill)
-            } else {
-                addSkill(skill.copy(rank = nextRank))
-            }
-        } else addSkill(skill.copy(rank = SkillRank.FAMILIAR.value))
-
+    fun clickSkill(skill: SkillTag) {
+        if (_uiState.value.skills.contains(skill)) removeSkill(skill) else addSkill(skill)
         refreshEnabled()
         refreshError()
     }

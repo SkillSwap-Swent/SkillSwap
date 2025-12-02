@@ -3,7 +3,7 @@ package com.swent.skillswap.model.Auth
 
 import android.app.Activity
 import androidx.credentials.CredentialManager
-import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.tags.SkillTag
 
 /**
  * Represents a set of parameters used for any sign-in flow.
@@ -51,7 +51,7 @@ sealed interface CreateAccountParams
 data class CreateAccountClassicParams(
     val username: String,
     val email: String,
-    val skills: Set<Skill>,
+    val skills: Set<SkillTag>,
     val password: String
 ) : CreateAccountParams
 
@@ -61,7 +61,7 @@ data class CreateAccountClassicParams(
  * @property username Desired username.
  * @property skills Set of user skill tags (domain-specific data).
  */
-data class CreateAccountGoogleParams(val username: String, val skills: Set<Skill>) :
+data class CreateAccountGoogleParams(val username: String, val skills: Set<SkillTag>) :
     CreateAccountParams
 
 /**

@@ -3,6 +3,7 @@ package com.swent.skillswap.model.Auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import kotlinx.coroutines.tasks.await
@@ -37,6 +38,10 @@ class AuthClassicModel(
         require(email.isNotBlank() && password.isNotBlank() && username.isNotBlank())
         val result = auth.createUserWithEmailAndPassword(email, password).await()
         val user = result.user
+        val skillSet = mutableSetOf<Skill>()
+        for (skill in skills) {
+            skillSet.add(Skill(skill, 0f, "")) // TODO change handling of description at some point
+        }
         if (user == null) {
             throw Exception("failed creation of user")
         } else {
@@ -46,7 +51,7 @@ class AuthClassicModel(
                     username = username,
                     email = email,
                     profilePicture = "",
-                    skillSet = skills,
+                    skillSet = skillSet,
                     rating = 0f,
                     availability = listOf()
                 )
