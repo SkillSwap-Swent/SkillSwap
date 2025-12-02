@@ -5,9 +5,11 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.FCMTokenManager
+import kotlin.text.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -67,19 +69,24 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(message)
         Log.d(TAG, "Message received from: ${message.from}")
 
-        // Handle notification data
-        message.data.let { data ->
-            Log.d(TAG, "Message data: $data")
-            // TODO: Process notification data and show notification
-            // This will be implemented in a future PR for notification handling
-        }
+        // Extract the type of the notification to choose which way to handle it (chat or post)
+        val type = message.data["type"]
+        val relatedId = message.data["relatedId"]
 
-        // Handle notification payload
-        message.notification?.let { notification ->
-            Log.d(TAG, "Notification title: ${notification.title}")
-            Log.d(TAG, "Notification body: ${notification.body}")
-            // TODO: Show notification to user
-            // This will be implemented in a future PR for notification handling
+        when (type) {
+            NotificationType.MESSAGE.name -> onChatNotificationReceived(message)
+            NotificationType.POST_ACCEPTED.name -> onAcceptedPostNotificationReceived(message)
+            else -> Log.w(TAG, "Unknown notification type: $type")
         }
+    }
+
+    private fun onChatNotificationReceived(message: RemoteMessage) {
+        Log.d(TAG, "Handling chat notification: ${message.data}")
+        // TODO: HANDLE CHAT NOTIFICATION PAYLOAD RECEPTION
+    }
+
+    private fun onAcceptedPostNotificationReceived(message: RemoteMessage) {
+        Log.d(TAG, "Handling accepted post notification: ${message.data}")
+        // TODO: HANDLE POST NOTIFICATION PAYLOAD RECEPTION
     }
 }
