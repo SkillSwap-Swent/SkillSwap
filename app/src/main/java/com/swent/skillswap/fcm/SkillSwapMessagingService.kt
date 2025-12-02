@@ -84,6 +84,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
     }
 
     private fun onChatNotificationReceived(message: RemoteMessage) {
+        Log.d(TAG, "Handling chat notification: ${message.data}")
         val notification = message.notification
         val title = notification?.title ?: "New Chat"
         val body = notification?.body ?: "You have a new message"
@@ -113,6 +114,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
     }
 
     private fun onAcceptedPostNotificationReceived(message: RemoteMessage) {
+        Log.d(TAG, "Handling accepted post notification: ${message.data}")
         // TODO: HANDLE POST NOTIFICATION PAYLOAD RECEPTION
     }
 }
