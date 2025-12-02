@@ -15,16 +15,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.utils.SkillPill
+import com.swent.skillswap.ui.utils.StarRatingBar
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -157,7 +154,7 @@ fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            RatingBar(rating = uiState.rating, size = 34)
+            StarRatingBar(rating = uiState.rating, size = 34)
 
             Text(
                 text = String.format(Locale.getDefault(), "%.1f", uiState.rating),
@@ -177,50 +174,6 @@ fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             uiState.skillSet.forEach { skill -> SkillPill(skill = skill.name) }
-        }
-    }
-}
-
-@Composable
-fun RatingBar(
-    rating: Float,
-    size: Int = 28,
-    max: Int = 5,
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        val iconSize = Modifier.size(size.dp)
-
-        val fullStars = rating.toInt()
-        val hasHalf = rating - fullStars >= 0.5f
-
-        repeat(fullStars) {
-            Icon(
-                imageVector = Icons.Filled.Star,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = iconSize
-            )
-        }
-
-        if (hasHalf) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.StarHalf,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = iconSize
-            )
-        }
-
-        repeat(max - fullStars - if (hasHalf) 1 else 0) {
-            Icon(
-                imageVector = Icons.Filled.StarOutline,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = iconSize
-            )
         }
     }
 }
