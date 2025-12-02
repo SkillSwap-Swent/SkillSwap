@@ -1,5 +1,19 @@
+/** Comments with ChatGPT */
 package com.swent.skillswap.model.tags
 
+/**
+ * Represents the predefined set of skill categories available in the SkillSwap platform. Each tag
+ * corresponds to a specific academic, technical, or engineering-related discipline.
+ *
+ * @property label A human-readable display name for UI purposes. This is intended for presentation
+ *   only; use [name] for serialization.
+ *
+ * Usage notes:
+ * - `name` provides the stable enum identifier (e.g., "DATA_STRUCTURES") for serialization,
+ *   persistence, or API communication.
+ * - `label` provides a clean, user-facing title (e.g., "Data Structures") suitable for UI.
+ * - [toUIString] is a convenience method returning the display label.
+ */
 enum class SkillTag(val label: String) : EveryTag {
     CALCULUS("Calculus"),
     LINEAR_ALGEBRA("Linear Algebra"),
@@ -26,5 +40,9 @@ enum class SkillTag(val label: String) : EveryTag {
     PROJECT_MANAGEMENT("Project Management"),
     ENGINEERING_ETHICS("Engineering Ethics");
 
+    /**
+     * Returns the user-friendly label for display purposes. Equivalent to accessing [label]
+     * directly.
+     */
     fun toUIString(): String = label
 }
