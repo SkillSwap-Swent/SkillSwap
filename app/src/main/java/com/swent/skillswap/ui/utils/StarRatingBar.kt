@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -19,6 +20,7 @@ fun StarRatingBar(
     rating: Float,
     size: Int = 28,
     max: Int = 5,
+    color: Color = MaterialTheme.colorScheme.primary
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -33,7 +35,7 @@ fun StarRatingBar(
             Icon(
                 imageVector = Icons.Filled.Star,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = color,
                 modifier = iconSize
             )
         }
@@ -42,7 +44,7 @@ fun StarRatingBar(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.StarHalf,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = color,
                 modifier = iconSize
             )
         }
@@ -51,7 +53,7 @@ fun StarRatingBar(
             Icon(
                 imageVector = Icons.Filled.StarOutline,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = color,
                 modifier = iconSize
             )
         }
