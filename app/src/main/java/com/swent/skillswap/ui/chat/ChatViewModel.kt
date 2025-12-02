@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
+import com.swent.skillswap.model.notification.NotificationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,19 +62,40 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(content: String) {
+    // Helper to get recipientId based on chat participants
+    private suspend fun getRecipientId(senderId: String): String {
+        return try {
+            val chat = chatRepository.getChat(chatId)
+            chat.participants.firstOrNull { it != senderId } ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
 
+    fun sendMessage(content: String) {
         viewModelScope.launch {
             try {
-                chatRepository.sendMessage(
-                    chatId,
+                val senderId =
                     try {
                         FirebaseAuth.getInstance().currentUser?.uid ?: ""
                     } catch (e: Exception) {
                         ""
-                    },
-                    content
-                )
+                    }
+                chatRepository.sendMessage(chatId, senderId, content)
+
+                // After sending the message, create a notification for the recipient
+                val recipientId = getRecipientId(senderId)
+                val notification =
+                    Notification(
+                        uid = notificationRepository.getNewUid(),
+                        userId = recipientId,
+                        title = "New Message",
+                        message = content,
+                        type = NotificationType.MESSAGE,
+                        relatedId = chatId,
+                        isRead = false
+                    )
+                notificationRepository.addNotification(notification)
             } catch (exception: Exception) {
                 _uiState.update { it.copy(error = exception.message, isLoading = false) }
             }

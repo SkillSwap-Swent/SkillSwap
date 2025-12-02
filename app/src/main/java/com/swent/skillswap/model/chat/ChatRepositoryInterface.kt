@@ -47,4 +47,12 @@ interface ChatRepository {
      * @param relatedPostType The type of post linked to the chats to be retrieved
      */
     suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat>
+
+    /**
+     * Gets a chat by its ID.
+     *
+     * @param chatId The ID of the chat to retrieve
+     * @return The Chat object
+     */
+    suspend fun getChat(chatId: String): Chat
 }
