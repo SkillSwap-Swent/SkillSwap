@@ -21,7 +21,7 @@ data class NotificationUiState(
     val notifications: List<Notification> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
-    val showUnreadOnly: Boolean = false
+    val showUnreadOnly: Boolean = true
 )
 
 class NotificationViewModel(
@@ -173,5 +173,27 @@ class NotificationViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun markChatNotificationsAsRead(chatId: String) {
+        val currentUser = Firebase.auth.currentUser
+        if (currentUser == null) {
+            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            return
+        }
+        val userId = currentUser.uid
+
+        viewModelScope.launch {
+            try {
+                notificationRepository.markChatNotificationsAsRead(chatId, userId)
+                loadNotifications()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error marking chat notifications as read", e)
+                loadNotifications()
+                _uiState.update {
+                    it.copy(error = "Failed to mark chat notifications as read: ${e.message}")
+                }
+            }
+        }
     }
 }

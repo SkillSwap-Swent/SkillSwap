@@ -364,6 +364,7 @@ fun SkillSwapApp(
                     currentUserId = currentUserId,
                     onChatClick = { chatId ->
                         navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                        notificationViewModel.markChatNotificationsAsRead(chatId)
                     }
                 )
             }
