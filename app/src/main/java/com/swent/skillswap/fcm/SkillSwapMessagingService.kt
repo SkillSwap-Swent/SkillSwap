@@ -1,7 +1,11 @@
 /** Created with the help of Cursor */
 package com.swent.skillswap.fcm
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -9,7 +13,6 @@ import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.FCMTokenManager
-import kotlin.text.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -81,7 +84,32 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
     }
 
     private fun onChatNotificationReceived(message: RemoteMessage) {
-        // TODO: HANDLE CHAT NOTIFICATION PAYLOAD RECEPTION
+        val notification = message.notification
+        val title = notification?.title ?: "New Chat"
+        val body = notification?.body ?: "You have a new message"
+
+        val channelId = "chat_channel"
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // Create notification channel for Android O+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel =
+                NotificationChannel(
+                    channelId,
+                    "Chat Notifications",
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val builder =
+            NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(android.R.drawable.ic_dialog_email)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setAutoCancel(true)
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 
     private fun onAcceptedPostNotificationReceived(message: RemoteMessage) {
