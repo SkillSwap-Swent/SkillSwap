@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.post.PostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +41,10 @@ class ChatListViewModel(
         viewModelScope.launch {
             val chats =
                 try {
-                    chatRepository.getChatsOfCurrentUser(relatedPostType)
+                    chatRepository.getChatsOfCurrentUser(relatedPostType).filter { chat ->
+                        val post = postRepository.getPost(chat.relatedPostType, chat.relatedPostId)
+                        post.status != PostStatus.DRAFT && post.status != PostStatus.ARCHIVED
+                    }
                 } catch (exception: Exception) {
                     emptyList()
                 }
