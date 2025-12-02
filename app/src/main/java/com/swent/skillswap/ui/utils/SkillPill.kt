@@ -1,6 +1,7 @@
 /** nextPillRankOrNull with ChatGPT, comments also with ChatGPT */
 package com.swent.skillswap.ui.utils
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
@@ -60,10 +61,13 @@ fun SkillPillRated(
     Button(
         onClick = { onClick(skill) },
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
-        contentPadding = PaddingValues(11.dp, 2.dp),
+        contentPadding = PaddingValues(11.dp, 4.dp),
         modifier = Modifier.testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy((-2).dp)
+        ) {
             Text(
                 text = skill.name.toUIString(),
                 fontWeight = FontWeight.Bold,
@@ -71,7 +75,7 @@ fun SkillPillRated(
                 color = textColor
             )
 
-            StarRatingBar(rating = skill.rank * 3f / 5f, size = 13, max = 3, color = textColor)
+            StarRatingBar(rating = skill.rank * 3f / 5f, size = 16, max = 3, color = textColor)
         }
     }
 }
