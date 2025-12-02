@@ -29,10 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.model.user.Skill
-import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.ui.utils.SkillPill
-import com.swent.skillswap.ui.utils.SkillPillRated
 import com.swent.skillswap.ui.utils.SkillSwapOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapPasswordOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
@@ -332,28 +329,9 @@ fun SkillScreen(vm: CreateAccountViewModel) {
                     .testTag(CreateAccountTags.SKILLS_FLOW)
         ) {
             // Loop through all skill tags and render as selectable chips
-            for (tag in SkillTag.entries) {
-                // Do we already have this skill selected?
-                val existingSkill = uiState.skills.firstOrNull { it.name == tag }
-
-                if (existingSkill != null) {
-                    // Selected: show rated pill
-                    SkillPillRated(
-                        skill = existingSkill,
-                        isSelected = true,
-                        onClick = { vm.clickSkill(it) }
-                    )
-                } else {
-                    // Not selected: show normal pill with some default rank
-                    val newSkill =
-                        Skill(name = tag, rank = SkillRank.FAMILIAR.value, description = "")
-
-                    SkillPill(
-                        skill = tag,
-                        isSelected = false,
-                        onClick = { vm.clickSkill(newSkill) }
-                    )
-                }
+            for (skill in SkillTag.entries) {
+                val isSelected = uiState.skills.contains(skill)
+                SkillPill(skill, isSelected, { skill -> vm.clickSkill(skill) })
             }
         }
     }
