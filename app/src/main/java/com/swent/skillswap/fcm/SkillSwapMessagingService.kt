@@ -81,10 +81,12 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
     }
 
     private fun onChatNotificationReceived(message: RemoteMessage) {
+        Log.d(TAG, "Handling chat notification: ${message.data}")
         // TODO: HANDLE CHAT NOTIFICATION PAYLOAD RECEPTION
     }
 
     private fun onAcceptedPostNotificationReceived(message: RemoteMessage) {
+        Log.d(TAG, "Handling accepted post notification: ${message.data}")
         // TODO: HANDLE POST NOTIFICATION PAYLOAD RECEPTION
     }
 }
