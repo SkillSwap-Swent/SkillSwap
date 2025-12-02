@@ -33,7 +33,6 @@ object FirebaseEmulator {
     const val EMULATORS_PORT = 4400
     const val FIRESTORE_PORT = 8080
     const val AUTH_PORT = 9099
-
     const val STORAGE_PORT = 9199
 
     val projectID by lazy { FirebaseApp.getInstance().options.projectId }
@@ -44,6 +43,7 @@ object FirebaseEmulator {
             try {
                 auth.useEmulator(HOST, AUTH_PORT)
                 firestore.useEmulator(HOST, FIRESTORE_PORT)
+                storage.useEmulator(HOST, STORAGE_PORT)
             } catch (_: Exception) {}
         }
     }
@@ -57,7 +57,7 @@ object FirebaseEmulator {
         "http://${HOST}:$AUTH_PORT/emulator/v1/projects/$projectID/accounts"
     }
 
-    private val storageEndpoint by lazy { "http://${HOST}:$STORAGE_PORT/storage/v1/b/$projectID/o" }
+    private val storageEndpoint by lazy { "to complete ... " }
 
     private val emulatorsEndpoint = "http://$HOST:$EMULATORS_PORT/emulators"
 

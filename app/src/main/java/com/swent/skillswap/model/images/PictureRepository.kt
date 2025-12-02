@@ -43,7 +43,17 @@ class PictureRepository(private val storage: com.google.firebase.storage.Firebas
         require(uid.isNotBlank())
 
         /** Delete the picture from Firebase Storage */
-        val storageRef = storage.reference.child("${path}/${uid}")
-        storageRef.delete().await()
+        try {
+            val storageRef = storage.reference.child("${path}/${uid}")
+            storageRef.delete().await()
+        } catch (e: Exception) {
+            if (e is com.google.firebase.storage.StorageException) {
+                /** exception likely be thrown because picture does not exist, nothing to delete */
+                return
+            } else {
+                /** Other error occurred, rethrow the exception */
+                throw e
+            }
+        }
     }
 }
