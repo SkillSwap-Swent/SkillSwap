@@ -10,10 +10,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
-import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import kotlin.String
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -117,17 +115,13 @@ class AuthGoogleModel(
                 userLogged != null &&
                 userLogged.email != null
         )
-        val skillSet = mutableSetOf<Skill>()
-        for (skill in skills) {
-            skillSet.add(Skill(skill, 0f, "")) // TODO change handling of description at some point
-        }
         val user =
             User(
                 uid = userLogged.uid,
                 username = username,
                 email = userLogged.email ?: "",
                 profilePicture = "",
-                skillSet = skillSet,
+                skillSet = skills,
                 rating = 0f,
                 availability = listOf(),
             )
