@@ -26,5 +26,5 @@ enum class SkillTag(val label: String) : EveryTag {
     PROJECT_MANAGEMENT("Project Management"),
     ENGINEERING_ETHICS("Engineering Ethics");
 
-    override fun toString(): String = label
+    fun toUIString(): String = label
 }
