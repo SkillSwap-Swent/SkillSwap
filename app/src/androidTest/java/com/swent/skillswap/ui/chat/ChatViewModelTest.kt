@@ -96,6 +96,10 @@ class ChatViewModelTest {
             return emptyList()
         }
 
+        override suspend fun getChat(chatId: String): Chat {
+            return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
+
         fun addMessages(messages: List<Message>) {
             messagesFlow.value = messages
         }

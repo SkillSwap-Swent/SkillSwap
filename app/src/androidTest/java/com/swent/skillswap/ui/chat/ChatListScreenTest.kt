@@ -43,6 +43,10 @@ class ChatListScreenTest {
 
         override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
             chats[relatedPostType] ?: emptyList()
+
+        override suspend fun getChat(chatId: String): Chat {
+            return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
     }
 
     private class FakeUserRepository(private val users: Map<String, User>) : UserRepositery {

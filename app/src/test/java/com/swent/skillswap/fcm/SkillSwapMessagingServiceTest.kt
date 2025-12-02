@@ -35,7 +35,10 @@ class SkillSwapMessagingServiceTest {
                     .build()
             FirebaseApp.initializeApp(context, options)
         }
-        service = SkillSwapMessagingService()
+        service =
+            org.robolectric.Robolectric.buildService(SkillSwapMessagingService::class.java)
+                .create()
+                .get()
     }
 
     @Test
@@ -81,10 +84,11 @@ class SkillSwapMessagingServiceTest {
     @Test
     fun onMessageReceived_withChatNotification_logs_chat_handling() {
         val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        val notification = mockk<RemoteMessage.Notification>(relaxed = true)
         every { remoteMessage.from } returns "test-sender"
         every { remoteMessage.data } returns
             mapOf("type" to NotificationType.MESSAGE.name, "relatedId" to "chat123")
-        every { remoteMessage.notification } returns null
+        every { remoteMessage.notification } returns notification
 
         ShadowLog.clear()
         service.onMessageReceived(remoteMessage)
