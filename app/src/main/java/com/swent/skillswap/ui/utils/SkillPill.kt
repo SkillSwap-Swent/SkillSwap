@@ -1,9 +1,9 @@
+/** nextPillRankOrNull with ChatGPT, comments also with ChatGPT */
 package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -97,4 +97,21 @@ private fun skillPillColours(isSelected: Boolean): Pair<Color, Color> {
             MaterialTheme.colorScheme.onSecondaryContainer
         }
     return Pair(backgroundColor, textColor)
+}
+
+fun nextPillRankOrNull(currentRank: Float): Float? {
+    val ordered = SkillRank.entries.sortedBy { it.value }
+
+    val currentIndex = ordered.indexOfFirst { it.value == currentRank }
+
+    return when {
+        // Skill has no rank matching enum -> start at first level
+        currentIndex == -1 -> ordered.first().value
+
+        // Move to next enum level
+        currentIndex < ordered.lastIndex -> ordered[currentIndex + 1].value
+
+        // Already at highest (EXPERT) -> return null to indicate "remove"
+        else -> null
+    }
 }
