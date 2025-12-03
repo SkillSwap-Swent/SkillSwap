@@ -273,6 +273,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).isDisplayed()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
     }
+
     @Test
     fun noOfferAvailable_Refresh() {
         runBlocking {
@@ -284,7 +285,9 @@ class FeedScreenInstrumentedTest {
             composeTestRule.waitForIdle()
             composeTestRule.waitUntil(timeoutMillis = 10_000L) {
                 try {
-                    composeTestRule.onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT).assertIsDisplayed()
+                    composeTestRule
+                        .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                        .assertIsDisplayed()
                     true
                 } catch (e: AssertionError) {
                     false
@@ -355,7 +358,9 @@ class FeedScreenInstrumentedTest {
         // Wait until a skill title appears (either post1 or post2)
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -966,17 +971,14 @@ class FeedScreenInstrumentedTest {
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
         val vm = FeedScreenViewModel(navigation, controller)
 
-        composeTestRule.setContent {
-            Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
-        }
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
         // Wait until the menu button actually exists
-        composeTestRule.waitUntil(
-            timeoutMillis = 10_000
-        ) {
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
-                .fetchSemanticsNodes().isNotEmpty()
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
 
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
