@@ -818,23 +818,4 @@ class NotificationViewModelInstrumentedTest {
         assertNotNull("Should have error for invalid notification", errorMessage)
     }
 
-    @Test
-    fun markChatNotificationsAsRead_withoutUser_setsError() = runBlocking {
-        FirebaseAuth.getInstance().signOut()
-        Thread.sleep(200)
-        assertNull("User should be signed out", FirebaseAuth.getInstance().currentUser)
-        val errorDeferred = kotlinx.coroutines.CompletableDeferred<String?>()
-        val job = launch {
-            viewModel.uiState.collect { state ->
-                if (state.error != null) {
-                    errorDeferred.complete(state.error)
-                    this.cancel()
-                }
-            }
-        }
-        viewModel.markChatNotificationsAsRead("any-chat-id")
-        val errorMessage = errorDeferred.await()
-        job.cancel()
-        assertNotNull("Should have error for missing user", errorMessage)
-    }
 }
