@@ -24,13 +24,20 @@ class Message(val id: String, val senderId: String, val content: String, val tim
  * @property relatedPostId The ID of the post related to the chat
  * @property relatedPostType The type of the post related to the chat (OFFER or REQUEST)
  * @property messages The list of messages in the chat
+ * @property status The current status of the chat (ACTIVE or INACTIVE), default ot ACTIVE
  */
 class Chat(
     val id: String,
     val participants: List<String>,
     val relatedPostId: String,
     val relatedPostType: PostType,
-    val messages: List<Message>
+    val messages: List<Message>,
+    val status: ChatStatus = ChatStatus.ACTIVE
 )
 
 const val NUMBER_OF_CHAT_PARTICIPANTS = 2
+
+enum class ChatStatus {
+    ACTIVE,
+    INACTIVE
+}
