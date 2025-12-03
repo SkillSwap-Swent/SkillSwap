@@ -698,4 +698,39 @@ class NotificationViewModelInstrumentedTest {
         assertFalse("Should not be loading", state.isLoading)
         // assertNull("Should have no error", state.error)
     }
+
+    @Test
+    fun markChatNotificationsAsRead_marksOnlyChatNotificationsForCurrentUser() = runBlocking {
+        // Add notifications: two for chat-1 (one for each user), one for another chat
+        val chatId = "chat-1"
+        val notif1 = createNotification(
+            "notif-1", testUserId, "Chat 1", "Msg", NotificationType.MESSAGE, false, chatId
+        )
+        val notif2 = createNotification(
+            "notif-2", "other-user", "Chat 1", "Msg", NotificationType.MESSAGE, false, chatId
+        )
+        val notif3 = createNotification(
+            "notif-3", testUserId, "Chat 2", "Msg", NotificationType.MESSAGE, false, "chat-2"
+        )
+        repository.addNotification(notif1)
+        repository.addNotification(notif2)
+        repository.addNotification(notif3)
+
+        // Load notifications
+        viewModel.loadNotifications()
+        waitForLoadingToComplete()
+
+        // Mark chat notifications as read for chat-1
+        viewModel.markChatNotificationsAsRead(chatId)
+        Thread.sleep(200) // Wait for async update
+
+        // Check: only notif1 should be marked as read
+        val updated1 = repository.getNotification("notif-1")
+        val updated2 = repository.getNotification("notif-2")
+        val updated3 = repository.getNotification("notif-3")
+        assertTrue(updated1.isRead)
+        assertFalse(updated2.isRead)
+        assertFalse(updated3.isRead)
+    }
+
 }
