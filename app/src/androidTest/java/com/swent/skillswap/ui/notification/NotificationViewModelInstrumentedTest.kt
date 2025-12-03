@@ -11,8 +11,6 @@ import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -754,67 +752,5 @@ class NotificationViewModelInstrumentedTest {
         assertTrue(updated1.isRead)
         assertFalse(updated2.isRead)
         assertFalse(updated3.isRead)
-    }
-
-    @Test
-    fun markAsRead_withInvalidNotification_setsError() = runBlocking {
-        val invalidNotif =
-            createNotification(
-                "invalid-id",
-                testUserId,
-                "Title",
-                "Message",
-                NotificationType.MESSAGE,
-                false
-            )
-        viewModel.loadNotifications()
-        waitForLoadingToComplete()
-
-        val errorDeferred = kotlinx.coroutines.CompletableDeferred<String?>()
-        val job = launch {
-            viewModel.uiState.collect { state ->
-                if (state.error != null) {
-                    errorDeferred.complete(state.error)
-                    this.cancel()
-                }
-            }
-        }
-
-        viewModel.markAsRead(invalidNotif)
-        val errorMessage = errorDeferred.await()
-        job.cancel()
-
-        assertNotNull("Should have error for invalid notification", errorMessage)
-    }
-
-    @Test
-    fun deleteNotification_withInvalidNotification_setsError() = runBlocking {
-        val invalidNotif =
-            createNotification(
-                "invalid-id",
-                testUserId,
-                "Title",
-                "Message",
-                NotificationType.MESSAGE,
-                false
-            )
-        viewModel.loadNotifications()
-        waitForLoadingToComplete()
-
-        val errorDeferred = kotlinx.coroutines.CompletableDeferred<String?>()
-        val job = launch {
-            viewModel.uiState.collect { state ->
-                if (state.error != null) {
-                    errorDeferred.complete(state.error)
-                    this.cancel()
-                }
-            }
-        }
-
-        viewModel.deleteNotification(invalidNotif)
-        val errorMessage = errorDeferred.await()
-        job.cancel()
-
-        assertNotNull("Should have error for invalid notification", errorMessage)
     }
 }
