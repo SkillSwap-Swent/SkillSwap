@@ -27,11 +27,11 @@ sealed class FeedScreenEvent() {
     /** Event indicating that the user has successfully block a user */
     data class SuccessFullBlock(val authorName: String) : FeedScreenEvent()
     /** Event indicating that the user has got an error while trying to block a user */
-    object ErrorOnBlock : FeedScreenEvent()
+    class ErrorOnBlock(val exception: Exception) : FeedScreenEvent()
     /** Event indicating that the user has successfully report a post */
     data class SuccessFullReport(val authorName: String) : FeedScreenEvent()
     /** Event indicating that the user has got an error while trying to report a post */
-    object ErrorOnReport : FeedScreenEvent()
+    class ErrorOnReport(val exception: Exception) : FeedScreenEvent()
 }
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -111,7 +111,7 @@ open class FeedScreenViewModel(
                 controller.blockUser(userId)
                 _eventFlow.emit(FeedScreenEvent.SuccessFullBlock(userName))
             } catch (e: Exception) {
-                _eventFlow.emit(FeedScreenEvent.ErrorOnBlock)
+                _eventFlow.emit(FeedScreenEvent.ErrorOnBlock(e))
                 Log.e("BlockUserError", "failed to block the user. Cause: ", e)
             }
         }
@@ -129,7 +129,7 @@ open class FeedScreenViewModel(
                 decline(offer)
                 _eventFlow.emit(FeedScreenEvent.SuccessFullReport(userName))
             } catch (e: Exception) {
-                _eventFlow.emit(FeedScreenEvent.ErrorOnReport)
+                _eventFlow.emit(FeedScreenEvent.ErrorOnReport(e))
                 Log.e("ReportPostError", "failed to report the post cause: ", e)
             }
         }

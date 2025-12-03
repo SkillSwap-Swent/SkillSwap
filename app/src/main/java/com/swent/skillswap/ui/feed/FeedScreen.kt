@@ -31,6 +31,8 @@ import coil.compose.AsyncImage
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
@@ -60,8 +62,12 @@ fun FeedScreen(
     var isLiveLocationEnabled by remember { mutableStateOf(false) }
     var showReportOfferAlert by remember { mutableStateOf(false) }
     var showBlockUserAlert by remember { mutableStateOf(false) }
+    var showExceptionAlert by remember { mutableStateOf(false) }
     var reportedAuthorName by remember { mutableStateOf<String?>(null) }
     var blockedAuthorName by remember { mutableStateOf<String?>(null) }
+    var exceptionTitle by remember { mutableStateOf("") }
+    var exceptionDescription by remember { mutableStateOf("") }
+
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val screenHeightDp = configuration.screenHeightDp.dp
@@ -81,15 +87,28 @@ fun FeedScreen(
                     reportedAuthorName = event.authorName
                     showReportOfferAlert = true
                 }
-                FeedScreenEvent.ErrorOnBlock -> {
-                    /** no error handling* */
+                is FeedScreenEvent.ErrorOnBlock -> {
+                    showExceptionAlert = true
+                    exceptionTitle = event.exception.javaClass.toString()
+                    exceptionDescription = event.exception.message ?: ""
                 }
-                FeedScreenEvent.ErrorOnReport -> {
-                    /** no error handling* */
+                is FeedScreenEvent.ErrorOnReport -> {
+                    showExceptionAlert = true
+                    exceptionTitle = event.exception.javaClass.toString()
+                    exceptionDescription = event.exception.message ?: ""
                 }
             }
         }
     }
+    /** alert for Error* */
+    FeedScreenAlertDialog(
+        title = exceptionTitle,
+        text = exceptionDescription,
+        onConfirm = { showExceptionAlert = !showExceptionAlert },
+        show = showExceptionAlert,
+        descriptionTestTag = POP_UP_EXCEPTION_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_EXCEPTION)
+    )
     /** alert for successful report of a post* */
     FeedScreenAlertDialog(
         title = "Successful report",
