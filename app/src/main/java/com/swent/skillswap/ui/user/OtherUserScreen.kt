@@ -182,14 +182,11 @@ fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
 }
 
 @Composable
-fun RatingBar(
-    rating: Float,
-    size: Int = 28,
-    max: Int = 5,
-) {
+fun RatingBar(modifier: Modifier = Modifier, rating: Float, size: Int = 28, max: Int = 5) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
     ) {
         val iconSize = Modifier.size(size.dp)
 

@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.swent.skillswap.model.feed.FeedController
-import com.swent.skillswap.model.feed.FeedOffer
+import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
+ * ViewModel responsible for managing offer data, navigation, and UI state for the FeedPost screen.
  *
  * It loads, updates, and transitions between offers, and handles user actions such as swiping or
  * navigating to another user’s profile.
@@ -35,17 +35,17 @@ open class FeedScreenViewModel(
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
      */
     private val uid: String = Firebase.auth.uid ?: "AnoUser"
-    /** Internal state of the FeedOffer screen. */
-    private val _uiState = MutableStateFlow<FeedOffer?>(null)
+    /** Internal state of the FeedPost screen. */
+    private val _uiState = MutableStateFlow<FeedPost?>(null)
 
-    /** Publicly exposed, read-only state of the FeedOffer screen. */
-    open val uiState: StateFlow<FeedOffer?> = _uiState.asStateFlow()
+    /** Publicly exposed, read-only state of the FeedPost screen. */
+    open val uiState: StateFlow<FeedPost?> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
             runCatching {
                     controller.currentPost.value?.let { post ->
-                        _uiState.value = toFeedOffer(post, uid)
+                        _uiState.value = toFeedPost(post, uid)
                     }
                 }
                 .onFailure { e -> Log.e("FeedScreenViewModel", "Error loading initial post", e) }
@@ -54,7 +54,7 @@ open class FeedScreenViewModel(
                     if (post == null) {
                         _uiState.value = null
                     } else {
-                        runCatching { _uiState.value = toFeedOffer(post, uid) }
+                        runCatching { _uiState.value = toFeedPost(post, uid) }
                             .onFailure { e ->
                                 Log.e("FeedScreenViewModel", "Error updating post", e)
                             }
@@ -64,12 +64,12 @@ open class FeedScreenViewModel(
     }
 
     /** Accepts the specified offer on behalf of the current user. */
-    fun accept(offer: FeedOffer) {
+    fun accept(post: FeedPost) {
         viewModelScope.launch { controller.acceptPost("I'm interested in this offer") }
     } // TODO: A Pop-up Window with a textField or preFab message to send is a good idea
 
     /** Declines the specified offer, removes it from the feed, and loads the next one. */
-    fun decline(offer: FeedOffer) {
+    fun decline(post: FeedPost) {
         skip()
         // TODO: Placeholder for rollback implementation
     }
@@ -89,12 +89,10 @@ open class FeedScreenViewModel(
     }
 
     /** Report an offer and then decline it if reporting worked. */
-    // TODO naming logic of function will need to be adjust the Request/Offer mess start to be hard
-    // to follow
-    fun reportOffer(offer: FeedOffer) {
+    fun reportPost(post: FeedPost) {
         try {
-            viewModelScope.launch { controller.reportPost(offer.offerId, PostType.REQUEST) }
-            decline(offer)
+            viewModelScope.launch { controller.reportPost(post.offerId, PostType.REQUEST) }
+            decline(post)
         } catch (e: Exception) {
             Log.e("ReportPostError", "failed to report the post cause: ", e)
             return
@@ -110,13 +108,13 @@ open class FeedScreenViewModel(
     }
 
     /**
-     * Converts a [Post] object into a [FeedOffer] for display on the feed.
+     * Converts a [Post] object into a [FeedPost] for display on the feed.
      *
      * @param post The post to convert.
      * @param userId The ID of the current user.
-     * @return A corresponding [FeedOffer] object.
+     * @return A corresponding [FeedPost] object.
      */
-    private suspend fun toFeedOffer(post: Post, userId: String): FeedOffer {
+    private suspend fun toFeedPost(post: Post, userId: String): FeedPost {
         when (post.type) {
             PostType.REQUEST -> {
                 val skillProvided =
@@ -125,18 +123,23 @@ open class FeedScreenViewModel(
                     } catch (e: Exception) {
                         "None"
                     }
-                return FeedOffer(
+                val user =
+                    try {
+                        controller.retrieveUser(post)
+                    } catch (e: Exception) {
+                        null
+                    }
+                return FeedPost(
                     offerId = post.uid,
                     skillProvided = skillProvided,
                     authorID = post.ownerId,
-                    authorName = "AnoUser",
-                    // TODO Need to modify the post structure to handle this or use external object
-                    //  (decrease duplicate data)
+                    authorName = user?.username ?: "None",
                     requesterAvatar = "https://picsum.photos/200",
                     receiverName = userId,
-                    skillRequested = post.title, // Ensure title refer to skill expected
+                    skillRequested = post.skills.firstOrNull()?.name ?: "None",
                     thumbnail = post.media.firstOrNull() ?: "",
-                    specification = post.description,
+                    specification = post.title,
+                    authorRating = user?.rating ?: 0f,
                     description = post.description
                 )
             }
