@@ -13,10 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun StarRatingBar(
+    modifier: Modifier = Modifier.testTag(""),
     rating: Float,
     size: Int = 28,
     max: Int = 5,
@@ -24,7 +26,8 @@ fun StarRatingBar(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
     ) {
         val iconSize = Modifier.size(size.dp)
 

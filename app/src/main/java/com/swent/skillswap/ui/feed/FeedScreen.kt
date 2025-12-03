@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.ui.user.RatingBar
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
+import com.swent.skillswap.ui.utils.StarRatingBar
 
 /**
  * Displays the main FeedPost screen.
@@ -171,7 +171,7 @@ fun FeedScreen(
 
                                 Spacer(modifier = Modifier.width(8.dp))
 
-                                RatingBar(
+                                StarRatingBar(
                                     modifier = Modifier.testTag(FeedScreenTestTags.RATING),
                                     rating = uiState?.authorRating ?: 0f,
                                     size = 20

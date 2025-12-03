@@ -173,48 +173,7 @@ fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            uiState.skillSet.forEach { skill -> SkillPill(skill = skill.name) }
-        }
-    }
-}
-
-@Composable
-fun RatingBar(modifier: Modifier = Modifier, rating: Float, size: Int = 28, max: Int = 5) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = modifier
-    ) {
-        val iconSize = Modifier.size(size.dp)
-
-        val fullStars = rating.toInt()
-        val hasHalf = rating - fullStars >= 0.5f
-
-        repeat(fullStars) {
-            Icon(
-                imageVector = Icons.Filled.Star,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = iconSize
-            )
-        }
-
-        if (hasHalf) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.StarHalf,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = iconSize
-            )
-        }
-
-        repeat(max - fullStars - if (hasHalf) 1 else 0) {
-            Icon(
-                imageVector = Icons.Filled.StarOutline,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = iconSize
-            )
+            uiState.skillSet.forEach { skill -> SkillPillRated(skill = skill) }
         }
     }
 }
