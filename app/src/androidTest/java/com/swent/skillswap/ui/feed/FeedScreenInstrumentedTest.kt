@@ -996,11 +996,11 @@ class FeedScreenInstrumentedTest {
         // Wait until a post from another user is shown
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             val author = vm.uiState.value?.authorID
-            author != null && author != firstUser
+            author != null && author != userId2
         }
         vm.uiState.value!!.authorID
         // Verify that the current post is now from user1 (not blocked)
-        assert(vm.uiState.value!!.authorID == if (firstUser == userId1) userId2 else userId1)
+        assert(vm.uiState.value!!.authorID == userId1)
 
         return@runBlocking
     }
