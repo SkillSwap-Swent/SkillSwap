@@ -20,6 +20,8 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.ui.auth.AuthCreateAccountScreen
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.CreateAccountViewModel
@@ -310,10 +312,19 @@ class SignInCreateAccountScreenTest : TestCase() {
         val chipTag = CreateAccountTags.SKILL_CHIP_PREFIX + skillName
 
         composeTestRule.onNodeWithTag(chipTag).performScrollTo().assertIsDisplayed()
+
+        // 1 → Add Skill, starts at Familiar
         composeTestRule.onNodeWithTag(chipTag).performClick()
-        assert(vm.uiState.value.skills.contains(skillTag))
+        assertHasSkillWithTagAndRank(vm.uiState.value.skills, skillTag, SkillRank.FAMILIAR.value)
+        // 2 → Capable
         composeTestRule.onNodeWithTag(chipTag).performClick()
-        assert(!vm.uiState.value.skills.contains(skillTag))
+        assertHasSkillWithTagAndRank(vm.uiState.value.skills, skillTag, SkillRank.CAPABLE.value)
+        // 3 → Expert
+        composeTestRule.onNodeWithTag(chipTag).performClick()
+        assertHasSkillWithTagAndRank(vm.uiState.value.skills, skillTag, SkillRank.EXPERT.value)
+        // 4 → Removed
+        composeTestRule.onNodeWithTag(chipTag).performClick()
+        assertDoesNotHaveSkillWithTag(vm.uiState.value.skills, skillTag)
     }
 
     @Test
@@ -415,5 +426,27 @@ class SignInCreateAccountScreenTest : TestCase() {
                 false
             }
         }
+    }
+}
+
+fun assertHasSkillWithTagAndRank(skills: Set<Skill>, tag: SkillTag, expectedRank: Float) {
+    val matchingSkill = skills.firstOrNull { it.name == tag }
+
+    assert(matchingSkill != null) {
+        "Expected skill with tag <$tag> but none was found.\n" +
+            "Current skills: ${skills.map { "${it.name}:${it.rank}" }}"
+    }
+
+    assert(matchingSkill!!.rank == expectedRank) {
+        "Expected skill <$tag> to have rank <$expectedRank>, " +
+            "but found <${matchingSkill.rank}>.\n" +
+            "Current skills: ${skills.map { "${it.name}:${it.rank}" }}"
+    }
+}
+
+fun assertDoesNotHaveSkillWithTag(skills: Set<Skill>, tag: SkillTag) {
+    assert(skills.none { it.name == tag }) {
+        "Expected NO skill with tag <$tag>, but one exists.\n" +
+            "Current skills: ${skills.map { it.name }}"
     }
 }
