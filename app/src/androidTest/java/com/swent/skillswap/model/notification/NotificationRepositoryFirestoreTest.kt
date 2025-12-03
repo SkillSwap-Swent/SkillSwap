@@ -179,10 +179,46 @@ class NotificationRepositoryFirestoreTest {
     fun markChatNotificationsAsRead_marksOnlyMatchingNotifications() = runTest {
         val chatId1 = "chat-1"
         val chatId2 = "chat-2"
-        val notif1 = Notification(repo.getNewUid(), userId1, "T1", "M1", NotificationType.MESSAGE, relatedId = chatId1, isRead = false)
-        val notif2 = Notification(repo.getNewUid(), userId1, "T2", "M2", NotificationType.MESSAGE, relatedId = chatId2, isRead = false)
-        val notif3 = Notification(repo.getNewUid(), userId2, "T3", "M3", NotificationType.MESSAGE, relatedId = chatId1, isRead = false)
-        val notif4 = Notification(repo.getNewUid(), userId1, "T4", "M4", NotificationType.MESSAGE, relatedId = chatId1, isRead = true)
+        val notif1 =
+            Notification(
+                repo.getNewUid(),
+                userId1,
+                "T1",
+                "M1",
+                NotificationType.MESSAGE,
+                relatedId = chatId1,
+                isRead = false
+            )
+        val notif2 =
+            Notification(
+                repo.getNewUid(),
+                userId1,
+                "T2",
+                "M2",
+                NotificationType.MESSAGE,
+                relatedId = chatId2,
+                isRead = false
+            )
+        val notif3 =
+            Notification(
+                repo.getNewUid(),
+                userId2,
+                "T3",
+                "M3",
+                NotificationType.MESSAGE,
+                relatedId = chatId1,
+                isRead = false
+            )
+        val notif4 =
+            Notification(
+                repo.getNewUid(),
+                userId1,
+                "T4",
+                "M4",
+                NotificationType.MESSAGE,
+                relatedId = chatId1,
+                isRead = true
+            )
 
         repo.addNotification(notif1)
         repo.addNotification(notif2)
@@ -197,5 +233,4 @@ class NotificationRepositoryFirestoreTest {
         assertFalse(repo.getNotification(notif3.uid).isRead)
         assertTrue(repo.getNotification(notif4.uid).isRead)
     }
-
 }

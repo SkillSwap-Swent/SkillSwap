@@ -2,8 +2,6 @@
 package com.swent.skillswap.model.notification
 
 import com.google.firebase.Timestamp
-import com.swent.skillswap.model.chat.Chat
-import com.swent.skillswap.model.post.PostType
 import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -174,16 +172,18 @@ class FakeNotificationRepositoryTest {
     fun markChatNotificationsAsRead_correctly_marks_chatNotifications_as_read() = runTest {
         // Add notifications: two for chat-1 (one for each user), one for another chat
         val chatNotificationUser1 = sampleNotification1
-        val chatNotificationUser2 = sampleNotification1.copy(
-            uid = "notification-4",
-            userId = testUserId2,
-            isRead = false
-        ) // chat-1, testUserId2
-        val otherChatNotification = sampleNotification1.copy(
-            uid = "notification-5",
-            relatedId = "chat-2",
-            isRead = false
-        ) // chat-2, testUserId
+        val chatNotificationUser2 =
+            sampleNotification1.copy(
+                uid = "notification-4",
+                userId = testUserId2,
+                isRead = false
+            ) // chat-1, testUserId2
+        val otherChatNotification =
+            sampleNotification1.copy(
+                uid = "notification-5",
+                relatedId = "chat-2",
+                isRead = false
+            ) // chat-2, testUserId
 
         repository.addNotification(chatNotificationUser1)
         repository.addNotification(chatNotificationUser2)
@@ -197,5 +197,4 @@ class FakeNotificationRepositoryTest {
         assertFalse(repository.getNotification(chatNotificationUser2.uid).isRead)
         assertFalse(repository.getNotification(otherChatNotification.uid).isRead)
     }
-
 }

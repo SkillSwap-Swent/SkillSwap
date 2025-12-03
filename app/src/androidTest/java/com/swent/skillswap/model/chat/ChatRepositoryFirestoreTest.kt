@@ -128,7 +128,7 @@ class ChatRepositoryFirestoreTest {
     }
 
     @Test
-    fun getChat_fetches_correct_chat_and_handles_errors() = runBlocking{
+    fun getChat_fetches_correct_chat_and_handles_errors() = runBlocking {
         val senderId1 = "user1"
         val senderId2 = "user2"
 
@@ -145,12 +145,13 @@ class ChatRepositoryFirestoreTest {
         // Check for raised exception on invalid chatId
 
         val invalidChatId = "nonexistent_chat_id"
-        val exception = assertThrows(Exception::class.java) {
-            runBlocking {
-                repo.getChat(invalidChatId)
-            }
-        }
+        val exception =
+            assertThrows(Exception::class.java) { runBlocking { repo.getChat(invalidChatId) } }
 
-        assertTrue(exception.message!!.contains("Error while fetching chat in getChat: Chat with ID nonexistent_chat_id does not exist"))
+        assertTrue(
+            exception.message!!.contains(
+                "Error while fetching chat in getChat: Chat with ID nonexistent_chat_id does not exist"
+            )
+        )
     }
 }

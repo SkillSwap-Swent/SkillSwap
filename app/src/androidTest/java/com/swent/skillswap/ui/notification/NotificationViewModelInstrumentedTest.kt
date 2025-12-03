@@ -703,15 +703,36 @@ class NotificationViewModelInstrumentedTest {
     fun markChatNotificationsAsRead_marksOnlyChatNotificationsForCurrentUser() = runBlocking {
         // Add notifications: two for chat-1 (one for each user), one for another chat
         val chatId = "chat-1"
-        val notif1 = createNotification(
-            "notif-1", testUserId, "Chat 1", "Msg", NotificationType.MESSAGE, false, chatId
-        )
-        val notif2 = createNotification(
-            "notif-2", "other-user", "Chat 1", "Msg", NotificationType.MESSAGE, false, chatId
-        )
-        val notif3 = createNotification(
-            "notif-3", testUserId, "Chat 2", "Msg", NotificationType.MESSAGE, false, "chat-2"
-        )
+        val notif1 =
+            createNotification(
+                "notif-1",
+                testUserId,
+                "Chat 1",
+                "Msg",
+                NotificationType.MESSAGE,
+                false,
+                chatId
+            )
+        val notif2 =
+            createNotification(
+                "notif-2",
+                "other-user",
+                "Chat 1",
+                "Msg",
+                NotificationType.MESSAGE,
+                false,
+                chatId
+            )
+        val notif3 =
+            createNotification(
+                "notif-3",
+                testUserId,
+                "Chat 2",
+                "Msg",
+                NotificationType.MESSAGE,
+                false,
+                "chat-2"
+            )
         repository.addNotification(notif1)
         repository.addNotification(notif2)
         repository.addNotification(notif3)
@@ -732,5 +753,4 @@ class NotificationViewModelInstrumentedTest {
         assertFalse(updated2.isRead)
         assertFalse(updated3.isRead)
     }
-
 }
