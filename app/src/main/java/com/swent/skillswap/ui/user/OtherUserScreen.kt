@@ -15,16 +15,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.ui.post.RequestScreenTags
-import com.swent.skillswap.ui.utils.SkillPill
+import com.swent.skillswap.ui.utils.SkillPillRated
+import com.swent.skillswap.ui.utils.StarRatingBar
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -157,7 +154,7 @@ fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            RatingBar(rating = uiState.rating, size = 34)
+            StarRatingBar(rating = uiState.rating, size = 34)
 
             Text(
                 text = String.format(Locale.getDefault(), "%.1f", uiState.rating),

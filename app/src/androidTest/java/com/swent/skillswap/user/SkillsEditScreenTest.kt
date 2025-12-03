@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
@@ -49,9 +50,9 @@ class SkillsEditScreenTest : TestCase() {
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/She-goat_J1.jpg/500px-She-goat_J1.jpg",
             skillSet =
                 setOf(
-                    Skill(name = SkillTag.DATABASES, rank = 4F, ""),
-                    Skill(name = SkillTag.DIGITAL_LOGIC, rank = 2F, ""),
-                    Skill(name = SkillTag.PHYSICS_MECHANICS, rank = 5F, "")
+                    Skill(name = SkillTag.DATABASES, rank = SkillRank.CAPABLE.value, ""),
+                    Skill(name = SkillTag.DIGITAL_LOGIC, rank = SkillRank.FAMILIAR.value, ""),
+                    Skill(name = SkillTag.PHYSICS_MECHANICS, rank = SkillRank.EXPERT.value, "")
                 ),
             rating = 4.5f,
             availability = emptyList()
@@ -120,15 +121,29 @@ class SkillsEditScreenTest : TestCase() {
     private fun waitForSkillInViewModel(
         skillTag: SkillTag,
         shouldExist: Boolean,
-        timeoutMillis: Long = 5_000
+        timeoutMillis: Long = 5_000,
+        shouldHaveRank: Float? = null
     ) {
         composeTestRule.waitUntil(timeoutMillis) {
             val updatedUser = viewModel.uiState.value.editedUser
-            val skillNames = updatedUser?.skillSet?.map { it.name } ?: emptyList()
+            val skillSet = updatedUser?.skillSet ?: emptySet()
+            val skill = skillSet.firstOrNull { it.name == skillTag }
+
             if (shouldExist) {
-                skillNames.contains(skillTag)
+                if (skill == null) {
+                    return@waitUntil false
+                }
+
+                // If we must verify a rank
+                if (shouldHaveRank != null) {
+                    return@waitUntil skill.rank == shouldHaveRank
+                }
+
+                // Skill exists and no rank check required
+                true
             } else {
-                !skillNames.contains(skillTag)
+                // The skill should not exist
+                return@waitUntil skill == null
             }
         }
     }
@@ -168,7 +183,7 @@ class SkillsEditScreenTest : TestCase() {
     }
 
     @Test
-    fun skillsEditScreen_removingSkillUpdatesViewModel() = run {
+    fun skillsEditScreen_cyclingAndRemovingSkillUpdatesViewModel() = run {
         step("Display SkillsEditScreen with real repository") {
             composeTestRule.setContent {
                 SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
@@ -183,9 +198,26 @@ class SkillsEditScreenTest : TestCase() {
             }
 
             // DATABASES should initially be present in VM
-            waitForSkillInViewModel(SkillTag.DATABASES, shouldExist = true)
+            waitForSkillInViewModel(
+                SkillTag.DATABASES,
+                shouldExist = true,
+                shouldHaveRank = SkillRank.CAPABLE.value
+            )
 
             val chipTag = CreateAccountTags.SKILL_CHIP_PREFIX + SkillTag.DATABASES.name
+
+            // Wait for chip then click it
+            waitForNodeToExist(chipTag)
+            composeTestRule.onNodeWithTag(USER_SKILLS_BOX).performScrollTo()
+            composeTestRule.onNodeWithTag(chipTag, useUnmergedTree = true).performScrollTo()
+            composeTestRule.onNodeWithTag(chipTag, useUnmergedTree = true).performClick()
+
+            // Wait until it's updated
+            waitForSkillInViewModel(
+                SkillTag.DATABASES,
+                shouldExist = true,
+                shouldHaveRank = SkillRank.EXPERT.value
+            )
 
             // Wait for chip then click it
             waitForNodeToExist(chipTag)
