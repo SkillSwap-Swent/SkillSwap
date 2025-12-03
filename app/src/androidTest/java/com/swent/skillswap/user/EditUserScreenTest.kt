@@ -6,6 +6,11 @@
  */
 package com.swent.skillswap.user
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -15,6 +20,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
+import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
@@ -24,11 +31,16 @@ import com.swent.skillswap.ui.user.editUser.EditUserScreen
 import com.swent.skillswap.ui.user.editUser.EditUserTags
 import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.utils.FirebaseEmulator
+import com.swent.skillswap.utils.FirebaseEmulator.storage
+import java.io.File
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import org.junit.After
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -47,6 +59,7 @@ class EditUserScreenTest : TestCase() {
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
     private lateinit var db: FirebaseFirestore
     private lateinit var repo: UserRepoFirestore
+    private lateinit var storageRepo: PictureRepository
     private lateinit var viewModel: EditUserViewModel
 
     private val testUser =
@@ -54,8 +67,7 @@ class EditUserScreenTest : TestCase() {
             uid = "test-user-123",
             username = "Chef",
             email = "test@example.com",
-            profilePicture =
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/She-goat_J1.jpg/500px-She-goat_J1.jpg",
+            profilePicture = "",
             skillSet =
                 setOf(
                     Skill(name = SkillTag.DATABASES, rank = 4F, ""),
@@ -70,6 +82,7 @@ class EditUserScreenTest : TestCase() {
         FirebaseEmulator.startEmulator()
         db = FirebaseEmulator.firestore
         repo = UserRepoFirestore(db)
+        storageRepo = PictureRepository(storage)
     }
 
     @Before
@@ -118,8 +131,48 @@ class EditUserScreenTest : TestCase() {
         repo.addUser(userToAdd)
 
         // Instantiate the ViewModel with the emulated repo
-        viewModel = EditUserViewModel(repo)
+        viewModel = EditUserViewModel(repo, storageRepo)
         viewModel.loadCurrentUser()
+    }
+
+    @After
+    fun tearDown() = runBlocking {
+        /** Clean all emulators */
+        FirebaseEmulator.clearAuthEmulator()
+        FirebaseEmulator.clearFirestoreEmulator()
+
+        /** Clean up storage manually */
+        val storageRef = storage.reference.child(PROFILE_PICTURES_PATH)
+        val listResult = storageRef.listAll().await()
+        for (item in listResult.items) {
+            item.delete().await()
+        }
+    }
+
+    /**
+     * HELPER FUNCTION Generates a test image Uri by creating a Bitmap, saving it to a temporary
+     * file
+     *
+     * @return Uri of the generated test image
+     *
+     *   Ai-generated code
+     */
+    fun generateTestImageUri(
+        context: Context,
+        width: Int = 100,
+        height: Int = 100,
+        color: Int = Color.RED
+    ): Uri {
+        /** Create a bitmap */
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(color)
+
+        /** Create a temporary file to hold the bitmap */
+        val tempFile = File(context.cacheDir, "test_image_${System.currentTimeMillis()}.png")
+        tempFile.outputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out) }
+
+        return Uri.fromFile(tempFile)
     }
 
     @Test
@@ -280,19 +333,8 @@ class EditUserScreenTest : TestCase() {
             .onNodeWithTag(EditUserTags.USERNAME_TEXTFIELD)
             .performTextInput("UpdatedChef")
 
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performScrollTo()
-            .performTextClearance()
-
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
-
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performTextInput(
-                "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png"
-            )
 
         // Check that UI state is updated
         assertEquals("UpdatedChef", viewModel.uiState.value.editedUser!!.username)
@@ -310,145 +352,97 @@ class EditUserScreenTest : TestCase() {
                 val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
 
                 assertEquals("UpdatedChef", editedUser.username)
-                assertEquals(
-                    "https://images.voicy.network/Content/Clips/Images/3bb25d87-2d2d-4f93-b3d1-01f310f81aeb-small.png",
-                    editedUser.profilePicture
-                )
             }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
-                .performScrollTo()
-                .assertIsDisplayed()
-        }
-
-        step("Edit profile picture again") {
-            composeTestRule.waitForIdle()
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-                .performScrollTo()
-                .performTextClearance()
-
-            composeTestRule.waitForIdle()
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-                .performTextInput(
-                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
-                )
-
-            // Click validate button
-            composeTestRule
-                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
-                .performScrollTo()
-                .performClick()
-
-            // Wait for save operation to complete
-            // Here we cannot use IsSaved because it is already true from previous save => To fix in
-            // a next sprint
-            composeTestRule.waitUntil(timeoutMillis = 5000) {
-                runBlocking {
-                    repo.getUser(Firebase.auth.currentUser!!.uid).profilePicture ==
-                        "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
-                }
-            }
-        }
-
-        step("Verify profile picture is updated in repository") {
-            runBlocking {
-                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
-
-                assertEquals("UpdatedChef", editedUser.username) // same as before
-                assertEquals(
-                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
-                    editedUser.profilePicture
-                )
-            }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
-                .performScrollTo()
-                .assertIsDisplayed()
         }
     }
 
     @Test
-    fun deleteProfilePictureRemoveURLFromRepoAndDisplayDefaultProfilePicture() = run {
+    fun deleteProfilePictureRemoveURLFromBothRepoAndStorageAndDisplayDefaultProfilePicture() = run {
         composeTestRule.setContent {
             SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
         }
 
-        // Wait for user to be loaded
+        /** Wait for user to be loaded */
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             viewModel.uiState.value.editedUser != null
         }
 
-        // Set profile picture URL
-        composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performScrollTo()
-            .performTextClearance()
+        /** Simulate selecting a new profile picture */
+        val uri = generateTestImageUri(ctx)
+        viewModel.onSelectedProfilePicture(uri)
 
+        /** Wait for the profile picture URI to be updated in the UI state */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            (viewModel.uiState.value.editedUser!!.profilePicture != "" &&
+                !viewModel.uiState.value.isLoading)
+        }
+
+        /** Check precondition for validate function */
+        assertTrue(viewModel.uiState.value.usernameError == null)
+        assertTrue(viewModel.uiState.value.emailError == null)
+        assertTrue(viewModel.uiState.value.profilePictureError == null)
+        assertTrue(viewModel.uiState.value.skillSetError == null)
+        assertTrue(viewModel.uiState.value.ratingError == null)
+        assertTrue(viewModel.uiState.value.availabilityError == null)
+        assertTrue(!viewModel.uiState.value.isLoading)
+
+        /** Validate profile picture upload */
+        composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
+
+        /** Wait for save operation to complete */
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            runBlocking {
+                repo.getUser(viewModel.uiState.value.editedUser!!.uid).profilePicture.isNotEmpty()
+            }
+        }
+
+        /** check that profile picture is set in firebase */
+        val userAfterPictureSet = runBlocking {
+            repo.getUser(viewModel.uiState.value.editedUser!!.uid)
+        }
+        assertTrue(userAfterPictureSet.profilePicture.isNotEmpty())
+
+        /** delete the profile picture */
         composeTestRule
-            .onNodeWithTag(EditUserTags.PROFILE_PICTURE_TEXTFIELD)
-            .performTextInput(
-                "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg"
-            )
+            .onNodeWithTag(EditUserTags.DELETE_PROFILE_PICTURE)
+            .performScrollTo()
+            .performClick()
 
         composeTestRule.waitForIdle()
 
-        // Click validate button
         composeTestRule.onNodeWithTag(EditUserTags.VALIDATE_BUTTON).performScrollTo().performClick()
 
-        // Wait for save operation to complete
-        composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
-
-        step("Verify profile picture URL is in repository") {
+        /** Wait for save operation to complete */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
             runBlocking {
-                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
-
-                assertEquals(
-                    "https://i.pinimg.com/564x/8e/c8/26/8ec8266636c3dd57f98b1c02437e9923.jpg",
-                    editedUser.profilePicture
-                )
-            }
-
-            composeTestRule
-                .onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT)
-                .performScrollTo()
-                .assertIsDisplayed()
-        }
-
-        step("Delete profile picture URL and validate") {
-            // Clear profile picture URL
-            composeTestRule
-                .onNodeWithTag(EditUserTags.DELETE_PROFILE_PICTURE)
-                .performScrollTo()
-                .performClick()
-
-            composeTestRule.waitForIdle()
-
-            // Click validate button
-            composeTestRule
-                .onNodeWithTag(EditUserTags.VALIDATE_BUTTON)
-                .performScrollTo()
-                .performClick()
-
-            // Wait for save operation to complete
-            composeTestRule.waitUntil(timeoutMillis = 5000) { viewModel.uiState.value.isSaved }
-
-            // Check that the profile picture content is not displayed (default picture)
-            composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE_CONTENT).assertDoesNotExist()
-        }
-
-        step("Verifiy that the repository as been cleaned as well") {
-            runBlocking {
-                val editedUser = repo.getUser(Firebase.auth.currentUser!!.uid)
-
-                assertEquals("", editedUser.profilePicture)
+                repo.getUser(viewModel.uiState.value.editedUser!!.uid).profilePicture == ""
             }
         }
+
+        /** Verify that the profile picture URL is removed from the user repository and storage */
+        runBlocking {
+            val editedUserFromRepo = repo.getUser(viewModel.uiState.value.editedUser!!.uid)
+            assertTrue(editedUserFromRepo.profilePicture == "")
+
+            /** Verify that the picture is removed from storage */
+            val pictureName = viewModel.uiState.value.editedUser!!.uid
+
+            // Attempting to get the download URL should throw an exception if the picture has been
+            // deleted
+            assertThrows(com.google.firebase.storage.StorageException::class.java) {
+                runBlocking {
+                    val storageRef =
+                        storage.reference.child(PROFILE_PICTURES_PATH).child(pictureName)
+                    storageRef.downloadUrl.await()
+                }
+            }
+        }
+
+        /** Verify that the default profile picture is displayed in the UI */
+        composeTestRule
+            .onNodeWithTag(EditUserTags.PROFILE_PICTURE)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
@@ -476,6 +470,88 @@ class EditUserScreenTest : TestCase() {
                 .onNodeWithTag(EditUserTags.GENERAL_ERROR)
                 .assertIsDisplayed()
                 .assert(hasText("Something went wrong"))
+        }
+    }
+
+    @Test
+    fun profilePictureIsUpdatedAndStoredWhenValidURIisProvided() = run {
+        step("Display EditUserScreen") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
+            }
+        }
+
+        /** generate a test image URI */
+        val uri = generateTestImageUri(ctx)
+
+        /** Simulate selecting a new profile picture */
+        viewModel.onSelectedProfilePicture(uri)
+
+        /** Wait for the profile picture URI to be updated in the UI state */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            (!(viewModel.uiState.value.isLoading) &&
+                viewModel.uiState.value.editedUser!!.profilePicture.isNotEmpty())
+        }
+
+        /** Verify that the profile picture URI is stored in storage */
+        runBlocking {
+            val pictureName = viewModel.uiState.value.editedUser!!.uid
+            val storageRef = storage.reference.child(PROFILE_PICTURES_PATH).child(pictureName)
+            val downloadUrl = storageRef.downloadUrl.await()
+            assertTrue(downloadUrl.toString().isNotEmpty())
+            assertEquals(
+                downloadUrl.toString(),
+                viewModel.uiState.value.editedUser!!.profilePicture
+            )
+        }
+
+        /** Wait for UI to display profile picture... */
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            try {
+                composeTestRule.onNodeWithTag(EditUserTags.PROFILE_PICTURE).assertExists()
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+    }
+
+    @Test
+    fun selectWrongMediaSetProfilePictureErrorAndDoesNothing() {
+        /** Wait for user to be loaded */
+        composeTestRule.setContent {
+            SkillSwapAppTheme { EditUserScreen(vm = viewModel, onGoBack = {}) }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            viewModel.uiState.value.editedUser != null
+        }
+
+        val wrongURI = Uri.parse("ftp://invalid_uri.com/image.png")
+        viewModel.onSelectedProfilePicture(wrongURI)
+
+        /** wait until isLoading is false */
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            viewModel.uiState.value.profilePictureError != null
+        }
+
+        assertTrue(viewModel.uiState.value.profilePictureError != null)
+
+        /** Check storage to ensure no picture was uploaded */
+        runBlocking {
+            val pictureName = viewModel.uiState.value.editedUser!!.uid
+            val storageRef = storage.reference.child(PROFILE_PICTURES_PATH).child(pictureName)
+            assertThrows(com.google.firebase.storage.StorageException::class.java) {
+                runBlocking { storageRef.downloadUrl.await() }
+            }
+        }
+    }
+
+    @Test
+    fun selectNoMediaThrowException() {
+        assertThrows(IllegalArgumentException::class.java) {
+            viewModel.onSelectedProfilePicture(Uri.parse(""))
         }
     }
 }

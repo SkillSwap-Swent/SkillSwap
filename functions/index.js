@@ -11,71 +11,49 @@ admin.initializeApp();
 // NOTE: setGlobalOptions is a V2-only feature and has been removed.
 // V1 settings (like maxInstances) must be applied using .runWith()
 
-// V1-style Firestore trigger with maxInstances applied via runWith
-exports.sendChatMessageNotification = functions
-    // Apply maxInstances setting directly to the function
-    .runWith({maxInstances: 10})
-    .firestore
-    .document("chats/{chatId}")
-    .onUpdate(async (change, context) => {
-      // --- Message Extraction and Validation ---
-      const beforeMessages = change.before.get("messages") || [];
-      const afterMessages = change.after.get("messages") || [];
+// Firestore trigger to listen for new notifications
+exports.sendNotificationOnCreate = functions.firestore
+    .document("notifications/{notificationId}")
+    .onCreate(async (snapshot, context) => {
+      const notificationData = snapshot.data();
 
-      if (afterMessages.length <= beforeMessages.length) return;
-
-      const newMessage = afterMessages[afterMessages.length - 1];
-      if (!newMessage) return;
-
-      let messageObj = newMessage;
-      if (typeof newMessage === "string") {
-        try {
-          // Assuming messages might be stored as stringified JSON
-          messageObj = JSON.parse(newMessage);
-        } catch (e) {
-          console.error("Failed to parse message string:", e);
-          return;
-        }
+      // Validate notification data
+      if (!notificationData || !notificationData.userId ||
+          !notificationData.title || !notificationData.message) {
+        console.error("Invalid notification data:", notificationData);
+        return;
       }
 
-      if (!messageObj || !messageObj.senderId || !messageObj.content) return;
+      const {userId, title, message, type, relatedId} = notificationData;
 
-      // --- Recipient Identification ---
-      const participants = change.after.get("participants") || [];
-      // Find the other participant who is not the sender
-      const recipientId = participants.find((id) => id !== messageObj.senderId);
-      if (!recipientId) return;
-
-      // --- Recipient Token Lookup ---
-      const users = admin.firestore().collection("users");
-      const userDoc = await users.doc(recipientId).get();
+      // Fetch the user's FCM token
+      const userDoc = await admin.firestore()
+          .collection("users").doc(userId).get();
       const userData = userDoc.data();
 
-      if (!userData) {
-        console.log(`User document not found for recipientId: ${recipientId}`);
+      if (!userData || !userData.fcmToken) {
+        console.error(`FCM token not found for userId: ${userId}`);
         return;
       }
 
       const recipientToken = userData.fcmToken;
-      if (!recipientToken) {
-        console.log(`FCM token not found for recipientId: ${recipientId}`);
-        return;
-      }
 
-      // --- FCM Payload Construction and Sending ---
+      // Construct the FCM payload
       const payload = {
         notification: {
-          title: "New Message",
-          body: messageObj.content,
+          title: title,
+          body: message,
         },
         data: {
-          chatId: context.params.chatId,
+          type: type,
+          relatedId: relatedId || "",
         },
       };
 
+      // Send the notification
       try {
         await admin.messaging().sendToDevice(recipientToken, payload);
-        console.log("Notification sent successfully to:", recipientId);
+        console.log("Notification sent successfully to userId:", userId);
       } catch (error) {
         console.error("Error sending notification:", error);
       }
