@@ -126,4 +126,31 @@ class ChatRepositoryFirestoreTest {
         // Clean up
         FirebaseEmulator.auth.signOut()
     }
+
+    @Test
+    fun getChat_fetches_correct_chat_and_handles_errors() = runBlocking{
+        val senderId1 = "user1"
+        val senderId2 = "user2"
+
+        // create chat first
+        val chatId = repo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
+        val fetchedChat = repo.getChat(chatId)
+
+        // Check chat properties
+        assertEquals(chatId, fetchedChat.id)
+        assertEquals(listOf(senderId1, senderId2), fetchedChat.participants)
+        assertEquals("none", fetchedChat.relatedPostId)
+        assertEquals(PostType.REQUEST, fetchedChat.relatedPostType)
+
+        // Check for raised exception on invalid chatId
+
+        val invalidChatId = "nonexistent_chat_id"
+        val exception = assertThrows(Exception::class.java) {
+            runBlocking {
+                repo.getChat(invalidChatId)
+            }
+        }
+
+        assertTrue(exception.message!!.contains("Error while fetching chat in getChat: Chat with ID nonexistent_chat_id does not exist"))
+    }
 }
