@@ -463,7 +463,7 @@ fun FeedScreenAlertDialog(
     if (show) {
         AlertDialog(
             onDismissRequest = {
-            /** do nothing until it click on confirm* */
+                /** do nothing until it click on confirm* */
             },
             title = { Text(title) },
             text = { Text(text, Modifier.testTag(descriptionTestTag)) },
