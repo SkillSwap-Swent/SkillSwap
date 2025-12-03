@@ -29,8 +29,10 @@ import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
@@ -56,8 +58,10 @@ fun FeedScreen(
     var showDistanceSlider by remember { mutableStateOf(false) }
     var distance by remember { mutableFloatStateOf(0f) }
     var isLiveLocationEnabled by remember { mutableStateOf(false) }
-    val showReportOfferAlert = remember { mutableStateOf(false) }
-    val showBlockUserAlert = remember { mutableStateOf(false) }
+    var showReportOfferAlert by remember { mutableStateOf(false) }
+    var showBlockUserAlert by remember { mutableStateOf(false) }
+    var reportedAuthorName by remember { mutableStateOf<String?>(null) }
+    var blockedAuthorName by remember { mutableStateOf<String?>(null) }
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val screenHeightDp = configuration.screenHeightDp.dp
@@ -69,23 +73,39 @@ fun FeedScreen(
     LaunchedEffect(Unit) {
         vm.eventFlow.collect { event ->
             when (event) {
-                is FeedScreenEvent.SuccessFullBlock -> showBlockUserAlert.value = true
-                FeedScreenEvent.SuccessFullReport -> showReportOfferAlert.value = true
+                is FeedScreenEvent.SuccessFullBlock -> {
+                    blockedAuthorName = event.authorName
+                    showBlockUserAlert = true
+                }
+                is FeedScreenEvent.SuccessFullReport -> {
+                    reportedAuthorName = event.authorName
+                    showReportOfferAlert = true
+                }
+                FeedScreenEvent.ErrorOnBlock -> {
+                    /** no error handling* */
+                }
+                FeedScreenEvent.ErrorOnReport -> {
+                    /** no error handling* */
+                }
             }
         }
     }
     /** alert for successful report of a post* */
     FeedScreenAlertDialog(
         title = "Successful report",
-        text = "Successfully reported offer from " + uiState?.authorName,
-        showState = showReportOfferAlert,
+        text = "Successfully reported offer from $reportedAuthorName",
+        onConfirm = { showReportOfferAlert = !showReportOfferAlert },
+        show = showReportOfferAlert,
+        descriptionTestTag = POP_UP_REPORT_DESCRIPTION,
         modifier = Modifier.testTag(POP_UP_REPORT)
     )
     /** alert for successful blocking of a user* */
     FeedScreenAlertDialog(
         title = "Successful block",
-        text = "Successfully blocked " + uiState?.authorName,
-        showState = showBlockUserAlert,
+        text = "Successfully blocked $blockedAuthorName",
+        onConfirm = { showBlockUserAlert = !showBlockUserAlert },
+        show = showBlockUserAlert,
+        descriptionTestTag = POP_UP_BLOCK_DESCRIPTION,
         modifier = Modifier.testTag(POP_UP_BLOCK)
     )
     Box(
@@ -435,22 +455,21 @@ private fun FilterBar(
 fun FeedScreenAlertDialog(
     title: String = "Successful report",
     text: String = "Successfully blocked User1",
-    showState: MutableState<Boolean> = mutableStateOf(true),
+    show: Boolean = true,
     onConfirm: () -> Unit = {},
+    descriptionTestTag: String = "",
     modifier: Modifier = Modifier
 ) {
-    val show = showState.value
     if (show) {
         AlertDialog(
-            onDismissRequest = { showState.value = false },
+            onDismissRequest = {
+            /** do nothing until it click on confirm* */
+            },
             title = { Text(title) },
-            text = { Text(text) },
+            text = { Text(text, Modifier.testTag(descriptionTestTag)) },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        onConfirm
-                        showState.value = false
-                    },
+                    onClick = { onConfirm() },
                     modifier = Modifier.testTag(POP_UP_CONFIRM_BUTTON)
                 ) {
                     Text("Confirm")

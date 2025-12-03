@@ -957,7 +957,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun successful_block_show_correct_pop_up_and_can_click_on_it() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", userId2)
+        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -986,6 +986,9 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION)
+            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON)
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
@@ -998,7 +1001,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun successful_reporting_offer_show_correct_pop_up_and_can_click_on_it() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", userId2)
+        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
@@ -1026,6 +1029,9 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION, useUnmergedTree = true)
+            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON)
         composeTestRule.waitUntil(10_000L) {
             composeTestRule

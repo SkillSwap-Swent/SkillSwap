@@ -25,9 +25,13 @@ import kotlinx.coroutines.launch
 sealed class FeedScreenEvent() {
 
     /** Event indicating that the user has successfully block a user */
-    object SuccessFullBlock : FeedScreenEvent()
-    /** Event indicating that the user has successfully report an offer */
-    object SuccessFullReport : FeedScreenEvent()
+    data class SuccessFullBlock(val authorName: String) : FeedScreenEvent()
+    /** Event indicating that the user has got an error while trying to block a user */
+    object ErrorOnBlock : FeedScreenEvent()
+    /** Event indicating that the user has successfully report a post */
+    data class SuccessFullReport(val authorName: String) : FeedScreenEvent()
+    /** Event indicating that the user has got an error while trying to report a post */
+    object ErrorOnReport : FeedScreenEvent()
 }
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -103,10 +107,12 @@ open class FeedScreenViewModel(
     fun blockUser(userId: String) {
         viewModelScope.launch {
             try {
+                val userName: String = _uiState.value?.authorName ?: ""
                 controller.blockUser(userId)
-                _eventFlow.emit(FeedScreenEvent.SuccessFullBlock)
+                _eventFlow.emit(FeedScreenEvent.SuccessFullBlock(userName))
             } catch (e: Exception) {
-                Log.e("BlockUserError", "failed to user. Cause: ", e)
+                _eventFlow.emit(FeedScreenEvent.ErrorOnBlock)
+                Log.e("BlockUserError", "failed to block the user. Cause: ", e)
             }
         }
     }
@@ -118,10 +124,12 @@ open class FeedScreenViewModel(
 
         viewModelScope.launch {
             try {
+                val userName: String = _uiState.value?.authorName ?: ""
                 controller.reportPost(offer.offerId, PostType.REQUEST)
                 decline(offer)
-                _eventFlow.emit(FeedScreenEvent.SuccessFullReport)
+                _eventFlow.emit(FeedScreenEvent.SuccessFullReport(userName))
             } catch (e: Exception) {
+                _eventFlow.emit(FeedScreenEvent.ErrorOnReport)
                 Log.e("ReportPostError", "failed to report the post cause: ", e)
             }
         }
