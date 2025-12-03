@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.ui.post.RequestScreenTags
-import com.swent.skillswap.ui.utils.SkillPill
+import com.swent.skillswap.ui.utils.SkillPillRated
 import com.swent.skillswap.ui.utils.StarRatingBar
 import java.util.Locale
 
@@ -173,7 +173,7 @@ fun OtherUserScreen(vm: OtherUserViewModel = viewModel()) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            uiState.skillSet.forEach { skill -> SkillPill(skill = skill.name) }
+            uiState.skillSet.forEach { skill -> SkillPillRated(skill = skill) }
         }
     }
 }
