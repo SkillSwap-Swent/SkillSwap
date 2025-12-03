@@ -160,6 +160,9 @@ class FeedScreenInstrumentedTest {
 
     @Before
     fun setUp() = runBlocking {
+        // Clear emulator state before each test to ensure isolation
+        FirebaseEmulator.clearAuthEmulator()
+        FirebaseEmulator.clearFirestoreEmulator()
         FirebaseEmulator.startEmulator()
 
         navigation = FakeFeedNavigation()
@@ -571,7 +574,18 @@ class FeedScreenInstrumentedTest {
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule.waitForIdle()
+        // Wait until feed card is present to ensure initial content has loaded
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            } catch (e: Exception) {
+                false
+            }
+        }
+
         // List of test tags that require scrolling
         val scrollableTags =
             listOf(
@@ -584,6 +598,17 @@ class FeedScreenInstrumentedTest {
         scrollableTags.forEach { tag ->
             try {
                 composeTestRule.waitForIdle()
+                // Wait until the node exists in the tree (may be offscreen)
+                composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+                    try {
+                        composeTestRule
+                            .onAllNodesWithTag(tag, useUnmergedTree = true)
+                            .fetchSemanticsNodes()
+                            .isNotEmpty()
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
                 composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo()
                 composeTestRule.waitForIdle()
                 composeTestRule.waitUntil(timeoutMillis = 5_000) {
@@ -617,6 +642,17 @@ class FeedScreenInstrumentedTest {
         visibleTags.forEach { tag ->
             try {
                 composeTestRule.waitForIdle()
+                // Wait until the node is present and displayed
+                composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+                    try {
+                        composeTestRule
+                            .onAllNodesWithTag(tag, useUnmergedTree = true)
+                            .fetchSemanticsNodes()
+                            .isNotEmpty()
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
                 composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
             } catch (e: AssertionError) {
                 throw AssertionError("❌ UI element with testTag '$tag' was NOT displayed.", e)
@@ -627,6 +663,23 @@ class FeedScreenInstrumentedTest {
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
+        // Wait for menu items to appear (dropdown can be asynchronous)
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                composeTestRule
+                    .onAllNodesWithText("Block User")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty() &&
+                    composeTestRule
+                        .onAllNodesWithText("Report Offer")
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+            } catch (e: Exception) {
+                false
+            }
+        }
+
+        // Assert and interact with menu items, waiting for dismissal after each action
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
         composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
 
@@ -912,11 +965,9 @@ class FeedScreenInstrumentedTest {
     fun block_user_skips_his_future_posts() = runBlocking {
         val postA = createValidPost("pA", "Offer A", userId2)
         val postB = createValidPost("pB", "Offer B", userId2)
-        val postC = createValidPost("pC", "Offer C", userId1)
 
         addPostToEmulator(postA)
         addPostToEmulator(postB)
-        addPostToEmulator(postC)
 
         // Force Firestore to sync
         FirebaseEmulator.firestore.collection("requests").get().await()
@@ -932,15 +983,15 @@ class FeedScreenInstrumentedTest {
         }
 
         // First post should be from user2
-        val firstUser = vm.uiState.value!!.authorID
+        assert(vm.uiState.value!!.authorID == userId2)
+        val postC = createValidPost("pC", "Offer C", userId1)
+        addPostToEmulator(postC)
+
         // Open menu and block the user
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").performClick()
         composeTestRule.waitForIdle()
-
-        // Skip the current post to trigger next post
-        controller.skipPost()
 
         // Wait until a post from another user is shown
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
