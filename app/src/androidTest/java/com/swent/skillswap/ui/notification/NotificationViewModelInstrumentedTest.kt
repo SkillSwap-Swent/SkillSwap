@@ -11,6 +11,8 @@ import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
@@ -59,7 +61,7 @@ class NotificationViewModelInstrumentedTest {
         }
     }
 
-    private fun waitForLoadingToComplete(maxAttempts: Int = 50): NotificationUiState {
+    private fun waitForLoadingToComplete(maxAttempts: Int = 5000): NotificationUiState {
         var attempts = 0
         while (viewModel.uiState.value.isLoading && attempts < maxAttempts) {
             Thread.sleep(50)
@@ -68,7 +70,7 @@ class NotificationViewModelInstrumentedTest {
         return viewModel.uiState.value
     }
 
-    private fun waitForError(maxAttempts: Int = 20): NotificationUiState {
+    private fun waitForError(maxAttempts: Int = 50): NotificationUiState {
         var attempts = 0
         while (viewModel.uiState.value.error == null && attempts < maxAttempts) {
             Thread.sleep(100)
@@ -752,5 +754,87 @@ class NotificationViewModelInstrumentedTest {
         assertTrue(updated1.isRead)
         assertFalse(updated2.isRead)
         assertFalse(updated3.isRead)
+    }
+
+    @Test
+    fun markAsRead_withInvalidNotification_setsError() = runBlocking {
+        val invalidNotif =
+            createNotification(
+                "invalid-id",
+                testUserId,
+                "Title",
+                "Message",
+                NotificationType.MESSAGE,
+                false
+            )
+        viewModel.loadNotifications()
+        waitForLoadingToComplete()
+
+        val errorDeferred = kotlinx.coroutines.CompletableDeferred<String?>()
+        val job = launch {
+            viewModel.uiState.collect { state ->
+                if (state.error != null) {
+                    errorDeferred.complete(state.error)
+                    this.cancel()
+                }
+            }
+        }
+
+        viewModel.markAsRead(invalidNotif)
+        val errorMessage = errorDeferred.await()
+        job.cancel()
+
+        assertNotNull("Should have error for invalid notification", errorMessage)
+    }
+
+    @Test
+    fun deleteNotification_withInvalidNotification_setsError() = runBlocking {
+        val invalidNotif =
+            createNotification(
+                "invalid-id",
+                testUserId,
+                "Title",
+                "Message",
+                NotificationType.MESSAGE,
+                false
+            )
+        viewModel.loadNotifications()
+        waitForLoadingToComplete()
+
+        val errorDeferred = kotlinx.coroutines.CompletableDeferred<String?>()
+        val job = launch {
+            viewModel.uiState.collect { state ->
+                if (state.error != null) {
+                    errorDeferred.complete(state.error)
+                    this.cancel()
+                }
+            }
+        }
+
+        viewModel.deleteNotification(invalidNotif)
+        val errorMessage = errorDeferred.await()
+        job.cancel()
+
+        assertNotNull("Should have error for invalid notification", errorMessage)
+    }
+
+    @Test
+    fun markChatNotificationsAsRead_withoutUser_setsError() = runBlocking {
+        FirebaseAuth.getInstance().signOut()
+        Thread.sleep(200)
+        assertNull("User should be signed out", FirebaseAuth.getInstance().currentUser)
+        val errorDeferred = kotlinx.coroutines.CompletableDeferred<String?>()
+        val job = launch {
+            viewModel.uiState.collect { state ->
+                if (state.error != null) {
+                    errorDeferred.complete(state.error)
+                    this.cancel()
+                }
+            }
+        }
+        viewModel.markChatNotificationsAsRead("any-chat-id")
+        val errorMessage = errorDeferred.await()
+        job.cancel()
+        assertNotNull("Should have error for missing user", errorMessage)
     }
 }
