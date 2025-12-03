@@ -817,5 +817,4 @@ class NotificationViewModelInstrumentedTest {
 
         assertNotNull("Should have error for invalid notification", errorMessage)
     }
-
 }
