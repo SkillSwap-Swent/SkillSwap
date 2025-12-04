@@ -58,7 +58,8 @@ object NotificationScreenTags {
  *
  * @param viewModel The ViewModel managing the notifications state
  * @param onGoBack Callback when user navigates back
- * @param onNotificationClick Callback when a notification is tapped (provides notification for navigation)
+ * @param onNotificationClick Callback when a notification is tapped (provides notification for
+ *   navigation)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,10 +74,7 @@ fun NotificationScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "Notifications",
-                        modifier = Modifier.testTag(NotificationScreenTags.TITLE)
-                    )
+                    Text("Notifications", modifier = Modifier.testTag(NotificationScreenTags.TITLE))
                 },
                 navigationIcon = {
                     IconButton(onClick = onGoBack) {
@@ -106,62 +104,51 @@ fun NotificationScreen(
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier
-                    .fillMaxSize()
+                Modifier.fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
                     .testTag(NotificationScreenTags.SCREEN)
         ) {
             // Filter Buttons
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
                     selected = !uiState.showUnreadOnly,
                     onClick = { viewModel.setShowUnreadOnly(false) },
                     label = { Text("All") },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag(NotificationScreenTags.FILTER_ALL),
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    modifier = Modifier.weight(1f).testTag(NotificationScreenTags.FILTER_ALL),
+                    colors =
+                        FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                 )
                 FilterChip(
                     selected = uiState.showUnreadOnly,
                     onClick = { viewModel.setShowUnreadOnly(true) },
                     label = { Text("Unread") },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag(NotificationScreenTags.FILTER_UNREAD),
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    modifier = Modifier.weight(1f).testTag(NotificationScreenTags.FILTER_UNREAD),
+                    colors =
+                        FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                 )
             }
 
             // Content
             when {
                 uiState.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             modifier = Modifier.testTag(NotificationScreenTags.LOADING_INDICATOR)
                         )
                     }
                 }
                 uiState.error != null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -173,17 +160,12 @@ fun NotificationScreen(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.testTag(NotificationScreenTags.ERROR_MESSAGE)
                             )
-                            Button(onClick = { viewModel.refresh() }) {
-                                Text("Retry")
-                            }
+                            Button(onClick = { viewModel.refresh() }) { Text("Retry") }
                         }
                     }
                 }
                 uiState.notifications.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -195,7 +177,9 @@ fun NotificationScreen(
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             )
                             Text(
-                                text = if (uiState.showUnreadOnly) "No unread notifications" else "No notifications",
+                                text =
+                                    if (uiState.showUnreadOnly) "No unread notifications"
+                                    else "No notifications",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 textAlign = TextAlign.Center,
@@ -220,9 +204,10 @@ fun NotificationScreen(
                                     onNotificationClick(notification)
                                 },
                                 onDelete = { viewModel.deleteNotification(notification) },
-                                modifier = Modifier.testTag(
-                                    "${NotificationScreenTags.NOTIFICATION_ITEM}_${notification.uid}"
-                                )
+                                modifier =
+                                    Modifier.testTag(
+                                        "${NotificationScreenTags.NOTIFICATION_ITEM}_${notification.uid}"
+                                    )
                             )
                         }
                     }
@@ -232,9 +217,7 @@ fun NotificationScreen(
     }
 }
 
-/**
- * Individual notification item with type-based styling.
- */
+/** Individual notification item with type-based styling. */
 @Composable
 private fun NotificationItem(
     notification: Notification,
@@ -246,33 +229,25 @@ private fun NotificationItem(
     val dateFormatter = remember { SimpleDateFormat("MMM d, HH:mm", Locale.getDefault()) }
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (notification.isRead) {
-                MaterialTheme.colorScheme.surface
-            } else {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            }
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (notification.isRead) 1.dp else 2.dp
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (notification.isRead) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    }
+            ),
+        elevation =
+            CardDefaults.cardElevation(defaultElevation = if (notification.isRead) 1.dp else 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.Top
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.Top) {
             // Type Icon with colored background
             Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(typeConfig.backgroundColor),
+                modifier =
+                    Modifier.size(44.dp).clip(CircleShape).background(typeConfig.backgroundColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -296,12 +271,13 @@ private fun NotificationItem(
                     Text(
                         text = notification.title,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
+                        fontWeight =
+                            if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    
+
                     // Type badge
                     Surface(
                         shape = RoundedCornerShape(4.dp),
@@ -322,9 +298,10 @@ private fun NotificationItem(
                 Text(
                     text = notification.message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = if (notification.isRead) 0.6f else 0.9f
-                    ),
+                    color =
+                        MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = if (notification.isRead) 0.6f else 0.9f
+                        ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -345,20 +322,17 @@ private fun NotificationItem(
 
                     if (!notification.isRead) {
                         Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary)
+                            modifier =
+                                Modifier.size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
                         )
                     }
                 }
             }
 
             // Delete button
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
-            ) {
+            IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Delete notification",
@@ -370,9 +344,7 @@ private fun NotificationItem(
     }
 }
 
-/**
- * Configuration for notification type styling.
- */
+/** Configuration for notification type styling. */
 private data class NotificationTypeConfig(
     val icon: ImageVector,
     val label: String,
@@ -380,42 +352,44 @@ private data class NotificationTypeConfig(
     val iconColor: Color
 )
 
-/**
- * Returns the styling configuration for a given notification type.
- */
+/** Returns the styling configuration for a given notification type. */
 @Composable
 private fun getNotificationTypeConfig(type: NotificationType): NotificationTypeConfig {
     return when (type) {
-        NotificationType.MESSAGE -> NotificationTypeConfig(
-            icon = Icons.AutoMirrored.Filled.Chat,
-            label = "Chat",
-            backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-            iconColor = MaterialTheme.colorScheme.primary
-        )
-        NotificationType.POST_REPLY -> NotificationTypeConfig(
-            icon = Icons.Default.QuestionAnswer,
-            label = "Reply",
-            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-            iconColor = MaterialTheme.colorScheme.secondary
-        )
-        NotificationType.POST_ACCEPTED -> NotificationTypeConfig(
-            icon = Icons.Default.CheckCircle,
-            label = "Accepted",
-            backgroundColor = Color(0xFFE8F5E9), // Light green
-            iconColor = Color(0xFF4CAF50) // Green
-        )
-        NotificationType.POST_REJECTED -> NotificationTypeConfig(
-            icon = Icons.Default.Close,
-            label = "Rejected",
-            backgroundColor = MaterialTheme.colorScheme.errorContainer,
-            iconColor = MaterialTheme.colorScheme.error
-        )
-        NotificationType.NEW_MATCHING_POST -> NotificationTypeConfig(
-            icon = Icons.Default.NewReleases,
-            label = "New Post",
-            backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
-            iconColor = MaterialTheme.colorScheme.tertiary
-        )
+        NotificationType.MESSAGE ->
+            NotificationTypeConfig(
+                icon = Icons.AutoMirrored.Filled.Chat,
+                label = "Chat",
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                iconColor = MaterialTheme.colorScheme.primary
+            )
+        NotificationType.POST_REPLY ->
+            NotificationTypeConfig(
+                icon = Icons.Default.QuestionAnswer,
+                label = "Reply",
+                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                iconColor = MaterialTheme.colorScheme.secondary
+            )
+        NotificationType.POST_ACCEPTED ->
+            NotificationTypeConfig(
+                icon = Icons.Default.CheckCircle,
+                label = "Accepted",
+                backgroundColor = Color(0xFFE8F5E9), // Light green
+                iconColor = Color(0xFF4CAF50) // Green
+            )
+        NotificationType.POST_REJECTED ->
+            NotificationTypeConfig(
+                icon = Icons.Default.Close,
+                label = "Rejected",
+                backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                iconColor = MaterialTheme.colorScheme.error
+            )
+        NotificationType.NEW_MATCHING_POST ->
+            NotificationTypeConfig(
+                icon = Icons.Default.NewReleases,
+                label = "New Post",
+                backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                iconColor = MaterialTheme.colorScheme.tertiary
+            )
     }
 }
-

@@ -46,6 +46,7 @@ import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -69,7 +70,6 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
-import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.ui.notification.NotificationScreen
 import com.swent.skillswap.ui.notification.NotificationViewModel
 import com.swent.skillswap.ui.post.PostOperation

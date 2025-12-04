@@ -18,21 +18,32 @@ class BottomNavigationMenuTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    private class FakeRepo(private val notifications: List<Notification> = emptyList()) : NotificationRepository {
+    private class FakeRepo(private val notifications: List<Notification> = emptyList()) :
+        NotificationRepository {
         override fun getNewUid() = "uid"
+
         override suspend fun getNotificationsForUser(userId: String) = notifications
-        override suspend fun getUnreadNotificationsForUser(userId: String) = notifications.filter { !it.isRead }
+
+        override suspend fun getUnreadNotificationsForUser(userId: String) =
+            notifications.filter { !it.isRead }
+
         override suspend fun getNotification(id: String) = notifications.first { it.uid == id }
+
         override suspend fun addNotification(n: Notification) {}
+
         override suspend fun markAsRead(id: String) {}
+
         override suspend fun markAllAsRead(userId: String) {}
+
         override suspend fun deleteNotification(id: String) {}
+
         override suspend fun deleteAllNotificationsForUser(userId: String) {}
     }
 
     @Test
     fun badgeShowsAndClickable() {
-        val notif = Notification("1", "u", "T", "M", NotificationType.MESSAGE, null, false, Timestamp.now())
+        val notif =
+            Notification("1", "u", "T", "M", NotificationType.MESSAGE, null, false, Timestamp.now())
         val vm = NotificationViewModel(FakeRepo(listOf(notif)))
         var tabClicked: Tab? = null
         var badgeClicked = false
@@ -65,9 +76,7 @@ class BottomNavigationMenuTest {
         val vm = NotificationViewModel(FakeRepo())
 
         composeRule.setContent {
-            MaterialTheme {
-                BottomNavigationMenu(Tab.Profile, {}, notificationViewModel = vm)
-            }
+            MaterialTheme { BottomNavigationMenu(Tab.Profile, {}, notificationViewModel = vm) }
         }
         composeRule.waitForIdle()
 
@@ -75,4 +84,3 @@ class BottomNavigationMenuTest {
         composeRule.onAllNodesWithText("0").assertCountEquals(0)
     }
 }
-

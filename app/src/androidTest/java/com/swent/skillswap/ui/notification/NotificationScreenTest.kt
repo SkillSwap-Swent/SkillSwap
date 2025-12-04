@@ -28,8 +28,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NotificationScreenTest {
 
-    @get:Rule
-    val composeRule = createComposeRule()
+    @get:Rule val composeRule = createComposeRule()
 
     private class FakeRepo : NotificationRepository {
         val data = mutableMapOf<String, Notification>()
@@ -54,7 +53,8 @@ class NotificationScreenTest {
         }
 
         override suspend fun markAllAsRead(userId: String) {
-            data.filter { it.value.userId == userId }
+            data
+                .filter { it.value.userId == userId }
                 .forEach { data[it.key] = it.value.copy(isRead = true) }
         }
 
@@ -110,12 +110,13 @@ class NotificationScreenTest {
         repo.fail = false
         repo.data.clear()
         listOf(
-            notif("1", NotificationType.MESSAGE),
-            notif("2", NotificationType.POST_REPLY),
-            notif("3", NotificationType.POST_ACCEPTED),
-            notif("4", NotificationType.POST_REJECTED),
-            notif("5", NotificationType.NEW_MATCHING_POST, true)
-        ).forEach { repo.data[it.uid] = it }
+                notif("1", NotificationType.MESSAGE),
+                notif("2", NotificationType.POST_REPLY),
+                notif("3", NotificationType.POST_ACCEPTED),
+                notif("4", NotificationType.POST_REJECTED),
+                notif("5", NotificationType.NEW_MATCHING_POST, true)
+            )
+            .forEach { repo.data[it.uid] = it }
         vm = NotificationViewModel(repo)
         composeRule.setContent {
             MaterialTheme { NotificationScreen(vm, { backed = true }, { clicked = it }) }
@@ -201,9 +202,7 @@ class NotificationScreenTest {
         repo.data["r"] = notif("r", read = true)
         var clicked: Notification? = null
         composeRule.setContent {
-            MaterialTheme {
-                NotificationScreen(NotificationViewModel(repo), {}, { clicked = it })
-            }
+            MaterialTheme { NotificationScreen(NotificationViewModel(repo), {}, { clicked = it }) }
         }
         wait()
         composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_r").performClick()
@@ -215,9 +214,7 @@ class NotificationScreenTest {
     fun multipleSameTypeNotifications() {
         val repo = FakeRepo()
         (1..3).forEach { repo.data["m$it"] = notif("m$it", NotificationType.MESSAGE) }
-        composeRule.setContent {
-            MaterialTheme { NotificationScreen(NotificationViewModel(repo)) }
-        }
+        composeRule.setContent { MaterialTheme { NotificationScreen(NotificationViewModel(repo)) } }
         wait()
         composeRule.onAllNodesWithText("Chat").assertCountEquals(3)
     }
@@ -226,9 +223,7 @@ class NotificationScreenTest {
     fun screenDisplaysTitleAndTags() {
         val repo = FakeRepo()
         repo.data["1"] = notif("1")
-        composeRule.setContent {
-            MaterialTheme { NotificationScreen(NotificationViewModel(repo)) }
-        }
+        composeRule.setContent { MaterialTheme { NotificationScreen(NotificationViewModel(repo)) } }
         wait()
         composeRule.onNodeWithTag(NotificationScreenTags.TITLE).assertExists()
         composeRule.onNodeWithText("Notifications").assertExists()
@@ -239,13 +234,18 @@ class NotificationScreenTest {
     @Test
     fun notificationDisplaysMessageAndTimestamp() {
         val repo = FakeRepo()
-        repo.data["1"] = Notification(
-            "1", "user", "MyTitle", "MyMessage",
-            NotificationType.MESSAGE, null, false, Timestamp.now()
-        )
-        composeRule.setContent {
-            MaterialTheme { NotificationScreen(NotificationViewModel(repo)) }
-        }
+        repo.data["1"] =
+            Notification(
+                "1",
+                "user",
+                "MyTitle",
+                "MyMessage",
+                NotificationType.MESSAGE,
+                null,
+                false,
+                Timestamp.now()
+            )
+        composeRule.setContent { MaterialTheme { NotificationScreen(NotificationViewModel(repo)) } }
         wait()
         composeRule.onNodeWithText("MyTitle").assertExists()
         composeRule.onNodeWithText("MyMessage").assertExists()

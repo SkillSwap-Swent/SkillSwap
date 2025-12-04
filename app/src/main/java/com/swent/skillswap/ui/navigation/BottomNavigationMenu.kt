@@ -78,9 +78,10 @@ fun BottomNavigationMenu(
                             Icon(imageVector = tab.icon, contentDescription = null)
                             if (uiState.notifications.isNotEmpty()) {
                                 Badge(
-                                    modifier = Modifier
-                                        .offset(x = 16.dp, y = (-4).dp)
-                                        .clickable { onNotificationBadgeClick() }
+                                    modifier =
+                                        Modifier.offset(x = 16.dp, y = (-4).dp).clickable {
+                                            onNotificationBadgeClick()
+                                        }
                                 ) {
                                     Text(
                                         text = uiState.notifications.size.toString(),
