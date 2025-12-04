@@ -47,7 +47,6 @@ import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
-import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -395,9 +394,6 @@ fun SkillSwapApp(
                     remember(chatId) {
                         ChatViewModel(
                             chatRepository = ChatRepositoryFirestore(Firebase.firestore),
-                            notificationRepository =
-                                NotificationRepositoryFirestore(Firebase.firestore),
-                            userRepositery = UserRepoFirestore(Firebase.firestore),
                             chatId = chatId,
                         )
                     }

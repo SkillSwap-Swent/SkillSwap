@@ -5,7 +5,6 @@ package com.swent.skillswap.ui.chat
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
-import com.swent.skillswap.model.notification.FakeNotificationRepository
 import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,8 +26,7 @@ class ChatViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         fakeRepo = FakeChatRepository()
         // Initialize new view model. This implies startListening is called.
-        viewModel =
-            ChatViewModel(fakeRepo, notificationRepository = FakeNotificationRepository(), "chat1")
+        viewModel = ChatViewModel(fakeRepo, "chat1")
     }
 
     @After

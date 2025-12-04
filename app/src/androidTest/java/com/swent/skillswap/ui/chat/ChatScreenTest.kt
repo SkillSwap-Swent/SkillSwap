@@ -9,7 +9,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
-import com.swent.skillswap.model.notification.FakeNotificationRepository
 import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
@@ -51,7 +50,6 @@ class ChatScreenTest {
                         return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
                     }
                 },
-            notificationRepository = FakeNotificationRepository(),
             chatId = "chat1"
         )
     }
@@ -65,7 +63,12 @@ class ChatScreenTest {
             )
 
         composeRule.setContent {
-            MaterialTheme { ChatScreen(viewModel = createFakeViewModel(messages)) }
+            MaterialTheme {
+                ChatScreen(
+                    chatViewModel = createFakeViewModel(messages),
+                    notificationViewModel = null
+                )
+            }
         }
 
         composeRule.onNodeWithText("Hello!").assertExists()
@@ -74,7 +77,11 @@ class ChatScreenTest {
 
     @Test
     fun chatScreen_shows_message_input_and_send_button() {
-        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
+        composeRule.setContent {
+            MaterialTheme {
+                ChatScreen(chatViewModel = createFakeViewModel(), notificationViewModel = null)
+            }
+        }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).assertExists()
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).assertExists()
@@ -82,14 +89,22 @@ class ChatScreenTest {
 
     @Test
     fun send_button_disabled_when_input_is_empty() {
-        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
+        composeRule.setContent {
+            MaterialTheme {
+                ChatScreen(chatViewModel = createFakeViewModel(), notificationViewModel = null)
+            }
+        }
 
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).assertIsNotEnabled()
     }
 
     @Test
     fun send_button_enabled_when_input_has_text() {
-        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
+        composeRule.setContent {
+            MaterialTheme {
+                ChatScreen(chatViewModel = createFakeViewModel(), notificationViewModel = null)
+            }
+        }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("Test message")
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).assertIsEnabled()
@@ -97,7 +112,11 @@ class ChatScreenTest {
 
     @Test
     fun input_text_can_be_typed() {
-        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
+        composeRule.setContent {
+            MaterialTheme {
+                ChatScreen(chatViewModel = createFakeViewModel(), notificationViewModel = null)
+            }
+        }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("Hello world")
         composeRule.onNodeWithText("Hello world").assertExists()
@@ -109,7 +128,11 @@ class ChatScreenTest {
 
         composeRule.setContent {
             MaterialTheme {
-                ChatScreen(viewModel = createFakeViewModel(), onGoBack = { backPressed = true })
+                ChatScreen(
+                    chatViewModel = createFakeViewModel(),
+                    notificationViewModel = null,
+                    onGoBack = { backPressed = true }
+                )
             }
         }
 
@@ -119,7 +142,11 @@ class ChatScreenTest {
 
     @Test
     fun send_button_click_clears_input_and_sends_message() {
-        composeRule.setContent { MaterialTheme { ChatScreen(viewModel = createFakeViewModel()) } }
+        composeRule.setContent {
+            MaterialTheme {
+                ChatScreen(chatViewModel = createFakeViewModel(), notificationViewModel = null)
+            }
+        }
 
         composeRule.onNodeWithTag(ChatScreenTags.MESSAGE_INPUT).performTextInput("Test message")
         composeRule.onNodeWithTag(ChatScreenTags.SEND_BUTTON).performClick()

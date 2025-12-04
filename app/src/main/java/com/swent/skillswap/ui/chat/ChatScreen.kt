@@ -68,7 +68,7 @@ object ChatScreenTags {
 @Composable
 fun ChatScreen(
     chatViewModel: ChatViewModel,
-    notificationViewModel: NotificationViewModel,
+    notificationViewModel: NotificationViewModel?,
     chatTitle: String = "Chat",
     currentUserId: String = "",
     onGoBack: () -> Unit = {}
@@ -130,15 +130,20 @@ fun ChatScreen(
             onSend = {
                 if (inputText.isNotBlank()) {
                     chatViewModel.sendMessage(inputText)
-                    coroutineScope.launch {
-                        val recipientId = chatViewModel.getRecipientId(currentUserId)
-                        notificationViewModel.addNotification(
-                            recipientId = recipientId,
-                            message = inputText,
-                            type = NotificationType.MESSAGE,
-                            relatedId = uiState.chatId
-                        )
+
+                    // Send a notification to the recipient user
+                    if (notificationViewModel != null) {
+                        coroutineScope.launch {
+                            val recipientId = chatViewModel.getRecipientId(currentUserId)
+                            notificationViewModel.addNotification(
+                                recipientId = recipientId,
+                                message = inputText,
+                                type = NotificationType.MESSAGE,
+                                relatedId = uiState.chatId
+                            )
+                        }
                     }
+
                     inputText = ""
                 }
             }
