@@ -1,13 +1,26 @@
 package com.swent.skillswap.ui.notification
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertExists
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodes
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.ui.navigation.BottomNavigationMenu
+import com.swent.skillswap.ui.navigation.NavigationTestTags
+import com.swent.skillswap.ui.navigation.Tab
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,36 +28,58 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NotificationScreenTest {
 
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule
+    val composeRule = createComposeRule()
 
     private class FakeRepo : NotificationRepository {
         val data = mutableMapOf<String, Notification>()
         var fail = false
 
         override fun getNewUid() = "uid-${data.size}"
+
         override suspend fun getNotificationsForUser(userId: String) =
             if (fail) throw Exception("fail") else data.values.filter { it.userId == userId }
+
         override suspend fun getUnreadNotificationsForUser(userId: String) =
             data.values.filter { it.userId == userId && !it.isRead }
+
         override suspend fun getNotification(id: String) = data[id]!!
-        override suspend fun addNotification(n: Notification) { data[n.uid] = n }
-        override suspend fun markAsRead(id: String) { data[id] = data[id]!!.copy(isRead = true) }
-        override suspend fun markAllAsRead(userId: String) {
-            data.filter { it.value.userId == userId }.forEach { data[it.key] = it.value.copy(isRead = true) }
+
+        override suspend fun addNotification(n: Notification) {
+            data[n.uid] = n
         }
-        override suspend fun deleteNotification(id: String) { data.remove(id) }
+
+        override suspend fun markAsRead(id: String) {
+            data[id] = data[id]!!.copy(isRead = true)
+        }
+
+        override suspend fun markAllAsRead(userId: String) {
+            data.filter { it.value.userId == userId }
+                .forEach { data[it.key] = it.value.copy(isRead = true) }
+        }
+
+        override suspend fun deleteNotification(id: String) {
+            data.remove(id)
+        }
+
         override suspend fun deleteAllNotificationsForUser(userId: String) {
             data.entries.removeAll { it.value.userId == userId }
         }
     }
 
-    private fun notif(id: String, type: NotificationType = NotificationType.MESSAGE, read: Boolean = false) =
-        Notification(id, "user", "Title-$id", "Msg", type, "rel", read, Timestamp.now())
+    private fun notif(
+        id: String,
+        type: NotificationType = NotificationType.MESSAGE,
+        read: Boolean = false
+    ) = Notification(id, "user", "Title-$id", "Msg", type, "rel-$id", read, Timestamp.now())
 
     private fun wait() {
         composeRule.waitForIdle()
         composeRule.waitUntil(3000) {
-            composeRule.onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR).fetchSemanticsNodes().isEmpty()
+            composeRule
+                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes()
+                .isEmpty()
         }
     }
 
@@ -82,18 +117,13 @@ class NotificationScreenTest {
             notif("5", NotificationType.NEW_MATCHING_POST, true)
         ).forEach { repo.data[it.uid] = it }
         vm = NotificationViewModel(repo)
-
         composeRule.setContent {
             MaterialTheme { NotificationScreen(vm, { backed = true }, { clicked = it }) }
         }
         wait()
-
-        // Verify type badges
-        composeRule.onNodeWithText("Chat").assertExists()
-        composeRule.onNodeWithText("Reply").assertExists()
-        composeRule.onNodeWithText("Accepted").assertExists()
-        composeRule.onNodeWithText("Rejected").assertExists()
-        composeRule.onNodeWithText("New Post").assertExists()
+        listOf("Chat", "Reply", "Accepted", "Rejected", "New Post").forEach {
+            composeRule.onNodeWithText(it).assertExists()
+        }
 
         // Test mark all read button (has unread)
         composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertExists()
@@ -108,14 +138,13 @@ class NotificationScreenTest {
         composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
         wait()
         composeRule.onNodeWithText("Title-6").assertExists()
-
         composeRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
         wait()
 
-        // Test click notification
+        // Test click notification + relatedId in callback
         composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_6").performClick()
         wait()
-        assert(clicked?.uid == "6")
+        assert(clicked?.uid == "6" && clicked?.relatedId == "rel-6")
         assert(repo.data["6"]?.isRead == true)
 
         // Test delete
@@ -134,7 +163,6 @@ class NotificationScreenTest {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true)
         val vm = NotificationViewModel(repo)
-
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         wait()
         composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
@@ -147,11 +175,9 @@ class NotificationScreenTest {
         val repo = FakeRepo()
         repo.fail = true
         val vm = NotificationViewModel(repo)
-
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         wait()
         composeRule.onNodeWithTag(NotificationScreenTags.ERROR_MESSAGE).assertExists()
-
         repo.fail = false
         repo.data["1"] = notif("1")
         composeRule.onNodeWithText("Retry").performClick()
@@ -164,10 +190,108 @@ class NotificationScreenTest {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true)
         val vm = NotificationViewModel(repo)
-
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         wait()
         composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertDoesNotExist()
     }
-}
 
+    @Test
+    fun clickAlreadyReadNotification() {
+        val repo = FakeRepo()
+        repo.data["r"] = notif("r", read = true)
+        var clicked: Notification? = null
+        composeRule.setContent {
+            MaterialTheme {
+                NotificationScreen(NotificationViewModel(repo), {}, { clicked = it })
+            }
+        }
+        wait()
+        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_r").performClick()
+        wait()
+        assert(clicked?.uid == "r")
+    }
+
+    @Test
+    fun multipleSameTypeNotifications() {
+        val repo = FakeRepo()
+        (1..3).forEach { repo.data["m$it"] = notif("m$it", NotificationType.MESSAGE) }
+        composeRule.setContent {
+            MaterialTheme { NotificationScreen(NotificationViewModel(repo)) }
+        }
+        wait()
+        composeRule.onAllNodesWithText("Chat").assertCountEquals(3)
+    }
+
+    @Test
+    fun screenDisplaysTitleAndTags() {
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1")
+        composeRule.setContent {
+            MaterialTheme { NotificationScreen(NotificationViewModel(repo)) }
+        }
+        wait()
+        composeRule.onNodeWithTag(NotificationScreenTags.TITLE).assertExists()
+        composeRule.onNodeWithText("Notifications").assertExists()
+        composeRule.onNodeWithTag(NotificationScreenTags.SCREEN).assertExists()
+        composeRule.onNodeWithTag(NotificationScreenTags.NOTIFICATIONS_LIST).assertExists()
+    }
+
+    @Test
+    fun notificationDisplaysMessageAndTimestamp() {
+        val repo = FakeRepo()
+        repo.data["1"] = Notification(
+            "1", "user", "MyTitle", "MyMessage",
+            NotificationType.MESSAGE, null, false, Timestamp.now()
+        )
+        composeRule.setContent {
+            MaterialTheme { NotificationScreen(NotificationViewModel(repo)) }
+        }
+        wait()
+        composeRule.onNodeWithText("MyTitle").assertExists()
+        composeRule.onNodeWithText("MyMessage").assertExists()
+    }
+
+    @Test
+    fun bottomNavBadgeDisplaysAndClicks() {
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1")
+        repo.data["2"] = notif("2")
+        var tabClicked: Tab? = null
+        var badgeClicked = false
+        composeRule.setContent {
+            MaterialTheme {
+                BottomNavigationMenu(
+                    selectedTab = Tab.Profile,
+                    onTabSelected = { tabClicked = it },
+                    notificationViewModel = NotificationViewModel(repo),
+                    onNotificationBadgeClick = { badgeClicked = true }
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("2").assertExists()
+        composeRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+        assert(tabClicked == Tab.Chat)
+        composeRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+        assert(tabClicked == Tab.Feed)
+        composeRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).performClick()
+        assert(tabClicked == Tab.Profile)
+    }
+
+    @Test
+    fun bottomNavNoBadgeWhenEmpty() {
+        val repo = FakeRepo()
+        composeRule.setContent {
+            MaterialTheme {
+                BottomNavigationMenu(
+                    selectedTab = Tab.Profile,
+                    onTabSelected = {},
+                    notificationViewModel = NotificationViewModel(repo)
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertExists()
+        composeRule.onAllNodes(hasText("0")).assertCountEquals(0)
+    }
+}
