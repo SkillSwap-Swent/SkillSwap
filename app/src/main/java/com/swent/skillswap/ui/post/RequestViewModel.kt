@@ -2,12 +2,14 @@ package com.swent.skillswap.ui.post
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Picture
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.FirestoreSettings
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -16,6 +18,7 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.utils.LocationManager
+import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,6 +66,7 @@ data class RequestUIState(
 class RequestViewModel(
     private val appContext: Context? = null,
     private val postRepository: PostRepository,
+    private val storageRepository: PictureRepository,
     private val currentUserId: String,
     private val postId: String? = null // Only necessary if postOperation is edit
 ) : ViewModel() {
@@ -177,6 +181,17 @@ class RequestViewModel(
             _uiState.update { it.copy(isLoading = true, submitError = null) }
 
             try {
+                /** attachments upload logic */
+                val stringUrls = mutableListOf<String>()
+                for (uri in _uiState.value.attachments) {
+                    /** random uid for media name */
+                    val mediaName = postRepository.getNewUid(PostType.REQUEST)
+                    val url = storageRepository.uploadPicture(mediaName,uri, FEED_PICTURES_PATH)
+                    stringUrls.add(url.toString())
+                }
+
+
+                /** Create or update the request post */
                 val uid =
                     when (postOperation) {
                         PostOperation.ADD -> postRepository.getNewUid(PostType.REQUEST)
@@ -204,7 +219,7 @@ class RequestViewModel(
                             ),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
-                        media = emptyList(), // TODO: upload attachments to db and store links
+                        media = stringUrls,
                         location = _uiState.value.location
                     )
 
