@@ -25,6 +25,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
+import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
@@ -958,6 +959,13 @@ class FeedScreenInstrumentedTest {
         val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         // === Menu interactions ===
 
         // wait until menu button is displayed
@@ -1023,10 +1031,170 @@ class FeedScreenInstrumentedTest {
             val author = vm.uiState.value?.authorID
             author != null && author != userId2
         }
-
+        vm.uiState.value!!.authorID
         // Verify that the current post is now from user1 (not blocked)
         assert(vm.uiState.value!!.authorID == userId1)
 
         return@runBlocking
+    }
+
+    @Test
+    fun successful_block_show_correct_pop_up_and_can_click_on_it() = runBlocking {
+        // Arrange: create a feed offer
+        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // === Menu interactions ===
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Block User").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_BLOCK)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION)
+            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_BLOCK)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+    }
+
+    @Test
+    fun unsuccessful_block_show_correct_pop_up_and_can_click_on_it() = runBlocking {
+        val controller = controllerFactory.create("FAILED", PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        vm.blockUser("FAILED")
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_EXCEPTION)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION)
+            .assertTextContains(
+                "Error while getting user in getUser",
+                substring = true,
+                ignoreCase = true
+            )
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_EXCEPTION)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+    }
+
+    @Test
+    fun unsuccessful_reporting_offer_show_correct_pop_up_and_can_click_on_it() = runBlocking {
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        val failed = FeedOffer()
+        vm.reportOffer(failed)
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_EXCEPTION)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION)
+            .assertTextContains(
+                "not supported type of the post",
+                substring = true,
+                ignoreCase = true
+            )
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_EXCEPTION)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+    }
+
+    @Test
+    fun successful_reporting_offer_show_correct_pop_up_and_can_click_on_it() = runBlocking {
+        // Arrange: create a feed offer
+        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val vm = FeedScreenViewModel(navigation, controller)
+        composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+
+        // Wait until a skill title appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // === Menu interactions ===
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
+        // click on report to report offer
+        composeTestRule.onNodeWithText("Report Offer").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_REPORT)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION, useUnmergedTree = true)
+            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
+        composeTestRule.waitUntil(10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.POP_UP_REPORT)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
     }
 }
