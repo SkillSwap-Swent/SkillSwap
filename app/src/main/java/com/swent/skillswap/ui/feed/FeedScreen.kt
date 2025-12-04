@@ -23,6 +23,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -38,10 +42,10 @@ import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
-import kotlin.text.toInt
+import com.swent.skillswap.ui.utils.StarRatingBar
 
 /**
- * Displays the main FeedOffer screen.
+ * Displays the main FeedPost screen.
  *
  * This composable observes the [FeedScreenViewModel] to render the current offer and handle user
  * interactions such as swipes or button actions.
@@ -149,12 +153,26 @@ fun FeedScreen(
 
         if (offer == null) {
             // === No Offer Available ===
-            Text(
-                text = "No offer available",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.testTag(FeedScreenTestTags.NO_OFFER_TEXT)
-            )
+            Column {
+                Text(
+                    text = "No offer available",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.testTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                SkillSwapButtonOutline(
+                    onClick = { vm.skip() },
+                    labelText = "Refresh",
+                    modifier = Modifier.testTag(FeedScreenTestTags.REFRESH_BUTTON),
+                    icon = null,
+                    enabled = true,
+                    shape = SkillSwapButtonShape.ROUND,
+                    size = SkillSwapButtonSize.L
+                )
+            }
         } else {
             // === Offer Card ===
             Card(
@@ -203,13 +221,30 @@ fun FeedScreen(
                         Spacer(Modifier.width(12.dp))
 
                         Column(Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = offer.authorName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.testTag(FeedScreenTestTags.REQUESTER_NAME)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                StarRatingBar(
+                                    modifier = Modifier.testTag(FeedScreenTestTags.RATING),
+                                    rating = uiState?.authorRating ?: 0f,
+                                    size = 20
+                                )
+                            }
                             Text(
-                                text = offer.authorName,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.testTag(FeedScreenTestTags.REQUESTER_NAME)
-                            )
-                            Text(
-                                text = offer.skillRequested,
+                                text =
+                                    buildAnnotatedString {
+                                        append("I want : ")
+
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append(offer.skillRequested)
+                                        }
+                                    },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.testTag(FeedScreenTestTags.SKILL_REQUESTED)
@@ -240,7 +275,7 @@ fun FeedScreen(
                     // === Thumbnail ===
                     AsyncImage(
                         model = offer.thumbnail,
-                        contentDescription = "FeedOffer Thumbnail",
+                        contentDescription = "FeedPost Thumbnail",
                         modifier =
                             Modifier.fillMaxWidth()
                                 .heightIn(max = maxThumbnailHeight)
@@ -262,7 +297,14 @@ fun FeedScreen(
                                     .testTag(FeedScreenTestTags.SCROLL_BOX)
                         ) {
                             Text(
-                                text = "You will get: ${offer.skillProvided}",
+                                text =
+                                    buildAnnotatedString {
+                                        append("You will get: ")
+
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append(offer.skillProvided.toString())
+                                        }
+                                    },
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.testTag(FeedScreenTestTags.SKILL_GIVE)
@@ -376,6 +418,7 @@ fun FeedDistanceFilterButton(
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "${distance.toInt()} km",
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
             )
