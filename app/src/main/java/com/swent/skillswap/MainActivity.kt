@@ -93,18 +93,19 @@ class MainActivity : ComponentActivity() {
             PermissionHandler.handlePermissionsResult(permissions)
         }
 
-    private fun createChatNotificationChannel(){
+    private fun createChatNotificationChannel() {
         val channelId = "chat_channel"
-        val channel = NotificationChannel(
-            channelId,
-            "Chat Notifications",
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            description = "Notifications for chat messages"
-        }
+        val channel =
+            NotificationChannel(
+                    channelId,
+                    "Chat Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+                .apply { description = "Notifications for chat messages" }
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
+
     private fun requestAllPermissionsIfNeeded(locationManager: LocationManager) {
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val requestedOnce = prefs.getBoolean("permissions_requested_once", false)

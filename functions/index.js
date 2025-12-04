@@ -52,7 +52,12 @@ exports.sendNotificationOnCreate = functions.firestore
 
       // Send the notification
       try {
-        await admin.messaging().sendToDevice(recipientToken, payload);
+        const multicastMessage = {
+          tokens: [recipientToken],
+          notification: payload.notification,
+          data: payload.data,
+        };
+        await admin.messaging().sendEachForMulticast(multicastMessage);
         console.log("Notification sent successfully to userId:", userId);
       } catch (error) {
         console.error("Error sending notification:", error);

@@ -1,6 +1,7 @@
 /** Created with the help of Cursor */
 package com.swent.skillswap.fcm
 
+import android.app.Notification
 import android.app.NotificationManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -96,6 +97,8 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
                 .setSmallIcon(R.drawable.logo)
                 .setContentTitle(title)
                 .setContentText(body)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(Notification.DEFAULT_ALL)
                 .setAutoCancel(true)
 
         notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
