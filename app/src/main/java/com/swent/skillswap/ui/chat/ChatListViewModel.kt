@@ -52,11 +52,14 @@ class ChatListViewModel(
             _uiState.update { it.copy(chats = chats) }
             chats.forEach { chat ->
                 try {
-                    val postStatus = postRepository.getPost(
-                        chat.relatedPostType, chat.relatedPostId
-                    ).status
-                    _uiState.update { it.copy(associatedPostStatuses =
-                        it.associatedPostStatuses + (chat.relatedPostId to postStatus)) }
+                    val postStatus =
+                        postRepository.getPost(chat.relatedPostType, chat.relatedPostId).status
+                    _uiState.update {
+                        it.copy(
+                            associatedPostStatuses =
+                                it.associatedPostStatuses + (chat.relatedPostId to postStatus)
+                        )
+                    }
                 } catch (exception: Exception) {
                     ""
                 }
@@ -93,7 +96,8 @@ class ChatListViewModel(
     // If chat is active and the associated post is completed or archived, show rating button
     fun shouldDisplayRatingButton(chat: Chat): Boolean {
         val postStatus = uiState.value.associatedPostStatuses[chat.relatedPostId] ?: return false
-        return chat.isActive() && (postStatus == PostStatus.COMPLETED || postStatus == PostStatus.ARCHIVED)
+        return chat.isActive() &&
+            (postStatus == PostStatus.COMPLETED || postStatus == PostStatus.ARCHIVED)
     }
 
     fun updateUserRating(userId: String, incomingRating: Float) {
@@ -105,8 +109,6 @@ class ChatListViewModel(
             }
         }
     }
-
-
 }
 
 class ChatListViewModelFactory(

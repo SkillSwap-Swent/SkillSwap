@@ -15,7 +15,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.chat.Chat
@@ -193,10 +192,7 @@ fun ChatConversationItem(
 
             // Rate user button
             if (viewModel.shouldDisplayRatingButton(chat)) {
-                IconButton(
-                    onClick = { showRatingDialog = true },
-                    modifier = Modifier.size(32.dp)
-                ) {
+                IconButton(onClick = { showRatingDialog = true }, modifier = Modifier.size(32.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.Star,
                         contentDescription = "Rate User",
@@ -208,8 +204,9 @@ fun ChatConversationItem(
     }
 
     if (showRatingDialog) {
-        Dialog(onDismissRequest = { showRatingDialog = false},
-            content =  {
+        Dialog(
+            onDismissRequest = { showRatingDialog = false },
+            content = {
                 Card(shape = RoundedCornerShape(16.dp)) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -219,9 +216,11 @@ fun ChatConversationItem(
                         Spacer(Modifier.height(16.dp))
                         Row {
                             (1..5).forEach { rating ->
-                                IconButton(onClick =  { selectedRating = rating}) {
+                                IconButton(onClick = { selectedRating = rating }) {
                                     Icon(
-                                        imageVector = if (rating <= selectedRating) Icons.Filled.Star else Icons.Outlined.Star,
+                                        imageVector =
+                                            if (rating <= selectedRating) Icons.Filled.Star
+                                            else Icons.Outlined.Star,
                                         contentDescription = "rating stars",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
@@ -231,15 +230,19 @@ fun ChatConversationItem(
                         Spacer(Modifier.height(16.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = { showRatingDialog = false }) { Text("Cancel") }
-                            Button(onClick = {
-                                if (selectedRating > 0) {
-                                    viewModel.updateUserRating(
-                                        userId = otherUser,
-                                        incomingRating = selectedRating.toFloat()
-                                    )
+                            Button(
+                                onClick = {
+                                    if (selectedRating > 0) {
+                                        viewModel.updateUserRating(
+                                            userId = otherUser,
+                                            incomingRating = selectedRating.toFloat()
+                                        )
+                                    }
+                                    showRatingDialog = false
                                 }
-                                showRatingDialog = false
-                            }) { Text("Submit") }
+                            ) {
+                                Text("Submit")
+                            }
                         }
                     }
                 }

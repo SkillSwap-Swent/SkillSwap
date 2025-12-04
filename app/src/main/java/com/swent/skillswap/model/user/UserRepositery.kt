@@ -53,5 +53,4 @@ interface UserRepositery {
      * @throws Exception if the user does not exist or update fails.
      */
     suspend fun updateRating(userId: String, incomingRating: Float)
-
 }

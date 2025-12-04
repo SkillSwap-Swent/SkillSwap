@@ -122,10 +122,11 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 Log.e("UserRepoFirestore", "Error while updating rating: user does not exist")
                 throw Exception("User does not exist: $userId")
             }
-            val newRating = computeNewRating(
-                currentRating = getUser(userId).rating,
-                incomingRating = incomingRating
-            )
+            val newRating =
+                computeNewRating(
+                    currentRating = getUser(userId).rating,
+                    incomingRating = incomingRating
+                )
             db.collection(USERS_COLLECTION).document(userId).update("rating", newRating).await()
         } catch (e: Exception) {
             Log.e("UserRepoFirestore", "Error while updating rating", e)
@@ -140,9 +141,10 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     }
 
     // Uses EMA to compute new rating
-    private fun computeNewRating(
-        currentRating: Float, incomingRating: Float
-    ): Float {
-        return ((1 - RATING_ALPHA) * currentRating + RATING_ALPHA * incomingRating).coerceIn(MIN_RATING, MAX_RATING)
+    private fun computeNewRating(currentRating: Float, incomingRating: Float): Float {
+        return ((1 - RATING_ALPHA) * currentRating + RATING_ALPHA * incomingRating).coerceIn(
+            MIN_RATING,
+            MAX_RATING
+        )
     }
 }

@@ -36,6 +36,7 @@ class Chat(
 ) {
     /**
      * Checks if the chat is active.
+     *
      * @return True if the chat status is ACTIVE, false otherwise.
      */
     fun isActive(): Boolean {
