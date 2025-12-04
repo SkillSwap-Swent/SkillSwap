@@ -16,6 +16,7 @@ import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.user.UserRepoFirestore.Companion.RATING_ALPHA
 import com.swent.skillswap.utils.FirebaseEmulator
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -362,5 +363,28 @@ class UserFireStoreTest {
             repo.getUser(uid0).blockedUsers.contains(uid2),
             { Log.w("Test", "retrieve: " + repo.getUser(uid0).blockedUsers) }
         )
+    }
+
+    @Test
+    fun updateRatingCalculatesEMA() = runBlocking {
+        val uid = repo.getNewUid()
+        val user = createUser(uid, "user", "u@test.com", rating = 4.0f)
+        repo.addUser(user)
+
+        repo.updateRating(uid, 5.0f)
+
+        assertEquals(4 * (1 - RATING_ALPHA) + 5 * RATING_ALPHA, repo.getUser(uid).rating, 0.001f)
+    }
+
+    @Test
+    fun updateRatingCoercesToBounds() = runBlocking {
+        val uid = repo.getNewUid()
+        val user = createUser(uid, "user", "u@test.com", rating = 0.0f)
+        repo.addUser(user)
+
+        repo.updateRating(uid, 5.0f)
+        val rating = repo.getUser(uid).rating
+
+        assertTrue(rating in 0.0f..5.0f)
     }
 }
