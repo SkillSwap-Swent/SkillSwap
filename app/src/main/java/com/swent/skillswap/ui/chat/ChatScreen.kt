@@ -28,6 +28,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +41,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.swent.skillswap.model.chat.CurrentChatTracker
 import com.swent.skillswap.model.chat.Message
 
 // Encapsulating object for test tags
@@ -67,6 +70,11 @@ fun ChatScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
+
+    // Track current chatId when ChatScreen is visible
+    val chatId = uiState.chatId
+    LaunchedEffect(chatId) { CurrentChatTracker.currentChatId = chatId }
+    DisposableEffect(Unit) { onDispose { CurrentChatTracker.currentChatId = null } }
 
     Column(modifier = Modifier.fillMaxSize().testTag(ChatScreenTags.SCREEN)) {
         TopAppBar(
