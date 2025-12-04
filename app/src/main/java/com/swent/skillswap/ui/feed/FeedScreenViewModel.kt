@@ -13,12 +13,9 @@ import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
-<<<<<<< HEAD
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
-=======
 import kotlinx.coroutines.flow.MutableSharedFlow
->>>>>>> b4085db38998dab5a9e53fbd932cefcdd6ec258f
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
