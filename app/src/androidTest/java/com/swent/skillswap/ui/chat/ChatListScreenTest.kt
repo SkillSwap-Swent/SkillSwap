@@ -1,5 +1,5 @@
 /* With the help of Sonnet 4.5 for repetitive tasks */
-
+/* updated with chatGPT*/
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.material3.MaterialTheme
