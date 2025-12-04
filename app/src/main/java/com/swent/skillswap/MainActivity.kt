@@ -402,7 +402,8 @@ fun SkillSwapApp(
                         )
                     }
                 ChatScreen(
-                    viewModel = viewModel,
+                    chatViewModel = viewModel,
+                    notificationViewModel = notificationViewModel,
                     currentUserId = currentUserId,
                     onGoBack = { navigationActions.goBack() }
                 )
