@@ -8,18 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.model.user.UserRepositery
 
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -128,7 +127,9 @@ open class FeedScreenViewModel(
                 userRepo.getUser(userId)
             } catch (e: Exception) {
                 /** Critical: Current user must be found */
-                throw Exception("Current user not found in toFeedOffer of FeedScreenViewModel : ${e.message}")
+                throw Exception(
+                    "Current user not found in toFeedOffer of FeedScreenViewModel : ${e.message}"
+                )
             }
 
         val authorUser =
@@ -138,7 +139,6 @@ open class FeedScreenViewModel(
                 /** Fallback to an empty user if not found */
                 User()
             }
-
 
         when (post.type) {
             PostType.REQUEST -> {
