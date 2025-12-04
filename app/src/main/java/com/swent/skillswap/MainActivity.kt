@@ -46,7 +46,6 @@ import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
-import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -368,7 +367,6 @@ fun SkillSwapApp(
                     }
                 )
             }
-
 
             composable(
                 route = Screen.ChatScreen.route,
