@@ -1072,7 +1072,7 @@ class FeedScreenInstrumentedTest {
         }
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION)
-            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
+            .assertTextContains("bob", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
