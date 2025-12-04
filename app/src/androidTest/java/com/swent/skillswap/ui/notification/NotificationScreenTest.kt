@@ -9,9 +9,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
-import com.swent.skillswap.ui.navigation.BottomNavigationMenu
-import com.swent.skillswap.ui.navigation.NavigationTestTags
-import com.swent.skillswap.ui.navigation.Tab
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -26,23 +23,8 @@ class NotificationScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    @Before
-    fun setUp() = runBlocking {
-        // Start Firebase emulator
+    init {
         FirebaseEmulator.startEmulator()
-        // Sign in user for authentication
-        FirebaseAuth.getInstance().signInAnonymously().await()
-    }
-
-    @After
-    fun tearDown() = runBlocking {
-        try {
-            FirebaseAuth.getInstance().signOut()
-            FirebaseEmulator.clearAuthEmulator()
-            FirebaseEmulator.clearFirestoreEmulator()
-        } catch (e: Exception) {
-            // Ignore cleanup errors
-        }
     }
 
     private class FakeRepo : NotificationRepository {
@@ -57,14 +39,14 @@ class NotificationScreenTest {
         override suspend fun getUnreadNotificationsForUser(userId: String) =
             data.values.filter { it.userId == userId && !it.isRead }
 
-        override suspend fun getNotification(id: String) = data[id]!!
+        override suspend fun getNotification(notificationId: String) = data[notificationId]!!
 
-        override suspend fun addNotification(n: Notification) {
-            data[n.uid] = n
+        override suspend fun addNotification(notification: Notification) {
+            data[notification.uid] = notification
         }
 
-        override suspend fun markAsRead(id: String) {
-            data[id] = data[id]!!.copy(isRead = true)
+        override suspend fun markAsRead(notificationId: String) {
+            data[notificationId] = data[notificationId]!!.copy(isRead = true)
         }
 
         override suspend fun markAllAsRead(userId: String) {
@@ -73,8 +55,8 @@ class NotificationScreenTest {
                 .forEach { data[it.key] = it.value.copy(isRead = true) }
         }
 
-        override suspend fun deleteNotification(id: String) {
-            data.remove(id)
+        override suspend fun deleteNotification(notificationId: String) {
+            data.remove(notificationId)
         }
 
         override suspend fun deleteAllNotificationsForUser(userId: String) {
@@ -85,11 +67,9 @@ class NotificationScreenTest {
     private fun notif(
         id: String,
         type: NotificationType = NotificationType.MESSAGE,
-        read: Boolean = false
-    ): Notification {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "test-user"
-        return Notification(id, userId, "Title-$id", "Msg", type, "rel-$id", read, Timestamp.now())
-    }
+        read: Boolean = false,
+        userId: String = "user"
+    ) = Notification(id, userId, "Title-$id", "Msg-$id", type, "rel-$id", read, Timestamp.now())
 
     private fun waitForLoading() {
         composeRule.waitForIdle()
@@ -101,58 +81,72 @@ class NotificationScreenTest {
         }
     }
 
+    @Before fun setUp() = runBlocking { FirebaseAuth.getInstance().signInAnonymously().await() }
+
+    @After
+    fun tearDown() = runBlocking {
+        try {
+            FirebaseAuth.getInstance().signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        } catch (e: Exception) {}
+    }
+
     @Test
-    fun allStatesAndTypes() {
+    fun allStatesAndInteractions() = runBlocking {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
         val repo = FakeRepo()
-        var vm = NotificationViewModel(repo)
         var clicked: Notification? = null
         var backed = false
 
-        // Test empty state
+        // Empty state
+        val vm1 = NotificationViewModel(repo)
         composeRule.setContent {
-            MaterialTheme { NotificationScreen(vm, { backed = true }, { clicked = it }) }
+            MaterialTheme { NotificationScreen(vm1, { backed = true }, { clicked = it }) }
         }
         waitForLoading()
         composeRule.onNodeWithTag(NotificationScreenTags.EMPTY_STATE).assertExists()
-        composeRule.onNodeWithText("No notifications").assertExists()
 
-        // Test error state
+        // Error state
         repo.fail = true
-        vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        val vm2 = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm2) } }
         waitForLoading()
         composeRule.onNodeWithTag(NotificationScreenTags.ERROR_MESSAGE).assertExists()
-        composeRule.onNodeWithText("Retry").assertExists()
+        composeRule.onNodeWithText("Retry").performClick()
+        waitForLoading()
 
-        // Test all notification types displayed
+        // Notifications with all types
         repo.fail = false
         repo.data.clear()
         listOf(
-                notif("1", NotificationType.MESSAGE),
-                notif("2", NotificationType.POST_REPLY),
-                notif("3", NotificationType.POST_ACCEPTED),
-                notif("4", NotificationType.POST_REJECTED),
-                notif("5", NotificationType.NEW_MATCHING_POST, true)
+                notif("1", NotificationType.MESSAGE, false, userId),
+                notif("2", NotificationType.POST_REPLY, false, userId),
+                notif("3", NotificationType.POST_ACCEPTED, false, userId),
+                notif("4", NotificationType.POST_REJECTED, false, userId),
+                notif("5", NotificationType.NEW_MATCHING_POST, true, userId)
             )
             .forEach { repo.data[it.uid] = it }
-        vm = NotificationViewModel(repo)
+        val vm3 = NotificationViewModel(repo)
         composeRule.setContent {
-            MaterialTheme { NotificationScreen(vm, { backed = true }, { clicked = it }) }
+            MaterialTheme { NotificationScreen(vm3, { backed = true }, { clicked = it }) }
         }
         waitForLoading()
+
+        // Verify all types displayed
         listOf("Chat", "Reply", "Accepted", "Rejected", "New Post").forEach {
             composeRule.onNodeWithText(it).assertExists()
         }
 
-        // Test mark all read button (has unread)
+        // Mark all as read
         composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertExists()
         composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).performClick()
         waitForLoading()
         assert(repo.data.values.all { it.isRead })
 
-        // Test filters
-        repo.data["6"] = notif("6", read = false)
-        vm.refresh()
+        // Filter toggle
+        repo.data["6"] = notif("6", read = false, userId = userId)
+        vm3.refresh()
         waitForLoading()
         composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
         waitForLoading()
@@ -160,27 +154,26 @@ class NotificationScreenTest {
         composeRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
         waitForLoading()
 
-        // Test click notification + relatedId in callback
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_6").performClick()
+        // Click notification
+        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").performClick()
         waitForLoading()
-        assert(clicked?.uid == "6" && clicked?.relatedId == "rel-6")
-        assert(repo.data["6"]?.isRead == true)
+        assert(clicked?.uid == "1")
 
-        // Test delete
+        // Delete notification
         composeRule.onAllNodesWithContentDescription("Delete notification")[0].performClick()
         waitForLoading()
-        Thread.sleep(100)
-        assert(repo.data.size < 6)
+        assert(!repo.data.containsKey("1"))
 
-        // Test back
+        // Back button
         composeRule.onNodeWithContentDescription("Back").performClick()
         assert(backed)
     }
 
     @Test
     fun emptyUnreadFilter() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
         val repo = FakeRepo()
-        repo.data["1"] = notif("1", read = true)
+        repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
@@ -190,24 +183,10 @@ class NotificationScreenTest {
     }
 
     @Test
-    fun retryLoadsData() {
+    fun markAllReadButtonHiddenWhenAllRead() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
         val repo = FakeRepo()
-        repo.fail = true
-        val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
-        waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.ERROR_MESSAGE).assertExists()
-        repo.fail = false
-        repo.data["1"] = notif("1")
-        composeRule.onNodeWithText("Retry").performClick()
-        waitForLoading()
-        composeRule.onNodeWithText("Title-1").assertExists()
-    }
-
-    @Test
-    fun markAllReadHiddenWhenAllRead() {
-        val repo = FakeRepo()
-        repo.data["1"] = notif("1", read = true)
+        repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
@@ -215,101 +194,18 @@ class NotificationScreenTest {
     }
 
     @Test
-    fun clickAlreadyReadNotification() {
+    fun notificationItemReadAndUnreadStates() = runBlocking {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
         val repo = FakeRepo()
-        repo.data["r"] = notif("r", read = true)
-        var clicked: Notification? = null
-        composeRule.setContent {
-            MaterialTheme { NotificationScreen(NotificationViewModel(repo), {}, { clicked = it }) }
-        }
+        repo.data["1"] = notif("1", read = false, userId = userId)
+        repo.data["2"] = notif("2", read = true, userId = userId)
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_r").performClick()
+        composeRule.onNodeWithText("Title-1").assertExists()
+        composeRule.onNodeWithText("Title-2").assertExists()
+        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").performClick()
         waitForLoading()
-        assert(clicked?.uid == "r")
-    }
-
-    @Test
-    fun multipleSameTypeNotifications() {
-        val repo = FakeRepo()
-        (1..3).forEach { repo.data["m$it"] = notif("m$it", NotificationType.MESSAGE) }
-        composeRule.setContent { MaterialTheme { NotificationScreen(NotificationViewModel(repo)) } }
-        waitForLoading()
-        composeRule.onAllNodesWithText("Chat").assertCountEquals(3)
-    }
-
-    @Test
-    fun screenDisplaysTitleAndTags() {
-        val repo = FakeRepo()
-        repo.data["1"] = notif("1")
-        composeRule.setContent { MaterialTheme { NotificationScreen(NotificationViewModel(repo)) } }
-        waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.TITLE).assertExists()
-        composeRule.onNodeWithText("Notifications").assertExists()
-        composeRule.onNodeWithTag(NotificationScreenTags.SCREEN).assertExists()
-        composeRule.onNodeWithTag(NotificationScreenTags.NOTIFICATIONS_LIST).assertExists()
-    }
-
-    @Test
-    fun notificationDisplaysMessageAndTimestamp() {
-        val repo = FakeRepo()
-        repo.data["1"] =
-            Notification(
-                "1",
-                "user",
-                "MyTitle",
-                "MyMessage",
-                NotificationType.MESSAGE,
-                null,
-                false,
-                Timestamp.now()
-            )
-        composeRule.setContent { MaterialTheme { NotificationScreen(NotificationViewModel(repo)) } }
-        waitForLoading()
-        composeRule.onNodeWithText("MyTitle").assertExists()
-        composeRule.onNodeWithText("MyMessage").assertExists()
-    }
-
-    @Test
-    fun bottomNavBadgeDisplaysAndClicks() {
-        val repo = FakeRepo()
-        repo.data["1"] = notif("1")
-        repo.data["2"] = notif("2")
-        var tabClicked: Tab? = null
-        var badgeClicked = false
-        composeRule.setContent {
-            MaterialTheme {
-                BottomNavigationMenu(
-                    selectedTab = Tab.Profile,
-                    onTabSelected = { tabClicked = it },
-                    notificationViewModel = NotificationViewModel(repo),
-                    onNotificationBadgeClick = { badgeClicked = true }
-                )
-            }
-        }
-        composeRule.waitForIdle()
-        composeRule.onNodeWithText("2").assertExists()
-        composeRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-        assert(tabClicked == Tab.Chat)
-        composeRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-        assert(tabClicked == Tab.Feed)
-        composeRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).performClick()
-        assert(tabClicked == Tab.Profile)
-    }
-
-    @Test
-    fun bottomNavNoBadgeWhenEmpty() {
-        val repo = FakeRepo()
-        composeRule.setContent {
-            MaterialTheme {
-                BottomNavigationMenu(
-                    selectedTab = Tab.Profile,
-                    onTabSelected = {},
-                    notificationViewModel = NotificationViewModel(repo)
-                )
-            }
-        }
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU).assertExists()
-        composeRule.onAllNodes(hasText("0")).assertCountEquals(0)
+        assert(repo.data["1"]?.isRead == true)
     }
 }

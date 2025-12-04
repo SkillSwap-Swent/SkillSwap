@@ -24,23 +24,8 @@ class BottomNavigationMenuTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    @Before
-    fun setUp() = runBlocking {
-        // Start Firebase emulator
+    init {
         FirebaseEmulator.startEmulator()
-        // Sign in user for authentication
-        FirebaseAuth.getInstance().signInAnonymously().await()
-    }
-
-    @After
-    fun tearDown() = runBlocking {
-        try {
-            FirebaseAuth.getInstance().signOut()
-            FirebaseEmulator.clearAuthEmulator()
-            FirebaseEmulator.clearFirestoreEmulator()
-        } catch (e: Exception) {
-            // Ignore cleanup errors
-        }
     }
 
     private class FakeRepo(private val notifications: List<Notification> = emptyList()) :
@@ -56,18 +41,29 @@ class BottomNavigationMenuTest {
 
         override suspend fun addNotification(n: Notification) {}
 
-        override suspend fun markAsRead(id: String) {}
+        override suspend fun markAsRead(notificationId: String) {}
 
         override suspend fun markAllAsRead(userId: String) {}
 
-        override suspend fun deleteNotification(id: String) {}
+        override suspend fun deleteNotification(notificationId: String) {}
 
         override suspend fun deleteAllNotificationsForUser(userId: String) {}
     }
 
+    @Before fun setUp() = runBlocking { FirebaseAuth.getInstance().signInAnonymously().await() }
+
+    @After
+    fun tearDown() = runBlocking {
+        try {
+            FirebaseAuth.getInstance().signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        } catch (e: Exception) {}
+    }
+
     @Test
-    fun badgeShowsAndClickable() = runBlocking {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "test-user"
+    fun badgeShowsAndTabsWork() = runBlocking {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
         val notif =
             Notification(
                 "1",
@@ -79,8 +75,7 @@ class BottomNavigationMenuTest {
                 false,
                 Timestamp.now()
             )
-        val repo = FakeRepo(listOf(notif))
-        val vm = NotificationViewModel(repo)
+        val vm = NotificationViewModel(FakeRepo(listOf(notif)))
         var tabClicked: Tab? = null
         var badgeClicked = false
 
@@ -95,19 +90,15 @@ class BottomNavigationMenuTest {
             }
         }
         composeRule.waitForIdle()
-
-        // Wait for notifications to load
-        composeRule.waitUntil(timeoutMillis = 5000) {
+        composeRule.waitUntil(5000) {
             vm.uiState.value.notifications.isNotEmpty() || !vm.uiState.value.isLoading
         }
 
-        // Badge should show count
         composeRule.onNodeWithText("1").assertExists()
-
-        // Tab selection works
+        composeRule.onNodeWithText("1").performClick()
+        assert(badgeClicked)
         composeRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         assert(tabClicked == Tab.Feed)
-
         composeRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         assert(tabClicked == Tab.Chat)
     }
@@ -115,13 +106,11 @@ class BottomNavigationMenuTest {
     @Test
     fun noBadgeWhenNoNotifications() {
         val vm = NotificationViewModel(FakeRepo())
-
         composeRule.setContent {
             MaterialTheme { BottomNavigationMenu(Tab.Profile, {}, notificationViewModel = vm) }
         }
         composeRule.waitForIdle()
-
-        // No badge number should exist
+        composeRule.waitUntil(3000) { !vm.uiState.value.isLoading }
         composeRule.onAllNodesWithText("0").assertCountEquals(0)
     }
 }
