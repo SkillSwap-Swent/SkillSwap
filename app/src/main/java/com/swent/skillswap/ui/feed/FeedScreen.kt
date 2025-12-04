@@ -87,12 +87,7 @@ fun FeedScreen(
                     reportedAuthorName = event.authorName
                     showReportOfferAlert = true
                 }
-                is FeedScreenEvent.ErrorOnBlock -> {
-                    showExceptionAlert = true
-                    exceptionTitle = event.exception.javaClass.toString()
-                    exceptionDescription = event.exception.message ?: ""
-                }
-                is FeedScreenEvent.ErrorOnReport -> {
+                is FeedScreenEvent.ExceptionEvent -> {
                     showExceptionAlert = true
                     exceptionTitle = event.exception.javaClass.toString()
                     exceptionDescription = event.exception.message ?: ""
@@ -472,12 +467,12 @@ private fun FilterBar(
 
 @Composable
 fun FeedScreenAlertDialog(
+    modifier: Modifier = Modifier,
     title: String = "Successful report",
     text: String = "Successfully blocked User1",
     show: Boolean = true,
     onConfirm: () -> Unit = {},
-    descriptionTestTag: String = "",
-    modifier: Modifier = Modifier
+    descriptionTestTag: String = ""
 ) {
     if (show) {
         AlertDialog(

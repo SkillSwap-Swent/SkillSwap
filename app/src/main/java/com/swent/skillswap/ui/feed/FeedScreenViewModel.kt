@@ -26,12 +26,17 @@ sealed class FeedScreenEvent() {
 
     /** Event indicating that the user has successfully block a user */
     data class SuccessFullBlock(val authorName: String) : FeedScreenEvent()
-    /** Event indicating that the user has got an error while trying to block a user */
-    class ErrorOnBlock(val exception: Exception) : FeedScreenEvent()
+
     /** Event indicating that the user has successfully report a post */
     data class SuccessFullReport(val authorName: String) : FeedScreenEvent()
-    /** Event indicating that the user has got an error while trying to report a post */
-    class ErrorOnReport(val exception: Exception) : FeedScreenEvent()
+    /** represent event attach to an exception* */
+    sealed class ExceptionEvent(val exception: Throwable) : FeedScreenEvent() {
+        /** Event indicating that the user has got an error while trying to report a post */
+        class ErrorOnReport(exception: Throwable) : ExceptionEvent(exception)
+
+        /** Event indicating that the user has got an error while trying to block a user */
+        class ErrorOnBlock(exception: Throwable) : ExceptionEvent(exception)
+    }
 }
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -111,7 +116,7 @@ open class FeedScreenViewModel(
                 controller.blockUser(userId)
                 _eventFlow.emit(FeedScreenEvent.SuccessFullBlock(userName))
             } catch (e: Exception) {
-                _eventFlow.emit(FeedScreenEvent.ErrorOnBlock(e))
+                _eventFlow.emit(FeedScreenEvent.ExceptionEvent.ErrorOnBlock(e))
                 Log.e("BlockUserError", "failed to block the user. Cause: ", e)
             }
         }
@@ -129,7 +134,7 @@ open class FeedScreenViewModel(
                 decline(offer)
                 _eventFlow.emit(FeedScreenEvent.SuccessFullReport(userName))
             } catch (e: Exception) {
-                _eventFlow.emit(FeedScreenEvent.ErrorOnReport(e))
+                _eventFlow.emit(FeedScreenEvent.ExceptionEvent.ErrorOnReport(e))
                 Log.e("ReportPostError", "failed to report the post cause: ", e)
             }
         }
