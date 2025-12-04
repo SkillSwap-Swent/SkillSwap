@@ -23,18 +23,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
-import kotlin.text.toInt
+import com.swent.skillswap.ui.utils.StarRatingBar
 
 /**
- * Displays the main FeedOffer screen.
+ * Displays the main FeedPost screen.
  *
  * This composable observes the [FeedScreenViewModel] to render the current offer and handle user
  * interactions such as swipes or button actions.
@@ -53,6 +64,13 @@ fun FeedScreen(
     var showDistanceSlider by remember { mutableStateOf(false) }
     var distance by remember { mutableFloatStateOf(0f) }
     var isLiveLocationEnabled by remember { mutableStateOf(false) }
+    var showReportOfferAlert by remember { mutableStateOf(false) }
+    var showBlockUserAlert by remember { mutableStateOf(false) }
+    var showExceptionAlert by remember { mutableStateOf(false) }
+    var reportedAuthorName by remember { mutableStateOf<String?>(null) }
+    var blockedAuthorName by remember { mutableStateOf<String?>(null) }
+    var exceptionTitle by remember { mutableStateOf("") }
+    var exceptionDescription by remember { mutableStateOf("") }
 
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -62,7 +80,52 @@ fun FeedScreen(
     val verticalPadding = screenHeightDp * 0.03f
     val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
     val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
-
+    LaunchedEffect(Unit) {
+        vm.eventFlow.collect { event ->
+            when (event) {
+                is FeedScreenEvent.SuccessFullBlock -> {
+                    blockedAuthorName = event.authorName
+                    showBlockUserAlert = true
+                }
+                is FeedScreenEvent.SuccessFullReport -> {
+                    reportedAuthorName = event.authorName
+                    showReportOfferAlert = true
+                }
+                is FeedScreenEvent.ExceptionEvent -> {
+                    showExceptionAlert = true
+                    exceptionTitle = event.exception.javaClass.toString()
+                    exceptionDescription = event.exception.message ?: ""
+                }
+            }
+        }
+    }
+    /** alert for Error* */
+    FeedScreenAlertDialog(
+        title = exceptionTitle,
+        text = exceptionDescription,
+        onConfirm = { showExceptionAlert = !showExceptionAlert },
+        show = showExceptionAlert,
+        descriptionTestTag = POP_UP_EXCEPTION_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_EXCEPTION)
+    )
+    /** alert for successful report of a post* */
+    FeedScreenAlertDialog(
+        title = "Successful report",
+        text = "Successfully reported offer from $reportedAuthorName",
+        onConfirm = { showReportOfferAlert = !showReportOfferAlert },
+        show = showReportOfferAlert,
+        descriptionTestTag = POP_UP_REPORT_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_REPORT)
+    )
+    /** alert for successful blocking of a user* */
+    FeedScreenAlertDialog(
+        title = "Successful block",
+        text = "Successfully blocked $blockedAuthorName",
+        onConfirm = { showBlockUserAlert = !showBlockUserAlert },
+        show = showBlockUserAlert,
+        descriptionTestTag = POP_UP_BLOCK_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_BLOCK)
+    )
     Box(
         modifier =
             Modifier.fillMaxSize()
@@ -90,12 +153,26 @@ fun FeedScreen(
 
         if (offer == null) {
             // === No Offer Available ===
-            Text(
-                text = "No offer available",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.testTag(FeedScreenTestTags.NO_OFFER_TEXT)
-            )
+            Column {
+                Text(
+                    text = "No offer available",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.testTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                SkillSwapButtonOutline(
+                    onClick = { vm.skip() },
+                    labelText = "Refresh",
+                    modifier = Modifier.testTag(FeedScreenTestTags.REFRESH_BUTTON),
+                    icon = null,
+                    enabled = true,
+                    shape = SkillSwapButtonShape.ROUND,
+                    size = SkillSwapButtonSize.L
+                )
+            }
         } else {
             // === Offer Card ===
             Card(
@@ -144,13 +221,30 @@ fun FeedScreen(
                         Spacer(Modifier.width(12.dp))
 
                         Column(Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = offer.authorName,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier.testTag(FeedScreenTestTags.REQUESTER_NAME)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                StarRatingBar(
+                                    modifier = Modifier.testTag(FeedScreenTestTags.RATING),
+                                    rating = uiState?.authorRating ?: 0f,
+                                    size = 20
+                                )
+                            }
                             Text(
-                                text = offer.authorName,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.testTag(FeedScreenTestTags.REQUESTER_NAME)
-                            )
-                            Text(
-                                text = offer.skillRequested,
+                                text =
+                                    buildAnnotatedString {
+                                        append("I want : ")
+
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append(offer.skillRequested)
+                                        }
+                                    },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.testTag(FeedScreenTestTags.SKILL_REQUESTED)
@@ -181,7 +275,7 @@ fun FeedScreen(
                     // === Thumbnail ===
                     AsyncImage(
                         model = offer.thumbnail,
-                        contentDescription = "FeedOffer Thumbnail",
+                        contentDescription = "FeedPost Thumbnail",
                         modifier =
                             Modifier.fillMaxWidth()
                                 .heightIn(max = maxThumbnailHeight)
@@ -203,7 +297,14 @@ fun FeedScreen(
                                     .testTag(FeedScreenTestTags.SCROLL_BOX)
                         ) {
                             Text(
-                                text = "You will get: ${offer.skillProvided}",
+                                text =
+                                    buildAnnotatedString {
+                                        append("You will get: ")
+
+                                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                            append(offer.skillProvided.toString())
+                                        }
+                                    },
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.testTag(FeedScreenTestTags.SKILL_GIVE)
@@ -317,6 +418,7 @@ fun FeedDistanceFilterButton(
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "${distance.toInt()} km",
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.testTag(FeedScreenTestTags.DISTANCE_VALUE_TEXT)
             )
@@ -403,5 +505,34 @@ private fun FilterBar(
         ) {
             Text("Clear Filters")
         }
+    }
+}
+
+@Composable
+fun FeedScreenAlertDialog(
+    modifier: Modifier = Modifier,
+    title: String = "Successful report",
+    text: String = "Successfully blocked User1",
+    show: Boolean = true,
+    onConfirm: () -> Unit = {},
+    descriptionTestTag: String = ""
+) {
+    if (show) {
+        AlertDialog(
+            onDismissRequest = {
+                /** do nothing until it click on confirm* */
+            },
+            title = { Text(title) },
+            text = { Text(text, Modifier.testTag(descriptionTestTag)) },
+            confirmButton = {
+                TextButton(
+                    onClick = { onConfirm() },
+                    modifier = Modifier.testTag(POP_UP_CONFIRM_BUTTON)
+                ) {
+                    Text("Confirm")
+                }
+            },
+            modifier = modifier
+        )
     }
 }

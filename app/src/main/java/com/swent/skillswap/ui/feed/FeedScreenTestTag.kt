@@ -1,7 +1,7 @@
 package com.swent.skillswap.ui.feed
 
 /**
- * Defines test tags used to identify UI elements in the FeedOffer screen during Compose testing.
+ * Defines test tags used to identify UI elements in the FeedPost screen during Compose testing.
  *
  * These tags ensure stable and maintainable test references, allowing tests to locate and interact
  * with specific components in the UI tree.
@@ -47,4 +47,13 @@ object FeedScreenTestTags {
     const val CLEAR_FILTERS_BUTTON = "CLEAR_FILTERS_BUTTON"
 
     const val LIVE_LOCATION_CHECKBOX = "LIVE_LOCATION_CHECKBOX"
+    const val REFRESH_BUTTON = "REFRESH_BUTTON"
+    const val RATING = "RATING"
+    const val POP_UP_REPORT = "POP_UP_ALERT_REPORT"
+    const val POP_UP_BLOCK = "POP_UP_ALERT_BLOCK"
+    const val POP_UP_CONFIRM_BUTTON = "POP_UP_ALERT_CONFIRM_BUTTON"
+    const val POP_UP_REPORT_DESCRIPTION = "POP_UP_ALERT_REPORT_DESCRIPTION"
+    const val POP_UP_BLOCK_DESCRIPTION = "POP_UP_ALERT_BLOCK_DESCRIPTION"
+    const val POP_UP_EXCEPTION = "POP_UP_ALERT_EXCEPTION"
+    const val POP_UP_EXCEPTION_DESCRIPTION = "POP_UP_ALERT_EXCEPTION_DESCRIPTION"
 }
