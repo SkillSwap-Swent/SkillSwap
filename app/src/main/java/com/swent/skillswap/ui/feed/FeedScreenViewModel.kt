@@ -55,7 +55,6 @@ sealed class FeedScreenEvent() {
 open class FeedScreenViewModel(
     private val navigation: FeedScreenNavigation,
     private val controller: FeedController,
-    private val userRepo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
 ) : ViewModel() {
 
     /**
