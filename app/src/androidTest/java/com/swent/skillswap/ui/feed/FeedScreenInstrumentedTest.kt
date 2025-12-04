@@ -158,8 +158,6 @@ class FeedScreenInstrumentedTest {
         return doc.toObject(SerializablePost::class.java)
     }
 
-
-
     @Before
     fun setUp() = runBlocking {
         // Clear emulator state before each test to ensure isolation
@@ -328,7 +326,7 @@ class FeedScreenInstrumentedTest {
         val post1 = createValidPost("post1", "Learn Guitar", userId1)
         val post2 = createValidPost("post2", "Learn Piano", userId2)
 
-        //Add posts (order in emulator is non-deterministic)
+        // Add posts (order in emulator is non-deterministic)
         addPostToEmulator(post1)
         addPostToEmulator(post2)
         FirebaseEmulator.firestore.collection("requests").get().await()
@@ -592,23 +590,19 @@ class FeedScreenInstrumentedTest {
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
         // Wait until UI state is initialized
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
-            vm.uiState.value != null
-        }
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) { vm.uiState.value != null }
         // Wait until feed card is present to ensure initial content has loaded
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             vm.uiState.value!!.authorName.isNotEmpty() &&
-
-            try {
-                composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
-            } catch (e: Exception) {
-                false
-            }
+                try {
+                    composeTestRule
+                        .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                } catch (e: Exception) {
+                    false
+                }
         }
-
 
         // List of test tags that require scrolling
         val scrollableTags =
@@ -966,19 +960,20 @@ class FeedScreenInstrumentedTest {
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
         // === Menu interactions ===
 
-        //wait until menu button is displayed
+        // wait until menu button is displayed
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(5000) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
                     .assertIsDisplayed()
                 true
-            }catch (e: AssertionError) {
+            } catch (e: AssertionError) {
                 false
             }
         }
 
-        //perform checks
+        // perform checks
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
