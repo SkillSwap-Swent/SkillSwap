@@ -21,8 +21,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.ui.utils.SkillPill
+import com.swent.skillswap.ui.utils.SkillPillRated
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
+import com.swent.skillswap.ui.utils.nextPillRankOrNull
 
 object SkillsEditTestTags {
     // Screen-level
@@ -76,10 +79,10 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
                 modifier = Modifier.fillMaxWidth(0.7f).testTag(SkillsEditTestTags.USER_SKILLS_FLOW)
             ) {
                 for (skill in skillOfUser) {
-                    SkillPill(
-                        skill.name,
+                    SkillPillRated(
+                        skill,
                         true,
-                        { skill -> vm.setSkills(skillOfUser.filter { it.name != skill }.toSet()) }
+                        onClick = { clicked -> cycleSkillPillState(clicked, skillOfUser, vm) }
                     )
                 }
             }
@@ -116,7 +119,9 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
                     SkillPill(
                         skill,
                         false,
-                        { skill -> vm.setSkills(skillOfUser + Skill(skill, 0f, "")) }
+                        { skill ->
+                            vm.setSkills(skillOfUser + Skill(skill, SkillRank.FAMILIAR.value, ""))
+                        }
                     )
                 }
             }
@@ -141,4 +146,21 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
             )
         }
     }
+}
+
+private fun cycleSkillPillState(clicked: Skill, skillOfUser: Set<Skill>, vm: EditUserViewModel) {
+    val nextRank = nextPillRankOrNull(clicked.rank)
+
+    val newSkills =
+        if (nextRank == null) {
+            // At EXPERT -> remove the skill entirely
+            skillOfUser.filter { it.name != clicked.name }.toSet()
+        } else {
+            // Update that skill's rank
+            skillOfUser
+                .map { if (it.name == clicked.name) it.copy(rank = nextRank) else it }
+                .toSet()
+        }
+
+    vm.setSkills(newSkills)
 }
