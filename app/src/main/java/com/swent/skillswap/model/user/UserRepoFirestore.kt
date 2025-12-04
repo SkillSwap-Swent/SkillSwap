@@ -8,6 +8,7 @@
 package com.swent.skillswap.model.user
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
@@ -135,9 +136,9 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
     }
 
     companion object {
-        private const val RATING_ALPHA = 0.2f
-        private const val MAX_RATING = 5f
-        private const val MIN_RATING = 0f
+        @VisibleForTesting internal const val RATING_ALPHA = 0.2f
+        @VisibleForTesting internal const val MAX_RATING = 5f
+        @VisibleForTesting internal const val MIN_RATING = 0f
     }
 
     // Uses EMA to compute new rating
