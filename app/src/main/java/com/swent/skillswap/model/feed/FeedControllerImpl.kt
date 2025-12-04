@@ -13,6 +13,7 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.LocationManager
 
@@ -99,7 +100,7 @@ private class FeedControllerImpl(
         val post =
             when (_currentPost.value) {
                 is Request -> postRepository.getPost(postType, postId) as Request
-                else -> throw Error("not supported type of the post")
+                else -> throw Exception("not supported type of the post")
             }
         recommendationEngine.reportPost(postId)
         postRepository.editPost(postId, post.copy(reportCount = post.reportCount + 1))
@@ -139,6 +140,10 @@ private class FeedControllerImpl(
         recommendationEngine.updateBlockedUser()
         postQueue.removeAll { it.ownerId == blockedUserUID }
         _currentPost.value = getNextPost()
+    }
+
+    override suspend fun retrieveUser(post: Post): User {
+        return userRepository.getUser(post.ownerId)
     }
 
     private suspend fun fetchPosts() {
