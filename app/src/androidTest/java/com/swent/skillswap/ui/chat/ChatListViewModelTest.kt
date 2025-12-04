@@ -25,8 +25,10 @@ import org.junit.Test
 class ChatListViewModelTest {
 
     private lateinit var viewModel: ChatListViewModel
-    private val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList())
+    private val chat1 = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList())
+    private val chat2 = Chat("c2", listOf("u1", "u2"), "p2", PostType.REQUEST, emptyList())
     private val user = User("u1", "John", "", "", emptySet(), 0f, emptyList())
+    private var acceptedChat: MutableList<Chat> = mutableListOf()
     private val post =
         object : Post {
             override val uid = "p1"
@@ -68,7 +70,25 @@ class ChatListViewModelTest {
                     ) {}
 
                     override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
-                        listOf(chat)
+                        listOf(chat1)
+
+                    override suspend fun getPendingChatsOfCurrentUser(
+                        relatedPostType: PostType
+                    ): List<Chat> {
+                        if (relatedPostType == PostType.REQUEST) {
+                            return listOf(chat2)
+                        } else {
+                            return emptyList()
+                        }
+                    }
+
+                    override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+                        return chat == chat1
+                    }
+
+                    override suspend fun acceptAPostReplyChat(chat: Chat) {
+                        acceptedChat.add(chat)
+                    }
                 },
                 object : UserRepositery {
                     override fun getNewUid() = ""
@@ -139,5 +159,34 @@ class ChatListViewModelTest {
         viewModel.getPostTitle("p1", PostType.OFFER)
         advanceUntilIdle()
         assertEquals("Test", viewModel.uiState.value.postTitles["p1"])
+    }
+
+    @Test
+    fun getPendingChatWorkCorrectly() = runTest {
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST, true)
+        advanceUntilIdle()
+        assertEquals("c2", viewModel.uiState.value.chats[0].id)
+        viewModel.getChatsOfCurrentUser(PostType.OFFER, true)
+        advanceUntilIdle()
+        assert(viewModel.uiState.value.chats.isEmpty())
+    }
+
+    @Test
+    fun getChatOwnerByUserWorkCorrectly() = runTest {
+        viewModel.getChatsOfCurrentUser(PostType.OFFER, false, true)
+        advanceUntilIdle()
+        assertEquals("c1", viewModel.uiState.value.chats[0].id)
+        viewModel.getChatsOfCurrentUser(PostType.OFFER, isOwner = false)
+        advanceUntilIdle()
+        assert(viewModel.uiState.value.chats.isEmpty())
+    }
+
+    @Test
+    fun acceptChatWorkCorrectly() = runTest {
+        viewModel.acceptAPostReplyChat(chat1)
+        assert(acceptedChat.contains(chat1))
+        viewModel.acceptAPostReplyChat(chat2)
+        assert(acceptedChat.contains(chat1))
+        assert(acceptedChat.contains(chat2))
     }
 }

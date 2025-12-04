@@ -70,6 +70,22 @@ class ChatConversationItemTest {
 
                 override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
                     emptyList<Chat>()
+
+                override suspend fun getPendingChatsOfCurrentUser(
+                    relatedPostType: PostType
+                ): List<Chat> {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                    return emptyList()
+                }
+
+                override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                    return false
+                }
+
+                override suspend fun acceptAPostReplyChat(chat: Chat) {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                }
             }
 
         mockUserRepo =

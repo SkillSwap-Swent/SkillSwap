@@ -6,6 +6,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
+import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.utils.deserializeMessage
 import com.swent.skillswap.model.utils.serializeMessage
@@ -123,8 +125,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         awaitClose { registration.remove() }
     }
 
-    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
-
+    suspend fun getChats(relatedPostType: PostType): List<Chat> {
         val currentUserId =
             try {
                 Firebase.auth.currentUser?.uid ?: throw Exception("No authenticated user found")
@@ -141,8 +142,6 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             } catch (e: Exception) {
                 throw Exception("Error while fetching chats in getChatsOfCurrentUser: ${e.message}")
             }
-
-        // Filter chats by related post type
         return allDocs
             .mapNotNull { doc ->
                 try {
@@ -152,6 +151,84 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
                 }
             }
             .filter { it.relatedPostType == relatedPostType }
+    }
+
+    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+
+        return getChats(relatedPostType).filter {
+            PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                PostStatus.COMPLETED
+        }
+    }
+
+    override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+        try {
+            return getChats(relatedPostType).filter {
+                PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                    PostStatus.POSTED
+            }
+        } catch (e: Exception) {
+            throw Exception("Error while fetching post: ${e.message}")
+        }
+    }
+
+    override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+        try {
+            return PostFirestoreRepository(db)
+                .getPost(chat.relatedPostType, chat.relatedPostId)
+                .ownerId ==
+                (Firebase.auth.currentUser?.uid ?: throw Exception("No authenticated user found"))
+        } catch (e: Exception) {
+            throw Exception("Error while fetching post: ${e.message}")
+        }
+    }
+    /** @author Topaze17 made using ChatGPT* */
+    override suspend fun acceptAPostReplyChat(chat: Chat) {
+        val postID = chat.relatedPostId
+        val chatID = chat.id
+
+        try {
+            // Get all chats related to this post
+            val querySnapshot =
+                db.collection(FirestorePaths.CHATS_COLLECTION)
+                    .whereEqualTo("relatedPostId", postID)
+                    .get()
+                    .await()
+
+            // Use a batch to update them atomically
+            val batch = db.batch()
+
+            for (document in querySnapshot.documents) {
+                val newStatus =
+                    if (document.id == chatID) {
+                        ChatStatus.ACTIVE.toString() // keep / set this one active
+                    } else {
+                        ChatStatus.INACTIVE.toString() // deactivate all others
+                    }
+
+                batch.update(document.reference, "status", newStatus)
+            }
+
+            // Commit all updates
+            batch.commit().await()
+
+            val postRepo = PostFirestoreRepository(db)
+            val post = postRepo.getPost(chat.relatedPostType, postID)
+
+            // We need to build a new Post instance with updated status.
+            val completedPost =
+                when (post) {
+                    is com.swent.skillswap.model.post.Request ->
+                        post.copy(status = PostStatus.COMPLETED)
+                    is com.swent.skillswap.model.post.Offer ->
+                        post.copy(status = PostStatus.COMPLETED)
+                    else -> throw Exception("Unsupported post implementation: ${post::class}")
+                }
+
+            postRepo.editPost(postID, completedPost)
+        } catch (e: Exception) {
+            throw Exception("Error while accepting post reply chat: ${e.message}")
+        }
     }
 
     private fun documentToChat(document: DocumentSnapshot): Chat {

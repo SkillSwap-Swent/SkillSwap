@@ -43,6 +43,20 @@ class ChatListScreenTest {
 
         override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
             chats[relatedPostType] ?: emptyList()
+
+        override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+            // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
+            return emptyList()
+        }
+
+        override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+            // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
+            return false
+        }
+
+        override suspend fun acceptAPostReplyChat(chat: Chat) {
+            // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
+        }
     }
 
     private class FakeUserRepository(private val users: Map<String, User>) : UserRepositery {

@@ -940,6 +940,12 @@ class FeedScreenInstrumentedTest {
         val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            composeTestRule
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         // === Menu interactions ===
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
