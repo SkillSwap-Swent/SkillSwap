@@ -753,4 +753,39 @@ class NotificationViewModelInstrumentedTest {
         assertFalse(updated2.isRead)
         assertFalse(updated3.isRead)
     }
+
+    @Test
+    fun addNotification_withoutAuthenticatedUser_setsErrorState() = runBlocking {
+        // Sign out before calling addNotification
+        FirebaseAuth.getInstance().signOut()
+        viewModel = NotificationViewModel(repository)
+        viewModel.addNotification(
+            recipientId = "recipient-1",
+            message = "Test message",
+            type = NotificationType.MESSAGE,
+            relatedId = "related-1"
+        )
+        Thread.sleep(200) // Wait for async update
+        val state = viewModel.uiState.value
+        assertEquals("No authenticated user found.", state.error)
+    }
+
+    @Test
+    fun addNotification_success_addsNotificationAndLoads() = runBlocking {
+        // Ensure user is signed in
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            FirebaseAuth.getInstance().signInAnonymously().await()
+        }
+        viewModel = NotificationViewModel(repository)
+        val recipientId = testUserId
+        val message = "Hello!"
+        val type = NotificationType.MESSAGE
+        val relatedId = "rel-123"
+        viewModel.addNotification(recipientId, message, type, relatedId)
+        Thread.sleep(500) // Wait for async update
+        val state = viewModel.uiState.value
+        assertFalse(state.isLoading)
+        assertTrue(state.notifications.any { it.message == message && it.userId == recipientId })
+        assertNull(state.error)
+    }
 }
