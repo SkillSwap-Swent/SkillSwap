@@ -60,6 +60,8 @@ class ChatListScreenTest {
         override suspend fun userExists(userId: String) = users.containsKey(userId)
 
         override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+
+        override suspend fun updateRating(userId: String, incomingRating: Float) {}
     }
 
     private class FakePostRepository(private val posts: Map<String, Post>) : PostRepository {
