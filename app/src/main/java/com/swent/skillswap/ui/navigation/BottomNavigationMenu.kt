@@ -1,6 +1,5 @@
 package com.swent.skillswap.ui.navigation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,8 +54,7 @@ fun BottomNavigationMenu(
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit,
     modifier: Modifier = Modifier,
-    notificationViewModel: NotificationViewModel,
-    onNotificationBadgeClick: () -> Unit = {}
+    notificationViewModel: NotificationViewModel
 ) {
     val uiState by notificationViewModel.uiState.collectAsState()
 
@@ -77,12 +75,7 @@ fun BottomNavigationMenu(
                         Box {
                             Icon(imageVector = tab.icon, contentDescription = null)
                             if (uiState.notifications.isNotEmpty()) {
-                                Badge(
-                                    modifier =
-                                        Modifier.offset(x = 16.dp, y = (-4).dp).clickable {
-                                            onNotificationBadgeClick()
-                                        }
-                                ) {
+                                Badge(modifier = Modifier.offset(x = 16.dp, y = (-4).dp)) {
                                     Text(
                                         text = uiState.notifications.size.toString(),
                                         style = MaterialTheme.typography.labelSmall

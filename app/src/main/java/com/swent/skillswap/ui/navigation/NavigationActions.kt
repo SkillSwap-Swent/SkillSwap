@@ -41,8 +41,6 @@ sealed class Screen(
     }
 
     object AddRequest : Screen(route = "addRequest", name = "Add Request")
-
-    object Notifications : Screen(route = "notifications", name = "Notifications")
 }
 
 open class NavigationActions(

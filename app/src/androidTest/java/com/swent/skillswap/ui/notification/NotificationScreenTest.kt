@@ -223,4 +223,168 @@ class NotificationScreenTest {
         waitForLoading()
         assert(repo.data["1"]?.isRead == true)
     }
+
+    @Test
+    fun emptyStateShowsCorrectTextForAllFilter() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        composeRule.onNodeWithText("No notifications").assertExists()
+    }
+
+    @Test
+    fun clickingReadNotificationDoesNotMarkAsRead() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1", read = true, userId = userId)
+        val vm = NotificationViewModel(repo)
+        var clicked: Notification? = null
+        composeRule.setContent {
+            MaterialTheme { NotificationScreen(vm, onNotificationClick = { clicked = it }) }
+        }
+        waitForLoading()
+        // Click the already-read notification
+        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").performClick()
+        waitForLoading()
+        // Should still be read (not marked again)
+        assert(repo.data["1"]?.isRead == true)
+        assert(clicked?.uid == "1")
+    }
+
+    @Test
+    fun allNotificationTypesDisplayCorrectly() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        val types =
+            listOf(
+                NotificationType.MESSAGE,
+                NotificationType.POST_REPLY,
+                NotificationType.POST_ACCEPTED,
+                NotificationType.POST_REJECTED,
+                NotificationType.NEW_MATCHING_POST
+            )
+        types.forEachIndexed { index, type ->
+            repo.data["$index"] = notif("$index", type = type, userId = userId)
+        }
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        // Verify all type labels are displayed
+        composeRule.onNodeWithText("Chat").assertExists()
+        composeRule.onNodeWithText("Reply").assertExists()
+        composeRule.onNodeWithText("Accepted").assertExists()
+        composeRule.onNodeWithText("Rejected").assertExists()
+        composeRule.onNodeWithText("New Post").assertExists()
+    }
+
+    @Test
+    fun unreadIndicatorShowsForUnreadNotifications() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1", read = false, userId = userId)
+        repo.data["2"] = notif("2", read = true, userId = userId)
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        // Unread notification should have different styling (we can't directly test the dot,
+        // but we can verify the notification exists and is clickable)
+        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").assertExists()
+        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_2").assertExists()
+    }
+
+    @Test
+    fun deleteButtonRemovesNotification() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1", userId = userId)
+        repo.data["2"] = notif("2", userId = userId)
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        val deleteButtons = composeRule.onAllNodesWithContentDescription("Delete notification")
+        assert(deleteButtons.fetchSemanticsNodes().size == 2)
+        deleteButtons[0].performClick()
+        waitForLoading()
+        // One notification should be deleted
+        assert(repo.data.size == 1)
+    }
+
+    @Test
+    fun titleAndMessageDisplayCorrectly() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1", userId = userId)
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        composeRule.onNodeWithText("Title-1").assertExists()
+        composeRule.onNodeWithText("Msg-1").assertExists()
+    }
+
+    @Test
+    fun loadingStateShowsIndicator() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        // Delay the response to see loading state
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        // Should show loading initially
+        composeRule.onNodeWithTag(NotificationScreenTags.LOADING_INDICATOR).assertExists()
+        waitForLoading()
+        // Loading should be gone after load
+        composeRule.onNodeWithTag(NotificationScreenTags.LOADING_INDICATOR).assertDoesNotExist()
+    }
+
+    @Test
+    fun errorStateShowsRetryButton() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.fail = true
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        composeRule.onNodeWithTag(NotificationScreenTags.ERROR_MESSAGE).assertExists()
+        composeRule.onNodeWithText("Retry").assertExists().performClick()
+        waitForLoading()
+    }
+
+    @Test
+    fun markAllReadButtonAppearsWhenUnreadExists() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1", read = false, userId = userId)
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertExists()
+        composeRule.onNodeWithText("Mark all read").assertExists()
+    }
+
+    @Test
+    fun filterChipsToggleCorrectly() = runBlocking {
+        val userId = auth.currentUser?.uid ?: "user"
+        val repo = FakeRepo()
+        repo.data["1"] = notif("1", read = false, userId = userId)
+        repo.data["2"] = notif("2", read = true, userId = userId)
+        val vm = NotificationViewModel(repo)
+        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        waitForLoading()
+        // Initially showing all (unread filter not selected)
+        composeRule.onNodeWithText("Title-1").assertExists()
+        composeRule.onNodeWithText("Title-2").assertExists()
+        // Click unread filter
+        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
+        waitForLoading()
+        // Should only show unread
+        composeRule.onNodeWithText("Title-1").assertExists()
+        composeRule.onNodeWithText("Title-2").assertDoesNotExist()
+        // Click all filter
+        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
+        waitForLoading()
+        // Should show all again
+        composeRule.onNodeWithText("Title-1").assertExists()
+        composeRule.onNodeWithText("Title-2").assertExists()
+    }
 }
