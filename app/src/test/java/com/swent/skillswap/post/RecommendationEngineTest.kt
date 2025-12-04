@@ -166,6 +166,8 @@ class RecommendationEngineTest {
                 override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
 
                 override fun getNewUid(): String = UUID.randomUUID().toString()
+
+                override suspend fun updateRating(userId: String, incomingRating: Float) {}
             }
 
         // Create factory with custom thresholds
@@ -351,6 +353,8 @@ class RecommendationEngineTest {
                 override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
 
                 override fun getNewUid(): String = UUID.randomUUID().toString()
+
+                override suspend fun updateRating(userId: String, incomingRating: Float) {}
             }
 
         engineFactory =
