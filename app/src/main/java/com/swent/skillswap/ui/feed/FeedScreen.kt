@@ -32,6 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
+import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
@@ -57,6 +64,13 @@ fun FeedScreen(
     var showDistanceSlider by remember { mutableStateOf(false) }
     var distance by remember { mutableFloatStateOf(0f) }
     var isLiveLocationEnabled by remember { mutableStateOf(false) }
+    var showReportOfferAlert by remember { mutableStateOf(false) }
+    var showBlockUserAlert by remember { mutableStateOf(false) }
+    var showExceptionAlert by remember { mutableStateOf(false) }
+    var reportedAuthorName by remember { mutableStateOf<String?>(null) }
+    var blockedAuthorName by remember { mutableStateOf<String?>(null) }
+    var exceptionTitle by remember { mutableStateOf("") }
+    var exceptionDescription by remember { mutableStateOf("") }
 
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -66,7 +80,52 @@ fun FeedScreen(
     val verticalPadding = screenHeightDp * 0.03f
     val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
     val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
-
+    LaunchedEffect(Unit) {
+        vm.eventFlow.collect { event ->
+            when (event) {
+                is FeedScreenEvent.SuccessFullBlock -> {
+                    blockedAuthorName = event.authorName
+                    showBlockUserAlert = true
+                }
+                is FeedScreenEvent.SuccessFullReport -> {
+                    reportedAuthorName = event.authorName
+                    showReportOfferAlert = true
+                }
+                is FeedScreenEvent.ExceptionEvent -> {
+                    showExceptionAlert = true
+                    exceptionTitle = event.exception.javaClass.toString()
+                    exceptionDescription = event.exception.message ?: ""
+                }
+            }
+        }
+    }
+    /** alert for Error* */
+    FeedScreenAlertDialog(
+        title = exceptionTitle,
+        text = exceptionDescription,
+        onConfirm = { showExceptionAlert = !showExceptionAlert },
+        show = showExceptionAlert,
+        descriptionTestTag = POP_UP_EXCEPTION_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_EXCEPTION)
+    )
+    /** alert for successful report of a post* */
+    FeedScreenAlertDialog(
+        title = "Successful report",
+        text = "Successfully reported offer from $reportedAuthorName",
+        onConfirm = { showReportOfferAlert = !showReportOfferAlert },
+        show = showReportOfferAlert,
+        descriptionTestTag = POP_UP_REPORT_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_REPORT)
+    )
+    /** alert for successful blocking of a user* */
+    FeedScreenAlertDialog(
+        title = "Successful block",
+        text = "Successfully blocked $blockedAuthorName",
+        onConfirm = { showBlockUserAlert = !showBlockUserAlert },
+        show = showBlockUserAlert,
+        descriptionTestTag = POP_UP_BLOCK_DESCRIPTION,
+        modifier = Modifier.testTag(POP_UP_BLOCK)
+    )
     Box(
         modifier =
             Modifier.fillMaxSize()
@@ -446,5 +505,34 @@ private fun FilterBar(
         ) {
             Text("Clear Filters")
         }
+    }
+}
+
+@Composable
+fun FeedScreenAlertDialog(
+    modifier: Modifier = Modifier,
+    title: String = "Successful report",
+    text: String = "Successfully blocked User1",
+    show: Boolean = true,
+    onConfirm: () -> Unit = {},
+    descriptionTestTag: String = ""
+) {
+    if (show) {
+        AlertDialog(
+            onDismissRequest = {
+                /** do nothing until it click on confirm* */
+            },
+            title = { Text(title) },
+            text = { Text(text, Modifier.testTag(descriptionTestTag)) },
+            confirmButton = {
+                TextButton(
+                    onClick = { onConfirm() },
+                    modifier = Modifier.testTag(POP_UP_CONFIRM_BUTTON)
+                ) {
+                    Text("Confirm")
+                }
+            },
+            modifier = modifier
+        )
     }
 }
