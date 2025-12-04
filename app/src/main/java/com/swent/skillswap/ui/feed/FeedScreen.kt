@@ -183,7 +183,7 @@ fun FeedScreen(
                                         append("I want : ")
 
                                         withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                            append(offer.skillRequested.toString().lowercase())
+                                            append(offer.skillRequested)
                                         }
                                     },
                                 style = MaterialTheme.typography.bodyMedium,

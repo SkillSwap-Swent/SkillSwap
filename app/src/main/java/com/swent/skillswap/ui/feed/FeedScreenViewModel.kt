@@ -136,7 +136,7 @@ open class FeedScreenViewModel(
                     authorName = user?.username ?: "None",
                     requesterAvatar = "https://picsum.photos/200",
                     receiverName = userId,
-                    skillRequested = post.skills.firstOrNull()?.name ?: "None",
+                    skillRequested = post.skills.firstOrNull()?.toUIString() ?: "None",
                     thumbnail = post.media.firstOrNull() ?: "",
                     specification = post.title,
                     authorRating = user?.rating ?: 0f,
