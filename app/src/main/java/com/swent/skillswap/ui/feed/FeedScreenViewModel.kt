@@ -125,7 +125,7 @@ open class FeedScreenViewModel(
     /** Report an offer and then decline it if reporting worked. */
     // TODO naming logic of function will need to be adjust the Request/Offer mess start to be hard
     // to follow
-    fun reportOffer(offer: FeedOffer) {
+    fun reportOffer(offer: FeedPost) {
 
         viewModelScope.launch {
             try {
