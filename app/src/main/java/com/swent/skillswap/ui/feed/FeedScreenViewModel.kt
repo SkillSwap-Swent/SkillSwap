@@ -7,14 +7,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.User
-import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
