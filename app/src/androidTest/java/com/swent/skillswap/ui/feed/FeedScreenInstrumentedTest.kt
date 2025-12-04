@@ -589,9 +589,6 @@ class FeedScreenInstrumentedTest {
         val vm = FeedScreenViewModel(navigation, controller, userRepository)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
-
-        // Wait until UI state is initialized
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) { vm.uiState.value != null }
         // Wait until feed card is present to ensure initial content has loaded
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             vm.uiState.value!!.authorName.isNotEmpty() &&
