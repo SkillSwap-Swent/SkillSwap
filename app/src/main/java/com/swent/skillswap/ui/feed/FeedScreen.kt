@@ -138,18 +138,17 @@ fun FeedScreen(
                             AsyncImage(
                                 model = offer.requesterAvatar,
                                 contentDescription = "Requester profile picture",
-                                modifier = Modifier
-                                    .size(avatarSize)
-                                    .clip(CircleShape)
-                                    .clickable { vm.goToProfile(offer.authorID) }
-                                    .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
+                                modifier =
+                                    Modifier.size(avatarSize)
+                                        .clip(CircleShape)
+                                        .clickable { vm.goToProfile(offer.authorID) }
+                                        .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
                             Box(
                                 modifier =
-                                    Modifier
-                                        .size(avatarSize)
+                                    Modifier.size(avatarSize)
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
                                         .clickable { vm.goToProfile(offer.authorID) }
