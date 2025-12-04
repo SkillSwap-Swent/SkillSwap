@@ -63,6 +63,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
@@ -109,6 +110,7 @@ object RequestScreenTags {
 @Composable
 fun RequestScreen(
     postRepository: PostRepository,
+    storageRepository: PictureRepository = PictureRepository(),
     currentUserId: String,
     uid: String? = null,
     requestViewModel: RequestViewModel =
@@ -117,6 +119,7 @@ fun RequestScreen(
                 RequestViewModelFactory(
                     appContext = LocalContext.current.applicationContext,
                     postRepository = postRepository,
+                    storageRepository = storageRepository,
                     currentUserId = currentUserId,
                     postId = uid
                 )
@@ -438,6 +441,7 @@ fun RequestScreen(
     }
 }
 // NOSONAR_START
+/*
 @Preview(showBackground = true)
 @Composable
 fun NewRequestScreenPreview() {
@@ -445,7 +449,7 @@ fun NewRequestScreenPreview() {
     val fakeRepository = FakePostRepository()
 
     val viewModel =
-        RequestViewModel(null, fakeRepository, currentUserId = "preview-user", postId = null)
+        RequestViewModel(null, fakeRepository,, currentUserId = "preview-user", postId = null)
 
     SkillSwapAppTheme {
         RequestScreen(
@@ -456,4 +460,4 @@ fun NewRequestScreenPreview() {
         )
     }
 }
-// NOSONAR_END
+// NOSONAR_END*/
