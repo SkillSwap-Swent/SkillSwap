@@ -5,10 +5,16 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.ui.notification.NotificationViewModel
+import com.swent.skillswap.utils.FirebaseEmulator
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,6 +23,27 @@ import org.junit.runner.RunWith
 class BottomNavigationMenuTest {
 
     @get:Rule val composeRule = createComposeRule()
+
+    init {
+        FirebaseEmulator.startEmulator()
+    }
+
+    @Before
+    fun setUp() = runBlocking {
+        // Sign in user for authentication
+        FirebaseAuth.getInstance().signInAnonymously().await()
+    }
+
+    @After
+    fun tearDown() = runBlocking {
+        try {
+            FirebaseAuth.getInstance().signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        } catch (e: Exception) {
+            // Ignore cleanup errors
+        }
+    }
 
     private class FakeRepo(private val notifications: List<Notification> = emptyList()) :
         NotificationRepository {
@@ -41,10 +68,21 @@ class BottomNavigationMenuTest {
     }
 
     @Test
-    fun badgeShowsAndClickable() {
+    fun badgeShowsAndClickable() = runBlocking {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "test-user"
         val notif =
-            Notification("1", "u", "T", "M", NotificationType.MESSAGE, null, false, Timestamp.now())
-        val vm = NotificationViewModel(FakeRepo(listOf(notif)))
+            Notification(
+                "1",
+                userId,
+                "T",
+                "M",
+                NotificationType.MESSAGE,
+                null,
+                false,
+                Timestamp.now()
+            )
+        val repo = FakeRepo(listOf(notif))
+        val vm = NotificationViewModel(repo)
         var tabClicked: Tab? = null
         var badgeClicked = false
 
@@ -59,6 +97,11 @@ class BottomNavigationMenuTest {
             }
         }
         composeRule.waitForIdle()
+
+        // Wait for notifications to load
+        composeRule.waitUntil(timeoutMillis = 5000) {
+            vm.uiState.value.notifications.isNotEmpty() || !vm.uiState.value.isLoading
+        }
 
         // Badge should show count
         composeRule.onNodeWithText("1").assertExists()

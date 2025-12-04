@@ -5,12 +5,18 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.utils.FirebaseEmulator
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +25,27 @@ import org.junit.runner.RunWith
 class NotificationScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
+
+    init {
+        FirebaseEmulator.startEmulator()
+    }
+
+    @Before
+    fun setUp() = runBlocking {
+        // Sign in user for authentication
+        FirebaseAuth.getInstance().signInAnonymously().await()
+    }
+
+    @After
+    fun tearDown() = runBlocking {
+        try {
+            FirebaseAuth.getInstance().signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        } catch (e: Exception) {
+            // Ignore cleanup errors
+        }
+    }
 
     private class FakeRepo : NotificationRepository {
         val data = mutableMapOf<String, Notification>()
@@ -61,7 +88,10 @@ class NotificationScreenTest {
         id: String,
         type: NotificationType = NotificationType.MESSAGE,
         read: Boolean = false
-    ) = Notification(id, "user", "Title-$id", "Msg", type, "rel-$id", read, Timestamp.now())
+    ): Notification {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "test-user"
+        return Notification(id, userId, "Title-$id", "Msg", type, "rel-$id", read, Timestamp.now())
+    }
 
     private fun waitForLoading() {
         composeRule.waitForIdle()
