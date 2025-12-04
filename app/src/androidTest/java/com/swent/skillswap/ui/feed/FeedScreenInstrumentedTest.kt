@@ -94,7 +94,7 @@ class FeedScreenInstrumentedTest {
             status = PostStatus.POSTED,
             location = location ?: GeoPoint(0.0, 0.0),
             media = listOf("https://picsum.photos/200"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            paymentMethod = PaymentMethod.SKILLS,
             type = PostType.REQUEST,
             postReplies = emptyList(),
             reportCount = reportCount
@@ -182,7 +182,7 @@ class FeedScreenInstrumentedTest {
                     username = "TestUser",
                     email = "myTest@example.com",
                     profilePicture = "",
-                    skillSet = emptySet(),
+                    skillSet = setOf(Skill(SkillTag.CALCULUS, 0f, "")),
                     rating = 0f,
                     availability = emptyList(),
                     preference = Preference.SKILLS,
