@@ -80,7 +80,8 @@ class ChatViewModelTest {
         val recipientId = "user2"
         fakeRepo.addMessages(listOf()) // Ensure no messages
         // Override getChat to return a chat with two participants
-        fakeRepo.overrideChat = Chat(chatId, listOf(senderId, recipientId), "", PostType.REQUEST, emptyList())
+        fakeRepo.overrideChat =
+            Chat(chatId, listOf(senderId, recipientId), "", PostType.REQUEST, emptyList())
         viewModel = ChatViewModel(fakeRepo, chatId)
         // Should return recipientId
         val result = viewModel.getRecipientId(senderId)
