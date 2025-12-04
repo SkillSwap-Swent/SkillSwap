@@ -361,7 +361,7 @@ class FeedScreenInstrumentedTest {
                 false
             }
 
-        val expectedNextTitle = /*if (shownIsPost1) post2.title else*/ post1.title
+        val expectedNextTitle = if (shownIsPost1) post2.title else post1.title
 
         // Accept the currently visible offer
         composeTestRule.onNodeWithTag(FeedScreenTestTags.ACCEPT_BUTTON).performClick()
