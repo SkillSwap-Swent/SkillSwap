@@ -397,6 +397,7 @@ fun SkillSwapApp(
                             chatRepository = ChatRepositoryFirestore(Firebase.firestore),
                             notificationRepository =
                                 NotificationRepositoryFirestore(Firebase.firestore),
+                            userRepositery = UserRepoFirestore(Firebase.firestore),
                             chatId = chatId,
                         )
                     }

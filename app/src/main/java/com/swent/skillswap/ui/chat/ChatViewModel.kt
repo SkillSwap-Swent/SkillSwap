@@ -9,6 +9,7 @@ import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +35,7 @@ data class ChatUIState(
 class ChatViewModel(
     private val chatRepository: ChatRepository,
     private val notificationRepository: NotificationRepository,
+    private val userRepositery: UserRepositery,
     private val chatId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ChatUIState())
@@ -92,7 +94,7 @@ class ChatViewModel(
                     Notification(
                         uid = notificationRepository.getNewUid(),
                         userId = recipientId,
-                        title = "New Message",
+                        title = userRepositery.getUser(senderId).username,
                         message = content,
                         type = NotificationType.MESSAGE,
                         relatedId = chatId,
