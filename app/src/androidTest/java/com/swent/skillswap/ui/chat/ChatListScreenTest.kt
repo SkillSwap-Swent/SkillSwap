@@ -9,16 +9,22 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
+import com.swent.skillswap.model.chat.ChatStatus
 import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepositery
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -275,4 +281,56 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("First Post").assertExists()
         composeRule.onNodeWithText("Second Post").assertExists()
     }
+
+    @Test
+    fun rating_button_shows_for_completed_post_and_dialog_submits_rating() {
+        val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+        val post = object : Post by MockPost("p1", "Test") { override val status = PostStatus.COMPLETED }
+        val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        composeRule.waitForIdle()
+
+        // Rating button should exist and open dialog
+        composeRule.onNodeWithContentDescription("Rate User").assertExists().performClick()
+        composeRule.onNodeWithText("Rate this exchange").assertExists()
+
+        // Select 4 stars and submit
+        composeRule.onAllNodesWithContentDescription("rating stars")[3].performClick()
+        composeRule.onNodeWithText("Submit").performClick()
+        composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
+    }
+
+    @Test
+    fun rating_button_hidden_for_posted_status() {
+        val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+        val post = object : Post by MockPost("p1", "Test") { override val status = PostStatus.POSTED }
+        val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithContentDescription("Rate User").assertDoesNotExist()
+    }
+
+    @Test
+    fun rating_dialog_cancel_dismisses() {
+        val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+        val post = object : Post by MockPost("p1", "Test") { override val status = PostStatus.ARCHIVED }
+        val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithContentDescription("Rate User").performClick()
+        composeRule.onNodeWithText("Cancel").performClick()
+        composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
+    }
+
 }
