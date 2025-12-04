@@ -33,7 +33,15 @@ class Chat(
     val relatedPostType: PostType,
     val messages: List<Message>,
     val status: ChatStatus = ChatStatus.ACTIVE
-)
+) {
+    /**
+     * Checks if the chat is active.
+     * @return True if the chat status is ACTIVE, false otherwise.
+     */
+    fun isActive(): Boolean {
+        return status == ChatStatus.ACTIVE
+    }
+}
 
 const val NUMBER_OF_CHAT_PARTICIPANTS = 2
 
