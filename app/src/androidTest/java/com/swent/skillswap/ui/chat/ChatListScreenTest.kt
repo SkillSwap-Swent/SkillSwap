@@ -19,12 +19,8 @@ import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepositery
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -284,8 +280,12 @@ class ChatListScreenTest {
 
     @Test
     fun rating_button_shows_for_completed_post_and_dialog_submits_rating() {
-        val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
-        val post = object : Post by MockPost("p1", "Test") { override val status = PostStatus.COMPLETED }
+        val chat =
+            Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+        val post =
+            object : Post by MockPost("p1", "Test") {
+                override val status = PostStatus.COMPLETED
+            }
         val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
 
         composeRule.setContent {
@@ -305,8 +305,12 @@ class ChatListScreenTest {
 
     @Test
     fun rating_button_hidden_for_posted_status() {
-        val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
-        val post = object : Post by MockPost("p1", "Test") { override val status = PostStatus.POSTED }
+        val chat =
+            Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+        val post =
+            object : Post by MockPost("p1", "Test") {
+                override val status = PostStatus.POSTED
+            }
         val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
 
         composeRule.setContent {
@@ -319,8 +323,12 @@ class ChatListScreenTest {
 
     @Test
     fun rating_dialog_cancel_dismisses() {
-        val chat = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
-        val post = object : Post by MockPost("p1", "Test") { override val status = PostStatus.ARCHIVED }
+        val chat =
+            Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+        val post =
+            object : Post by MockPost("p1", "Test") {
+                override val status = PostStatus.ARCHIVED
+            }
         val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
 
         composeRule.setContent {
@@ -332,5 +340,4 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("Cancel").performClick()
         composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
     }
-
 }

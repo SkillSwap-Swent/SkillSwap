@@ -373,20 +373,18 @@ class UserFireStoreTest {
 
         repo.updateRating(uid, 5.0f)
 
-        assertEquals(4*(1-RATING_ALPHA)+5*RATING_ALPHA , repo.getUser(uid).rating, 0.001f)
+        assertEquals(4 * (1 - RATING_ALPHA) + 5 * RATING_ALPHA, repo.getUser(uid).rating, 0.001f)
     }
 
     @Test
-      fun updateRatingCoercesToBounds() = runBlocking {
-      val uid = repo.getNewUid()
-      val user = createUser(uid, "user", "u@test.com", rating = 0.0f)
-      repo.addUser(user)
+    fun updateRatingCoercesToBounds() = runBlocking {
+        val uid = repo.getNewUid()
+        val user = createUser(uid, "user", "u@test.com", rating = 0.0f)
+        repo.addUser(user)
 
-      repo.updateRating(uid, 5.0f)
-      val rating = repo.getUser(uid).rating
+        repo.updateRating(uid, 5.0f)
+        val rating = repo.getUser(uid).rating
 
-      assertTrue(rating in 0.0f..5.0f)
-  }
-
-
+        assertTrue(rating in 0.0f..5.0f)
+    }
 }
