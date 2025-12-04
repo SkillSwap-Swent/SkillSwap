@@ -138,9 +138,7 @@ class NotificationViewModel(
 
         // Find all unread notifications related to this chat
         val chatNotifications =
-            _uiState.value.notifications.filter {
-                it.relatedId == chatId && !it.isRead
-            }
+            _uiState.value.notifications.filter { it.relatedId == chatId && !it.isRead }
 
         if (chatNotifications.isEmpty()) {
             return
