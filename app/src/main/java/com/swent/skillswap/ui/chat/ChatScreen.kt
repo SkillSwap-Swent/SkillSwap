@@ -133,11 +133,12 @@ fun ChatScreen(
 
                     // Send a notification to the recipient user
                     if (notificationViewModel != null) {
+                        val message = inputText
                         coroutineScope.launch {
                             val recipientId = chatViewModel.getRecipientId(currentUserId)
                             notificationViewModel.addNotification(
                                 recipientId = recipientId,
-                                message = inputText,
+                                message = message,
                                 type = NotificationType.MESSAGE,
                                 relatedId = uiState.chatId
                             )
