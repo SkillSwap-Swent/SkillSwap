@@ -586,14 +586,12 @@ class FeedScreenInstrumentedTest {
         FirebaseEmulator.firestore.collection("requests").get().await()
 
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
-        val vm = FeedScreenViewModel(navigation, controller, userRepository)
+        val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
 
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) { vm.uiState.value != null }
         // Wait until feed card is present to ensure initial content has loaded
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
-            vm.uiState.value!!.authorName.isNotEmpty() &&
                 try {
                     composeTestRule
                         .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
