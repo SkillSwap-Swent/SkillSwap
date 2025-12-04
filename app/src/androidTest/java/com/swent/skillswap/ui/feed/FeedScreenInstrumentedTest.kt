@@ -592,14 +592,14 @@ class FeedScreenInstrumentedTest {
 
         // Wait until feed card is present to ensure initial content has loaded
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
-                try {
-                    composeTestRule
-                        .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
-                        .fetchSemanticsNodes()
-                        .isNotEmpty()
-                } catch (e: Exception) {
-                    false
-                }
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            } catch (e: Exception) {
+                false
+            }
         }
 
         // List of test tags that require scrolling
