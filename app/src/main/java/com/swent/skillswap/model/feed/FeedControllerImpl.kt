@@ -142,6 +142,10 @@ private class FeedControllerImpl(
         _currentPost.value = getNextPost()
     }
 
+    override suspend fun retrieveUser(post: Post): User {
+        return userRepository.getUser(post.ownerId)
+    }
+
     override suspend fun getUser(uid: String): User {
         return userRepository.getUser(uid)
     }
