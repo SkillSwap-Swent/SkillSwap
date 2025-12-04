@@ -104,7 +104,7 @@ class FakeUserRepository : UserRepositery {
         users[userId] = user.copy(fcmToken = fcmToken)
     }
 
-    override suspend fun updateRating(userId: String, incomingRating: Float) { }
+    override suspend fun updateRating(userId: String, incomingRating: Float) {}
 
     fun getAddedUsers(): List<User> = users.values.toList()
 
