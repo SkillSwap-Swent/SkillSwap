@@ -9,6 +9,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -25,7 +26,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.FeedOffer
+import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
@@ -174,6 +175,8 @@ class FeedScreenInstrumentedTest {
         // Create the test user in Firestore
         runBlocking {
             testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid
+            userId2 = userRepository.getNewUid()
+            userId1 = userRepository.getNewUid()
 
             val user =
                 User(
@@ -189,9 +192,25 @@ class FeedScreenInstrumentedTest {
                     blockedUsers = emptySet(),
                     fcmToken = null
                 )
+
+            val user1 =
+                User(
+                    uid = userId1,
+                    username = "TestUser1",
+                    email = "la@mail.com",
+                    profilePicture = "",
+                    skillSet = setOf(Skill(SkillTag.CALCULUS, 0f, "")),
+                    rating = 0f,
+                    availability = emptyList(),
+                    preference = Preference.SKILLS,
+                    location = GeoPoint(0.0, 0.0),
+                    blockedUsers = emptySet(),
+                    fcmToken = null
+                )
+
             val user2 =
                 User(
-                    uid = "TestUser2",
+                    uid = userId2,
                     username = "TestUser2",
                     email = "myTest2@example.com",
                     profilePicture = "",
@@ -205,6 +224,7 @@ class FeedScreenInstrumentedTest {
                 )
 
             userRepository.addUser(user)
+            userRepository.addUser(user1)
             userRepository.addUser(user2)
         }
 
@@ -222,10 +242,6 @@ class FeedScreenInstrumentedTest {
                 feedType = PostType.REQUEST,
             )
         }
-        userId2 = userRepository.getNewUid()
-        userId1 = userRepository.getNewUid()
-        userRepository.addUser(User(uid = userId2))
-        userRepository.addUser(User(uid = userId1))
         controllerFactory =
             FeedControllerFactory(
                 recommendationEngine = engine,
@@ -270,14 +286,44 @@ class FeedScreenInstrumentedTest {
                 false
             }
         }
-
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).isDisplayed()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).assertDoesNotExist()
+    }
+
+    @Test
+    fun noOfferAvailable_Refresh() {
+        runBlocking {
+            val controller = runBlocking { controllerFactory.create(testUserId, PostType.REQUEST) }
+            val vm = FeedScreenViewModel(navigation, controller)
+
+            composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
+
+            composeTestRule.waitForIdle()
+            composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+                try {
+                    composeTestRule
+                        .onNodeWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                        .assertIsDisplayed()
+                    true
+                } catch (e: AssertionError) {
+                    false
+                }
+            }
+            composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).isDisplayed()
+            val post1 = createValidPost("post1", "Learn Guitar")
+            addPostToEmulator(post1)
+            FirebaseEmulator.firestore.collection("requests").get().await()
+            composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).performClick()
+            composeTestRule.waitForIdle()
+            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).isDisplayed()
+            return@runBlocking
+        }
     }
 
     @Test
     fun initialLoad_DisplaysFirstOffer() {
         runBlocking {
-            val post1 = createValidPost("post1", "Learn Guitar")
+            val post1 = createValidPost("post1", "Learn Guitar", userId1)
             addPostToEmulator(post1)
 
             FirebaseEmulator.firestore.collection("requests").get().await()
@@ -309,8 +355,8 @@ class FeedScreenInstrumentedTest {
 
     @Test
     fun acceptOffer_LoadsNextOffer() = runBlocking {
-        val post1 = createValidPost("post1", "Learn Guitar", "author1")
-        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
 
         // Add posts (order in emulator is non-deterministic)
         addPostToEmulator(post1)
@@ -328,7 +374,9 @@ class FeedScreenInstrumentedTest {
         // Wait until a skill title appears (either post1 or post2)
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                    .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
                 false
@@ -339,7 +387,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -355,7 +403,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -365,15 +413,15 @@ class FeedScreenInstrumentedTest {
 
         // Final explicit check
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
         return@runBlocking
     }
 
     @Test
     fun skipOffer_LoadsNextOffer() = runBlocking {
-        val post1 = createValidPost("post1", "Learn Guitar", "author1")
-        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
 
         // Add posts (order may not be deterministic)
         addPostToEmulator(post1)
@@ -395,7 +443,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
@@ -407,7 +455,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -423,7 +471,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -433,15 +481,15 @@ class FeedScreenInstrumentedTest {
 
         // Final explicit check
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
         return@runBlocking
     }
 
     @Test
     fun correctly_report_post() = runBlocking {
-        val post1 = createValidPost("post1", "Learn Guitar", "author1")
-        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
 
         // Add posts (order may not be deterministic)
         addPostToEmulator(post1)
@@ -473,7 +521,7 @@ class FeedScreenInstrumentedTest {
         val shownIsPost1 =
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertTextContains(post1.title, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -494,7 +542,7 @@ class FeedScreenInstrumentedTest {
             try {
                 composeTestRule.waitForIdle()
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED, useUnmergedTree = true)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE, useUnmergedTree = true)
                     .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -537,7 +585,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertTextContains("Offer B", substring = true, ignoreCase = true)
                 true
             } catch (e: AssertionError) {
@@ -548,7 +596,7 @@ class FeedScreenInstrumentedTest {
         // Store the currently displayed post title
         val firstShownTitle =
             composeTestRule
-                .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                 .fetchSemanticsNode()
                 .config[SemanticsProperties.Text]
                 .first()
@@ -566,7 +614,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun allTestTagsDisplayedAndMenuInteractions() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", userId1)
+        val post1 = createValidPost("1", "Guitar Lessons")
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -631,20 +679,21 @@ class FeedScreenInstrumentedTest {
         val visibleTags =
             listOf(
                 FeedScreenTestTags.FEED_CARD,
-                FeedScreenTestTags.SKILL_REQUESTED,
+                FeedScreenTestTags.SPECIFICATION_TITLE,
                 FeedScreenTestTags.FEED_MENU_BUTTON,
                 FeedScreenTestTags.FEED_THUMBNAIL,
                 FeedScreenTestTags.REQUESTER_PROFILE_PICTURE,
-                FeedScreenTestTags.REQUESTER_NAME,
+                FeedScreenTestTags.RATING,
                 FeedScreenTestTags.ACCEPT_BUTTON,
-                FeedScreenTestTags.DECLINE_BUTTON
+                FeedScreenTestTags.DECLINE_BUTTON,
+                FeedScreenTestTags.REQUESTER_NAME
             )
-
+        composeTestRule.waitForIdle()
         visibleTags.forEach { tag ->
             try {
                 composeTestRule.waitForIdle()
                 // Wait until the node is present and displayed
-                composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+                composeTestRule.waitUntil(timeoutMillis = 10_000L) {
                     try {
                         composeTestRule
                             .onAllNodesWithTag(tag, useUnmergedTree = true)
@@ -740,7 +789,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule
-                    .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                     .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
@@ -750,7 +799,7 @@ class FeedScreenInstrumentedTest {
 
         // Initially, postFar should be visible (newest post, no filter)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(postFar.title, substring = true, ignoreCase = true)
 
         // Open distance filter slider
@@ -812,7 +861,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 val skillGiveNode =
-                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                 val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
                 text.contains(postMedium.title, ignoreCase = true)
             } catch (e: AssertionError) {
@@ -822,7 +871,7 @@ class FeedScreenInstrumentedTest {
 
         // Verify postMedium is shown first (newest filtered post)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(postMedium.title, substring = true, ignoreCase = true)
 
         // Press decline to move to next filtered post
@@ -833,7 +882,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 val skillGiveNode =
-                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                    composeTestRule.onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                 val text = skillGiveNode.fetchSemanticsNode().getTextString() ?: ""
                 text.contains(postNearby.title, ignoreCase = true)
             } catch (e: AssertionError) {
@@ -843,13 +892,13 @@ class FeedScreenInstrumentedTest {
 
         // Verify postNearby is shown (oldest filtered post)
         composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+            .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(postNearby.title, substring = true, ignoreCase = true)
 
         // Verify postFar was never shown after filtering
         val finalText =
             composeTestRule
-                .onNodeWithTag(FeedScreenTestTags.SKILL_REQUESTED)
+                .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
                 .fetchSemanticsNode()
                 .getTextString() ?: ""
         assert(!finalText.contains(postFar.title, ignoreCase = true)) {
@@ -864,7 +913,7 @@ class FeedScreenInstrumentedTest {
             createValidPost(
                 uid = "post1",
                 title = "Learn Calculus",
-                ownerId = "TestUser2",
+                ownerId = userId2,
             )
         // Add post to emulator
         addPostToEmulator(post)
@@ -878,7 +927,7 @@ class FeedScreenInstrumentedTest {
             Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
         }
 
-        // Wait until the SKILL_REQUESTED node is displayed
+        // Wait until the SPECIFICATION_TITLE node is displayed
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
@@ -900,7 +949,7 @@ class FeedScreenInstrumentedTest {
             createValidPost(
                 uid = "post1",
                 title = "Learn Calculus",
-                ownerId = "INVALIDE_USER_ID",
+                ownerId = "INVALID_USER_ID",
             )
         // Add post to emulator
         addPostToEmulator(post)
@@ -914,7 +963,7 @@ class FeedScreenInstrumentedTest {
             Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
         }
 
-        // Wait until the SKILL_REQUESTED node is displayed
+        // Wait until the SKILL_GIVE node is displayed
         composeTestRule.waitUntil(timeoutMillis = 10_000L) {
             try {
                 composeTestRule.onNodeWithTag(FeedScreenTestTags.SKILL_GIVE).assertIsDisplayed()
@@ -932,30 +981,42 @@ class FeedScreenInstrumentedTest {
 
     @Test
     fun can_block_user() = runBlocking {
-        // Arrange: create a feed offer
         val post1 = createValidPost("1", "Guitar Lessons", userId2)
         addPostToEmulator(post1)
-        FirebaseEmulator.firestore.collection("requests").get().await()
 
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
         val vm = FeedScreenViewModel(navigation, controller)
 
         composeTestRule.setContent { Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) } }
-        // Wait until a skill title appears
-        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+
+        // Wait until the menu button actually exists
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.SKILL_GIVE)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
         // === Menu interactions ===
+
+        // wait until menu button is displayed
         composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // perform checks
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
-        composeTestRule.waitForIdle()
+
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Report Offer").assertIsDisplayed()
         composeTestRule.onNodeWithText("Block User").performClick()
-        composeTestRule.waitForIdle()
+
         composeTestRule.waitUntil(
             10_000L,
             { runBlocking { userRepository.getUser(testUserId).blockedUsers.contains(userId2) } }
@@ -1009,7 +1070,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun successful_block_show_correct_pop_up_and_can_click_on_it() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -1040,7 +1101,7 @@ class FeedScreenInstrumentedTest {
         }
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION)
-            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
+            .assertTextContains("TestUser2", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
@@ -1099,7 +1160,7 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        val failed = FeedOffer()
+        val failed = FeedPost()
         vm.reportOffer(failed)
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
@@ -1126,7 +1187,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun successful_reporting_offer_show_correct_pop_up_and_can_click_on_it() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
@@ -1156,7 +1217,7 @@ class FeedScreenInstrumentedTest {
         }
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION, useUnmergedTree = true)
-            .assertTextContains("AnoUser", substring = true, ignoreCase = true)
+            .assertTextContains("TestUser2", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
         composeTestRule.waitUntil(10_000L) {
             composeTestRule

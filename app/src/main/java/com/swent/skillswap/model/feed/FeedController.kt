@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
 
 interface FeedController {
     /** The current post being displayed in the UI. */
@@ -45,4 +46,6 @@ interface FeedController {
      * @param blockedUserUID uid of the user being blocked
      */
     suspend fun blockUser(blockedUserUID: String)
+
+    suspend fun retrieveUser(post: Post): User
 }
