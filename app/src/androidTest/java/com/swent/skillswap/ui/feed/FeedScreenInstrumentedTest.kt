@@ -26,7 +26,6 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
