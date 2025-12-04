@@ -13,6 +13,7 @@ import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.LocationManager
 
@@ -139,6 +140,10 @@ private class FeedControllerImpl(
         recommendationEngine.updateBlockedUser()
         postQueue.removeAll { it.ownerId == blockedUserUID }
         _currentPost.value = getNextPost()
+    }
+
+    override suspend fun getUser(uid: String): User {
+        return userRepository.getUser(uid)
     }
 
     private suspend fun fetchPosts() {

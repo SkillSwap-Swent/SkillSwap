@@ -161,23 +161,15 @@ open class FeedScreenViewModel(
      * @return A corresponding [FeedOffer] object.
      */
     private suspend fun toFeedOffer(post: Post, userId: String): FeedOffer {
-        val currentUser =
-            try {
-                userRepo.getUser(userId)
-            } catch (e: Exception) {
-                /** Critical: Current user must be found */
-                throw Exception(
-                    "Current user not found in toFeedOffer of FeedScreenViewModel : ${e.message}"
-                )
-            }
+        /** Fetch current user details, throw error if not found */
+        val currentUser = controller.getUser(userId)
 
-        val authorUser =
-            try {
-                userRepo.getUser(post.ownerId)
-            } catch (_: Exception) {
-                /** Fallback to an empty user if not found */
-                User()
-            }
+        val authorUser = try {
+            controller.getUser(post.ownerId)
+        } catch (_: Exception) {
+            /** Fallback to a default user if fetching fails */
+            User()
+        }
 
         when (post.type) {
             PostType.REQUEST -> {
