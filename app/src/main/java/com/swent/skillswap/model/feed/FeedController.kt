@@ -47,8 +47,6 @@ interface FeedController {
      */
     suspend fun blockUser(blockedUserUID: String)
 
-    /**
-     * Fetches a user by their UID. or an Exception if the user does not exist
-     */
+    /** Fetches a user by their UID. or an Exception if the user does not exist */
     suspend fun getUser(uid: String): User
 }

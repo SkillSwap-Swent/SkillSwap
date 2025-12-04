@@ -164,12 +164,13 @@ open class FeedScreenViewModel(
         /** Fetch current user details, throw error if not found */
         val currentUser = controller.getUser(userId)
 
-        val authorUser = try {
-            controller.getUser(post.ownerId)
-        } catch (_: Exception) {
-            /** Fallback to a default user if fetching fails */
-            User()
-        }
+        val authorUser =
+            try {
+                controller.getUser(post.ownerId)
+            } catch (_: Exception) {
+                /** Fallback to a default user if fetching fails */
+                User()
+            }
 
         when (post.type) {
             PostType.REQUEST -> {
