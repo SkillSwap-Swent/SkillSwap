@@ -95,6 +95,18 @@ class ChatListViewModel(
         val postStatus = uiState.value.associatedPostStatuses[chat.relatedPostId] ?: return false
         return chat.isActive() && (postStatus == PostStatus.COMPLETED || postStatus == PostStatus.ARCHIVED)
     }
+
+    fun updateUserRating(userId: String, incomingRating: Float) {
+        viewModelScope.launch {
+            try {
+                userRepository.updateRating(userId, incomingRating)
+            } catch (exception: Exception) {
+                ""
+            }
+        }
+    }
+
+
 }
 
 class ChatListViewModelFactory(

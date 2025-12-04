@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +15,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
@@ -146,9 +151,11 @@ fun ChatConversationItem(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    var showRatingDialog by remember { mutableStateOf(false) }
+    var selectedRating by remember { mutableIntStateOf(0) }
+
     val currentUser = currentUserId
-    // Assuming two participants
-    val otherUser = chat.participants.first { it != currentUser }
+    val otherUser = chat.participants.first { it != currentUser } // Assuming two participants
 
     LaunchedEffect(chat.relatedPostId) {
         viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
@@ -183,6 +190,60 @@ fun ChatConversationItem(
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                 )
             }
+
+            // Rate user button
+            if (viewModel.shouldDisplayRatingButton(chat)) {
+                IconButton(
+                    onClick = { showRatingDialog = true },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Star,
+                        contentDescription = "Rate User",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
         }
+    }
+
+    if (showRatingDialog) {
+        Dialog(onDismissRequest = { showRatingDialog = false},
+            content =  {
+                Card(shape = RoundedCornerShape(16.dp)) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Rate this exchange", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(16.dp))
+                        Row {
+                            (1..5).forEach { rating ->
+                                IconButton(onClick =  { selectedRating = rating}) {
+                                    Icon(
+                                        imageVector = if (rating <= selectedRating) Icons.Filled.Star else Icons.Outlined.Star,
+                                        contentDescription = "rating stars",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(16.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextButton(onClick = { showRatingDialog = false }) { Text("Cancel") }
+                            Button(onClick = {
+                                if (selectedRating > 0) {
+                                    viewModel.updateUserRating(
+                                        userId = otherUser,
+                                        incomingRating = selectedRating.toFloat()
+                                    )
+                                }
+                                showRatingDialog = false
+                            }) { Text("Submit") }
+                        }
+                    }
+                }
+            }
+        )
     }
 }
