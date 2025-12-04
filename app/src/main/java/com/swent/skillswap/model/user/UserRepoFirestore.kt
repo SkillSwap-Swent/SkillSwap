@@ -118,7 +118,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
 
     override suspend fun updateRating(userId: String, incomingRating: Float) {
         try {
-            if (!db.collection(USERS_COLLECTION).document(userId).get().await().exists()) {
+            if (!userExists(userId)) {
                 Log.e("UserRepoFirestore", "Error while updating rating: user does not exist")
                 throw Exception("User does not exist: $userId")
             }
