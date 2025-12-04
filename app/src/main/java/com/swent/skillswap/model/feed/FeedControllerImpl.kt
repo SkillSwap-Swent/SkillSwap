@@ -146,10 +146,6 @@ private class FeedControllerImpl(
         return userRepository.getUser(post.ownerId)
     }
 
-    override suspend fun getUser(uid: String): User {
-        return userRepository.getUser(uid)
-    }
-
     private suspend fun fetchPosts() {
         try {
             // Fetch posts and add them to the queue
