@@ -13,7 +13,9 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,8 +25,23 @@ class NotificationScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    init {
-        FirebaseEmulator.startEmulator()
+    companion object {
+        @JvmStatic lateinit var auth: FirebaseAuth
+
+        @BeforeClass
+        @JvmStatic
+        fun globalSetUp() {
+            FirebaseEmulator.startEmulator()
+            auth = FirebaseEmulator.auth
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun globalTearDown() {
+            auth.signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        }
     }
 
     private class FakeRepo : NotificationRepository {
@@ -81,20 +98,18 @@ class NotificationScreenTest {
         }
     }
 
-    @Before fun setUp() = runBlocking { FirebaseAuth.getInstance().signInAnonymously().await() }
+    @Before fun setUp() = runBlocking { auth.signInAnonymously().await() }
 
     @After
     fun tearDown() = runBlocking {
         try {
-            FirebaseAuth.getInstance().signOut()
-            FirebaseEmulator.clearAuthEmulator()
-            FirebaseEmulator.clearFirestoreEmulator()
+            auth.signOut()
         } catch (e: Exception) {}
     }
 
     @Test
     fun allStatesAndInteractions() = runBlocking {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
+        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         var clicked: Notification? = null
         var backed = false
@@ -171,7 +186,7 @@ class NotificationScreenTest {
 
     @Test
     fun emptyUnreadFilter() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
+        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
@@ -184,7 +199,7 @@ class NotificationScreenTest {
 
     @Test
     fun markAllReadButtonHiddenWhenAllRead() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
+        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
@@ -195,7 +210,7 @@ class NotificationScreenTest {
 
     @Test
     fun notificationItemReadAndUnreadStates() = runBlocking {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
+        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = false, userId = userId)
         repo.data["2"] = notif("2", read = true, userId = userId)

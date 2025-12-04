@@ -369,7 +369,6 @@ fun SkillSwapApp(
                     currentUserId = currentUserId,
                     onChatClick = { chatId ->
                         navController.navigate(Screen.ChatScreen.createRoute(chatId))
-                        notificationViewModel.markChatNotificationsAsRead(chatId)
                     }
                 )
             }
@@ -384,7 +383,6 @@ fun SkillSwapApp(
                             NotificationType.MESSAGE -> {
                                 notification.relatedId?.let { chatId ->
                                     navController.navigate(Screen.ChatScreen.createRoute(chatId))
-                                    notificationViewModel.markChatNotificationsAsRead(chatId)
                                 }
                             }
                             NotificationType.POST_ACCEPTED,

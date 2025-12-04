@@ -14,7 +14,9 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,8 +26,23 @@ class BottomNavigationMenuTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    init {
-        FirebaseEmulator.startEmulator()
+    companion object {
+        @JvmStatic lateinit var auth: FirebaseAuth
+
+        @BeforeClass
+        @JvmStatic
+        fun globalSetUp() {
+            FirebaseEmulator.startEmulator()
+            auth = FirebaseEmulator.auth
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun globalTearDown() {
+            auth.signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        }
     }
 
     private class FakeRepo(private val notifications: List<Notification> = emptyList()) :
@@ -50,20 +67,18 @@ class BottomNavigationMenuTest {
         override suspend fun deleteAllNotificationsForUser(userId: String) {}
     }
 
-    @Before fun setUp() = runBlocking { FirebaseAuth.getInstance().signInAnonymously().await() }
+    @Before fun setUp() = runBlocking { auth.signInAnonymously().await() }
 
     @After
     fun tearDown() = runBlocking {
         try {
-            FirebaseAuth.getInstance().signOut()
-            FirebaseEmulator.clearAuthEmulator()
-            FirebaseEmulator.clearFirestoreEmulator()
+            auth.signOut()
         } catch (e: Exception) {}
     }
 
     @Test
     fun badgeShowsAndTabsWork() = runBlocking {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "user"
+        val userId = auth.currentUser?.uid ?: "user"
         val notif =
             Notification(
                 "1",

@@ -129,45 +129,6 @@ class NotificationViewModel(
         }
     }
 
-    fun markChatNotificationsAsRead(chatId: String) {
-        val currentUser = Firebase.auth.currentUser
-        if (currentUser == null) {
-            Log.w(TAG, "Cannot mark chat notifications as read: user not authenticated")
-            return
-        }
-
-        // Find all unread notifications related to this chat
-        val chatNotifications =
-            _uiState.value.notifications.filter { it.relatedId == chatId && !it.isRead }
-
-        if (chatNotifications.isEmpty()) {
-            return
-        }
-
-        // Optimistically update UI
-        _uiState.update {
-            it.copy(
-                notifications =
-                    it.notifications.map { n ->
-                        if (n.relatedId == chatId && !n.isRead) n.copy(isRead = true) else n
-                    }
-            )
-        }
-
-        // Mark each notification as read in repository
-        viewModelScope.launch {
-            try {
-                chatNotifications.forEach { notification ->
-                    notificationRepository.markAsRead(notification.uid)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error marking chat notifications as read", e)
-                // Reload to sync with actual state
-                loadNotifications()
-            }
-        }
-    }
-
     fun deleteNotification(notification: Notification) {
         _uiState.update {
             it.copy(notifications = it.notifications.filterNot { n -> n.uid == notification.uid })
