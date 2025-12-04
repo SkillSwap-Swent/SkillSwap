@@ -15,12 +15,14 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
@@ -131,15 +133,37 @@ fun FeedScreen(
                             Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        AsyncImage(
-                            model = offer.requesterAvatar,
-                            contentDescription = "Requester Avatar",
-                            modifier =
-                                Modifier.size(avatarSize)
+                        // === Avatar ===
+                        if (offer.requesterAvatar.isNotEmpty()) {
+                            AsyncImage(
+                                model = offer.requesterAvatar,
+                                contentDescription = "Requester profile picture",
+                                modifier = Modifier
+                                    .size(avatarSize)
                                     .clip(CircleShape)
                                     .clickable { vm.goToProfile(offer.authorID) }
-                                    .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE)
-                        )
+                                    .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .size(avatarSize)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable { vm.goToProfile(offer.authorID) }
+                                        .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Requester profile picture - anonymous",
+                                    modifier = Modifier.size(avatarSize),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
 
                         Spacer(Modifier.width(12.dp))
 
