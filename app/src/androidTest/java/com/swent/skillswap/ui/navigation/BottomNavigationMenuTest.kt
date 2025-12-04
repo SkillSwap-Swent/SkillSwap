@@ -24,12 +24,10 @@ class BottomNavigationMenuTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    init {
-        FirebaseEmulator.startEmulator()
-    }
-
     @Before
     fun setUp() = runBlocking {
+        // Start Firebase emulator
+        FirebaseEmulator.startEmulator()
         // Sign in user for authentication
         FirebaseAuth.getInstance().signInAnonymously().await()
     }
