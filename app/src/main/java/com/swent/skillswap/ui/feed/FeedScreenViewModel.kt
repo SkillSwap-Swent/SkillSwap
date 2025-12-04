@@ -7,14 +7,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedOffer
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.user.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.user.UserRepositery
 
 /**
  * ViewModel responsible for managing offer data, navigation, and UI state for the FeedOffer screen.
@@ -29,12 +34,13 @@ import kotlinx.coroutines.launch
 open class FeedScreenViewModel(
     private val navigation: FeedScreenNavigation,
     private val controller: FeedController,
+    private val userRepo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
 ) : ViewModel() {
 
     /**
      * The unique identifier of the current user (temporary fallback when Firebase is unavailable).
      */
-    private val uid: String = Firebase.auth.uid ?: "AnoUser"
+    private val uid: String = Firebase.auth.currentUser?.uid ?: "AnoUser"
     /** Internal state of the FeedOffer screen. */
     private val _uiState = MutableStateFlow<FeedOffer?>(null)
 
@@ -117,6 +123,23 @@ open class FeedScreenViewModel(
      * @return A corresponding [FeedOffer] object.
      */
     private suspend fun toFeedOffer(post: Post, userId: String): FeedOffer {
+        val currentUser =
+            try {
+                userRepo.getUser(userId)
+            } catch (e: Exception) {
+                /** Critical: Current user must be found */
+                throw Exception("Current user not found in toFeedOffer of FeedScreenViewModel : ${e.message}")
+            }
+
+        val authorUser =
+            try {
+                userRepo.getUser(post.ownerId)
+            } catch (_: Exception) {
+                /** Fallback to an empty user if not found */
+                User()
+            }
+
+
         when (post.type) {
             PostType.REQUEST -> {
                 val skillProvided =
@@ -129,11 +152,11 @@ open class FeedScreenViewModel(
                     offerId = post.uid,
                     skillProvided = skillProvided,
                     authorID = post.ownerId,
-                    authorName = "AnoUser",
+                    authorName = authorUser.username,
                     // TODO Need to modify the post structure to handle this or use external object
                     //  (decrease duplicate data)
-                    requesterAvatar = "https://picsum.photos/200",
-                    receiverName = userId,
+                    requesterAvatar = authorUser.profilePicture,
+                    receiverName = currentUser.username,
                     skillRequested = post.title, // Ensure title refer to skill expected
                     thumbnail = post.media.firstOrNull() ?: "",
                     specification = post.description,
