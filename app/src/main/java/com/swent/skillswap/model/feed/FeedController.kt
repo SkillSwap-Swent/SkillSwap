@@ -48,5 +48,4 @@ interface FeedController {
     suspend fun blockUser(blockedUserUID: String)
 
     suspend fun retrieveUser(post: Post): User
-
 }
