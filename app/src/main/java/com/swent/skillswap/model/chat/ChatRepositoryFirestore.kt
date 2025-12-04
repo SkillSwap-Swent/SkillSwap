@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
+private const val RELATED_POST_ID_FIELD = "relatedPostId"
+private const val STATUS_FIELD = "status"
 /**
  * Firestore implementation of the ChatRepository interface.
  *
@@ -155,9 +157,13 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
 
     override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
 
-        return getChats(relatedPostType).filter {
-            PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
-                PostStatus.COMPLETED
+        try {
+            return getChats(relatedPostType).filter {
+                PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                    PostStatus.COMPLETED
+            }
+        } catch (e: Exception) {
+            throw Exception("Error while fetching post: ${e.message}")
         }
     }
 
@@ -191,7 +197,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             // Get all chats related to this post
             val querySnapshot =
                 db.collection(FirestorePaths.CHATS_COLLECTION)
-                    .whereEqualTo("relatedPostId", postID)
+                    .whereEqualTo(RELATED_POST_ID_FIELD, postID)
                     .get()
                     .await()
 
@@ -206,7 +212,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
                         ChatStatus.INACTIVE.toString() // deactivate all others
                     }
 
-                batch.update(document.reference, "status", newStatus)
+                batch.update(document.reference, STATUS_FIELD, newStatus)
             }
 
             // Commit all updates
@@ -235,7 +241,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         val id = document.getString("id") ?: ""
         val participants: List<String> =
             document.get("participants") as? List<String> ?: emptyList()
-        val relatedPostId = document.getString("relatedPostId") ?: ""
+        val relatedPostId = document.getString(RELATED_POST_ID_FIELD) ?: ""
         val relatedPostType = PostType.valueOf(document.getString("relatedPostType") ?: "REQUEST")
         val messagesData = document.get("messages") as? List<*> ?: emptyList<Any>()
         val messages =
@@ -246,7 +252,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         // This prevents any errors when reading older chat documents
         val status =
             try {
-                ChatStatus.valueOf(document.getString("status") ?: "ACTIVE")
+                ChatStatus.valueOf(document.getString(STATUS_FIELD) ?: "ACTIVE")
             } catch (e: Exception) {
                 ChatStatus.ACTIVE
             }
