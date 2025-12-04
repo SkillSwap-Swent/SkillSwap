@@ -6,9 +6,13 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.swent.skillswap.R
+import com.swent.skillswap.model.chat.CurrentChatTracker
+import com.swent.skillswap.model.notification.NotificationRepository
+import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
@@ -30,7 +34,10 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val userRepository: UserRepositery by lazy {
-        UserRepoFirestore(com.google.firebase.firestore.FirebaseFirestore.getInstance())
+        UserRepoFirestore(FirebaseFirestore.getInstance())
+    }
+    private val notificationRepositery: NotificationRepository by lazy {
+        NotificationRepositoryFirestore(FirebaseFirestore.getInstance())
     }
     private val fcmTokenManager: FCMTokenManager by lazy { FCMTokenManager(userRepository) }
 
@@ -73,10 +80,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
         Log.d(TAG, "Message received from: ${message.from}")
 
         // Extract the type of the notification to choose which way to handle it (chat or post)
-        val type = message.data["type"]
-        val relatedId = message.data["relatedId"]
-
-        when (type) {
+        when (val type = message.data["type"]) {
             NotificationType.MESSAGE.name -> onChatNotificationReceived(message)
             NotificationType.POST_ACCEPTED.name -> onAcceptedPostNotificationReceived(message)
             else -> Log.w(TAG, "Unknown notification type: $type")
@@ -88,10 +92,22 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
         val notification = message.notification
         val title = notification?.title ?: "New Chat"
         val body = notification?.body ?: "You have a new message"
-
         val channelId = "chat_channel"
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val relatedChatId = message.data["relatedId"]
 
+        // If user is currently viewing this chat, mark as read and do not show notification
+        if (relatedChatId != null && CurrentChatTracker.currentChatId == relatedChatId) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            if (userId != null) {
+                serviceScope.launch {
+                    notificationRepositery.markChatNotificationsAsRead(relatedChatId, userId)
+                }
+            }
+            Log.d(TAG, "User is in chat $relatedChatId, notification marked as read and not shown.")
+            return
+        }
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val builder =
             NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.logo)

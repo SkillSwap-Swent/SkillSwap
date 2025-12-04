@@ -38,7 +38,7 @@ class ChatViewModel(
     private val userRepositery: UserRepositery,
     private val chatId: String
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(ChatUIState())
+    private val _uiState = MutableStateFlow(ChatUIState(chatId = chatId))
     val uiState: StateFlow<ChatUIState> = _uiState.asStateFlow()
 
     init {
