@@ -1,5 +1,6 @@
 package com.swent.skillswap.ui.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -68,7 +69,8 @@ class ChatViewModel(
             val chat = chatRepository.getChat(chatId)
             chat.participants.firstOrNull { it != senderId } ?: ""
         } catch (e: Exception) {
-            ""
+            Log.e("ChatViewModel", "Error getting the recipient ID: ${e.message}")
+            throw e
         }
     }
 
@@ -79,7 +81,8 @@ class ChatViewModel(
                     try {
                         FirebaseAuth.getInstance().currentUser?.uid ?: ""
                     } catch (e: Exception) {
-                        ""
+                        Log.e("ChatViewModel", "Error getting the sender ID: ${e.message}")
+                        throw e
                     }
                 chatRepository.sendMessage(chatId, senderId, content)
 

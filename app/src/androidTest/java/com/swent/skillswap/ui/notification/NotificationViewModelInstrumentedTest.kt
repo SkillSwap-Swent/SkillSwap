@@ -59,7 +59,7 @@ class NotificationViewModelInstrumentedTest {
         }
     }
 
-    private fun waitForLoadingToComplete(maxAttempts: Int = 5000): NotificationUiState {
+    private fun waitForLoadingToComplete(maxAttempts: Int = 50): NotificationUiState {
         var attempts = 0
         while (viewModel.uiState.value.isLoading && attempts < maxAttempts) {
             Thread.sleep(50)
