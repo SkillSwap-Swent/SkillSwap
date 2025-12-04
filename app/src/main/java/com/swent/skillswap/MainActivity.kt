@@ -69,6 +69,8 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.ui.notification.NotificationScreen
 import com.swent.skillswap.ui.notification.NotificationViewModel
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
@@ -198,7 +200,10 @@ fun SkillSwapApp(
                     onTabSelected = { selectedTab ->
                         navigationActions.navigateTo(selectedTab.destination)
                     },
-                    notificationViewModel = notificationViewModel
+                    notificationViewModel = notificationViewModel,
+                    onNotificationBadgeClick = {
+                        navController.navigate(Screen.Notifications.route)
+                    }
                 )
             }
         }
@@ -364,6 +369,32 @@ fun SkillSwapApp(
                     currentUserId = currentUserId,
                     onChatClick = { chatId ->
                         navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                        notificationViewModel.markChatNotificationsAsRead(chatId)
+                    }
+                )
+            }
+
+            composable(Screen.Notifications.route) {
+                NotificationScreen(
+                    viewModel = notificationViewModel,
+                    onGoBack = { navigationActions.goBack() },
+                    onNotificationClick = { notification ->
+                        // Navigate based on notification type
+                        when (notification.type) {
+                            NotificationType.MESSAGE -> {
+                                notification.relatedId?.let { chatId ->
+                                    navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                                    notificationViewModel.markChatNotificationsAsRead(chatId)
+                                }
+                            }
+                            NotificationType.POST_ACCEPTED,
+                            NotificationType.POST_REJECTED,
+                            NotificationType.POST_REPLY,
+                            NotificationType.NEW_MATCHING_POST -> {
+                                // Navigate to feed or post details when implemented
+                                // For now, just mark as read (already done in NotificationScreen)
+                            }
+                        }
                     }
                 )
             }
