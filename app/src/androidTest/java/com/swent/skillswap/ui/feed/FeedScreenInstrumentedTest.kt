@@ -27,6 +27,7 @@ import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.FeedOffer
+import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
@@ -1130,7 +1131,7 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        val failed = FeedOffer()
+        val failed = FeedPost()
         vm.reportOffer(failed)
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
