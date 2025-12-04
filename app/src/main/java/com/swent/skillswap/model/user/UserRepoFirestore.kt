@@ -115,4 +115,34 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
             throw Exception("Failed to update FCM token: ${e.message}")
         }
     }
+
+    override suspend fun updateRating(userId: String, incomingRating: Float) {
+        try {
+            if (!db.collection(USERS_COLLECTION).document(userId).get().await().exists()) {
+                Log.e("UserRepoFirestore", "Error while updating rating: user does not exist")
+                throw Exception("User does not exist: $userId")
+            }
+            val newRating = computeNewRating(
+                currentRating = getUser(userId).rating,
+                incomingRating = incomingRating
+            )
+            db.collection(USERS_COLLECTION).document(userId).update("rating", newRating).await()
+        } catch (e: Exception) {
+            Log.e("UserRepoFirestore", "Error while updating rating", e)
+            throw Exception("Failed to update rating: ${e.message}")
+        }
+    }
+
+    companion object {
+        private const val RATING_ALPHA = 0.2f
+        private const val MAX_RATING = 5f
+        private const val MIN_RATING = 0f
+    }
+
+    // Uses EMA to compute new rating
+    private fun computeNewRating(
+        currentRating: Float, incomingRating: Float
+    ): Float {
+        return ((1 - RATING_ALPHA) * currentRating + RATING_ALPHA * incomingRating).coerceIn(MIN_RATING, MAX_RATING)
+    }
 }

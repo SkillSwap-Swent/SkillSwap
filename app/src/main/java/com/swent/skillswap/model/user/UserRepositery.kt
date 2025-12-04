@@ -44,4 +44,14 @@ interface UserRepositery {
      * @throws Exception if the user does not exist or update fails.
      */
     suspend fun updateFcmToken(userId: String, fcmToken: String)
+
+    /**
+     * Updates the rating for a specific user.
+     *
+     * @param userId The ID of the user whose rating to update.
+     * @param incomingRating The new rating to incorporate to the user rating.
+     * @throws Exception if the user does not exist or update fails.
+     */
+    suspend fun updateRating(userId: String, incomingRating: Float)
+
 }
