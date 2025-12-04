@@ -14,15 +14,15 @@ interface FeedRepository {
      * @param offer The offer being accepted.
      * @param userId The ID of the user performing the action.
      */
-    fun accept(offer: FeedOffer, userId: String)
+    fun accept(offer: FeedPost, userId: String)
 
     /**
      * Retrieves a new offer to display for the specified [userId].
      *
      * @param userId The ID of the user requesting an offer.
-     * @return The next [FeedOffer] available for the user.
+     * @return The next [FeedPost] available for the user.
      */
-    fun getPost(userId: String): FeedOffer
+    fun getPost(userId: String): FeedPost
 
     /**
      * Skips the given [offer] for the specified [userId].
@@ -30,7 +30,7 @@ interface FeedRepository {
      * @param offer The offer to be skipped.
      * @param userId The ID of the user skipping the offer.
      */
-    fun skip(offer: FeedOffer, userId: String)
+    fun skip(offer: FeedPost, userId: String)
 
     /**
      * Blocks a user with the specified [userId], preventing further interaction or communication
@@ -44,7 +44,7 @@ interface FeedRepository {
      * Reports an offer to the system for review, indicating that it may violate guidelines or
      * contain inappropriate content.
      *
-     * @param offer The [FeedOffer] instance representing the offer to be reported.
+     * @param offer The [FeedPost] instance representing the offer to be reported.
      */
-    fun reportOffer(offer: FeedOffer)
+    fun reportOffer(offer: FeedPost)
 }
