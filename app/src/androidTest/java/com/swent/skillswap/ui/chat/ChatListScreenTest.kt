@@ -9,11 +9,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
-import com.swent.skillswap.model.chat.ChatStatus
 import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostRepository
-import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -31,8 +29,14 @@ class ChatListScreenTest {
     @get:Rule val composeRule = createComposeRule()
 
     // Minimal fake implementations
-    private class FakeChatRepository(private val chats: Map<PostType, List<Chat>> = emptyMap()) :
-        ChatRepository {
+    private class FakeChatRepository(
+        private val chats: Map<PostType, List<Chat>> = emptyMap(),
+        private val pendingChats: Map<PostType, List<Chat>> = emptyMap(),
+        private val owners: Map<String, Boolean> = emptyMap()
+    ) : ChatRepository {
+
+        var lastAcceptedChatId: String? = null
+
         override suspend fun createChat(
             participants: List<String>,
             relatedPostId: String,
@@ -43,21 +47,19 @@ class ChatListScreenTest {
 
         override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
 
-        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
+        // Non-pending chats of current user
+        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> =
             chats[relatedPostType] ?: emptyList()
 
-        override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
-            // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
-            return emptyList()
-        }
+        // Pending chats of current user
+        override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> =
+            pendingChats[relatedPostType] ?: emptyList()
 
-        override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
-            // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
-            return false
-        }
+        override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean = owners[chat.id] ?: false
 
         override suspend fun acceptAPostReplyChat(chat: Chat) {
-            // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
+            // Just record which chat was accepted so tests can assert on it
+            lastAcceptedChatId = chat.id
         }
 
         override suspend fun getChat(chatId: String): Chat {
@@ -120,14 +122,13 @@ class ChatListScreenTest {
         requestChats: List<Chat> = emptyList(),
         users: Map<String, User> = emptyMap(),
         posts: Map<String, Post> = emptyMap()
-    ) =
-        ChatListViewModel(
+    ): ChatListViewModel {
+        val chatRepo =
             FakeChatRepository(
-                mapOf(PostType.OFFER to offerChats, PostType.REQUEST to requestChats)
-            ),
-            FakeUserRepository(users),
-            FakePostRepository(posts)
-        )
+                chats = mapOf(PostType.OFFER to offerChats, PostType.REQUEST to requestChats)
+            )
+        return ChatListViewModel(chatRepo, FakeUserRepository(users), FakePostRepository(posts))
+    }
 
     // Minimal mock posts for titles
     private class MockPost(
@@ -155,9 +156,13 @@ class ChatListScreenTest {
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") }
         }
+        composeRule.onNodeWithTag(ChatListTestTags.SCREEN).assertExists()
         composeRule.onNodeWithText("Chat").assertExists()
         composeRule.onNodeWithText("Offer").assertExists()
         composeRule.onNodeWithText("Request").assertExists()
+        composeRule.onNodeWithText("To Approve").assertExists()
+        composeRule.onNodeWithText("Awaiting").assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
         composeRule.onNodeWithText("No chats available").assertExists()
     }
 
@@ -181,7 +186,7 @@ class ChatListScreenTest {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
-        // Trigger initial load for offers
+        // Trigger initial load for offers (non-pending)
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
         viewModel.getUsername("u2")
         viewModel.getPostTitle("p1", PostType.OFFER)
@@ -191,7 +196,7 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("Sarah").assertExists()
         composeRule.onNodeWithText("Offer Title").assertExists()
 
-        // Switch to requests
+        // Switch to requests (non-pending)
         composeRule.onNodeWithText("Request").performClick()
         viewModel.getChatsOfCurrentUser(PostType.REQUEST)
         viewModel.getPostTitle("p2", PostType.REQUEST)
@@ -237,8 +242,9 @@ class ChatListScreenTest {
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
         composeRule.waitForIdle()
 
-        // With fake repos, verify chat item is rendered (at least 3: 2 filter buttons + 1 chat)
-        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3)
+        // With fake repos, verify chat item is rendered
+        // (4 filter buttons + at least 1 chat card clickable)
+        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 5)
     }
 
     @Test
@@ -253,13 +259,14 @@ class ChatListScreenTest {
         // Default is offers - should be empty
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
         composeRule.waitForIdle()
+        composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
         composeRule.onNodeWithText("No chats available").assertExists()
 
         // Switch to requests - should have content
         composeRule.onNodeWithText("Request").performClick()
         viewModel.getChatsOfCurrentUser(PostType.REQUEST)
         composeRule.waitForIdle()
-        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3)
+        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 5)
     }
 
     @Test
@@ -295,6 +302,39 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("User Three").assertExists()
         composeRule.onNodeWithText("First Post").assertExists()
         composeRule.onNodeWithText("Second Post").assertExists()
+    }
+
+    @Test
+    fun to_approve_shows_accept_button_and_triggers_accept() {
+        val pendingChat = createChat("c1", "p1", PostType.REQUEST)
+        val users = mapOf("u2" to User("u2", "Pending User", "", "", emptySet(), 4.5f, emptyList()))
+        val posts = mapOf("p1" to MockPost("p1", "Pending Request"))
+
+        val fakeChatRepo =
+            FakeChatRepository(
+                chats = emptyMap(),
+                pendingChats = mapOf(PostType.REQUEST to listOf(pendingChat)),
+                owners = mapOf("c1" to true) // current user is owner of related post
+            )
+
+        val viewModel =
+            ChatListViewModel(fakeChatRepo, FakeUserRepository(users), FakePostRepository(posts))
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+
+        // Select the "To Approve" filter (pending + owner == true)
+        composeRule.onNodeWithTag(ChatListTestTags.TO_APPROVE).performClick()
+        composeRule.waitForIdle()
+
+        // Accept button should be visible
+        composeRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).performScrollTo()
+        composeRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).performClick()
+
+        // Verify repository was called with the right chat
+        assert(fakeChatRepo.lastAcceptedChatId == "c1")
     }
 
     @Test
