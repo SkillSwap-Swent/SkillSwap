@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
+import com.swent.skillswap.model.chat.ChatStatus
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepositery
@@ -40,7 +41,9 @@ class ChatListViewModel(
         viewModelScope.launch {
             val chats =
                 try {
-                    chatRepository.getChatsOfCurrentUser(relatedPostType)
+                    chatRepository.getChatsOfCurrentUser(relatedPostType).filter {
+                        it.status == ChatStatus.ACTIVE
+                    }
                 } catch (exception: Exception) {
                     emptyList()
                 }

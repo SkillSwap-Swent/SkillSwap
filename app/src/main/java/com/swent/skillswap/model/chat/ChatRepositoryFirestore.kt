@@ -48,7 +48,8 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
                     "participants" to participants,
                     "relatedPostId" to relatedPostId,
                     "relatedPostType" to relatedPostType,
-                    "messages" to emptyList<Message>()
+                    "messages" to emptyList<Message>(),
+                    "status" to ChatStatus.ACTIVE.toString()
                 )
             document.set(newChat).await()
         } catch (e: Exception) {
@@ -164,6 +165,14 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             messagesData.mapNotNull {
                 deserializeMessage((it as? String) ?: return@mapNotNull null)
             }
-        return Chat(id, participants, relatedPostId, relatedPostType, messages)
+        // Fallback to default ACTIVE value since status field is not an original field
+        // This prevents any errors when reading older chat documents
+        val status =
+            try {
+                ChatStatus.valueOf(document.getString("status") ?: "ACTIVE")
+            } catch (e: Exception) {
+                ChatStatus.ACTIVE
+            }
+        return Chat(id, participants, relatedPostId, relatedPostType, messages, status)
     }
 }
