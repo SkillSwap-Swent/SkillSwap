@@ -26,7 +26,7 @@ import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.feed.FeedControllerFactory
-import com.swent.skillswap.model.feed.FeedOffer
+import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.post.*
@@ -210,7 +210,7 @@ class FeedScreenInstrumentedTest {
 
             val user2 =
                 User(
-                    uid = "TestUser2",
+                    uid = userId2,
                     username = "TestUser2",
                     email = "myTest2@example.com",
                     profilePicture = "",
@@ -1101,7 +1101,7 @@ class FeedScreenInstrumentedTest {
         }
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION)
-            .assertTextContains("bob", substring = true, ignoreCase = true)
+            .assertTextContains("TestUser2", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
@@ -1217,7 +1217,7 @@ class FeedScreenInstrumentedTest {
         }
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION, useUnmergedTree = true)
-            .assertTextContains("bob", substring = true, ignoreCase = true)
+            .assertTextContains("TestUser2", substring = true, ignoreCase = true)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
         composeTestRule.waitUntil(10_000L) {
             composeTestRule
