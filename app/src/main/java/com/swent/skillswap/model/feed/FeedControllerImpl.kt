@@ -99,7 +99,7 @@ private class FeedControllerImpl(
         val post =
             when (_currentPost.value) {
                 is Request -> postRepository.getPost(postType, postId) as Request
-                else -> throw Error("not supported type of the post")
+                else -> throw Exception("not supported type of the post")
             }
         recommendationEngine.reportPost(postId)
         postRepository.editPost(postId, post.copy(reportCount = post.reportCount + 1))
