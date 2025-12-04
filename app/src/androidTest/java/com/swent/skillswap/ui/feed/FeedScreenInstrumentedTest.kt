@@ -678,7 +678,7 @@ class FeedScreenInstrumentedTest {
             try {
                 composeTestRule.waitForIdle()
                 // Wait until the node is present and displayed
-                composeTestRule.waitUntil(timeoutMillis = 1000_000L) {
+                composeTestRule.waitUntil(timeoutMillis = 10_000L) {
                     try {
                         composeTestRule
                             .onAllNodesWithTag(tag, useUnmergedTree = true)
