@@ -1,9 +1,7 @@
 /** Created with the help of Cursor */
 package com.swent.skillswap.fcm
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
@@ -92,17 +90,6 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
 
         val channelId = "chat_channel"
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-        // Create notification channel for Android O+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
-                NotificationChannel(
-                    channelId,
-                    "Chat Notifications",
-                    NotificationManager.IMPORTANCE_DEFAULT
-                )
-            notificationManager.createNotificationChannel(channel)
-        }
 
         val builder =
             NotificationCompat.Builder(this, channelId)
