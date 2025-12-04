@@ -265,7 +265,7 @@ fun FeedScreen(
                             if (showMenu) {
                                 FeedOfferMenu(
                                     onBlockUser = { vm.blockUser(offer.authorID) },
-                                    onReportOffer = { vm.reportPost(offer) },
+                                    onReportOffer = { vm.reportOffer(offer) },
                                     onDismiss = { showMenu = false }
                                 )
                             }
