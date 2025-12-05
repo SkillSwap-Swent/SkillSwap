@@ -30,18 +30,7 @@ class NotificationScreenTest : TestCase() {
     private lateinit var auth: FirebaseAuth
 
     init {
-        try {
-            FirebaseEmulator.startEmulator()
-        } catch (e: IllegalStateException) {
-            // Firebase may already be initialized by FirebaseEmulator's own init block
-            // or by a previous test. This is safe to ignore.
-        }
-        try {
-            auth = FirebaseEmulator.auth
-        } catch (e: Exception) {
-            // If Firebase isn't initialized, we'll initialize it in @Before setUp()
-            // This can happen if FirebaseEmulator's init block didn't run or failed
-        }
+        FirebaseEmulator.startEmulator()
     }
 
     private class FakeRepo : NotificationRepository {
@@ -109,18 +98,9 @@ class NotificationScreenTest : TestCase() {
             // Ignore if already initialized
         }
 
-        // Ensure auth is initialized (in case init block failed)
-        if (!::auth.isInitialized) {
-            try {
-                FirebaseEmulator.startEmulator()
-                auth = FirebaseEmulator.auth
-            } catch (e: Exception) {
-                // Fallback: get auth instance directly
-                auth = FirebaseAuth.getInstance()
-            }
-        }
-
+        auth = FirebaseAuth.getInstance()
         auth.signInAnonymously().await()
+        Unit // Explicitly return Unit for JUnit
     }
 
     @After
@@ -128,10 +108,11 @@ class NotificationScreenTest : TestCase() {
         try {
             auth.signOut()
         } catch (e: Exception) {}
+        Unit // Explicitly return Unit for JUnit
     }
 
     @Test
-    fun allStatesAndInteractions() = runBlocking {
+    fun allStatesAndInteractions() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         var clicked: Notification? = null
@@ -232,7 +213,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun notificationItemReadAndUnreadStates() = runBlocking {
+    fun notificationItemReadAndUnreadStates() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = false, userId = userId)
@@ -248,7 +229,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun emptyStateShowsCorrectTextForAllFilter() = runBlocking {
+    fun emptyStateShowsCorrectTextForAllFilter() = run {
         val repo = FakeRepo()
         val vm = NotificationViewModel(repo)
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
@@ -257,7 +238,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun clickingReadNotificationDoesNotMarkAsRead() = runBlocking {
+    fun clickingReadNotificationDoesNotMarkAsRead() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
@@ -276,7 +257,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun allNotificationTypesDisplayCorrectly() = runBlocking {
+    fun allNotificationTypesDisplayCorrectly() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         val types =
@@ -302,7 +283,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun unreadIndicatorShowsForUnreadNotifications() = runBlocking {
+    fun unreadIndicatorShowsForUnreadNotifications() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = false, userId = userId)
@@ -317,7 +298,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun deleteButtonRemovesNotification() = runBlocking {
+    fun deleteButtonRemovesNotification() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", userId = userId)
@@ -334,7 +315,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun titleAndMessageDisplayCorrectly() = runBlocking {
+    fun titleAndMessageDisplayCorrectly() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", userId = userId)
@@ -346,7 +327,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun loadingStateShowsIndicator() = runBlocking {
+    fun loadingStateShowsIndicator() = run {
         val repo = FakeRepo()
         // Delay the response to see loading state
         val vm = NotificationViewModel(repo)
@@ -359,7 +340,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun errorStateShowsRetryButton() = runBlocking {
+    fun errorStateShowsRetryButton() = run {
         val repo = FakeRepo()
         repo.fail = true
         val vm = NotificationViewModel(repo)
@@ -371,7 +352,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun markAllReadButtonAppearsWhenUnreadExists() = runBlocking {
+    fun markAllReadButtonAppearsWhenUnreadExists() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = false, userId = userId)
@@ -383,7 +364,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun filterChipsToggleCorrectly() = runBlocking {
+    fun filterChipsToggleCorrectly() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = false, userId = userId)
