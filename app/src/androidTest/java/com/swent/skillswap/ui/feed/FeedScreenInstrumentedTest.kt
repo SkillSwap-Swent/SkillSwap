@@ -75,7 +75,7 @@ class FeedScreenInstrumentedTest {
     private fun createValidPost(
         uid: String,
         title: String,
-        ownerId: String = "None",
+        ownerId: String = "authorId",
         location: GeoPoint? = null,
         creation: Timestamp? = null,
         reportCount: Long = 0L,
@@ -175,6 +175,8 @@ class FeedScreenInstrumentedTest {
         // Create the test user in Firestore
         runBlocking {
             testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid
+            userId2 = userRepository.getNewUid()
+            userId1 = userRepository.getNewUid()
 
             val user =
                 User(
@@ -190,9 +192,25 @@ class FeedScreenInstrumentedTest {
                     blockedUsers = emptySet(),
                     fcmToken = null
                 )
+
+            val user1 =
+                User(
+                    uid = userId1,
+                    username = "TestUser1",
+                    email = "la@mail.com",
+                    profilePicture = "",
+                    skillSet = setOf(Skill(SkillTag.CALCULUS, 0f, "")),
+                    rating = 0f,
+                    availability = emptyList(),
+                    preference = Preference.SKILLS,
+                    location = GeoPoint(0.0, 0.0),
+                    blockedUsers = emptySet(),
+                    fcmToken = null
+                )
+
             val user2 =
                 User(
-                    uid = "TestUser2",
+                    uid = userId2,
                     username = "TestUser2",
                     email = "myTest2@example.com",
                     profilePicture = "",
@@ -206,6 +224,7 @@ class FeedScreenInstrumentedTest {
                 )
 
             userRepository.addUser(user)
+            userRepository.addUser(user1)
             userRepository.addUser(user2)
         }
 
@@ -223,10 +242,6 @@ class FeedScreenInstrumentedTest {
                 feedType = PostType.REQUEST,
             )
         }
-        userId2 = userRepository.getNewUid()
-        userId1 = userRepository.getNewUid()
-        userRepository.addUser(User(uid = userId2))
-        userRepository.addUser(User(uid = userId1))
         controllerFactory =
             FeedControllerFactory(
                 recommendationEngine = engine,
@@ -308,7 +323,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun initialLoad_DisplaysFirstOffer() {
         runBlocking {
-            val post1 = createValidPost("post1", "Learn Guitar")
+            val post1 = createValidPost("post1", "Learn Guitar", userId1)
             addPostToEmulator(post1)
 
             FirebaseEmulator.firestore.collection("requests").get().await()
@@ -340,8 +355,8 @@ class FeedScreenInstrumentedTest {
 
     @Test
     fun acceptOffer_LoadsNextOffer() = runBlocking {
-        val post1 = createValidPost("post1", "Learn Guitar", "author1")
-        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
 
         // Add posts (order in emulator is non-deterministic)
         addPostToEmulator(post1)
@@ -405,8 +420,8 @@ class FeedScreenInstrumentedTest {
 
     @Test
     fun skipOffer_LoadsNextOffer() = runBlocking {
-        val post1 = createValidPost("post1", "Learn Guitar", "author1")
-        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
 
         // Add posts (order may not be deterministic)
         addPostToEmulator(post1)
@@ -473,8 +488,8 @@ class FeedScreenInstrumentedTest {
 
     @Test
     fun correctly_report_post() = runBlocking {
-        val post1 = createValidPost("post1", "Learn Guitar", "author1")
-        val post2 = createValidPost("post2", "Learn Piano", "author2")
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
 
         // Add posts (order may not be deterministic)
         addPostToEmulator(post1)
@@ -898,7 +913,7 @@ class FeedScreenInstrumentedTest {
             createValidPost(
                 uid = "post1",
                 title = "Learn Calculus",
-                ownerId = "TestUser2",
+                ownerId = userId2,
             )
         // Add post to emulator
         addPostToEmulator(post)
@@ -934,7 +949,7 @@ class FeedScreenInstrumentedTest {
             createValidPost(
                 uid = "post1",
                 title = "Learn Calculus",
-                ownerId = "INVALIDE_USER_ID",
+                ownerId = "INVALID_USER_ID",
             )
         // Add post to emulator
         addPostToEmulator(post)
@@ -981,7 +996,22 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        // === Menu interactions ===
 
+        // wait until menu button is displayed
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // perform checks
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()
 
         composeTestRule.onNodeWithText("Block User").assertIsDisplayed()
@@ -1040,7 +1070,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun successful_block_show_correct_pop_up_and_can_click_on_it() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
 
@@ -1157,7 +1187,7 @@ class FeedScreenInstrumentedTest {
     @Test
     fun successful_reporting_offer_show_correct_pop_up_and_can_click_on_it() = runBlocking {
         // Arrange: create a feed offer
-        val post1 = createValidPost("1", "Guitar Lessons", "TestUser2")
+        val post1 = createValidPost("1", "Guitar Lessons", userId2)
         addPostToEmulator(post1)
         FirebaseEmulator.firestore.collection("requests").get().await()
         val controller = controllerFactory.create(testUserId, PostType.REQUEST)
