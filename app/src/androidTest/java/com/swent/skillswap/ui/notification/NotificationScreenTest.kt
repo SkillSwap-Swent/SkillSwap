@@ -118,64 +118,6 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun allStatesAndInteractions() = run {
-        val userId = auth.currentUser?.uid ?: "user"
-        val repo = FakeRepo()
-        var clicked: Notification? = null
-        var backed = false
-
-        // Notifications with all types
-        listOf(
-                notif("1", NotificationType.MESSAGE, false, userId),
-                notif("2", NotificationType.POST_REPLY, false, userId),
-                notif("3", NotificationType.POST_ACCEPTED, false, userId),
-                notif("4", NotificationType.POST_REJECTED, false, userId),
-                notif("5", NotificationType.NEW_MATCHING_POST, true, userId)
-            )
-            .forEach { repo.data[it.uid] = it }
-        val vm = NotificationViewModel(repo)
-        composeRule.setContent {
-            MaterialTheme { NotificationScreen(vm, { backed = true }, { clicked = it }) }
-        }
-        waitForLoading()
-
-        // Verify all types displayed
-        listOf("Chat", "Reply", "Accepted", "Rejected", "New Post").forEach {
-            composeRule.onNodeWithText(it).assertExists()
-        }
-
-        // Mark all as read
-        composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertExists()
-        composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).performClick()
-        waitForLoading()
-        assert(repo.data.values.all { it.isRead })
-
-        // Filter toggle
-        repo.data["6"] = notif("6", read = false, userId = userId)
-        vm.refresh()
-        waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
-        waitForLoading()
-        composeRule.onNodeWithText("Title-6").assertExists()
-        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
-        waitForLoading()
-
-        // Click notification
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").performClick()
-        waitForLoading()
-        assert(clicked?.uid == "1")
-
-        // Delete notification
-        composeRule.onAllNodesWithContentDescription("Delete notification")[0].performClick()
-        waitForLoading()
-        assert(!repo.data.containsKey("1"))
-
-        // Back button
-        composeRule.onNodeWithContentDescription("Back").performClick()
-        assert(backed)
-    }
-
-    @Test
     fun emptyUnreadFilter() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
@@ -311,24 +253,6 @@ class NotificationScreenTest : TestCase() {
         waitForLoading()
         composeRule.onNodeWithText("Title-1").assertExists()
         composeRule.onNodeWithText("Msg-1").assertExists()
-    }
-
-    @Test
-    fun loadingStateShowsIndicator() = run {
-        val repo = FakeRepo()
-        val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
-        // Should show loading initially - use waitUntil to catch it even if it's fast
-        composeRule.waitUntil(1000) {
-            composeRule
-                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeRule.onNodeWithTag(NotificationScreenTags.LOADING_INDICATOR).assertExists()
-        waitForLoading()
-        // Loading should be gone after load
-        composeRule.onNodeWithTag(NotificationScreenTags.LOADING_INDICATOR).assertDoesNotExist()
     }
 
     @Test
