@@ -31,16 +31,24 @@ class NotificationScreenTest {
         @BeforeClass
         @JvmStatic
         fun globalSetUp() {
-            FirebaseEmulator.startEmulator()
+            FirebaseEmulator.reinitialize()
             auth = FirebaseEmulator.auth
         }
 
         @AfterClass
         @JvmStatic
         fun globalTearDown() {
-            auth.signOut()
-            FirebaseEmulator.clearAuthEmulator()
-            FirebaseEmulator.clearFirestoreEmulator()
+            try {
+                auth.signOut()
+            } catch (e: Exception) {
+                // Ignore sign out errors
+            }
+            try {
+                FirebaseEmulator.clearAuthEmulator()
+                FirebaseEmulator.clearFirestoreEmulator()
+            } catch (e: Exception) {
+                // Ignore cleanup errors
+            }
         }
     }
 
@@ -226,7 +234,6 @@ class NotificationScreenTest {
 
     @Test
     fun emptyStateShowsCorrectTextForAllFilter() = runBlocking {
-        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         val vm = NotificationViewModel(repo)
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
@@ -325,7 +332,6 @@ class NotificationScreenTest {
 
     @Test
     fun loadingStateShowsIndicator() = runBlocking {
-        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         // Delay the response to see loading state
         val vm = NotificationViewModel(repo)
@@ -339,7 +345,6 @@ class NotificationScreenTest {
 
     @Test
     fun errorStateShowsRetryButton() = runBlocking {
-        val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.fail = true
         val vm = NotificationViewModel(repo)
