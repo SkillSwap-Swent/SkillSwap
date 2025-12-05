@@ -98,8 +98,14 @@ class NotificationScreenTest : TestCase() {
             // Ignore if already initialized
         }
 
+        // Auth: sign in anonymously on the emulator
         auth = FirebaseAuth.getInstance()
-        auth.signInAnonymously().await()
+        try {
+            auth.signInAnonymously().await()
+        } catch (e: Exception) {
+            // Ignore if sign-in fails (may already be signed in or emulator issue)
+            // The test will use a fallback userId if auth.currentUser is null
+        }
         Unit // Explicitly return Unit for JUnit
     }
 
@@ -189,7 +195,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun emptyUnreadFilter() {
+    fun emptyUnreadFilter() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
@@ -202,7 +208,7 @@ class NotificationScreenTest : TestCase() {
     }
 
     @Test
-    fun markAllReadButtonHiddenWhenAllRead() {
+    fun markAllReadButtonHiddenWhenAllRead() = run {
         val userId = auth.currentUser?.uid ?: "user"
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
