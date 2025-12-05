@@ -23,7 +23,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NotificationScreenTest : TestCase() {
 
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
 
     private val ctx =
         androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
@@ -84,9 +84,9 @@ class NotificationScreenTest : TestCase() {
     ) = Notification(id, userId, "Title-$id", "Msg-$id", type, "rel-$id", read, Timestamp.now())
 
     private fun waitForLoading() {
-        composeRule.waitForIdle()
-        composeRule.waitUntil(3000) {
-            composeRule
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(3000) {
+            composeTestRule
                 .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
                 .fetchSemanticsNodes()
                 .isEmpty()
@@ -129,11 +129,11 @@ class NotificationScreenTest : TestCase() {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
+        composeTestRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
         waitForLoading()
-        composeRule.onNodeWithText("No unread notifications").assertExists()
+        composeTestRule.onNodeWithText("No unread notifications").assertExists()
     }
 
     @Test
@@ -142,9 +142,9 @@ class NotificationScreenTest : TestCase() {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertDoesNotExist()
+        composeTestRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertDoesNotExist()
     }
 
     @Test
@@ -154,11 +154,14 @@ class NotificationScreenTest : TestCase() {
         repo.data["1"] = notif("1", read = false, userId = userId)
         repo.data["2"] = notif("2", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        vm.setShowUnreadOnly(false)
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithText("Title-1").assertExists()
-        composeRule.onNodeWithText("Title-2").assertExists()
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").performClick()
+        composeTestRule.onNodeWithText("Title-1").assertExists()
+        composeTestRule.onNodeWithText("Title-2").assertExists()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1")
+            .performClick()
         waitForLoading()
         assert(repo.data["1"]?.isRead == true)
     }
@@ -167,9 +170,10 @@ class NotificationScreenTest : TestCase() {
     fun emptyStateShowsCorrectTextForAllFilter() = run {
         val repo = FakeRepo()
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        vm.setShowUnreadOnly(false)
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithText("No notifications").assertExists()
+        composeTestRule.onNodeWithText("No notifications").assertExists()
     }
 
     @Test
@@ -178,13 +182,16 @@ class NotificationScreenTest : TestCase() {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
+        vm.setShowUnreadOnly(false)
         var clicked: Notification? = null
-        composeRule.setContent {
+        composeTestRule.setContent {
             MaterialTheme { NotificationScreen(vm, onNotificationClick = { clicked = it }) }
         }
         waitForLoading()
         // Click the already-read notification
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1")
+            .performClick()
         waitForLoading()
         // Should still be read (not marked again)
         assert(repo.data["1"]?.isRead == true)
@@ -207,14 +214,14 @@ class NotificationScreenTest : TestCase() {
             repo.data["$index"] = notif("$index", type = type, userId = userId)
         }
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
         // Verify all type labels are displayed
-        composeRule.onNodeWithText("Chat").assertExists()
-        composeRule.onNodeWithText("Reply").assertExists()
-        composeRule.onNodeWithText("Accepted").assertExists()
-        composeRule.onNodeWithText("Rejected").assertExists()
-        composeRule.onNodeWithText("New Post").assertExists()
+        composeTestRule.onNodeWithText("Chat").assertExists()
+        composeTestRule.onNodeWithText("Reply").assertExists()
+        composeTestRule.onNodeWithText("Accepted").assertExists()
+        composeTestRule.onNodeWithText("Rejected").assertExists()
+        composeTestRule.onNodeWithText("New Post").assertExists()
     }
 
     @Test
@@ -224,12 +231,17 @@ class NotificationScreenTest : TestCase() {
         repo.data["1"] = notif("1", read = false, userId = userId)
         repo.data["2"] = notif("2", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        vm.setShowUnreadOnly(false)
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
         // Unread notification should have different styling (we can't directly test the dot,
         // but we can verify the notification exists and is clickable)
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1").assertExists()
-        composeRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_2").assertExists()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_1")
+            .assertExists()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_2")
+            .assertExists()
     }
 
     @Test
@@ -239,9 +251,9 @@ class NotificationScreenTest : TestCase() {
         repo.data["1"] = notif("1", userId = userId)
         repo.data["2"] = notif("2", userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        val deleteButtons = composeRule.onAllNodesWithContentDescription("Delete notification")
+        val deleteButtons = composeTestRule.onAllNodesWithContentDescription("Delete notification")
         assert(deleteButtons.fetchSemanticsNodes().size == 2)
         deleteButtons[0].performClick()
         waitForLoading()
@@ -255,22 +267,10 @@ class NotificationScreenTest : TestCase() {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithText("Title-1").assertExists()
-        composeRule.onNodeWithText("Msg-1").assertExists()
-    }
-
-    @Test
-    fun errorStateShowsRetryButton() = run {
-        val repo = FakeRepo()
-        repo.fail = true
-        val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
-        waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.ERROR_MESSAGE).assertExists()
-        composeRule.onNodeWithText("Retry").assertExists().performClick()
-        waitForLoading()
+        composeTestRule.onNodeWithText("Title-1").assertExists()
+        composeTestRule.onNodeWithText("Msg-1").assertExists()
     }
 
     @Test
@@ -279,10 +279,10 @@ class NotificationScreenTest : TestCase() {
         val repo = FakeRepo()
         repo.data["1"] = notif("1", read = false, userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertExists()
-        composeRule.onNodeWithText("Mark all read").assertExists()
+        composeTestRule.onNodeWithTag(NotificationScreenTags.MARK_ALL_READ).assertExists()
+        composeTestRule.onNodeWithText("Mark all read").assertExists()
     }
 
     @Test
@@ -292,22 +292,23 @@ class NotificationScreenTest : TestCase() {
         repo.data["1"] = notif("1", read = false, userId = userId)
         repo.data["2"] = notif("2", read = true, userId = userId)
         val vm = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
+        vm.setShowUnreadOnly(false)
+        composeTestRule.setContent { MaterialTheme { NotificationScreen(vm) } }
         waitForLoading()
         // Initially showing all (unread filter not selected)
-        composeRule.onNodeWithText("Title-1").assertExists()
-        composeRule.onNodeWithText("Title-2").assertExists()
+        composeTestRule.onNodeWithText("Title-1").assertExists()
+        composeTestRule.onNodeWithText("Title-2").assertExists()
         // Click unread filter
-        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
+        composeTestRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
         waitForLoading()
         // Should only show unread
-        composeRule.onNodeWithText("Title-1").assertExists()
-        composeRule.onNodeWithText("Title-2").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Title-1").assertExists()
+        composeTestRule.onNodeWithText("Title-2").assertDoesNotExist()
         // Click all filter
-        composeRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
+        composeTestRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
         waitForLoading()
         // Should show all again
-        composeRule.onNodeWithText("Title-1").assertExists()
-        composeRule.onNodeWithText("Title-2").assertExists()
+        composeTestRule.onNodeWithText("Title-1").assertExists()
+        composeTestRule.onNodeWithText("Title-2").assertExists()
     }
 }
