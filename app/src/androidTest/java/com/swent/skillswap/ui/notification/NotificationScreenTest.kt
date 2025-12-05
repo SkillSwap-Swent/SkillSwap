@@ -30,8 +30,18 @@ class NotificationScreenTest : TestCase() {
     private lateinit var auth: FirebaseAuth
 
     init {
-        FirebaseEmulator.startEmulator()
-        auth = FirebaseEmulator.auth
+        try {
+            FirebaseEmulator.startEmulator()
+        } catch (e: IllegalStateException) {
+            // Firebase may already be initialized by FirebaseEmulator's own init block
+            // or by a previous test. This is safe to ignore.
+        }
+        try {
+            auth = FirebaseEmulator.auth
+        } catch (e: Exception) {
+            // If Firebase isn't initialized, we'll initialize it in @Before setUp()
+            // This can happen if FirebaseEmulator's init block didn't run or failed
+        }
     }
 
     private class FakeRepo : NotificationRepository {
@@ -97,6 +107,17 @@ class NotificationScreenTest : TestCase() {
             }
         } catch (e: Exception) {
             // Ignore if already initialized
+        }
+
+        // Ensure auth is initialized (in case init block failed)
+        if (!::auth.isInitialized) {
+            try {
+                FirebaseEmulator.startEmulator()
+                auth = FirebaseEmulator.auth
+            } catch (e: Exception) {
+                // Fallback: get auth instance directly
+                auth = FirebaseAuth.getInstance()
+            }
         }
 
         auth.signInAnonymously().await()
