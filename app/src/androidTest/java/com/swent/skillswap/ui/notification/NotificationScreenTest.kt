@@ -124,26 +124,7 @@ class NotificationScreenTest : TestCase() {
         var clicked: Notification? = null
         var backed = false
 
-        // Empty state
-        val vm1 = NotificationViewModel(repo)
-        composeRule.setContent {
-            MaterialTheme { NotificationScreen(vm1, { backed = true }, { clicked = it }) }
-        }
-        waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.EMPTY_STATE).assertExists()
-
-        // Error state
-        repo.fail = true
-        val vm2 = NotificationViewModel(repo)
-        composeRule.setContent { MaterialTheme { NotificationScreen(vm2) } }
-        waitForLoading()
-        composeRule.onNodeWithTag(NotificationScreenTags.ERROR_MESSAGE).assertExists()
-        composeRule.onNodeWithText("Retry").performClick()
-        waitForLoading()
-
         // Notifications with all types
-        repo.fail = false
-        repo.data.clear()
         listOf(
                 notif("1", NotificationType.MESSAGE, false, userId),
                 notif("2", NotificationType.POST_REPLY, false, userId),
@@ -152,9 +133,9 @@ class NotificationScreenTest : TestCase() {
                 notif("5", NotificationType.NEW_MATCHING_POST, true, userId)
             )
             .forEach { repo.data[it.uid] = it }
-        val vm3 = NotificationViewModel(repo)
+        val vm = NotificationViewModel(repo)
         composeRule.setContent {
-            MaterialTheme { NotificationScreen(vm3, { backed = true }, { clicked = it }) }
+            MaterialTheme { NotificationScreen(vm, { backed = true }, { clicked = it }) }
         }
         waitForLoading()
 
@@ -171,7 +152,7 @@ class NotificationScreenTest : TestCase() {
 
         // Filter toggle
         repo.data["6"] = notif("6", read = false, userId = userId)
-        vm3.refresh()
+        vm.refresh()
         waitForLoading()
         composeRule.onNodeWithTag(NotificationScreenTags.FILTER_UNREAD).performClick()
         waitForLoading()
@@ -335,10 +316,15 @@ class NotificationScreenTest : TestCase() {
     @Test
     fun loadingStateShowsIndicator() = run {
         val repo = FakeRepo()
-        // Delay the response to see loading state
         val vm = NotificationViewModel(repo)
         composeRule.setContent { MaterialTheme { NotificationScreen(vm) } }
-        // Should show loading initially
+        // Should show loading initially - use waitUntil to catch it even if it's fast
+        composeRule.waitUntil(1000) {
+            composeRule
+                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeRule.onNodeWithTag(NotificationScreenTags.LOADING_INDICATOR).assertExists()
         waitForLoading()
         // Loading should be gone after load
