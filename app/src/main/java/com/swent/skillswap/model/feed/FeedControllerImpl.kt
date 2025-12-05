@@ -159,7 +159,7 @@ private class FeedControllerImpl(
             postQueue.addAll(ranked)
         } catch (e: Exception) {
             // TODO: Notify UI
-            //TODO DELETE below
+            // TODO DELETE below
             Log.e("FeedController", "Error fetching posts: ", e)
             throw Exception("Failed to fetch posts", e)
         }
