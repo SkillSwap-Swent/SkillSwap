@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -24,6 +25,8 @@ class NotificationScreenTest : TestCase() {
 
     @get:Rule val composeRule = createComposeRule()
 
+    private val ctx =
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
     private lateinit var auth: FirebaseAuth
 
     init {
@@ -85,7 +88,19 @@ class NotificationScreenTest : TestCase() {
         }
     }
 
-    @Before fun setUp() = runBlocking { auth.signInAnonymously().await() }
+    @Before
+    fun setUp() = runBlocking {
+        // Initialize FirebaseApp if necessary (useful for UI component runtime)
+        try {
+            if (FirebaseApp.getApps(ctx).isEmpty()) {
+                FirebaseApp.initializeApp(ctx)
+            }
+        } catch (e: Exception) {
+            // Ignore if already initialized
+        }
+
+        auth.signInAnonymously().await()
+    }
 
     @After
     fun tearDown() = runBlocking {
