@@ -68,6 +68,12 @@ class NotificationScreenTest : TestCase() {
         override suspend fun deleteAllNotificationsForUser(userId: String) {
             data.entries.removeAll { it.value.userId == userId }
         }
+
+        override suspend fun markChatNotificationsAsRead(chatId: String, userId: String) {
+            data
+                .filter { it.value.userId == userId && it.value.relatedId == chatId }
+                .forEach { markAsRead(it.value.uid) }
+        }
     }
 
     private fun notif(
