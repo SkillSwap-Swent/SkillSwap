@@ -91,7 +91,6 @@ class NotificationViewModel(
             _uiState.update { it.copy(error = "No authenticated user found.") }
             return
         }
-        val senderId = currentUser.uid
         viewModelScope.launch {
             try {
                 val notification =
