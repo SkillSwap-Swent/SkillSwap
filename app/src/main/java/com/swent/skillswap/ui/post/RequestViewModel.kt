@@ -181,17 +181,7 @@ class RequestViewModel(
             _uiState.update { it.copy(isLoading = true, submitError = null) }
 
             try {
-                /** attachments upload logic */
-                val stringUrls = mutableListOf<String>()
-                for (uri in _uiState.value.attachments) {
-                    /** random uid for media name */
-                    val mediaName = postRepository.getNewUid(PostType.REQUEST)
-                    val url = storageRepository.uploadPicture(mediaName,uri, FEED_PICTURES_PATH)
-                    stringUrls.add(url.toString())
-                }
-
-
-                /** Create or update the request post */
+                /** determine uid based on operation */
                 val uid =
                     when (postOperation) {
                         PostOperation.ADD -> postRepository.getNewUid(PostType.REQUEST)
@@ -201,6 +191,19 @@ class RequestViewModel(
                     setLocation(LocationManager(appContext).getCurrentLocationSync())
                 }
 
+                /** attachments upload logic */
+                val stringUrls = mutableListOf<String>()
+                var counter = 0;
+                for (uri in _uiState.value.attachments) {
+                    /** media name construction : concatenate uid and conter */
+                    val mediaName = "$uid$counter"
+                    counter += 1
+
+                    val url = storageRepository.uploadPicture(mediaName,uri, FEED_PICTURES_PATH)
+                    stringUrls.add(url.toString())
+                }
+
+                /** construct request object */
                 val request =
                     Request(
                         uid = uid,
