@@ -13,9 +13,7 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
-import org.junit.AfterClass
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -25,31 +23,11 @@ class NotificationScreenTest {
 
     @get:Rule val composeRule = createComposeRule()
 
-    companion object {
-        @JvmStatic lateinit var auth: FirebaseAuth
+    private lateinit var auth: FirebaseAuth
 
-        @BeforeClass
-        @JvmStatic
-        fun globalSetUp() {
-            FirebaseEmulator.reinitialize()
-            auth = FirebaseEmulator.auth
-        }
-
-        @AfterClass
-        @JvmStatic
-        fun globalTearDown() {
-            try {
-                auth.signOut()
-            } catch (e: Exception) {
-                // Ignore sign out errors
-            }
-            try {
-                FirebaseEmulator.clearAuthEmulator()
-                FirebaseEmulator.clearFirestoreEmulator()
-            } catch (e: Exception) {
-                // Ignore cleanup errors
-            }
-        }
+    init {
+        FirebaseEmulator.startEmulator()
+        auth = FirebaseEmulator.auth
     }
 
     private class FakeRepo : NotificationRepository {
