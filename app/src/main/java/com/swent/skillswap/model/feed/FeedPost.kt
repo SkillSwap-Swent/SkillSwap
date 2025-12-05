@@ -16,11 +16,12 @@ import com.google.firebase.firestore.GeoPoint
  * @property description A longer text providing additional details about the offer.
  * @property location The meeting location of the offer (defaults to EPFL location).
  */
-data class FeedOffer(
+data class FeedPost(
     val offerId: String = "",
     val skillProvided: String = "",
     val authorID: String = "",
     val authorName: String = "",
+    val authorRating: Float = 0f,
     val requesterAvatar: String = "",
     val receiverName: String = "",
     val skillRequested: String = "",

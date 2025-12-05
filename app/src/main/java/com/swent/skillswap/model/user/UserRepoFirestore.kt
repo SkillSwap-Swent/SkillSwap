@@ -8,6 +8,7 @@
 package com.swent.skillswap.model.user
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.SetOptions
@@ -114,5 +115,37 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
             Log.e("UserRepoFirestore", "Error while updating FCM token", e)
             throw Exception("Failed to update FCM token: ${e.message}")
         }
+    }
+
+    override suspend fun updateRating(userId: String, incomingRating: Float) {
+        try {
+            if (!userExists(userId)) {
+                Log.e("UserRepoFirestore", "Error while updating rating: user does not exist")
+                throw Exception("User does not exist: $userId")
+            }
+            val newRating =
+                computeNewRating(
+                    currentRating = getUser(userId).rating,
+                    incomingRating = incomingRating
+                )
+            db.collection(USERS_COLLECTION).document(userId).update("rating", newRating).await()
+        } catch (e: Exception) {
+            Log.e("UserRepoFirestore", "Error while updating rating", e)
+            throw Exception("Failed to update rating: ${e.message}")
+        }
+    }
+
+    companion object {
+        @VisibleForTesting internal const val RATING_ALPHA = 0.2f
+        @VisibleForTesting internal const val MAX_RATING = 5f
+        @VisibleForTesting internal const val MIN_RATING = 0f
+    }
+
+    // Uses EMA to compute new rating
+    private fun computeNewRating(currentRating: Float, incomingRating: Float): Float {
+        return ((1 - RATING_ALPHA) * currentRating + RATING_ALPHA * incomingRating).coerceIn(
+            MIN_RATING,
+            MAX_RATING
+        )
     }
 }
