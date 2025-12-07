@@ -3,7 +3,7 @@ package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,13 +38,15 @@ fun SkillPill(
         onClick = { onClick(skill) },
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         contentPadding = PaddingValues(11.dp, 0.dp),
-        modifier = Modifier.height(34.dp).testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
+        modifier =
+            Modifier.heightIn(34.dp).testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
     ) {
         Text(
             text = skill.toUIString(),
             fontWeight = FontWeight.Bold,
             fontSize = 10.sp,
-            color = textColor
+            color = textColor,
+            textAlign = TextAlign.Center
         )
     }
 }
