@@ -1,6 +1,8 @@
 /** @author Younes Belgroune - Made with the help of AI */
 package com.swent.skillswap.ui.post.personalPosts
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -214,7 +216,7 @@ private fun PostItem(
     post: Post,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier =
@@ -298,19 +300,36 @@ private fun PostItem(
             if (post.skills.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    post.skills.take(3).forEach { skill ->
-                        SkillPill(skill = skill, isSelected = false, onClick = {})
+                    // giving the row weight forces it to respect the fixed width of the box below
+                    Row(
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        post.skills.take(3).forEach { skill ->
+                            SkillPill(
+                                skill = skill,
+                                isSelected = false,
+                                onClick = {},
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                        }
                     }
 
-                    if (post.skills.size > 3) {
-                        Text(
-                            text = "+${post.skills.size - 3}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                    // give overflow text a box with fixed width to ensure its always drawn
+                    val overflow = post.skills.size - 3
+                    val overflowWidth = 16.dp
+                    Box(
+                        modifier = Modifier.width(overflowWidth),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (overflow > 0) {
+                            Text(
+                                text = "+$overflow",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
             }
@@ -329,11 +348,10 @@ fun PostItemPreview() {
             ownerId = "user456",
             skills =
                 setOf(
-                    SkillTag.MACHINE_DESIGN,
-                    SkillTag.CHEMISTRY,
-                    SkillTag.COMPUTER_PROGRAMMING,
                     SkillTag.CIRCUIT_ANALYSIS,
-                    SkillTag.THERMODYNAMICS
+                    SkillTag.PROJECT_MANAGEMENT,
+                    SkillTag.MACHINE_DESIGN,
+                    SkillTag.ALGORITHMS
                 ),
             tags = setOf(PostTag.REOCCURRING),
             expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
@@ -354,5 +372,11 @@ fun PostItemPreview() {
                     )
                 )
         )
-    PostItem(request1, {}, {})
+
+    Box(
+        modifier =
+            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(16.dp)
+    ) {
+        PostItem(request1, {}, {})
+    }
 }

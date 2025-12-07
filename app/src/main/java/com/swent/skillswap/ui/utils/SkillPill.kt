@@ -30,7 +30,8 @@ private val defaultSkill = Skill(SkillTag.MACHINE_DESIGN, SkillRank.CAPABLE.valu
 fun SkillPill(
     skill: SkillTag = defaultSkill.name,
     isSelected: Boolean = false,
-    onClick: (skill: SkillTag) -> Unit = { skill -> skill }
+    onClick: (skill: SkillTag) -> Unit = { skill -> skill },
+    modifier: Modifier = Modifier
 ) {
     val (backgroundColor, textColor) = skillPillColours(isSelected)
 
@@ -39,7 +40,7 @@ fun SkillPill(
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
         contentPadding = PaddingValues(11.dp, 0.dp),
         modifier =
-            Modifier.heightIn(34.dp).testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
+            modifier.heightIn(34.dp).testTag(CreateAccountTags.SKILL_CHIP_PREFIX + skill.name)
     ) {
         Text(
             text = skill.toUIString(),
