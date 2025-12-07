@@ -17,13 +17,25 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostReply
+import com.swent.skillswap.model.post.PostStatus
+import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.post.ReplyStatus
+import com.swent.skillswap.model.post.Request
+import com.swent.skillswap.model.tags.PostTag
+import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.utils.SkillPill
+import java.util.Date
 
 object PersonalPostsScreenTags {
     const val SCREEN = "personal_posts_screen"
@@ -228,8 +240,15 @@ private fun PostItem(
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+
+                    val statustext =
+                        post.status.name.lowercase().replaceFirstChar { it.uppercase() }
+                    val paymentText = post.paymentMethod.displayName
+                    val repliesText =
+                        "${post.postReplies.size} ${if (post.postReplies.size != 1) "replies" else "reply"}"
+
                     Text(
-                        text = post.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                        text = "$statustext • $paymentText • $repliesText",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -277,29 +296,55 @@ private fun PostItem(
                     post.skills.take(3).forEach { skill ->
                         SkillPill(skill = skill, isSelected = false, onClick = {})
                     }
-                }
-                if (post.skills.size > 3) {
-                    Text(
-                        text = "+${post.skills.size - 3}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
+
+                    if (post.skills.size > 3) {
+                        Text(
+                            text = "+${post.skills.size - 3}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
                 }
             }
         }
-
-        // Payment method and status
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                text = "Payment: ${post.paymentMethod.name.replace("_", " ")}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-            Text(
-                text = post.status.name.lowercase().replaceFirstChar { it.uppercase() },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-        }
     }
+}
+
+@Preview
+@Composable
+fun PostItemPreview() {
+    val request1 =
+        Request(
+            uid = "123",
+            title = "Need help with Kotlin",
+            description = "Looking for an expert to teach me Kotlin.",
+            ownerId = "user456",
+            skills =
+                setOf(
+                    SkillTag.MACHINE_DESIGN,
+                    SkillTag.CHEMISTRY,
+                    SkillTag.COMPUTER_PROGRAMMING,
+                    SkillTag.CIRCUIT_ANALYSIS,
+                    SkillTag.THERMODYNAMICS
+                ),
+            tags = setOf(PostTag.REOCCURRING),
+            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+            creation = Timestamp.now(),
+            status = PostStatus.POSTED,
+            media = listOf("media_url_1", "media_url_2"),
+            paymentMethod = PaymentMethod.SKILLSANDCASH,
+            location = GeoPoint(46.5191, 6.5668),
+            postReplies =
+                setOf(
+                    PostReply(
+                        postId = "123",
+                        ownerId = "replier123",
+                        creation = Timestamp.now(),
+                        message = "I want to help!",
+                        postType = PostType.REQUEST,
+                        replyStatus = ReplyStatus.PROPOSED
+                    )
+                )
+        )
+    PostItem(request1, {}, {})
 }
