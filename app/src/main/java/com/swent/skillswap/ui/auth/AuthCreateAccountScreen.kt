@@ -31,11 +31,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.SkillRank
+import com.swent.skillswap.ui.utils.RichTooltipSkillswap
 import com.swent.skillswap.ui.utils.SkillPill
 import com.swent.skillswap.ui.utils.SkillPillRated
 import com.swent.skillswap.ui.utils.SkillSwapOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapPasswordOutlinedTextField
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
+import com.swent.skillswap.ui.utils.TooltipDescriptions
+import com.swent.skillswap.ui.utils.icon_size
 import kotlin.Boolean
 
 // ----- Tags used for UI testing -----
@@ -311,12 +314,26 @@ fun SkillScreen(vm: CreateAccountViewModel) {
     val uiState by vm.uiState.collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(30.dp))
-        Text(
-            text = "Pick your \n\nmain skills !",
-            fontSize = 44.sp,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.CenterHorizontally).testTag(CreateAccountTags.TITLE)
-        )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            val pad = 26.dp
+            Spacer(Modifier.width(pad + icon_size))
+
+            Box(modifier = Modifier.weight(2f), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Pick your \n\nmain skills !",
+                    fontSize = 44.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag(CreateAccountTags.TITLE)
+                )
+            }
+
+            RichTooltipSkillswap(
+                body = TooltipDescriptions.SKILL_RATING,
+                initialIsVisible = true,
+                modifier = Modifier.padding(end = pad)
+            )
+        }
+
         Spacer(modifier = Modifier.height(10.dp))
         Text(
             text = uiState.skillsError,

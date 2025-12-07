@@ -22,9 +22,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.SkillRank
+import com.swent.skillswap.ui.utils.RichTooltipSkillswap
 import com.swent.skillswap.ui.utils.SkillPill
 import com.swent.skillswap.ui.utils.SkillPillRated
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
+import com.swent.skillswap.ui.utils.TooltipDescriptions
+import com.swent.skillswap.ui.utils.icon_size
 import com.swent.skillswap.ui.utils.nextPillRankOrNull
 
 object SkillsEditTestTags {
@@ -55,14 +58,25 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
     Column(modifier = Modifier.fillMaxSize(1f).verticalScroll(screenScroll)) {
         Spacer(modifier = Modifier.height(40.dp))
         /** own skill Row Flow* */
-        Text(
-            text = "Your Skills",
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Medium,
-            modifier =
-                Modifier.align(Alignment.CenterHorizontally)
-                    .testTag(SkillsEditTestTags.TITLE_YOUR_SKILLS)
-        )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            val pad = 26.dp
+            Spacer(Modifier.width(pad + icon_size))
+
+            Box(modifier = Modifier.weight(2f), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "Your Skills",
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.testTag(SkillsEditTestTags.TITLE_YOUR_SKILLS)
+                )
+            }
+
+            RichTooltipSkillswap(
+                body = TooltipDescriptions.SKILL_RATING,
+                modifier = Modifier.padding(end = pad)
+            )
+        }
+
         Spacer(modifier = Modifier.height(20.dp))
         val skillOfUser = userState.editedUser?.skillSet ?: setOf()
         Box(
