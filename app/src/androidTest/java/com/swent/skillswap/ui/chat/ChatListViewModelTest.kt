@@ -104,6 +104,8 @@ class ChatListViewModelTest {
                     override suspend fun userExists(userId: String) = true
 
                     override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+
+                    override suspend fun updateRating(userId: String, incomingRating: Float) {}
                 },
                 object : PostRepository {
                     override fun getNewUid(type: PostType) = ""

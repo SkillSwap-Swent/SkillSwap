@@ -130,6 +130,14 @@ class FakeNotificationRepository : NotificationRepository {
         notifications.entries.removeAll { it.value.userId == userId }
     }
 
+    override suspend fun markChatNotificationsAsRead(chatId: String, userId: String) {
+        notifications.forEach { notification ->
+            if (notification.value.relatedId == chatId && userId == notification.value.userId) {
+                markAsRead(notification.value.uid)
+            }
+        }
+    }
+
     // Test helpers
     fun getAddedNotifications(): List<Notification> = notifications.values.toList()
 

@@ -8,6 +8,7 @@ import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.ChatStatus
 import com.swent.skillswap.model.post.PostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepositery
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,8 @@ data class ChatListUIState(
     val usernames: Map<String, String> = emptyMap(),
     val postTitles: Map<String, String> = emptyMap(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val associatedPostStatuses: Map<String, PostStatus> = emptyMap()
 )
 
 // ViewModel for Chat List Screen
@@ -110,6 +112,23 @@ class ChatListViewModel(
                     ""
                 }
             _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
+        }
+    }
+
+    // If chat is active and the associated post is completed or archived, show rating button
+    fun shouldDisplayRatingButton(chat: Chat): Boolean {
+        val postStatus = uiState.value.associatedPostStatuses[chat.relatedPostId] ?: return false
+        return chat.isActive() &&
+            (postStatus == PostStatus.COMPLETED || postStatus == PostStatus.ARCHIVED)
+    }
+
+    fun updateUserRating(userId: String, incomingRating: Float) {
+        viewModelScope.launch {
+            try {
+                userRepository.updateRating(userId, incomingRating)
+            } catch (exception: Exception) {
+                ""
+            }
         }
     }
 }
