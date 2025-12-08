@@ -44,6 +44,11 @@ open class FeedControllerTest : PostDataClassTest() {
             return false
         }
 
+        override suspend fun getChat(chatId: String): Chat {
+            // JUST HERE TO REMOVE OVERRIDE ERROR
+            return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
+
         override suspend fun acceptAPostReplyChat(chat: Chat) {
             // JUST HERE FOR OVERRIDE REASON
         }
