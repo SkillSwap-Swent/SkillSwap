@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.notification.NotificationType
@@ -23,21 +24,36 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class MainActivityNavigationTest {
+class MainActivityNavigationTest : TestCase() {
 
     @get:Rule val composeTestRule = createComposeRule()
 
+    private val ctx =
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext
     private lateinit var navController: NavHostController
     private lateinit var auth: FirebaseAuth
 
+    init {
+        FirebaseEmulator.startEmulator()
+    }
+
     @Before
     fun setUp() = runBlocking {
-        FirebaseEmulator.startEmulator()
-        auth = FirebaseEmulator.auth
+        // Initialize FirebaseApp if necessary
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(ctx).isEmpty()) {
+                com.google.firebase.FirebaseApp.initializeApp(ctx)
+            }
+        } catch (e: Exception) {
+            // Ignore if already initialized
+        }
+
+        // Auth: sign in anonymously on the emulator
+        auth = FirebaseAuth.getInstance()
         try {
             auth.signInAnonymously().await()
         } catch (e: Exception) {
-            // Ignore if already signed in
+            // Ignore if sign-in fails (may already be signed in or emulator issue)
         }
 
         composeTestRule.setContent {
@@ -53,10 +69,11 @@ class MainActivityNavigationTest {
             }
         }
         composeTestRule.waitForIdle()
+        Unit // Explicitly return Unit for JUnit
     }
 
     @Test
-    fun notificationListRoute_mapsToNotificationTab() {
+    fun notificationListRoute_mapsToNotificationTab() = run {
         // Navigate to NotificationList route
         composeTestRule.runOnUiThread {
             navController.navigate(Screen.NotificationList.route) {
@@ -82,13 +99,13 @@ class MainActivityNavigationTest {
         } catch (e: Exception) {
             // Ignore
         }
+        Unit // Explicitly return Unit for JUnit
     }
 
     @Test
-    fun notificationClick_messageTypeWithRelatedId_navigatesToChatScreen() = runBlocking {
-        val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository =
-            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+    fun notificationClick_messageTypeWithRelatedId_navigatesToChatScreen() = run {
+        val userId = auth.currentUser?.uid ?: return@run
+        val repository = NotificationRepositoryFirestore(FirebaseEmulator.firestore)
 
         // Create a test notification with MESSAGE type and relatedId
         val testNotification =
@@ -104,7 +121,7 @@ class MainActivityNavigationTest {
             )
 
         // Add notification to repository
-        repository.addNotification(testNotification)
+        runBlocking { repository.addNotification(testNotification) }
 
         // Navigate to notification screen
         composeTestRule.runOnUiThread {
@@ -135,18 +152,19 @@ class MainActivityNavigationTest {
         }
 
         // Cleanup
-        try {
-            repository.deleteNotification("test-notif-msg-1")
-        } catch (e: Exception) {
-            // Ignore cleanup errors
+        runBlocking {
+            try {
+                repository.deleteNotification("test-notif-msg-1")
+            } catch (e: Exception) {
+                // Ignore cleanup errors
+            }
         }
     }
 
     @Test
-    fun notificationClick_messageTypeWithoutRelatedId_doesNotNavigate() = runBlocking {
-        val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository =
-            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+    fun notificationClick_messageTypeWithoutRelatedId_doesNotNavigate() = run {
+        val userId = auth.currentUser?.uid ?: return@run
+        val repository = NotificationRepositoryFirestore(FirebaseEmulator.firestore)
 
         // Create a test notification with MESSAGE type but NO relatedId
         val testNotification =
@@ -162,7 +180,7 @@ class MainActivityNavigationTest {
             )
 
         // Add notification to repository
-        repository.addNotification(testNotification)
+        runBlocking { repository.addNotification(testNotification) }
 
         // Navigate to notification screen
         composeTestRule.runOnUiThread {
@@ -196,18 +214,19 @@ class MainActivityNavigationTest {
         composeTestRule.onNodeWithTag(NotificationScreenTags.SCREEN).assertIsDisplayed()
 
         // Cleanup
-        try {
-            repository.deleteNotification("test-notif-msg-null")
-        } catch (e: Exception) {
-            // Ignore cleanup errors
+        runBlocking {
+            try {
+                repository.deleteNotification("test-notif-msg-null")
+            } catch (e: Exception) {
+                // Ignore cleanup errors
+            }
         }
     }
 
     @Test
-    fun notificationClick_postReplyType_navigatesToFeed() = runBlocking {
-        val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository =
-            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+    fun notificationClick_postReplyType_navigatesToFeed() = run {
+        val userId = auth.currentUser?.uid ?: return@run
+        val repository = NotificationRepositoryFirestore(FirebaseEmulator.firestore)
 
         // Create a test notification with POST_REPLY type
         val testNotification =
@@ -222,7 +241,7 @@ class MainActivityNavigationTest {
                 timestamp = Timestamp.now()
             )
 
-        repository.addNotification(testNotification)
+        runBlocking { repository.addNotification(testNotification) }
 
         // Navigate to notification screen
         composeTestRule.runOnUiThread {
@@ -255,18 +274,19 @@ class MainActivityNavigationTest {
         }
 
         // Cleanup
-        try {
-            repository.deleteNotification("test-notif-post-reply")
-        } catch (e: Exception) {
-            // Ignore cleanup errors
+        runBlocking {
+            try {
+                repository.deleteNotification("test-notif-post-reply")
+            } catch (e: Exception) {
+                // Ignore cleanup errors
+            }
         }
     }
 
     @Test
-    fun notificationClick_postAcceptedType_navigatesToFeed() = runBlocking {
-        val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository =
-            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+    fun notificationClick_postAcceptedType_navigatesToFeed() = run {
+        val userId = auth.currentUser?.uid ?: return@run
+        val repository = NotificationRepositoryFirestore(FirebaseEmulator.firestore)
 
         val testNotification =
             Notification(
@@ -280,7 +300,7 @@ class MainActivityNavigationTest {
                 timestamp = Timestamp.now()
             )
 
-        repository.addNotification(testNotification)
+        runBlocking { repository.addNotification(testNotification) }
 
         composeTestRule.runOnUiThread {
             navController.navigate(Screen.NotificationList.route) {
@@ -308,16 +328,17 @@ class MainActivityNavigationTest {
             currentRoute == Screen.Feed.route
         }
 
-        try {
-            repository.deleteNotification("test-notif-post-accepted")
-        } catch (e: Exception) {}
+        runBlocking {
+            try {
+                repository.deleteNotification("test-notif-post-accepted")
+            } catch (e: Exception) {}
+        }
     }
 
     @Test
-    fun notificationClick_postRejectedType_navigatesToFeed() = runBlocking {
-        val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository =
-            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+    fun notificationClick_postRejectedType_navigatesToFeed() = run {
+        val userId = auth.currentUser?.uid ?: return@run
+        val repository = NotificationRepositoryFirestore(FirebaseEmulator.firestore)
 
         val testNotification =
             Notification(
@@ -331,7 +352,7 @@ class MainActivityNavigationTest {
                 timestamp = Timestamp.now()
             )
 
-        repository.addNotification(testNotification)
+        runBlocking { repository.addNotification(testNotification) }
 
         composeTestRule.runOnUiThread {
             navController.navigate(Screen.NotificationList.route) {
@@ -359,16 +380,17 @@ class MainActivityNavigationTest {
             currentRoute == Screen.Feed.route
         }
 
-        try {
-            repository.deleteNotification("test-notif-post-rejected")
-        } catch (e: Exception) {}
+        runBlocking {
+            try {
+                repository.deleteNotification("test-notif-post-rejected")
+            } catch (e: Exception) {}
+        }
     }
 
     @Test
-    fun notificationClick_newMatchingPostType_navigatesToFeed() = runBlocking {
-        val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository =
-            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+    fun notificationClick_newMatchingPostType_navigatesToFeed() = run {
+        val userId = auth.currentUser?.uid ?: return@run
+        val repository = NotificationRepositoryFirestore(FirebaseEmulator.firestore)
 
         val testNotification =
             Notification(
@@ -382,7 +404,7 @@ class MainActivityNavigationTest {
                 timestamp = Timestamp.now()
             )
 
-        repository.addNotification(testNotification)
+        runBlocking { repository.addNotification(testNotification) }
 
         composeTestRule.runOnUiThread {
             navController.navigate(Screen.NotificationList.route) {
@@ -410,8 +432,10 @@ class MainActivityNavigationTest {
             currentRoute == Screen.Feed.route
         }
 
-        try {
-            repository.deleteNotification("test-notif-new-post")
-        } catch (e: Exception) {}
+        runBlocking {
+            try {
+                repository.deleteNotification("test-notif-new-post")
+            } catch (e: Exception) {}
+        }
     }
 }
