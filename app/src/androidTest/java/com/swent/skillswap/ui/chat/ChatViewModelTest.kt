@@ -112,9 +112,23 @@ class ChatViewModelTest {
             return emptyList()
         }
 
+        override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+            // JUST HERE FOR OVERRIDE REASON
+            return emptyList()
+        }
+
+        override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+            // JUST HERE FOR OVERRIDE REASON
+            return false
+        }
+
         override suspend fun getChat(chatId: String): Chat {
             if (throwOnGetChat) throw Exception("Forced exception")
             return overrideChat ?: Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
+
+        override suspend fun acceptAPostReplyChat(chat: Chat) {
+            // JUST HERE FOR OVERRIDE REASON
         }
 
         fun addMessages(messages: List<Message>) {
