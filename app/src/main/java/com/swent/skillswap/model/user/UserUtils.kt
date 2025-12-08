@@ -51,6 +51,7 @@ data class SerializableAvailability(
 fun serializeBlockedUsers(blockedUsers: Set<String>): String {
     return blockedUsers.joinToString(separator = "|")
 }
+
 fun serializeViewedPosts(viewedPosts: Set<String>): String {
     return viewedPosts.joinToString(separator = "|")
 }
