@@ -322,4 +322,28 @@ class ChatScreenTest {
         // Verify input was cleared in the UI
         composeRule.onNodeWithText(messageText).assertDoesNotExist()
     }
+
+    @Test
+    fun chatScreen_scrolls_to_last_message_when_many_messages() {
+        // Create 50 messages
+        val messages =
+            List(50) { i ->
+                Message(
+                    id = i.toString(),
+                    senderId = "user${i % 2}",
+                    content = "Message $i",
+                    timestamp = i * 1000L
+                )
+            }
+        composeRule.setContent {
+            MaterialTheme {
+                ChatScreen(
+                    chatViewModel = createFakeViewModel(messages),
+                    notificationViewModel = null
+                )
+            }
+        }
+        // Assert that the last message is visible
+        composeRule.onNodeWithText("Message 49").assertExists()
+    }
 }
