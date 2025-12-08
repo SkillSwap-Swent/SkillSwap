@@ -175,4 +175,14 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             }
         return Chat(id, participants, relatedPostId, relatedPostType, messages, status)
     }
+
+    override suspend fun getChat(chatId: String): Chat {
+        try {
+            val doc = db.collection(FirestorePaths.CHATS_COLLECTION).document(chatId).get().await()
+            if (!doc.exists()) throw Exception("Chat with ID $chatId does not exist")
+            return documentToChat(doc)
+        } catch (e: Exception) {
+            throw Exception("Error while fetching chat in getChat: ${e.message}")
+        }
+    }
 }

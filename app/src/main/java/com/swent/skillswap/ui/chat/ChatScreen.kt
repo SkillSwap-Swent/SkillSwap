@@ -28,10 +28,13 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +42,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.swent.skillswap.model.chat.CurrentChatTracker
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.ui.notification.NotificationViewModel
+import kotlinx.coroutines.launch
 
 // Encapsulating object for test tags
 object ChatScreenTags {
@@ -60,13 +67,20 @@ object ChatScreenTags {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    viewModel: ChatViewModel,
+    chatViewModel: ChatViewModel,
+    notificationViewModel: NotificationViewModel?,
     chatTitle: String = "Chat",
     currentUserId: String = "",
     onGoBack: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by chatViewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Track current chatId when ChatScreen is visible
+    val chatId = uiState.chatId
+    LaunchedEffect(chatId) { CurrentChatTracker.currentChatId = chatId }
+    DisposableEffect(Unit) { onDispose { CurrentChatTracker.currentChatId = null } }
 
     Column(modifier = Modifier.fillMaxSize().testTag(ChatScreenTags.SCREEN)) {
         TopAppBar(
@@ -115,7 +129,22 @@ fun ChatScreen(
             onTextChange = { inputText = it },
             onSend = {
                 if (inputText.isNotBlank()) {
-                    viewModel.sendMessage(inputText)
+                    chatViewModel.sendMessage(inputText)
+
+                    // Send a notification to the recipient user
+                    if (notificationViewModel != null) {
+                        val message = inputText
+                        coroutineScope.launch {
+                            val recipientId = chatViewModel.getRecipientId(currentUserId)
+                            notificationViewModel.addNotification(
+                                recipientId = recipientId,
+                                message = message,
+                                type = NotificationType.MESSAGE,
+                                relatedId = uiState.chatId
+                            )
+                        }
+                    }
+
                     inputText = ""
                 }
             }

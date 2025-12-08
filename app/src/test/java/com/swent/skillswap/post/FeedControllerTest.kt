@@ -33,6 +33,14 @@ open class FeedControllerTest : PostDataClassTest() {
 
         override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
             chats[relatedPostType] ?: emptyList()
+
+        override suspend fun getChat(chatId: String): Chat {
+            // Fetch the chat from the in-memory map for testing
+            return chats.values.flatten().firstOrNull { it.id == chatId }
+                ?: throw IllegalArgumentException(
+                    "Chat with id $chatId not found in test repository"
+                )
+        }
     }
 
     suspend fun initController(): Pair<FakePostRepository, FeedController> {
