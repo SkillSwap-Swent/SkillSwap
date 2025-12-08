@@ -17,9 +17,12 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
 
     override suspend fun getNotificationsForUser(userId: String): List<Notification> {
         return try {
-            notificationsCollection.whereEqualTo("userId", userId).get().await().map {
-                documentToNotification(it)
-            }
+            notificationsCollection
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+                .map { documentToNotification(it) }
+                .sortedByDescending { it.timestamp }
         } catch (e: Exception) {
             throw RepositoryException("Failed to get notifications for user $userId", e)
         }
@@ -33,6 +36,7 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
                 .get()
                 .await()
                 .map { documentToNotification(it) }
+                .sortedByDescending { it.timestamp }
         } catch (e: Exception) {
             throw RepositoryException("Failed to get unread notifications for user $userId", e)
         }
