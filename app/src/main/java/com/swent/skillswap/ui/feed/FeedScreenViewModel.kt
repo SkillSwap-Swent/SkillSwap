@@ -160,7 +160,7 @@ open class FeedScreenViewModel(
             PostType.REQUEST -> {
                 val skillProvided =
                     try {
-                        controller.inferRelevantSkill().name.toString()
+                        controller.inferRelevantSkill().name.toUIString()
                     } catch (e: Exception) {
                         "None"
                     }
