@@ -57,6 +57,7 @@ object SignInTags {
     const val EMAIL_FIELD = "EMAIL_FIELD"
     const val PASSWORD_FIELD = "PASSWORD_FIELD"
     const val CREATE_ACCOUNT_TEXT = "SIGN_IN_CREATE_ACCOUNT_TEXT"
+    const val FORGOT_PASSWORD = "FORGOT_PASSWORD"
 }
 
 /**
@@ -155,7 +156,8 @@ fun AuthMainScreen(
             Spacer(modifier = Modifier.height(8.dp))
             TextButton(
                 onClick = goToPasswordRecovery,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier =
+                    Modifier.testTag(SignInTags.FORGOT_PASSWORD).align(Alignment.CenterHorizontally)
             ) {
                 Text(text = "Forgot Password?", fontSize = 14.sp, textAlign = TextAlign.Center)
             }
