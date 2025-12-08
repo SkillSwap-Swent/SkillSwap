@@ -63,5 +63,18 @@ interface ChatRepository {
      *
      * @param chat the chat that we want to accept for the post
      */
+    /**
+     * Gets a chat by its ID.
+     *
+     * @param chatId The ID of the chat to retrieve
+     * @return The Chat object
+     */
+    suspend fun getChat(chatId: String): Chat
+    /**
+     * Accept a chat as the only chat who will be use for the exchange of knowledge discard the
+     * other and mark the post of the chat has completed
+     *
+     * @param chat the chat that the user accept
+     */
     suspend fun acceptAPostReplyChat(chat: Chat)
 }

@@ -255,7 +255,7 @@ class ChatRepositoryFirestoreTest {
     }
 
     @Test
-    fun acceptChat_Work_Corrctly() = runBlocking {
+    fun acceptChat_Work_Correctly() = runBlocking {
         val chat1 =
             chatRepo.createChat(listOf(testUserId, "other1"), postedPost.uid, PostType.REQUEST)
         val pendingChats = chatRepo.getPendingChatsOfCurrentUser(PostType.REQUEST)
@@ -270,5 +270,107 @@ class ChatRepositoryFirestoreTest {
         )
         val chats = chatRepo.getChatsOfCurrentUser(PostType.REQUEST)
         assert(chats.isNotEmpty())
+    }
+
+    @Test
+    fun acceptChat_Throw_Correctly_onError() = runBlocking {
+        val chat1 =
+            chatRepo.createChat(listOf(testUserId, "other1"), postedPost.uid, PostType.REQUEST)
+        val pendingChats = chatRepo.getPendingChatsOfCurrentUser(PostType.REQUEST)
+        postRepo.deletePost(PostType.REQUEST, postedPost.uid)
+        for (c in pendingChats) {
+            if (c.relatedPostId == postedPost.uid) {
+                assert(
+                    try {
+                        chatRepo.acceptAPostReplyChat(c)
+                        false
+                    } catch (e: Exception) {
+                        true
+                    }
+                )
+            }
+        }
+    }
+
+    @Test
+    fun isOwnerOfPostRelatedTo_Chat_Throw_Correctly_onError() = runBlocking {
+        val chat1 =
+            chatRepo.createChat(listOf(testUserId, "other1"), postedPost.uid, PostType.REQUEST)
+        val chat2 =
+            chatRepo.createChat(listOf(testUserId, "other1"), requestPost.uid, PostType.REQUEST)
+        val chat3 =
+            chatRepo.createChat(listOf(testUserId, "other1"), completedPost.uid, PostType.REQUEST)
+        val chats = chatRepo.getChatsOfCurrentUser(PostType.REQUEST)
+        val pendingChats = chatRepo.getPendingChatsOfCurrentUser(PostType.REQUEST)
+        postRepo.deletePost(PostType.REQUEST, completedPost.uid)
+        postRepo.deletePost(PostType.REQUEST, requestPost.uid)
+        postRepo.deletePost(PostType.REQUEST, postedPost.uid)
+        for (c in chats) {
+            assert(
+                try {
+                    chatRepo.isOwnerOfRelatedPost(c)
+                    false
+                } catch (e: Exception) {
+                    true
+                }
+            )
+        }
+        for (c in pendingChats) {
+            assert(
+                try {
+                    chatRepo.isOwnerOfRelatedPost(c)
+                    false
+                } catch (e: Exception) {
+                    true
+                }
+            )
+        }
+    }
+
+    @Test
+    fun getPendingChat_Throw_Correctly_onError() = runBlocking {
+        val chat1 =
+            chatRepo.createChat(listOf(testUserId, "other1"), postedPost.uid, PostType.REQUEST)
+        val chat2 =
+            chatRepo.createChat(listOf(testUserId, "other1"), requestPost.uid, PostType.REQUEST)
+        val chat3 =
+            chatRepo.createChat(listOf(testUserId, "other1"), completedPost.uid, PostType.REQUEST)
+        postRepo.deletePost(PostType.REQUEST, postedPost.uid)
+        assert(
+            try {
+                chatRepo.getPendingChatsOfCurrentUser(PostType.REQUEST)
+                false
+            } catch (e: Exception) {
+                true
+            }
+        )
+    }
+
+    @Test
+    fun getChat_fetches_correct_chat_and_handles_errors() = runBlocking {
+        val senderId1 = "user1"
+        val senderId2 = "user2"
+
+        // create chat first
+        val chatId = chatRepo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
+        val fetchedChat = chatRepo.getChat(chatId)
+
+        // Check chat properties
+        assertEquals(chatId, fetchedChat.id)
+        assertEquals(listOf(senderId1, senderId2), fetchedChat.participants)
+        assertEquals("none", fetchedChat.relatedPostId)
+        assertEquals(PostType.REQUEST, fetchedChat.relatedPostType)
+
+        // Check for raised exception on invalid chatId
+
+        val invalidChatId = "nonexistent_chat_id"
+        val exception =
+            assertThrows(Exception::class.java) { runBlocking { chatRepo.getChat(invalidChatId) } }
+
+        assertTrue(
+            exception.message!!.contains(
+                "Error while fetching chat in getChat: Chat with ID nonexistent_chat_id does not exist"
+            )
+        )
     }
 }

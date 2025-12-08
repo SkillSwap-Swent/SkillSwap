@@ -77,6 +77,20 @@ class ChatListViewModel(
                 }
             val fullFilteredChats = filteredIsOwnerChats.filter { it.status == ChatStatus.ACTIVE }
             _uiState.update { it.copy(chats = fullFilteredChats) }
+            chats.forEach { chat ->
+                try {
+                    val postStatus =
+                        postRepository.getPost(chat.relatedPostType, chat.relatedPostId).status
+                    _uiState.update {
+                        it.copy(
+                            associatedPostStatuses =
+                                it.associatedPostStatuses + (chat.relatedPostId to postStatus)
+                        )
+                    }
+                } catch (exception: Exception) {
+                    ""
+                }
+            }
         }
     }
 

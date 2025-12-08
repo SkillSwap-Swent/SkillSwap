@@ -59,6 +59,11 @@ class ChatListScreenTest {
         override suspend fun acceptAPostReplyChat(chat: Chat) {
             // CURRENTLY HERE FOR OVERRIDE REASON WILL BE IMPLEMENTED WHEN CHAT SCREEN CHANGE
         }
+
+        override suspend fun getChat(chatId: String): Chat {
+            // JUST HERE TO REMOVE OVERRIDE ERROR
+            return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
     }
 
     private class FakeUserRepository(private val users: Map<String, User>) : UserRepositery {

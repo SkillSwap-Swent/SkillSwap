@@ -89,6 +89,11 @@ class ChatListViewModelTest {
                     override suspend fun acceptAPostReplyChat(chat: Chat) {
                         acceptedChat.add(chat)
                     }
+
+                    override suspend fun getChat(chatId: String): Chat {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                        return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+                    }
                 },
                 object : UserRepositery {
                     override fun getNewUid() = ""

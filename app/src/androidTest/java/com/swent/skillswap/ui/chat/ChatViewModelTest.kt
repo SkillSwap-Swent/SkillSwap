@@ -122,6 +122,11 @@ class ChatViewModelTest {
             return false
         }
 
+        override suspend fun getChat(chatId: String): Chat {
+            if (throwOnGetChat) throw Exception("Forced exception")
+            return overrideChat ?: Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
+
         override suspend fun acceptAPostReplyChat(chat: Chat) {
             // JUST HERE FOR OVERRIDE REASON
         }
