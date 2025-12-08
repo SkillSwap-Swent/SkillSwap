@@ -20,6 +20,7 @@ data class ChatListUIState(
     val chats: List<Chat> = emptyList(),
     val usernames: Map<String, String> = emptyMap(),
     val postTitles: Map<String, String> = emptyMap(),
+    val avatars: Map<String, String> = emptyMap(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val associatedPostStatuses: Map<String, PostStatus> = emptyMap()
@@ -90,6 +91,19 @@ class ChatListViewModel(
                     ""
                 }
             _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
+        }
+    }
+
+    // Get avatar (profile picture) by post ID
+    fun getAvatar(userId: String) {
+        viewModelScope.launch {
+            val avatar =
+                try {
+                    userRepository.getUser(userId).profilePicture
+                } catch (exception: Exception) {
+                    ""
+                }
+            _uiState.update { it.copy(avatars = it.avatars + (userId to avatar)) }
         }
     }
 

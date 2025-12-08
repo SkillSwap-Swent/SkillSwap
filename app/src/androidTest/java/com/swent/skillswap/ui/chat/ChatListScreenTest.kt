@@ -344,4 +344,80 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("Cancel").performClick()
         composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
     }
+
+    @Test
+    fun profile_picture_is_displayed_for_chat_item_with_avatar_url() {
+        val chat = createChat("c1", "p1", PostType.OFFER, "u2")
+        val user =
+            User(
+                "u2",
+                "Sarah",
+                "test@gmail.com",
+                "https://example.com/avatar.jpg",
+                emptySet(),
+                4.5f,
+                emptyList()
+            )
+        val post = MockPost("p1", "Offer Title")
+        val viewModel =
+            createViewModel(
+                offerChats = listOf(chat),
+                users = mapOf("u2" to user),
+                posts = mapOf("p1" to post)
+            )
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getUsername("u2")
+        viewModel.getAvatar("u2")
+        viewModel.getPostTitle("p1", PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // Assert profile picture AsyncImage is displayed
+        composeRule.waitUntil(5000L) {
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assertExists()
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assert(hasContentDescription("Profile picture"))
+            true
+        }
+    }
+
+    @Test
+    fun default_profile_icon_is_displayed_for_empty_avatar_url() {
+        val chat = createChat("c2", "p2", PostType.OFFER, "u3")
+        val user = User("u3", "Tom", "test@gmail.com", "", emptySet(), 4.2f, emptyList())
+        val post = MockPost("p2", "Request Title")
+        val viewModel =
+            createViewModel(
+                offerChats = listOf(chat),
+                users = mapOf("u3" to user),
+                posts = mapOf("p2" to post)
+            )
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getUsername("u3")
+        viewModel.getAvatar("u3")
+        viewModel.getPostTitle("p2", PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // Assert default profile icon is displayed
+        // Assert profile picture AsyncImage is displayed
+        composeRule.waitUntil(5000L) {
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assertExists()
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assert(hasContentDescription("Default profile picture"))
+            true
+        }
+    }
 }
