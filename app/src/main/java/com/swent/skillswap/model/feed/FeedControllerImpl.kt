@@ -86,7 +86,14 @@ private class FeedControllerImpl(
     }
 
     override suspend fun skipPost() {
-        if (_currentPost.value != null) recommendationEngine.registerSkip(_currentPost.value!!)
+        if (_currentPost.value != null) {
+            val user = userRepository.getUser(userIdPerformingActions)
+            userRepository.editUser(
+                userIdPerformingActions,
+                user.copy(viewedPosts = user.viewedPosts + _currentPost.value!!.uid)
+            )
+            recommendationEngine.registerSkip(_currentPost.value!!)
+        }
         _currentPost.value = getNextPost()
     }
 

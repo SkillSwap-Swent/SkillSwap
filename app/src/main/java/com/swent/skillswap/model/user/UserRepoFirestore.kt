@@ -37,6 +37,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 preference = deserializePreference(data["preference"] as String),
                 location = data["location"] as GeoPoint,
                 blockedUsers = deserializeBlockedUsers(data["blockedUsers"] as String),
+                viewedPosts = deserializeViewedPost(data["viewedPosts"] as String),
                 fcmToken = (data["fcmToken"] as? String)?.takeIf { it.isNotBlank() }
             )
         } catch (e: Exception) {
@@ -57,6 +58,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                 "preference" to serializePreference(user.preference),
                 "location" to user.location,
                 "blockedUsers" to serializeBlockedUsers(user.blockedUsers),
+                "viewedPosts" to serializeViewedPosts(user.viewedPosts),
                 "fcmToken" to (user.fcmToken ?: "")
             )
 
@@ -84,6 +86,7 @@ class UserRepoFirestore(private val db: FirebaseFirestore) : UserRepositery {
                     "preference" to serializePreference(newValue.preference),
                     "location" to newValue.location,
                     "blockedUsers" to serializeBlockedUsers(newValue.blockedUsers),
+                    "viewedPosts" to serializeViewedPosts(newValue.viewedPosts),
                     "fcmToken" to (newValue.fcmToken ?: ""),
                 ),
                 SetOptions.merge()
