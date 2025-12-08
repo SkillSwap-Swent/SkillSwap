@@ -87,7 +87,8 @@ class MainActivityNavigationTest {
     @Test
     fun notificationClick_messageTypeWithRelatedId_navigatesToChatScreen() = runBlocking {
         val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository = NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+        val repository =
+            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
 
         // Create a test notification with MESSAGE type and relatedId
         val testNotification =
@@ -122,7 +123,9 @@ class MainActivityNavigationTest {
         }
 
         // Click on the notification
-        composeTestRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-msg-1").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-msg-1")
+            .performClick()
         composeTestRule.waitForIdle()
 
         // Verify we navigated to chat screen
@@ -142,7 +145,8 @@ class MainActivityNavigationTest {
     @Test
     fun notificationClick_messageTypeWithoutRelatedId_doesNotNavigate() = runBlocking {
         val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository = NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+        val repository =
+            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
 
         // Create a test notification with MESSAGE type but NO relatedId
         val testNotification =
@@ -171,13 +175,17 @@ class MainActivityNavigationTest {
         // Wait for notification screen to load
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
-                .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-msg-null")
+                .onAllNodesWithTag(
+                    "${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-msg-null"
+                )
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
         // Click on the notification (should not navigate because relatedId is null)
-        composeTestRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-msg-null").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-msg-null")
+            .performClick()
         composeTestRule.waitForIdle()
 
         // Verify we're still on notification screen (relatedId is null, so no navigation)
@@ -198,7 +206,8 @@ class MainActivityNavigationTest {
     @Test
     fun notificationClick_postReplyType_navigatesToFeed() = runBlocking {
         val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository = NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+        val repository =
+            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
 
         // Create a test notification with POST_REPLY type
         val testNotification =
@@ -226,13 +235,17 @@ class MainActivityNavigationTest {
         // Wait for notification to appear
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
-                .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-reply")
+                .onAllNodesWithTag(
+                    "${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-reply"
+                )
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
         // Click on the notification
-        composeTestRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-reply").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-reply")
+            .performClick()
         composeTestRule.waitForIdle()
 
         // Verify we navigated to Feed
@@ -252,7 +265,8 @@ class MainActivityNavigationTest {
     @Test
     fun notificationClick_postAcceptedType_navigatesToFeed() = runBlocking {
         val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository = NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+        val repository =
+            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
 
         val testNotification =
             Notification(
@@ -277,12 +291,16 @@ class MainActivityNavigationTest {
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
-                .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-accepted")
+                .onAllNodesWithTag(
+                    "${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-accepted"
+                )
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
-        composeTestRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-accepted").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-accepted")
+            .performClick()
         composeTestRule.waitForIdle()
 
         composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -298,7 +316,8 @@ class MainActivityNavigationTest {
     @Test
     fun notificationClick_postRejectedType_navigatesToFeed() = runBlocking {
         val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository = NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+        val repository =
+            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
 
         val testNotification =
             Notification(
@@ -323,12 +342,16 @@ class MainActivityNavigationTest {
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
-                .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-rejected")
+                .onAllNodesWithTag(
+                    "${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-rejected"
+                )
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
-        composeTestRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-rejected").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-post-rejected")
+            .performClick()
         composeTestRule.waitForIdle()
 
         composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -344,7 +367,8 @@ class MainActivityNavigationTest {
     @Test
     fun notificationClick_newMatchingPostType_navigatesToFeed() = runBlocking {
         val userId = auth.currentUser?.uid ?: return@runBlocking
-        val repository = NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
+        val repository =
+            NotificationRepositoryFirestore(com.google.firebase.firestore.Firebase.firestore)
 
         val testNotification =
             Notification(
@@ -369,12 +393,16 @@ class MainActivityNavigationTest {
 
         composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
-                .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-new-post")
+                .onAllNodesWithTag(
+                    "${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-new-post"
+                )
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
-        composeTestRule.onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-new-post").performClick()
+        composeTestRule
+            .onNodeWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_test-notif-new-post")
+            .performClick()
         composeTestRule.waitForIdle()
 
         composeTestRule.waitUntil(timeoutMillis = 5000) {
@@ -387,21 +415,3 @@ class MainActivityNavigationTest {
         } catch (e: Exception) {}
     }
 }
-
-test: Add MainActivity navigation test coverage for notifications
-
-Add comprehensive test coverage for notification navigation scenarios
-in MainActivity to improve test coverage for uncovered lines and conditions.
-
-Tests added:
-- NotificationList route mapping to Notification tab
-- Notification click handling for all notification types:
-  - MESSAGE type with relatedId → navigates to ChatScreen
-  - MESSAGE type without relatedId → does not navigate
-  - POST_REPLY type → navigates to Feed
-  - POST_ACCEPTED type → navigates to Feed
-  - POST_REJECTED type → navigates to Feed
-  - NEW_MATCHING_POST type → navigates to Feed
-
-This covers the previously uncovered notification click handler logic
-and all branches in the when statement for different notification types.
