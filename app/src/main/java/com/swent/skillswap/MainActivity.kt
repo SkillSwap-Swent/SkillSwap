@@ -48,6 +48,7 @@ import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -71,6 +72,7 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.notification.NotificationScreen
 import com.swent.skillswap.ui.notification.NotificationViewModel
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
@@ -205,6 +207,7 @@ fun SkillSwapApp(
                     Screen.Profile.route -> Tab.Profile
                     Screen.Feed.route -> Tab.Feed
                     Screen.Chat.route -> Tab.Chat
+                    Screen.NotificationList.route -> Tab.Notification
                     else -> null
                 }
 
@@ -408,6 +411,31 @@ fun SkillSwapApp(
                     notificationViewModel = notificationViewModel,
                     currentUserId = currentUserId,
                     onGoBack = { navigationActions.goBack() }
+                )
+            }
+
+            composable(Screen.NotificationList.route) {
+                NotificationScreen(
+                    viewModel = notificationViewModel,
+                    onGoBack = { navigationActions.goBack() },
+                    onNotificationClick = { notification ->
+                        when (notification.type) {
+                            NotificationType.MESSAGE -> {
+                                // Navigate to chat screen if relatedId (chatId) is available
+                                notification.relatedId?.let { chatId ->
+                                    navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                                }
+                            }
+                            NotificationType.POST_REPLY,
+                            NotificationType.POST_ACCEPTED,
+                            NotificationType.POST_REJECTED,
+                            NotificationType.NEW_MATCHING_POST -> {
+                                // Navigate to feed for post-related notifications
+                                // TODO: Could navigate to specific post detail screen if available
+                                navigationActions.navigateTo(Screen.Feed)
+                            }
+                        }
+                    }
                 )
             }
 

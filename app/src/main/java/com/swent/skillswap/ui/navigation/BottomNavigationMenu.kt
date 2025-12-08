@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
@@ -30,12 +31,14 @@ object NavigationTestTags {
     const val PROFILE_TAB = "ProfileTab"
     const val FEED_TAB = "FeedTab"
     const val CHAT_TAB = "ChatTab"
+    const val NOTIFICATION_TAB = "NotificationTab"
 
     fun getTabTestTag(tab: Tab): String =
         when (tab) {
             is Tab.Profile -> PROFILE_TAB
             is Tab.Feed -> FEED_TAB
             is Tab.Chat -> CHAT_TAB
+            is Tab.Notification -> NOTIFICATION_TAB
         }
 }
 
@@ -45,9 +48,12 @@ sealed class Tab(val name: String, val icon: ImageVector, val destination: Scree
     object Feed : Tab("Feed", Icons.AutoMirrored.Outlined.List, Screen.Feed)
 
     object Chat : Tab("Chat", Icons.Outlined.ChatBubbleOutline, Screen.Chat)
+
+    object Notification :
+        Tab("Notifications", Icons.Outlined.Notifications, Screen.NotificationList)
 }
 
-private val tabs = listOf(Tab.Profile, Tab.Feed, Tab.Chat)
+private val tabs = listOf(Tab.Profile, Tab.Feed, Tab.Chat, Tab.Notification)
 
 @Composable
 fun BottomNavigationMenu(
@@ -71,13 +77,14 @@ fun BottomNavigationMenu(
         tabs.forEach { tab ->
             NavigationBarItem(
                 icon = {
-                    if (tab is Tab.Chat) {
+                    if (tab is Tab.Notification) {
                         Box {
                             Icon(imageVector = tab.icon, contentDescription = null)
-                            if (uiState.notifications.isNotEmpty()) {
+                            val unreadCount = uiState.notifications.count { !it.isRead }
+                            if (unreadCount > 0) {
                                 Badge(modifier = Modifier.offset(x = 16.dp, y = (-4).dp)) {
                                     Text(
-                                        text = uiState.notifications.size.toString(),
+                                        text = unreadCount.toString(),
                                         style = MaterialTheme.typography.labelSmall
                                     )
                                 }
