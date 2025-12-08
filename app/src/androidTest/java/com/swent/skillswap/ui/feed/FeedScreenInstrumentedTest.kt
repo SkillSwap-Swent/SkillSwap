@@ -463,7 +463,7 @@ class FeedScreenInstrumentedTest {
             }
 
         val expectedNextTitle = if (shownIsPost1) post2.title else post1.title
-
+        val expectedSkipUid = if (shownIsPost1) post1.uid else post2.uid
         // Skip current offer (decline button)
         composeTestRule.onNodeWithTag(FeedScreenTestTags.DECLINE_BUTTON).performClick()
 
@@ -483,6 +483,7 @@ class FeedScreenInstrumentedTest {
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+        assert(userRepository.getUser(testUserId).viewedPosts.contains(expectedSkipUid))
         return@runBlocking
     }
 
