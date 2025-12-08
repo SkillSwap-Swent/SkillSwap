@@ -6,6 +6,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
+import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.utils.deserializeMessage
 import com.swent.skillswap.model.utils.serializeMessage
@@ -15,6 +17,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
+private const val RELATED_POST_ID_FIELD = "relatedPostId"
+private const val STATUS_FIELD = "status"
 /**
  * Firestore implementation of the ChatRepository interface.
  *
@@ -123,8 +127,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         awaitClose { registration.remove() }
     }
 
-    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
-
+    suspend fun getChats(relatedPostType: PostType): List<Chat> {
         val currentUserId =
             try {
                 Firebase.auth.currentUser?.uid ?: throw Exception("No authenticated user found")
@@ -141,8 +144,6 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             } catch (e: Exception) {
                 throw Exception("Error while fetching chats in getChatsOfCurrentUser: ${e.message}")
             }
-
-        // Filter chats by related post type
         return allDocs
             .mapNotNull { doc ->
                 try {
@@ -154,11 +155,93 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             .filter { it.relatedPostType == relatedPostType }
     }
 
+    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+
+        try {
+            return getChats(relatedPostType).filter {
+                PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                    PostStatus.COMPLETED
+            }
+        } catch (e: Exception) {
+            throw Exception("Error while fetching post: ${e.message}")
+        }
+    }
+
+    override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+        try {
+            return getChats(relatedPostType).filter {
+                PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                    PostStatus.POSTED
+            }
+        } catch (e: Exception) {
+            throw Exception("Error while fetching post: ${e.message}")
+        }
+    }
+
+    override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+        try {
+            return PostFirestoreRepository(db)
+                .getPost(chat.relatedPostType, chat.relatedPostId)
+                .ownerId ==
+                (Firebase.auth.currentUser?.uid ?: throw Exception("No authenticated user found"))
+        } catch (e: Exception) {
+            throw Exception("Error while fetching post: ${e.message}")
+        }
+    }
+    /** @author Topaze17 made using ChatGPT* */
+    override suspend fun acceptAPostReplyChat(chat: Chat) {
+        val postID = chat.relatedPostId
+        val chatID = chat.id
+
+        try {
+            // Get all chats related to this post
+            val querySnapshot =
+                db.collection(FirestorePaths.CHATS_COLLECTION)
+                    .whereEqualTo(RELATED_POST_ID_FIELD, postID)
+                    .get()
+                    .await()
+
+            // Use a batch to update them atomically
+            val batch = db.batch()
+
+            for (document in querySnapshot.documents) {
+                val newStatus =
+                    if (document.id == chatID) {
+                        ChatStatus.ACTIVE.toString() // keep / set this one active
+                    } else {
+                        ChatStatus.INACTIVE.toString() // deactivate all others
+                    }
+
+                batch.update(document.reference, STATUS_FIELD, newStatus)
+            }
+
+            // Commit all updates
+            batch.commit().await()
+
+            val postRepo = PostFirestoreRepository(db)
+            val post = postRepo.getPost(chat.relatedPostType, postID)
+
+            // We need to build a new Post instance with updated status.
+            val completedPost =
+                when (post) {
+                    is com.swent.skillswap.model.post.Request ->
+                        post.copy(status = PostStatus.COMPLETED)
+                    is com.swent.skillswap.model.post.Offer ->
+                        post.copy(status = PostStatus.COMPLETED)
+                    else -> throw Exception("Unsupported post implementation: ${post::class}")
+                }
+
+            postRepo.editPost(postID, completedPost)
+        } catch (e: Exception) {
+            throw Exception("Error while accepting post reply chat: ${e.message}")
+        }
+    }
+
     private fun documentToChat(document: DocumentSnapshot): Chat {
         val id = document.getString("id") ?: ""
         val participants: List<String> =
             document.get("participants") as? List<String> ?: emptyList()
-        val relatedPostId = document.getString("relatedPostId") ?: ""
+        val relatedPostId = document.getString(RELATED_POST_ID_FIELD) ?: ""
         val relatedPostType = PostType.valueOf(document.getString("relatedPostType") ?: "REQUEST")
         val messagesData = document.get("messages") as? List<*> ?: emptyList<Any>()
         val messages =
@@ -169,7 +252,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         // This prevents any errors when reading older chat documents
         val status =
             try {
-                ChatStatus.valueOf(document.getString("status") ?: "ACTIVE")
+                ChatStatus.valueOf(document.getString(STATUS_FIELD) ?: "ACTIVE")
             } catch (e: Exception) {
                 ChatStatus.ACTIVE
             }

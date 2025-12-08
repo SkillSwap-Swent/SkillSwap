@@ -8,11 +8,16 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
+import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -45,7 +50,7 @@ class ChatConversationItemTest {
         // Mock Firebase Auth to return a consistent current user
         mockkStatic(FirebaseAuth::class)
         val mockAuth = mockk<FirebaseAuth>()
-        val mockFirebaseUser = mockk<com.google.firebase.auth.FirebaseUser>()
+        val mockFirebaseUser = mockk<FirebaseUser>()
         every { FirebaseAuth.getInstance() } returns mockAuth
         every { mockAuth.currentUser } returns mockFirebaseUser
         every { mockFirebaseUser.uid } returns "currentUser"
@@ -71,8 +76,25 @@ class ChatConversationItemTest {
                 override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
                     emptyList<Chat>()
 
+                override suspend fun getPendingChatsOfCurrentUser(
+                    relatedPostType: PostType
+                ): List<Chat> {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                    return emptyList()
+                }
+
+                override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                    return false
+                }
+
                 override suspend fun getChat(chatId: String): Chat {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
                     return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+                }
+
+                override suspend fun acceptAPostReplyChat(chat: Chat) {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
                 }
             }
 
@@ -127,11 +149,11 @@ class ChatConversationItemTest {
                     type: PostType,
                     titleContains: String,
                     ownerId: String,
-                    paymentMethod: com.swent.skillswap.model.post.PaymentMethod?,
+                    paymentMethod: PaymentMethod?,
                     skills: Set<SkillTag>,
                     tags: Set<PostTag>,
-                    status: com.swent.skillswap.model.post.PostStatus?,
-                    userLocation: com.google.firebase.firestore.GeoPoint?,
+                    status: PostStatus?,
+                    userLocation: GeoPoint?,
                     maxDistanceKm: Float
                 ) = emptyList<Post>()
 
@@ -161,14 +183,14 @@ class ChatConversationItemTest {
         override val ownerId = ""
         override val skills = emptySet<SkillTag>()
         override val tags = emptySet<PostTag>()
-        override val paymentMethod = com.swent.skillswap.model.post.PaymentMethod.SKILLS
+        override val paymentMethod = PaymentMethod.SKILLS
         override val expiry = Timestamp.now()
         override val creation = Timestamp.now()
-        override val status = com.swent.skillswap.model.post.PostStatus.POSTED
+        override val status = PostStatus.POSTED
         override val media = emptyList<String>()
-        override val location = com.google.firebase.firestore.GeoPoint(0.0, 0.0)
+        override val location = GeoPoint(0.0, 0.0)
         override val type = PostType.OFFER
-        override val postReplies = emptyList<com.swent.skillswap.model.post.PostReply>()
+        override val postReplies = emptyList<PostReply>()
         override val searchKeys = listOf<String>()
         override val reportCount: Long = 0L
     }

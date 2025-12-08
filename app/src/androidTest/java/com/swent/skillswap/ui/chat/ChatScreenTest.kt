@@ -54,7 +54,24 @@ class ChatScreenTest {
                         return emptyList()
                     }
 
+                    override suspend fun getPendingChatsOfCurrentUser(
+                        relatedPostType: PostType
+                    ): List<Chat> {
+                        // JUST HERE FOR OVERRIDE REASON
+                        return emptyList()
+                    }
+
+                    override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+                        // JUST HERE FOR OVERRIDE REASON
+                        return false
+                    }
+
+                    override suspend fun acceptAPostReplyChat(chat: Chat) {
+                        // JUST HERE FOR OVERRIDE REASON
+                    }
+
                     override suspend fun getChat(chatId: String): Chat {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
                         return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
                     }
                 },
@@ -233,6 +250,18 @@ class ChatScreenTest {
                     return emptyList()
                 }
 
+                override suspend fun getPendingChatsOfCurrentUser(
+                    relatedPostType: PostType
+                ): List<Chat> {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                    return listOf()
+                }
+
+                override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                    return true
+                }
+
                 override suspend fun getChat(chatId: String): Chat {
                     // return a chat where recipient is "recipient-uid"
                     return Chat(
@@ -242,6 +271,10 @@ class ChatScreenTest {
                         PostType.REQUEST,
                         emptyList()
                     )
+                }
+
+                override suspend fun acceptAPostReplyChat(chat: Chat) {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
                 }
             }
 
