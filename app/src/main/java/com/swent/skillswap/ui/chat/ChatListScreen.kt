@@ -69,17 +69,6 @@ fun ChatListScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             PostTypeFilterButton(
-                text = "Offer",
-                isSelected = selectedPostType == PostType.OFFER && !isPendingSelected,
-                onClick = {
-                    selectedPostType = PostType.OFFER
-                    isPendingSelected = false
-                    isOwnerSelected = null
-                },
-                modifier = Modifier.weight(1f).testTag(ChatListTestTags.OFFER)
-            )
-
-            PostTypeFilterButton(
                 text = "Request",
                 isSelected = selectedPostType == PostType.REQUEST && !isPendingSelected,
                 onClick = {

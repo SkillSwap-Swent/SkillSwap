@@ -227,8 +227,8 @@ class ChatListScreenTest {
         composeRule.waitForIdle()
 
         // With fake repos, verify chat item is rendered
-        // (4 filter buttons + at least 1 chat card clickable)
-        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 5)
+        // (3 filter buttons + at least 1 chat card clickable)
+        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 4)
     }
 
     @Test
