@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -82,6 +83,16 @@ fun ChatScreen(
     LaunchedEffect(chatId) { CurrentChatTracker.currentChatId = chatId }
     DisposableEffect(Unit) { onDispose { CurrentChatTracker.currentChatId = null } }
 
+    // Add LazyListState for controlling scroll
+    val listState = rememberLazyListState()
+
+    // Scroll to the last message whenever messages change
+    LaunchedEffect(uiState.messages.size) {
+        if (uiState.messages.isNotEmpty()) {
+            listState.animateScrollToItem(uiState.messages.lastIndex)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize().testTag(ChatScreenTags.SCREEN)) {
         TopAppBar(
             title = {
@@ -112,6 +123,7 @@ fun ChatScreen(
         )
 
         LazyColumn(
+            state = listState,
             modifier =
                 Modifier.weight(1f)
                     .padding(horizontal = 16.dp)

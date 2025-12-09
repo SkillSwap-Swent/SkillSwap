@@ -3,20 +3,25 @@ package com.swent.skillswap.ui.chat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 
@@ -27,6 +32,7 @@ object ChatListTestTags {
     const val REQUEST = "RequestFilterButton"
     const val POSTS_LIST = "PostsList"
     const val EMPTY_STATE = "EmptyState"
+    const val AVATAR = "Avatar"
 }
 
 @Composable
@@ -159,7 +165,7 @@ fun ChatConversationItem(
     LaunchedEffect(chat.relatedPostId) {
         viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
     }
-    LaunchedEffect(otherUser) { viewModel.getUsername(otherUser) }
+    LaunchedEffect(otherUser) { viewModel.getUsernameAndAvatar(otherUser) }
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -171,6 +177,26 @@ fun ChatConversationItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Profile picture on the left
+            val avatarUrl = uiState.avatars[otherUser]
+            if (avatarUrl.isNullOrBlank()) {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = "Default profile picture",
+                    modifier =
+                        Modifier.size(48.dp).clip(CircleShape).testTag(ChatListTestTags.AVATAR),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Profile picture",
+                    modifier =
+                        Modifier.size(48.dp).clip(CircleShape).testTag(ChatListTestTags.AVATAR),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
             // Left side - Related post title
             Column(modifier = Modifier.weight(1f)) {
                 Text(

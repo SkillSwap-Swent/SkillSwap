@@ -21,6 +21,7 @@ data class ChatListUIState(
     val chats: List<Chat> = emptyList(),
     val usernames: Map<String, String> = emptyMap(),
     val postTitles: Map<String, String> = emptyMap(),
+    val avatars: Map<String, String> = emptyMap(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val associatedPostStatuses: Map<String, PostStatus> = emptyMap()
@@ -88,6 +89,7 @@ class ChatListViewModel(
                         )
                     }
                 } catch (exception: Exception) {
+                    // TODO: Implement robust error handling
                     ""
                 }
             }
@@ -104,15 +106,23 @@ class ChatListViewModel(
         }
     }
     // Get username by user ID
-    fun getUsername(userId: String) {
+    fun getUsernameAndAvatar(userId: String) {
         viewModelScope.launch {
-            val username =
+            val user =
                 try {
-                    userRepository.getUser(userId).username
+                    userRepository.getUser(userId)
                 } catch (exception: Exception) {
-                    ""
+                    Log.e("ChatViewModel", "Error fetching user with Id: $userId")
+                    throw exception
                 }
-            _uiState.update { it.copy(usernames = it.usernames + (userId to username)) }
+            val username = user.username
+            val avatar = user.profilePicture
+            _uiState.update {
+                it.copy(
+                    usernames = it.usernames + (userId to username),
+                    avatars = it.avatars + (userId to avatar)
+                )
+            }
         }
     }
 
@@ -123,6 +133,7 @@ class ChatListViewModel(
                 try {
                     postRepository.getPost(postType, postId).title
                 } catch (exception: Exception) {
+                    // TODO: Implement robust error handling
                     ""
                 }
             _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
@@ -141,6 +152,7 @@ class ChatListViewModel(
             try {
                 userRepository.updateRating(userId, incomingRating)
             } catch (exception: Exception) {
+                // TODO: Implement robust error handling
                 ""
             }
         }
