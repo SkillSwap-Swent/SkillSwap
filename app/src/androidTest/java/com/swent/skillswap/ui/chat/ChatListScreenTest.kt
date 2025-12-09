@@ -399,7 +399,7 @@ class ChatListScreenTest {
         val post = MockPost("p1", "Offer Title")
         val viewModel =
             createViewModel(
-                offerChats = listOf(chat),
+                requestChats = listOf(chat),
                 users = mapOf("u2" to user),
                 posts = mapOf("p1" to post)
             )
@@ -431,7 +431,7 @@ class ChatListScreenTest {
         val post = MockPost("p2", "Request Title")
         val viewModel =
             createViewModel(
-                offerChats = listOf(chat),
+                requestChats = listOf(chat),
                 users = mapOf("u3" to user),
                 posts = mapOf("p2" to post)
             )
