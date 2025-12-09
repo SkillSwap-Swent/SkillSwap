@@ -1,11 +1,13 @@
 package com.swent.skillswap.ui.chat
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.GppGood
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
@@ -30,7 +32,10 @@ object ChatListTestTags {
     const val TITLE = "ChatListTitle"
     const val OFFER = "OfferFilterButton"
     const val REQUEST = "RequestFilterButton"
+    const val WAITING = "WaitingFilterButton"
+    const val TO_APPROVE = "ToApprovePostsList"
     const val POSTS_LIST = "PostsList"
+    const val ACCEPT_CHAT = "AcceptChatButton"
     const val EMPTY_STATE = "EmptyState"
     const val AVATAR = "Avatar"
 }
@@ -42,8 +47,11 @@ fun ChatListScreen(
     onChatClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
-
+    var selectedPostType by remember { mutableStateOf(PostType.REQUEST) }
+    var isPendingSelected by remember { mutableStateOf(false) }
+    var isOwnerSelected by remember { mutableStateOf<Boolean?>(null) }
+    // Chat List
+    viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
         // Title
         Text(
@@ -61,22 +69,48 @@ fun ChatListScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             PostTypeFilterButton(
-                text = "Offer",
-                isSelected = selectedPostType == PostType.OFFER,
-                onClick = { selectedPostType = PostType.OFFER },
-                modifier = Modifier.weight(1f).testTag(ChatListTestTags.OFFER)
-            )
-
-            PostTypeFilterButton(
                 text = "Request",
-                isSelected = selectedPostType == PostType.REQUEST,
-                onClick = { selectedPostType = PostType.REQUEST },
+                isSelected = selectedPostType == PostType.REQUEST && !isPendingSelected,
+                onClick = {
+                    selectedPostType = PostType.REQUEST
+                    isPendingSelected = false
+                    isOwnerSelected = null
+                },
                 modifier = Modifier.weight(1f).testTag(ChatListTestTags.REQUEST)
             )
         }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            PostTypeFilterButton(
+                text = "To Approve",
+                isSelected =
+                    selectedPostType == PostType.REQUEST &&
+                        isPendingSelected &&
+                        isOwnerSelected == true,
+                onClick = {
+                    selectedPostType = PostType.REQUEST
+                    isPendingSelected = true
+                    isOwnerSelected = true
+                },
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.TO_APPROVE)
+            )
+            PostTypeFilterButton(
+                text = "Awaiting",
+                isSelected =
+                    selectedPostType == PostType.REQUEST &&
+                        isPendingSelected &&
+                        isOwnerSelected == false,
+                onClick = {
+                    selectedPostType = PostType.REQUEST
+                    isPendingSelected = true
+                    isOwnerSelected = false
+                },
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.WAITING)
+            )
+        }
 
-        // Chat List
-        LaunchedEffect(selectedPostType) { viewModel.getChatsOfCurrentUser(selectedPostType) }
         val filteredChats = uiState.chats
         if (filteredChats.isEmpty()) {
             // Empty state
@@ -101,7 +135,8 @@ fun ChatListScreen(
                         viewModel = viewModel,
                         currentUserId = currentUserId,
                         chat = chat,
-                        onClick = { onChatClick(chat.id) }
+                        onClick = { onChatClick(chat.id) },
+                        isOwner = isOwnerSelected
                     )
                 }
             }
@@ -151,7 +186,8 @@ fun ChatConversationItem(
     viewModel: ChatListViewModel,
     currentUserId: String,
     chat: Chat,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isOwner: Boolean? = null
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
@@ -215,16 +251,26 @@ fun ChatConversationItem(
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
                 )
             }
+            if (isOwner == true) {
+                Icon(
+                    Icons.Default.GppGood,
+                    "approve",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier =
+                        Modifier.clickable(onClick = { viewModel.acceptAPostReplyChat(chat) })
+                            .testTag(ChatListTestTags.ACCEPT_CHAT)
+                )
+            }
+        }
 
-            // Rate user button
-            if (viewModel.shouldDisplayRatingButton(chat)) {
-                IconButton(onClick = { showRatingDialog = true }, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Star,
-                        contentDescription = "Rate User",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+        // Rate user button
+        if (viewModel.shouldDisplayRatingButton(chat)) {
+            IconButton(onClick = { showRatingDialog = true }, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Star,
+                    contentDescription = "Rate User",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }
