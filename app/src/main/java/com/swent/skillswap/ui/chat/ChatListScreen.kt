@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GppGood
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,7 +41,7 @@ fun ChatListScreen(
     onChatClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedPostType by remember { mutableStateOf(PostType.OFFER) }
+    var selectedPostType by remember { mutableStateOf(PostType.REQUEST) }
     var isPendingSelected by remember { mutableStateOf(false) }
     var isOwnerSelected by remember { mutableStateOf<Boolean?>(null) }
     // Chat List
@@ -246,18 +248,17 @@ fun ChatConversationItem(
             }
         }
 
-            // Rate user button
-            if (viewModel.shouldDisplayRatingButton(chat)) {
-                IconButton(onClick = { showRatingDialog = true }, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Star,
-                        contentDescription = "Rate User",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+        // Rate user button
+        if (viewModel.shouldDisplayRatingButton(chat)) {
+            IconButton(onClick = { showRatingDialog = true }, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Star,
+                    contentDescription = "Rate User",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
-
+    }
 
     if (showRatingDialog) {
         Dialog(
