@@ -212,7 +212,7 @@ class ChatConversationItemTest {
 
         // Trigger data loading
         mockViewModel.getPostTitle("p1", PostType.OFFER)
-        mockViewModel.getUsername("u1")
+        mockViewModel.getUsernameAndAvatar("u1")
         composeRule.waitForIdle()
 
         // Check that post title and username are displayed
@@ -281,7 +281,7 @@ class ChatConversationItemTest {
 
         // Trigger data loading
         mockViewModel.getPostTitle("p2", PostType.REQUEST)
-        mockViewModel.getUsername("u2")
+        mockViewModel.getUsernameAndAvatar("u2")
         composeRule.waitForIdle()
 
         // Check that correct data is displayed
@@ -305,7 +305,7 @@ class ChatConversationItemTest {
         }
 
         // Trigger data loading for unknown user
-        mockViewModel.getUsername("unknown")
+        mockViewModel.getUsernameAndAvatar("unknown")
         composeRule.waitForIdle()
 
         // Should show "Unknown User" for users not in the repository

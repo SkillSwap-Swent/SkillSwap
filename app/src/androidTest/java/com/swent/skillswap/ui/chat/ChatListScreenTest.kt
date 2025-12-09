@@ -183,7 +183,7 @@ class ChatListScreenTest {
 
         // Trigger initial load for offers
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
-        viewModel.getUsername("u2")
+        viewModel.getUsernameAndAvatar("u2")
         viewModel.getPostTitle("p1", PostType.OFFER)
         composeRule.waitForIdle()
 
@@ -286,7 +286,7 @@ class ChatListScreenTest {
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
         chats.forEach { chat ->
             val otherUser = chat.participants.first { it != "u1" }
-            viewModel.getUsername(otherUser)
+            viewModel.getUsernameAndAvatar(otherUser)
             viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
         }
         composeRule.waitForIdle()
@@ -385,8 +385,7 @@ class ChatListScreenTest {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
-        viewModel.getUsername("u2")
-        viewModel.getAvatar("u2")
+        viewModel.getUsernameAndAvatar("u2")
         viewModel.getPostTitle("p1", PostType.OFFER)
         composeRule.waitForIdle()
 
@@ -418,8 +417,7 @@ class ChatListScreenTest {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
         viewModel.getChatsOfCurrentUser(PostType.OFFER)
-        viewModel.getUsername("u3")
-        viewModel.getAvatar("u3")
+        viewModel.getUsernameAndAvatar("u3")
         viewModel.getPostTitle("p2", PostType.OFFER)
         composeRule.waitForIdle()
 

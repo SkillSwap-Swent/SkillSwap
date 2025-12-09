@@ -155,8 +155,8 @@ class ChatListViewModelTest {
     }
 
     @Test
-    fun getUsername_addsToMap() = runTest {
-        viewModel.getUsername("u1")
+    fun getUsername_AndAvatar_addsToMap() = runTest {
+        viewModel.getUsernameAndAvatar("u1")
         advanceUntilIdle()
         assertEquals("John", viewModel.uiState.value.usernames["u1"])
     }

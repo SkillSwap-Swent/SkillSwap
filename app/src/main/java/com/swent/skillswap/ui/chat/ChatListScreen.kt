@@ -165,10 +165,7 @@ fun ChatConversationItem(
     LaunchedEffect(chat.relatedPostId) {
         viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
     }
-    LaunchedEffect(otherUser) {
-        viewModel.getUsername(otherUser)
-        viewModel.getAvatar(otherUser)
-    }
+    LaunchedEffect(otherUser) { viewModel.getUsernameAndAvatar(otherUser) }
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
