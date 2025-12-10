@@ -174,7 +174,7 @@ fun SkillSwapApp(
 
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Firebase.auth.uid) {
         val recommendationEngine =
             RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
                 .create(
