@@ -135,7 +135,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
                 }
         val body = notification?.body ?: "You have a new post notification"
         val channelId = "post_channel"
-        val relatedPostId = message.data["relatedId"]
+        @Suppress("UNUSED_VARIABLE") val relatedPostId = message.data["relatedId"]
 
         // If user is currently viewing this post, mark as read and do not show notification
         // TODO: Implement CurrentPostTracker similar to CurrentChatTracker if needed

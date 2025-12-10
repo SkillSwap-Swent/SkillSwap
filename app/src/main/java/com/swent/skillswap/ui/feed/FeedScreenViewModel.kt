@@ -113,7 +113,7 @@ open class FeedScreenViewModel(
     } // TODO: A Pop-up Window with a textField or preFab message to send is a good idea
 
     /** Declines the specified offer, removes it from the feed, and loads the next one. */
-    fun decline(post: FeedPost) {
+    fun decline(@Suppress("UNUSED_PARAMETER") post: FeedPost) {
         skip()
         // TODO: Placeholder for rollback implementation
     }

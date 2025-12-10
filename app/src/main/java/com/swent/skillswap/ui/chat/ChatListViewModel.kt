@@ -110,7 +110,7 @@ class ChatListViewModel(
                     }
                 } catch (exception: Exception) {
                     Log.e(
-                        "ChatViewModel",
+                        "ChatListViewModel",
                         "Error fetching post status for postId: ${chat.relatedPostId}",
                         exception
                     )
@@ -150,7 +150,11 @@ class ChatListViewModel(
                                     type = NotificationType.POST_ACCEPTED,
                                     relatedId = chat.relatedPostId
                                 )
+                            } else {
+                                // No accepted user found
                             }
+                        } else {
+                            // No current user
                         }
                     } catch (e: Exception) {
                         Log.e("ChatListViewModel", "Error creating POST_ACCEPTED notification", e)
@@ -215,7 +219,7 @@ class ChatListViewModel(
             try {
                 userRepository.updateRating(userId, incomingRating)
             } catch (exception: Exception) {
-                Log.e("ChatViewModel", "Error updating rating for user $userId", exception)
+                Log.e("ChatListViewModel", "Error updating rating for user $userId", exception)
             }
         }
     }
