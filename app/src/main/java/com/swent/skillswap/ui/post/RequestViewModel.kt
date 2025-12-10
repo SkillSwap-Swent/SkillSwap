@@ -19,6 +19,7 @@ import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.utils.LocationManager
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -66,7 +67,7 @@ data class RequestUIState(
 class RequestViewModel(
     private val appContext: Context? = null,
     private val postRepository: PostRepository,
-    private val storageRepository: PictureRepository,
+    private val storageRepository: PictureRepositoryInterface,
     private val currentUserId: String,
     private val postId: String? = null // Only necessary if postOperation is edit
 ) : ViewModel() {
@@ -195,7 +196,7 @@ class RequestViewModel(
                 val stringUrls = mutableListOf<String>()
                 var counter = 0;
                 for (uri in _uiState.value.attachments) {
-                    /** media name construction : concatenate uid and conter */
+                    /** media name construction : concatenate uid and counter */
                     val mediaName = "$uid$counter"
                     counter += 1
 
