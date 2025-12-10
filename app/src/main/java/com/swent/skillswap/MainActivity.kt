@@ -388,6 +388,9 @@ fun SkillSwapApp(
                     },
                     onAvatarClick = { userId ->
                         navController.navigate(Screen.OtherUser.createRoute(userId))
+                    },
+                    onNotificationClick = {
+                        navController.navigate(Screen.NotificationList.route)
                     }
                 )
             }

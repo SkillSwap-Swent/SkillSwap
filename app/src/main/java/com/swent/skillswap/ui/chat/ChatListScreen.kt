@@ -43,7 +43,8 @@ fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),
     currentUserId: String = "",
     onChatClick: (String) -> Unit = {},
-    onAvatarClick: (String) -> Unit = {}
+    onAvatarClick: (String) -> Unit = {},
+    onNotificationClick: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.REQUEST) }
@@ -53,14 +54,30 @@ fun ChatListScreen(
     viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
         // Title with notification button
-        Text(
-            text = "Chat",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier =
-                Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "Chat",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f).testTag(ChatListTestTags.TITLE)
+            )
+            if (onNotificationClick != null) {
+                IconButton(onClick = onNotificationClick) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Notifications"
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
 
         // Related post type filter buttons
         Row(
