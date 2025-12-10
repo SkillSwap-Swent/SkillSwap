@@ -162,11 +162,8 @@ private class FeedControllerImpl(
                 )
             val ranked = recommendationEngine.rankPosts(filtered)
             postQueue.addAll(ranked)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // TODO: Notify UI
-            // TODO DELETE below
-            Log.e("FeedController", "Error fetching posts: ", e)
-            throw Exception("Failed to fetch posts", e)
         }
     }
 
