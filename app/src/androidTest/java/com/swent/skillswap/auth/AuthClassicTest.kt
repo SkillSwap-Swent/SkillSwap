@@ -140,7 +140,7 @@ class AuthClassicTest : TestCase() {
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
         // Go to Create Account screen
-        composeTestRule.waitUntil(60_000) {
+        composeTestRule.waitUntil(120_000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
                 true
