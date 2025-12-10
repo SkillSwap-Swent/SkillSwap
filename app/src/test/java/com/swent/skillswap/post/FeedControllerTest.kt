@@ -4,6 +4,7 @@ import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.FakePostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.user.FakeUserRepository
@@ -15,6 +16,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 open class FeedControllerTest : PostDataClassTest() {
@@ -216,6 +218,30 @@ open class FeedControllerTest : PostDataClassTest() {
             // Verify that the user uid2 as been correctly blocked by user uid1
             assert(repo.getUser(uid1).blockedUsers.isNotEmpty())
             assert(repo.getUser(uid1).blockedUsers.contains(uid2))
+        }
+    }
+
+    @Test
+    fun doNotShowCompletedPost() {
+        runTest {
+            val repo = FakePostRepository()
+            repo.addPost(request1.copy(uid = "123"))
+            repo.addPost(request1.copy(uid = "456", status = PostStatus.COMPLETED))
+
+            val ctrl =
+                FeedControllerFactory(
+                        recommendationEngine = RecommendationEngineImpl(),
+                        thumbnailRepository = ThumbnailRepository(),
+                        postRepository = repo,
+                        chatRepository = FakeChatRepository(),
+                        userRepository = FakeUserRepository(),
+                        locationManager = null
+                    )
+                    .create(userIdPerformingActions = "user123", feedType = PostType.REQUEST)
+
+            assertNotNull(ctrl.currentPost.value)
+            ctrl.skipPost()
+            assertNull(ctrl.currentPost.value)
         }
     }
 }
