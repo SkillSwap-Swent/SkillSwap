@@ -121,7 +121,6 @@ class AuthClassicTest : TestCase() {
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
         }
-        composeTestRule.waitForIdle()
     }
 
     @After
@@ -139,6 +138,29 @@ class AuthClassicTest : TestCase() {
      */
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
+        // Attendre que le bouton / texte "Create Account" soit présent dans l'arbre
+        composeTestRule.waitUntil(timeoutMillis = 120_000L) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            } catch (t: Throwable) {
+                false
+            }
+        }
+
+        // Log de debug pour la CI
+        runCatching {
+            val nodes = composeTestRule
+                .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+            println("TEST DEBUG: CREATE_ACCOUNT_TEXT nodes count = ${nodes.size}")
+            if (nodes.isEmpty()) {
+                println("TEST DEBUG: aucun noeud avec tag SignInTags.CREATE_ACCOUNT_TEXT trouvé \- écran AuthMain non affiché ?")
+            }
+        }
+
         // Go to Create Account screen
         composeTestRule.waitUntil(30_000L) {
             try {
