@@ -1,14 +1,18 @@
 package com.swent.skillswap.ui.feed
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedPost
-import com.swent.skillswap.model.feed.FeedScreenNavigation
+import com.swent.skillswap.model.feed.Image
 import com.swent.skillswap.model.notification.FakeNotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Skill
+import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.ui.notification.NotificationViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.*
@@ -45,8 +49,9 @@ class FeedScreenViewModelTest {
 
         val mockController =
             object : FeedController {
-                override val currentPost = flowOf(null)
-                override val currentThumbnail = flowOf(null)
+                override val currentPost: State<com.swent.skillswap.model.post.Post?> =
+                    mutableStateOf<com.swent.skillswap.model.post.Post?>(null)
+                override val currentThumbnail: State<Image?> = mutableStateOf<Image?>(null)
                 override val userIdPerformingActions = "user-1"
                 override val feedType = com.swent.skillswap.model.post.PostType.REQUEST
 
@@ -78,7 +83,7 @@ class FeedScreenViewModelTest {
                 }
 
                 override suspend fun inferRelevantSkill() =
-                    com.swent.skillswap.model.user.Skill("Guitar")
+                    Skill(SkillTag.COMPUTER_PROGRAMMING, SkillRank.CAPABLE.value, "Guitar")
 
                 override suspend fun blockUser(blockedUserUID: String) {
                     // Mock implementation

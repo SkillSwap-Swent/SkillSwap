@@ -267,7 +267,7 @@ class ChatListViewModelTest {
                     ) {}
 
                     override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
-                        emptyList()
+                        emptyList<Chat>()
 
                     override suspend fun getPendingChatsOfCurrentUser(
                         relatedPostType: PostType
