@@ -10,7 +10,6 @@ import com.swent.skillswap.SkillSwapApp
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.feed.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.*
-import com.swent.skillswap.ui.notification.NotificationScreenTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import org.junit.Before
 import org.junit.Rule
@@ -67,8 +66,7 @@ class BottomBarNavigationTest {
             listOf(
                 NavigationTestTags.PROFILE_TAB,
                 NavigationTestTags.FEED_TAB,
-                NavigationTestTags.CHAT_TAB,
-                NavigationTestTags.NOTIFICATION_TAB
+                NavigationTestTags.CHAT_TAB
             )
 
         screens.forEach { tab ->
@@ -84,7 +82,6 @@ class BottomBarNavigationTest {
             composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).assertIsDisplayed()
             composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
             composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
-            composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).assertIsDisplayed()
         }
     }
 
@@ -147,7 +144,6 @@ class BottomBarNavigationTest {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsSelected()
         composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).assertIsNotSelected()
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsNotSelected()
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).assertIsNotSelected()
     }
 
     @Test
@@ -200,104 +196,4 @@ class BottomBarNavigationTest {
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsSelected()
     }
 
-    @Test
-    fun bottomBar_clickingNotificationTabNavigatesToNotificationScreen() {
-        // Navigate to Notification tab
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).performClick()
-        composeTestRule.waitForIdle()
-
-        // Verify notification tab is selected
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).assertIsSelected()
-
-        // Verify notification screen is displayed (wait for loading to complete)
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule
-                .onAllNodesWithTag(NotificationScreenTags.SCREEN)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeTestRule.onNodeWithTag(NotificationScreenTags.SCREEN).assertIsDisplayed()
-    }
-
-    @Test
-    fun bottomBar_navigationIncludesNotificationTab() {
-        // Start at Profile (initial state)
-        composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).assertIsSelected()
-
-        // Navigate to Feed
-        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsSelected()
-
-        // Navigate to Chat
-        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsSelected()
-
-        // Navigate to Notification
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).assertIsSelected()
-
-        // Verify notification screen is displayed
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule
-                .onAllNodesWithTag(NotificationScreenTags.SCREEN)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        composeTestRule.onNodeWithTag(NotificationScreenTags.SCREEN).assertIsDisplayed()
-
-        // Navigate back to Profile
-        composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).assertIsSelected()
-        composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-    }
-
-    @Test
-    fun bottomBar_notificationTabIsAlwaysVisible() {
-        // Verify notification tab is visible on all screens
-        val allTabs =
-            listOf(
-                NavigationTestTags.PROFILE_TAB,
-                NavigationTestTags.FEED_TAB,
-                NavigationTestTags.CHAT_TAB,
-                NavigationTestTags.NOTIFICATION_TAB
-            )
-
-        allTabs.forEach { tab ->
-            composeTestRule.onNodeWithTag(tab).performClick()
-            composeTestRule.waitForIdle()
-
-            // Verify notification tab is always visible
-            composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).assertIsDisplayed()
-        }
-    }
-
-    @Test
-    fun bottomBar_clickingNotificationTabWhenAlreadySelectedDoesNotNavigate() {
-        // Navigate to Notification tab
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).performClick()
-        composeTestRule.waitForIdle()
-
-        // Wait for notification screen to load
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule
-                .onAllNodesWithTag(NotificationScreenTags.SCREEN)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-
-        val notificationScreen = composeTestRule.onNodeWithTag(NotificationScreenTags.SCREEN)
-        notificationScreen.assertIsDisplayed()
-
-        // Click Notification tab again (already selected)
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).performClick()
-        composeTestRule.waitForIdle()
-
-        // Verify we're still on the same Notification screen
-        composeTestRule.onNodeWithTag(NavigationTestTags.NOTIFICATION_TAB).assertIsSelected()
-        notificationScreen.assertIsDisplayed()
-    }
 }

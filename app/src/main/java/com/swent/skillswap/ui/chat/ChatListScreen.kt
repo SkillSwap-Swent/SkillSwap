@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GppGood
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -51,7 +52,7 @@ fun ChatListScreen(
     // Chat List
     viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
-        // Title
+        // Title with notification button
         Text(
             text = "Chat",
             style = MaterialTheme.typography.headlineMedium,

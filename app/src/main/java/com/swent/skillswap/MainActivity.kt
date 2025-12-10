@@ -207,7 +207,6 @@ fun SkillSwapApp(
                     Screen.Profile.route -> Tab.Profile
                     Screen.Feed.route -> Tab.Feed
                     Screen.Chat.route -> Tab.Chat
-                    Screen.NotificationList.route -> Tab.Notification
                     else -> null
                 }
 
