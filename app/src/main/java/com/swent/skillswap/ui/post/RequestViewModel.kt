@@ -2,14 +2,14 @@ package com.swent.skillswap.ui.post
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Picture
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings
-import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -18,8 +18,6 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.utils.LocationManager
-import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
-import com.swent.skillswap.model.images.PictureRepositoryInterface
 import java.util.Date
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -194,13 +192,13 @@ class RequestViewModel(
 
                 /** attachments upload logic */
                 val stringUrls = mutableListOf<String>()
-                var counter = 0;
+                var counter = 0
                 for (uri in _uiState.value.attachments) {
                     /** media name construction : concatenate uid and counter */
                     val mediaName = "$uid$counter"
                     counter += 1
 
-                    val url = storageRepository.uploadPicture(mediaName,uri, FEED_PICTURES_PATH)
+                    val url = storageRepository.uploadPicture(mediaName, uri, FEED_PICTURES_PATH)
                     stringUrls.add(url.toString())
                 }
 

@@ -36,33 +36,25 @@ class FakePictureRepository : PictureRepositoryInterface {
 
     // Utility methods for testing
 
-    /**
-     * Checks if a picture has been uploaded
-     */
+    /** Checks if a picture has been uploaded */
     fun isPictureUploaded(uid: String, path: String): Boolean {
         val key = "$path/$uid"
         return uploadedPictures.containsKey(key)
     }
 
-    /**
-     * Retrieves the URL of an uploaded picture
-     */
+    /** Retrieves the URL of an uploaded picture */
     fun getPictureUrl(uid: String, path: String): URL? {
         val key = "$path/$uid"
         return uploadedPictures[key]
     }
 
-    /**
-     * Resets the repository (useful between tests)
-     */
+    /** Resets the repository (useful between tests) */
     fun clear() {
         uploadedPictures.clear()
         shouldFailUpload = false
         shouldFailDelete = false
     }
 
-    /**
-     * Returns the number of stored pictures
-     */
+    /** Returns the number of stored pictures */
     fun getUploadedPicturesCount(): Int = uploadedPictures.size
 }
