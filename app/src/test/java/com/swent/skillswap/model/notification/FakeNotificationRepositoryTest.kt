@@ -167,4 +167,34 @@ class FakeNotificationRepositoryTest {
         assertEquals(0, repository.getAddedNotifications().size)
         assertTrue(repository.getNewUid().startsWith("test-notification-0"))
     }
+
+    @Test
+    fun markChatNotificationsAsRead_correctly_marks_chatNotifications_as_read() = runTest {
+        // Add notifications: two for chat-1 (one for each user), one for another chat
+        val chatNotificationUser1 = sampleNotification1
+        val chatNotificationUser2 =
+            sampleNotification1.copy(
+                uid = "notification-4",
+                userId = testUserId2,
+                isRead = false
+            ) // chat-1, testUserId2
+        val otherChatNotification =
+            sampleNotification1.copy(
+                uid = "notification-5",
+                relatedId = "chat-2",
+                isRead = false
+            ) // chat-2, testUserId
+
+        repository.addNotification(chatNotificationUser1)
+        repository.addNotification(chatNotificationUser2)
+        repository.addNotification(otherChatNotification)
+
+        // Mark chat-1 notifications as read for testUserId
+        repository.markChatNotificationsAsRead("chat-1", testUserId)
+
+        // Only chatNotificationUser1 should be marked as read
+        assertTrue(repository.getNotification(chatNotificationUser1.uid).isRead)
+        assertFalse(repository.getNotification(chatNotificationUser2.uid).isRead)
+        assertFalse(repository.getNotification(otherChatNotification.uid).isRead)
+    }
 }
