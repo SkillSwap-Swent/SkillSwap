@@ -152,12 +152,15 @@ class AuthClassicTest : TestCase() {
 
         // Log de debug pour la CI
         runCatching {
-            val nodes = composeTestRule
-                .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
-                .fetchSemanticsNodes()
+            val nodes =
+                composeTestRule
+                    .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
+                    .fetchSemanticsNodes()
             println("TEST DEBUG: CREATE_ACCOUNT_TEXT nodes count = ${nodes.size}")
             if (nodes.isEmpty()) {
-                println("TEST DEBUG: aucun noeud avec tag SignInTags.CREATE_ACCOUNT_TEXT trouvé - écran AuthMain non affiché ?")
+                println(
+                    "TEST DEBUG: aucun noeud avec tag SignInTags.CREATE_ACCOUNT_TEXT trouvé - écran AuthMain non affiché ?"
+                )
             }
         }
 
