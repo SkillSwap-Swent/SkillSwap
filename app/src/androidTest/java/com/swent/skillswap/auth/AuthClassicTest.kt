@@ -142,7 +142,8 @@ class AuthClassicTest : TestCase() {
         // Go to Create Account screen
         composeTestRule.waitUntil(30_000L) {
             try {
-                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()                true
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+                true
             } catch (e: AssertionError) {
                 false
             }
