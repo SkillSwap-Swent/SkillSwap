@@ -38,7 +38,8 @@ enum class SkillTag(val label: String) : EveryTag {
     SIGNAL_PROCESSING("Signal Processing"),
     MACHINE_DESIGN("Machine Design"),
     PROJECT_MANAGEMENT("Project Management"),
-    ENGINEERING_ETHICS("Engineering Ethics");
+    ENGINEERING_ETHICS("Engineering Ethics"),
+    MONEY("Money");
 
     /**
      * Returns the user-friendly label for display purposes. Equivalent to accessing [label]

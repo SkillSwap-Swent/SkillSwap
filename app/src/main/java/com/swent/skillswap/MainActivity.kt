@@ -1,6 +1,8 @@
 package com.swent.skillswap
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -45,7 +47,6 @@ import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
-import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -91,6 +92,19 @@ class MainActivity : ComponentActivity() {
             PermissionHandler.handlePermissionsResult(permissions)
         }
 
+    private fun createChatNotificationChannel() {
+        val channelId = "chat_channel"
+        val channel =
+            NotificationChannel(
+                    channelId,
+                    "Chat Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+                .apply { description = "Notifications for chat messages" }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
     private fun requestAllPermissionsIfNeeded(locationManager: LocationManager) {
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val requestedOnce = prefs.getBoolean("permissions_requested_once", false)
@@ -121,6 +135,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createChatNotificationChannel()
 
         val locationManager = LocationManager(this)
         requestAllPermissionsIfNeeded(locationManager)
@@ -159,7 +174,7 @@ fun SkillSwapApp(
 
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Firebase.auth.uid) {
         val recommendationEngine =
             RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
                 .create(
@@ -364,6 +379,10 @@ fun SkillSwapApp(
                     currentUserId = currentUserId,
                     onChatClick = { chatId ->
                         navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                        notificationViewModel.markChatNotificationsAsRead(chatId)
+                    },
+                    onAvatarClick = { userId ->
+                        navController.navigate(Screen.OtherUser.createRoute(userId))
                     }
                 )
             }
@@ -378,13 +397,12 @@ fun SkillSwapApp(
                     remember(chatId) {
                         ChatViewModel(
                             chatRepository = ChatRepositoryFirestore(Firebase.firestore),
-                            notificationRepository =
-                                NotificationRepositoryFirestore(Firebase.firestore),
                             chatId = chatId,
                         )
                     }
                 ChatScreen(
-                    viewModel = viewModel,
+                    chatViewModel = viewModel,
+                    notificationViewModel = notificationViewModel,
                     currentUserId = currentUserId,
                     onGoBack = { navigationActions.goBack() }
                 )

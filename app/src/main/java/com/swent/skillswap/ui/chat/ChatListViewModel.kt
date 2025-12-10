@@ -1,5 +1,6 @@
 package com.swent.skillswap.ui.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -20,6 +21,7 @@ data class ChatListUIState(
     val chats: List<Chat> = emptyList(),
     val usernames: Map<String, String> = emptyMap(),
     val postTitles: Map<String, String> = emptyMap(),
+    val avatars: Map<String, String> = emptyMap(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val associatedPostStatuses: Map<String, PostStatus> = emptyMap()
@@ -38,18 +40,44 @@ class ChatListViewModel(
     private val _uiState = MutableStateFlow(ChatListUIState())
     val uiState: StateFlow<ChatListUIState> = _uiState.asStateFlow()
 
-    // Get chats of current user filtered by related post type, pre-fetches and caches post statuses
-    fun getChatsOfCurrentUser(relatedPostType: PostType) {
+    /**
+     * Get chats of current user filtered by related post type and update the ui state accordingly
+     *
+     * @param relatedPostType post type of the related post to the chats we want to fetch
+     * @param pending OPTIONAL PARAM DEFAULT FALSE say if we want to see pending chat (not
+     * @param isOwner OPTIONAL PARAM DEFAULT NULL specify if we want to filter chat base on if the
+     *   user using the screen is the owner of them or no
+     */
+    fun getChatsOfCurrentUser(
+        relatedPostType: PostType,
+        pending: Boolean = false,
+        isOwner: Boolean? = null
+    ) {
         viewModelScope.launch {
             val chats =
                 try {
-                    chatRepository.getChatsOfCurrentUser(relatedPostType).filter {
-                        it.status == ChatStatus.ACTIVE
+                    if (!pending) {
+                        chatRepository.getChatsOfCurrentUser(relatedPostType)
+                    } else {
+                        chatRepository.getPendingChatsOfCurrentUser(relatedPostType)
                     }
                 } catch (exception: Exception) {
                     emptyList()
                 }
-            _uiState.update { it.copy(chats = chats) }
+            val filteredIsOwnerChats =
+                try {
+                    chats.filter {
+                        if (isOwner == null) {
+                            true
+                        } else {
+                            chatRepository.isOwnerOfRelatedPost(it) == isOwner
+                        }
+                    }
+                } catch (e: Exception) {
+                    chats
+                }
+            val fullFilteredChats = filteredIsOwnerChats.filter { it.status == ChatStatus.ACTIVE }
+            _uiState.update { it.copy(chats = fullFilteredChats) }
             chats.forEach { chat ->
                 try {
                     val postStatus =
@@ -61,22 +89,40 @@ class ChatListViewModel(
                         )
                     }
                 } catch (exception: Exception) {
+                    // TODO: Implement robust error handling
                     ""
                 }
             }
         }
     }
 
-    // Get username by user ID
-    fun getUsername(userId: String) {
+    fun acceptAPostReplyChat(chat: Chat) {
         viewModelScope.launch {
-            val username =
+            try {
+                chatRepository.acceptAPostReplyChat(chat)
+            } catch (e: Exception) {
+                Log.e(e.javaClass.toString(), e.message, e)
+            }
+        }
+    }
+    // Get username by user ID
+    fun getUsernameAndAvatar(userId: String) {
+        viewModelScope.launch {
+            val user =
                 try {
-                    userRepository.getUser(userId).username
+                    userRepository.getUser(userId)
                 } catch (exception: Exception) {
-                    ""
+                    Log.e("ChatViewModel", "Error fetching user with Id: $userId")
+                    throw exception
                 }
-            _uiState.update { it.copy(usernames = it.usernames + (userId to username)) }
+            val username = user.username
+            val avatar = user.profilePicture
+            _uiState.update {
+                it.copy(
+                    usernames = it.usernames + (userId to username),
+                    avatars = it.avatars + (userId to avatar)
+                )
+            }
         }
     }
 
@@ -87,6 +133,7 @@ class ChatListViewModel(
                 try {
                     postRepository.getPost(postType, postId).title
                 } catch (exception: Exception) {
+                    // TODO: Implement robust error handling
                     ""
                 }
             _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
@@ -105,6 +152,7 @@ class ChatListViewModel(
             try {
                 userRepository.updateRating(userId, incomingRating)
             } catch (exception: Exception) {
+                // TODO: Implement robust error handling
                 ""
             }
         }

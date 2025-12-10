@@ -58,7 +58,7 @@ fun BottomNavigationMenu(
 ) {
     val uiState by notificationViewModel.uiState.collectAsState()
 
-    LaunchedEffect(Unit) { notificationViewModel.loadNotifications() }
+    LaunchedEffect(uiState.notifications) { notificationViewModel.loadNotifications() }
 
     NavigationBar(
         modifier =

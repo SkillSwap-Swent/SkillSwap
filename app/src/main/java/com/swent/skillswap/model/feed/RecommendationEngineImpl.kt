@@ -1,8 +1,11 @@
 package com.swent.skillswap.model.feed
 
+import androidx.annotation.VisibleForTesting
+import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.tags.SkillTag
+import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.ui.utils.report_treshold
@@ -30,6 +33,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var feedType: PostType
     private lateinit var userRepository: UserRepositery
     private var blockedUsers: Set<String> = emptySet()
+    private var userPreference: Preference = Preference.SKILLS
     private val blockedPosts: MutableSet<String> = mutableSetOf()
     private val viewedPosts: MutableSet<String> = mutableSetOf()
     private var undesiredSkillThreshold: Float = 0.3f
@@ -69,17 +73,19 @@ open class RecommendationEngineImpl : RecommendationEngine {
     ) {
         this.userId = userId
         this.feedType = feedType
-        blockedUsers =
-            try {
-                userRepository.getUser(userId).blockedUsers
-            } catch (e: Exception) {
-                lastError = e
-                emptySet()
-            }
         this.userRepository = userRepository
         this.undesiredSkillThreshold = undesiredSkillThreshold
         this.desiredSkillThreshold = desiredSkillThreshold
-
+        try {
+            val user = userRepository.getUser(userId)
+            blockedUsers = user.blockedUsers
+            userPreference = user.preference
+            addFilter { post -> post.skills.first() in user.skillSet.map { it.name } }
+            addFilter { it.ownerId != user.uid }
+            user.viewedPosts.forEach { addViewedPost(it) }
+        } catch (e: Exception) {
+            lastError = e
+        }
         // Always apply a filter for blocked users
         addFilter { it.ownerId !in blockedUsers }
         addFilter { it.reportCount < report_treshold }
@@ -104,6 +110,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
             try {
                 userRepository.getUser(userId).blockedUsers
             } catch (e: Exception) {
+                lastError = e
                 emptySet()
             }
         addFilter { post -> post.ownerId !in blockedUsers }
@@ -283,7 +290,19 @@ open class RecommendationEngineImpl : RecommendationEngine {
      * @throws Exception if requester data cannot be retrieved from the repository.
      */
     private suspend fun inferSkillForRequest(post: Post): Skill {
-        val requester = userRepository.getUser(post.ownerId)
+        val money = Skill(SkillTag.MONEY, 5f, "A desired amount")
+        return when (post.paymentMethod) {
+            PaymentMethod.CASH -> money
+            PaymentMethod.SKILLSANDCASH -> {
+                return if (userPreference == Preference.MONEY) money
+                else skillForRequester(post.ownerId)
+            }
+            else -> return skillForRequester(post.ownerId)
+        }
+    }
+
+    private suspend fun skillForRequester(postOwnerId: String): Skill {
+        val requester = userRepository.getUser(postOwnerId)
         val requesterSkills = requester.skillSet.map { it.name }
 
         val filtered =
@@ -307,6 +326,11 @@ open class RecommendationEngineImpl : RecommendationEngine {
         override fun invoke(post: Post): Boolean {
             return skill !in post.skills
         }
+    }
+
+    @VisibleForTesting
+    fun setTestUserPreference(pref: Preference) {
+        userPreference = pref
     }
 }
 /**

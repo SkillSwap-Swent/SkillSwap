@@ -3,7 +3,6 @@
 package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -15,14 +14,12 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
@@ -41,6 +38,8 @@ import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
+import com.swent.skillswap.ui.utils.AvatarDisplay
+import com.swent.skillswap.ui.utils.AvatarVariant
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
@@ -211,35 +210,15 @@ fun FeedScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // === Avatar ===
-                        if (offer.requesterAvatar.isNotEmpty()) {
-                            AsyncImage(
-                                model = offer.requesterAvatar,
-                                contentDescription = "Requester profile picture",
-                                modifier =
-                                    Modifier.size(avatarSize)
-                                        .clip(CircleShape)
-                                        .clickable { vm.goToProfile(offer.authorID) }
-                                        .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Box(
-                                modifier =
-                                    Modifier.size(avatarSize)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable { vm.goToProfile(offer.authorID) }
-                                        .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "Requester profile picture - anonymous",
-                                    modifier = Modifier.size(avatarSize),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
+                        AvatarDisplay(
+                            avatarUrl = offer.requesterAvatar.ifEmpty { null },
+                            variant = AvatarVariant.COMPACT,
+                            modifier =
+                                Modifier.size(avatarSize)
+                                    .clip(CircleShape)
+                                    .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
+                            onClick = { vm.goToProfile(offer.authorID) }
+                        )
 
                         Spacer(Modifier.width(12.dp))
 

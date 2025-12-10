@@ -28,10 +28,11 @@ class RecommendationEngineTest {
     private lateinit var userRepo: UserRepositery
 
     // Sample skills
-    private val skillA = SkillTag.ENGINEERING_ETHICS
-    private val skillB = SkillTag.ENGINEERING_ETHICS
+    private val skillA = SkillTag.CALCULUS
+    private val skillB = SkillTag.PHYSICS_MECHANICS
 
     private val blockedUserId = "user_blocked"
+    private val otherUserId = "other_user"
     private val activeUserId = "user_active"
 
     private val activeUser =
@@ -39,6 +40,21 @@ class RecommendationEngineTest {
             uid = activeUserId,
             username = "Alice",
             email = "alice@example.com",
+            profilePicture = "",
+            skillSet =
+                setOf(Skill(SkillTag.CALCULUS, 0f, ""), Skill(SkillTag.PHYSICS_MECHANICS, 0f, "")),
+            rating = 0f,
+            availability = emptyList(),
+            preference = Preference.SKILLS,
+            location = GeoPoint(0.0, 0.0),
+            blockedUsers = setOf(blockedUserId),
+            fcmToken = null
+        )
+    private val otherUser =
+        User(
+            uid = otherUserId,
+            username = "Fred",
+            email = "fred@example.com",
             profilePicture = "",
             skillSet =
                 setOf(Skill(SkillTag.CALCULUS, 0f, ""), Skill(SkillTag.PHYSICS_MECHANICS, 0f, "")),
@@ -71,7 +87,7 @@ class RecommendationEngineTest {
             override val uid = "post1"
             override val title = "Post 1"
             override val description = "Description"
-            override val ownerId = activeUserId
+            override val ownerId = otherUserId
             override val skills = listOf(skillA)
             override val tags = emptyList<PostTag>()
             override val paymentMethod = PaymentMethod.SKILLS
@@ -90,7 +106,7 @@ class RecommendationEngineTest {
             override val uid = "post2"
             override val title = "Post 2"
             override val description = "Description"
-            override val ownerId = activeUserId
+            override val ownerId = otherUserId
             override val skills = listOf(skillA)
             override val tags = emptyList<PostTag>()
             override val paymentMethod = PaymentMethod.SKILLS
@@ -109,7 +125,7 @@ class RecommendationEngineTest {
             override val uid = "post3"
             override val title = "Post 3"
             override val description = "Description"
-            override val ownerId = activeUserId
+            override val ownerId = otherUserId
             override val skills = listOf(skillB)
             override val tags = emptyList<PostTag>()
             override val paymentMethod = PaymentMethod.SKILLS
@@ -152,6 +168,7 @@ class RecommendationEngineTest {
                     when (userID) {
                         activeUserId -> activeUser
                         blockedUserId -> blockedUser
+                        otherUserId -> otherUser
                         else -> throw Exception("User not found")
                     }
 
@@ -255,7 +272,7 @@ class RecommendationEngineTest {
                 description = "Help me with calculations",
                 skills = setOf(SkillTag.CALCULUS, SkillTag.PHYSICS_MECHANICS),
                 tags = setOf(),
-                paymentMethod = PaymentMethod.CASH,
+                paymentMethod = PaymentMethod.SKILLS,
                 expiry = Timestamp.now(),
                 creation = Timestamp.now(),
                 status = PostStatus.POSTED,
@@ -268,10 +285,11 @@ class RecommendationEngineTest {
 
         // Should pick the most desirable skill (first in whitelist/desired counts)
         assert(activeUser.skillSet.contains(inferredSkill))
+        return@runBlocking
     }
 
     @Test
-    fun explorThenCommit() = runBlocking {
+    fun exploreThenCommit() = runBlocking {
         val post1 =
             Request(
                 uid = "post1",
@@ -280,7 +298,7 @@ class RecommendationEngineTest {
                 description = "Help me with calculations",
                 skills = setOf(SkillTag.CALCULUS, SkillTag.PHYSICS_MECHANICS),
                 tags = emptySet(),
-                paymentMethod = PaymentMethod.CASH,
+                paymentMethod = PaymentMethod.SKILLS,
                 expiry = Timestamp.now(),
                 creation = Timestamp.now(),
                 status = PostStatus.POSTED,
@@ -311,7 +329,7 @@ class RecommendationEngineTest {
                 description = "Help me with calculations",
                 skills = setOf(SkillTag.CALCULUS, SkillTag.PHYSICS_MECHANICS),
                 tags = emptySet(),
-                paymentMethod = PaymentMethod.CASH,
+                paymentMethod = PaymentMethod.SKILLS,
                 expiry = Timestamp.now(),
                 creation = Timestamp.now(),
                 status = PostStatus.POSTED,
@@ -326,6 +344,114 @@ class RecommendationEngineTest {
 
         val inferredSkill = engine.inferRelevantSkill(post)
         assert(inferredSkill in post.ownerId.let { userRepo.getUser(it).skillSet })
+    }
+
+    @Test
+    fun inferCash() = runBlocking {
+        val post =
+            Request(
+                uid = "p1",
+                ownerId = activeUserId,
+                title = "Cash job",
+                description = "Paying cash",
+                skills = setOf(skillA),
+                tags = emptySet(),
+                paymentMethod = PaymentMethod.CASH,
+                expiry = Timestamp.now(),
+                creation = Timestamp.now(),
+                status = PostStatus.POSTED,
+                location = GeoPoint(0.0, 0.0),
+                media = emptyList(),
+                postReplies = emptySet(),
+            )
+
+        val result = engine.inferRelevantSkill(post)
+        assert(SkillTag.MONEY == result.name)
+        return@runBlocking
+    }
+
+    @Test
+    fun inferCashWhenUserPreferCash() = runBlocking {
+        engine.setTestUserPreference(Preference.MONEY)
+
+        val post =
+            Request(
+                uid = "p2",
+                ownerId = activeUserId,
+                title = "Mixed payment",
+                description = "Money preferred",
+                skills = setOf(skillA),
+                tags = emptySet(),
+                paymentMethod = PaymentMethod.SKILLSANDCASH,
+                expiry = Timestamp.now(),
+                creation = Timestamp.now(),
+                status = PostStatus.POSTED,
+                location = GeoPoint(0.0, 0.0),
+                media = emptyList(),
+                postReplies = emptySet(),
+            )
+
+        val result = engine.inferRelevantSkill(post)
+
+        assert(SkillTag.MONEY == result.name)
+    }
+
+    @Test
+    fun inferSkillWhenUserPreferenceSkill() = runBlocking {
+        engine.setTestUserPreference(Preference.SKILLS)
+
+        // Make sure requester has known skills
+        val requester = userRepo.getUser(activeUserId)
+        val requesterSkill = requester.skillSet.first()
+
+        val post =
+            Request(
+                uid = "p3",
+                ownerId = activeUserId,
+                title = "Mixed payment",
+                description = "Skills preferred",
+                skills = setOf(skillA),
+                tags = emptySet(),
+                paymentMethod = PaymentMethod.SKILLSANDCASH,
+                expiry = Timestamp.now(),
+                creation = Timestamp.now(),
+                status = PostStatus.POSTED,
+                location = GeoPoint(0.0, 0.0),
+                media = emptyList(),
+                postReplies = emptySet(),
+            )
+
+        val result = engine.inferRelevantSkill(post)
+
+        assert(result.name != SkillTag.MONEY)
+        assert(result in requester.skillSet)
+    }
+
+    @Test
+    fun inferSkill() = runBlocking {
+        val expectedSkills = activeUser.skillSet
+
+        val post =
+            Request(
+                uid = "p4",
+                ownerId = activeUserId,
+                title = "Skill-only request",
+                description = "Skills only",
+                skills = setOf(skillA),
+                tags = emptySet(),
+                paymentMethod = PaymentMethod.SKILLS,
+                expiry = Timestamp.now(),
+                creation = Timestamp.now(),
+                status = PostStatus.POSTED,
+                location = GeoPoint(0.0, 0.0),
+                media = emptyList(),
+                postReplies = emptySet(),
+            )
+
+        val result = engine.inferRelevantSkill(post)
+
+        assert(result.name != SkillTag.MONEY)
+        assert(result in expectedSkills)
     }
 
     @Test

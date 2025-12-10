@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
  */
 class FakeNotificationRepository : NotificationRepository {
     private val notifications = mutableMapOf<String, Notification>()
+    private val getFailureMessage = "Simulated get failure"
     private var uidCounter = 0
     private var shouldFailOnAdd = false
     private var shouldFailOnGet = false
@@ -55,7 +56,7 @@ class FakeNotificationRepository : NotificationRepository {
             delay(delayMillis)
         }
         if (shouldFailOnGet) {
-            throw Exception("Simulated get failure")
+            throw Exception(getFailureMessage)
         }
         return notifications.values
             .filter { it.userId == userId }
@@ -67,7 +68,7 @@ class FakeNotificationRepository : NotificationRepository {
             delay(delayMillis)
         }
         if (shouldFailOnGet) {
-            throw Exception("Simulated get failure")
+            throw Exception(getFailureMessage)
         }
         return notifications.values
             .filter { it.userId == userId && !it.isRead }
@@ -79,7 +80,7 @@ class FakeNotificationRepository : NotificationRepository {
             delay(delayMillis)
         }
         if (shouldFailOnGet) {
-            throw Exception("Simulated get failure")
+            throw Exception(getFailureMessage)
         }
         return notifications[notificationId]
             ?: throw Exception("Notification not found: $notificationId")
@@ -128,6 +129,14 @@ class FakeNotificationRepository : NotificationRepository {
 
     override suspend fun deleteAllNotificationsForUser(userId: String) {
         notifications.entries.removeAll { it.value.userId == userId }
+    }
+
+    override suspend fun markChatNotificationsAsRead(chatId: String, userId: String) {
+        notifications.forEach { notification ->
+            if (notification.value.relatedId == chatId && userId == notification.value.userId) {
+                markAsRead(notification.value.uid)
+            }
+        }
     }
 
     // Test helpers

@@ -83,4 +83,12 @@ interface NotificationRepository {
      * @throws Exception Database exceptions will be thrown.
      */
     suspend fun deleteAllNotificationsForUser(userId: String)
+
+    /**
+     * Marks all unread notifications for a user related to a specific chat as read.
+     *
+     * @param chatId The Id of the chat opened by the user
+     * @param userId The Id of the user who opened the chat
+     */
+    suspend fun markChatNotificationsAsRead(chatId: String, userId: String)
 }
