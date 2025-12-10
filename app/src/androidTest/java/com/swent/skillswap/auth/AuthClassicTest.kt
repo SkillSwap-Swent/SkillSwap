@@ -140,7 +140,7 @@ class AuthClassicTest : TestCase() {
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
         // Go to Create Account screen
-        composeTestRule.waitUntil(120_000) {
+        composeTestRule.waitUntil(30_000L) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
                 true
@@ -149,7 +149,7 @@ class AuthClassicTest : TestCase() {
             }
         }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
-        composeTestRule.waitUntil(5_000) {
+        composeTestRule.waitUntil(5_000L) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
                 true
