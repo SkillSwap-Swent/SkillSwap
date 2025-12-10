@@ -31,6 +31,7 @@ class AuthMainScreenTest : TestCase() {
         composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(SignInTags.FORGOT_PASSWORD).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.GOOGLE_BUTTON).performScrollTo()
