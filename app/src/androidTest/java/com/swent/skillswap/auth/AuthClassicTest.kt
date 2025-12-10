@@ -179,7 +179,7 @@ class AuthClassicTest : TestCase() {
                 )
             }
             Assert.fail(
-                "CREATE_ACCOUNT_TEXT jamais trouvé en 120s \- voir logs CI pour comprendre pourquoi AuthMain n'est pas affiché."
+                "CREATE_ACCOUNT_TEXT jamais trouvé en 120s  voir logs CI pour comprendre pourquoi AuthMain n'est pas affiché."
             )
         }
 
