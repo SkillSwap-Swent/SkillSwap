@@ -144,7 +144,7 @@ class AuthClassicTest : TestCase() {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
                 true
-            } catch (e: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
         }
@@ -153,7 +153,7 @@ class AuthClassicTest : TestCase() {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
                 true
-            } catch (e: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
         }
