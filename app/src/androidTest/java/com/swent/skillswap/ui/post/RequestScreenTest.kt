@@ -7,7 +7,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
-import com.swent.skillswap.firebase.CloudReferences.PROFILE_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.post.*
@@ -18,16 +17,15 @@ import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.post.RequestViewModel
 import com.swent.skillswap.utils.FirebaseEmulator
+import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import org.junit.After
-import java.util.Date
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
 @RunWith(AndroidJUnit4::class)
 class RequestScreenTest {
 
@@ -68,7 +66,7 @@ class RequestScreenTest {
     }
 
     @After
-    fun cleanUp() = runBlocking{
+    fun cleanUp() = runBlocking {
         /** Clean up storage manually */
         val storageRef = FirebaseEmulator.storage.reference.child(FEED_PICTURES_PATH)
         val listResult = storageRef.listAll().await()
@@ -86,7 +84,6 @@ class RequestScreenTest {
         composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
         composeTestRule.onNodeWithTag(tag).performClick()
     }
-
 
     // ========== UI VISIBILITY TESTS ==========
 
@@ -314,7 +311,13 @@ class RequestScreenTest {
     @Test
     fun tagChip_displayAndRemove() {
         val viewModel =
-            RequestViewModel(null, fakeRepository, storageRepository,currentUserId = testUserId, postId = null)
+            RequestViewModel(
+                null,
+                fakeRepository,
+                storageRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
 
         composeTestRule.setContent {
             RequestScreen(
@@ -345,7 +348,13 @@ class RequestScreenTest {
     fun submit_showsLoadingIndicator() {
         fakeRepository.setDelay(1000) // Add delay to see loading state
         val viewModel =
-            RequestViewModel(null, fakeRepository,storageRepository, currentUserId = testUserId, postId = null)
+            RequestViewModel(
+                null,
+                fakeRepository,
+                storageRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
 
         composeTestRule.setContent {
             RequestScreen(
@@ -407,7 +416,13 @@ class RequestScreenTest {
     @Test
     fun submit_success_triggersCallback() {
         val viewModel =
-            RequestViewModel(null, fakeRepository,storageRepository, currentUserId = testUserId, postId = null)
+            RequestViewModel(
+                null,
+                fakeRepository,
+                storageRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
 
         composeTestRule.setContent {
             RequestScreen(
