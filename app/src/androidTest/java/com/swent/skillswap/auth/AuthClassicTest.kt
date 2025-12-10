@@ -157,7 +157,7 @@ class AuthClassicTest : TestCase() {
                 .fetchSemanticsNodes()
             println("TEST DEBUG: CREATE_ACCOUNT_TEXT nodes count = ${nodes.size}")
             if (nodes.isEmpty()) {
-                println("TEST DEBUG: aucun noeud avec tag SignInTags.CREATE_ACCOUNT_TEXT trouvé \- écran AuthMain non affiché ?")
+                println("TEST DEBUG: aucun noeud avec tag SignInTags.CREATE_ACCOUNT_TEXT trouvé - écran AuthMain non affiché ?")
             }
         }
 
