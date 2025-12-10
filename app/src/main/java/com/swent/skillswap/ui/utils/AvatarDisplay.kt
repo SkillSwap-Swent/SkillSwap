@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
@@ -29,7 +28,6 @@ enum class AvatarVariant {
  * - avatarUrl: nullable string. If null or blank, a placeholder is shown.
  * - variant: layout variant (COMPACT or PROFILE) which controls sizes and placeholder styling.
  * - modifier: caller-supplied modifier (keeps alignment/spacing responsibility with the caller).
- * - testTag: optional tag for testing.
  * - onClick: optional click callback. If provided, the avatar becomes clickable.
  */
 @Composable
@@ -37,7 +35,6 @@ fun AvatarDisplay(
     avatarUrl: String?,
     variant: AvatarVariant = AvatarVariant.COMPACT,
     modifier: Modifier = Modifier,
-    testTag: String = "",
     onClick: (() -> Unit)? = null
 ) {
     when (variant) {
@@ -54,9 +51,6 @@ fun AvatarDisplay(
                             .then(
                                 if (onClick != null) Modifier.clickable(onClick = onClick)
                                 else Modifier
-                            )
-                            .then(
-                                if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
                             ),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
@@ -71,9 +65,6 @@ fun AvatarDisplay(
                             .then(
                                 if (onClick != null) Modifier.clickable(onClick = onClick)
                                 else Modifier
-                            )
-                            .then(
-                                if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
                             ),
                     contentScale = ContentScale.Crop
                 )
@@ -93,7 +84,6 @@ fun AvatarDisplay(
                                 if (onClick != null) Modifier.clickable(onClick = onClick)
                                 else Modifier
                             )
-                            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -115,9 +105,6 @@ fun AvatarDisplay(
                             .then(
                                 if (onClick != null) Modifier.clickable(onClick = onClick)
                                 else Modifier
-                            )
-                            .then(
-                                if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
                             ),
                     contentScale = ContentScale.Crop
                 )

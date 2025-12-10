@@ -261,7 +261,6 @@ fun ColumnScope.ProfilePictureBox(
             avatarUrl = uiState.profilePicture.ifEmpty { null },
             variant = AvatarVariant.PROFILE,
             modifier = Modifier.testTag(PROFILE_PICTURE_IMAGE).align(Alignment.TopCenter),
-            testTag = PROFILE_PICTURE_IMAGE,
             onClick = onEditProfileClick
         )
 

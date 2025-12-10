@@ -212,7 +212,7 @@ fun ChatConversationItem(
         ) {
             AvatarDisplay(
                 avatarUrl = uiState.avatars[otherUser],
-                testTag = ChatListTestTags.AVATAR,
+                modifier = Modifier.testTag(ChatListTestTags.AVATAR),
                 onClick = { onAvatarClick(otherUser) }
             )
             Spacer(modifier = Modifier.width(16.dp))

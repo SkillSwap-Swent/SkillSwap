@@ -213,8 +213,10 @@ fun FeedScreen(
                         AvatarDisplay(
                             avatarUrl = offer.requesterAvatar.ifEmpty { null },
                             variant = AvatarVariant.COMPACT,
-                            modifier = Modifier.size(avatarSize).clip(CircleShape),
-                            testTag = FeedScreenTestTags.REQUESTER_PROFILE_PICTURE,
+                            modifier =
+                                Modifier.size(avatarSize)
+                                    .clip(CircleShape)
+                                    .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
                             onClick = { vm.goToProfile(offer.authorID) }
                         )
 
