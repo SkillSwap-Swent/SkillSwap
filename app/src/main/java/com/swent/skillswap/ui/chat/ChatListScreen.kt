@@ -26,6 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.ui.utils.AvatarDisplay
 
 object ChatListTestTags {
     const val SCREEN = "ChatListScreen"
@@ -211,7 +212,7 @@ fun ChatConversationItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AvatarDisplay(avatarUrl = uiState.avatars[otherUser])
+            AvatarDisplay(avatarUrl = uiState.avatars[otherUser], testTag = ChatListTestTags.AVATAR, onClick = {})
             Spacer(modifier = Modifier.width(16.dp))
             PostTitleDisplay(
                 title = uiState.postTitles[chat.relatedPostId],
@@ -242,24 +243,7 @@ fun ChatConversationItem(
     )
 }
 
-@Composable
-private fun AvatarDisplay(avatarUrl: String?) {
-    if (avatarUrl.isNullOrBlank()) {
-        Icon(
-            imageVector = Icons.Filled.Person,
-            contentDescription = "Default profile picture",
-            modifier = Modifier.size(48.dp).clip(CircleShape).testTag(ChatListTestTags.AVATAR),
-            tint = MaterialTheme.colorScheme.onPrimary
-        )
-    } else {
-        AsyncImage(
-            model = avatarUrl,
-            contentDescription = "Profile picture",
-            modifier = Modifier.size(48.dp).clip(CircleShape).testTag(ChatListTestTags.AVATAR),
-            contentScale = ContentScale.Crop
-        )
-    }
-}
+
 
 @Composable
 private fun PostTitleDisplay(title: String?, modifier: Modifier = Modifier) {

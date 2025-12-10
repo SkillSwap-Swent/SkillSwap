@@ -45,6 +45,8 @@ import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
 import com.swent.skillswap.ui.utils.StarRatingBar
+import com.swent.skillswap.ui.utils.AvatarDisplay
+import com.swent.skillswap.ui.utils.AvatarVariant
 
 /**
  * Displays the main FeedPost screen.
@@ -211,35 +213,13 @@ fun FeedScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // === Avatar ===
-                        if (offer.requesterAvatar.isNotEmpty()) {
-                            AsyncImage(
-                                model = offer.requesterAvatar,
-                                contentDescription = "Requester profile picture",
-                                modifier =
-                                    Modifier.size(avatarSize)
-                                        .clip(CircleShape)
-                                        .clickable { vm.goToProfile(offer.authorID) }
-                                        .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Box(
-                                modifier =
-                                    Modifier.size(avatarSize)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable { vm.goToProfile(offer.authorID) }
-                                        .testTag(FeedScreenTestTags.REQUESTER_PROFILE_PICTURE),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = "Requester profile picture - anonymous",
-                                    modifier = Modifier.size(avatarSize),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
+                        AvatarDisplay(
+                            avatarUrl = offer.requesterAvatar.ifEmpty { null },
+                            variant = AvatarVariant.COMPACT,
+                            modifier = Modifier.size(avatarSize).clip(CircleShape),
+                            testTag = FeedScreenTestTags.REQUESTER_PROFILE_PICTURE,
+                            onClick = { vm.goToProfile(offer.authorID) }
+                        )
 
                         Spacer(Modifier.width(12.dp))
 
