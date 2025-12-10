@@ -9,6 +9,7 @@ import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -139,7 +140,36 @@ class RecommendationEngineTest {
             override val postReplies = emptyList<PostReply>()
             override val reportCount: Long = 0
         }
-
+    private val post4 =
+        object : Post {
+            override val uid = "post2"
+            override val title = "Post 2"
+            override val description = "Description"
+            override val ownerId = otherUserId
+            override val skills = listOf(skillA)
+            override val tags = emptyList<PostTag>()
+            override val paymentMethod = PaymentMethod.SKILLS
+            override val expiry = Timestamp.now()
+            override val creation = Timestamp.now()
+            override val status = PostStatus.POSTED
+            override val media = emptyList<String>()
+            override val type = PostType.REQUEST
+            override val location = GeoPoint(0.0, 0.0)
+            override val searchKeys = emptyList<String>()
+            override val postReplies =
+                listOf(
+                    PostReply(
+                        "1",
+                        "post2",
+                        activeUserId,
+                        Timestamp.now(),
+                        "",
+                        PostType.REQUEST,
+                        ReplyStatus.PROPOSED
+                    )
+                )
+            override val reportCount: Long = 0
+        }
     private val post2Blocked =
         object : Post {
             override val uid = "post2"
@@ -517,5 +547,13 @@ class RecommendationEngineTest {
         val filtered = engine.filterPosts(listOf(post1, post2Blocked))
         assert(filtered.contains(post1))
         assert(!filtered.contains(post2Blocked))
+    }
+
+    @Test
+    fun removePostAllReadyAcceptedFromView() {
+        val filtered = engine.filterPosts(listOf(post4, post2, post1))
+        assert(filtered.contains(post1))
+        assert(filtered.contains(post2))
+        assert(!filtered.contains(post4))
     }
 }
