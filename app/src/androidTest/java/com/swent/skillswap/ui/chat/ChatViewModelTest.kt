@@ -5,7 +5,6 @@ package com.swent.skillswap.ui.chat
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
-import com.swent.skillswap.model.notification.FakeNotificationRepository
 import com.swent.skillswap.model.post.PostType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,8 +26,7 @@ class ChatViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         fakeRepo = FakeChatRepository()
         // Initialize new view model. This implies startListening is called.
-        viewModel =
-            ChatViewModel(fakeRepo, notificationRepository = FakeNotificationRepository(), "chat1")
+        viewModel = ChatViewModel(fakeRepo, "chat1")
     }
 
     @After
@@ -74,9 +72,27 @@ class ChatViewModelTest {
         assertEquals("Hello", fakeRepo.sentMessages[0].content)
     }
 
+    @Test
+    fun getRecipientId_returnsCorrectIdOrEmpty() = runTest {
+        // Setup chat with two participants
+        val chatId = "chat1"
+        val senderId = "user1"
+        val recipientId = "user2"
+        fakeRepo.addMessages(listOf()) // Ensure no messages
+        // Override getChat to return a chat with two participants
+        fakeRepo.overrideChat =
+            Chat(chatId, listOf(senderId, recipientId), "", PostType.REQUEST, emptyList())
+        viewModel = ChatViewModel(fakeRepo, chatId)
+        // Should return recipientId
+        val result = viewModel.getRecipientId(senderId)
+        assertEquals(recipientId, result)
+    }
+
     private class FakeChatRepository : ChatRepository {
         private val messagesFlow = MutableStateFlow<List<Message>>(emptyList())
         val sentMessages = mutableListOf<SentMessage>()
+        var overrideChat: Chat? = null
+        var throwOnGetChat: Boolean = false
 
         override fun streamMessages(chatId: String) = messagesFlow
 
@@ -94,6 +110,25 @@ class ChatViewModelTest {
 
         override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
             return emptyList()
+        }
+
+        override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
+            // JUST HERE FOR OVERRIDE REASON
+            return emptyList()
+        }
+
+        override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+            // JUST HERE FOR OVERRIDE REASON
+            return false
+        }
+
+        override suspend fun getChat(chatId: String): Chat {
+            if (throwOnGetChat) throw Exception("Forced exception")
+            return overrideChat ?: Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
+
+        override suspend fun acceptAPostReplyChat(chat: Chat) {
+            // JUST HERE FOR OVERRIDE REASON
         }
 
         fun addMessages(messages: List<Message>) {
