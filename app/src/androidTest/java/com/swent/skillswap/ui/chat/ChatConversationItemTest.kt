@@ -238,8 +238,8 @@ class ChatConversationItemTest {
         // The LaunchedEffect triggers immediately, so we verify the card exists
         // and data loading was triggered
         composeRule.waitForIdle()
-        // Verify the card is rendered (it should have clickable action)
-        composeRule.onNode(hasClickAction()).assertExists()
+        // Verify there are two clickable elements (card + avatar)
+        composeRule.onAllNodes(hasClickAction()).assertCountEquals(2)
     }
 
     @Test
@@ -259,8 +259,8 @@ class ChatConversationItemTest {
         }
 
         composeRule.waitForIdle()
-        // Click on the card (which has click action)
-        composeRule.onNode(hasClickAction()).performClick()
+        // Click the card specifically (match click action + post title to avoid avatar ambiguity)
+        composeRule.onNode(hasClickAction() and hasText("Graphic Design Help")).performClick()
         assert(clicked)
     }
 
