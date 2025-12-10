@@ -138,30 +138,49 @@ class AuthClassicTest : TestCase() {
      */
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
-        // Attendre que le bouton / texte "Create Account" soit présent dans l'arbre
-        composeTestRule.waitUntil(timeoutMillis = 120_000L) {
+        println("TEST DEBUG: début t1_classicNewUser_createsAccount_andNavigatesToOffers")
+
+        println("TEST DEBUG: avant waitUntil CREATE_ACCOUNT_TEXT")
+        val foundCreateAccount =
             try {
-                composeTestRule
-                    .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
+                composeTestRule.waitUntil(timeoutMillis = 120_000L) {
+                    try {
+                        composeTestRule
+                            .onAllNodesWithTag(
+                                SignInTags.CREATE_ACCOUNT_TEXT,
+                                useUnmergedTree = true
+                            )
+                            .fetchSemanticsNodes()
+                            .isNotEmpty()
+                    } catch (t: Throwable) {
+                        false
+                    }
+                }
+                true
             } catch (t: Throwable) {
+                println(
+                    "TEST DEBUG: waitUntil CREATE_ACCOUNT_TEXT a levé ${t::class.simpleName} - ${t.message}"
+                )
                 false
             }
-        }
+        println(
+            "TEST DEBUG: après waitUntil CREATE_ACCOUNT_TEXT, foundCreateAccount=$foundCreateAccount"
+        )
 
-        // Log de debug pour la CI
-        runCatching {
-            val nodes =
-                composeTestRule
-                    .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
-                    .fetchSemanticsNodes()
-            println("TEST DEBUG: CREATE_ACCOUNT_TEXT nodes count = ${nodes.size}")
-            if (nodes.isEmpty()) {
+        if (!foundCreateAccount) {
+            // dump minimal état puis fail explicitement
+            runCatching {
+                val nodes =
+                    composeTestRule
+                        .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
+                        .fetchSemanticsNodes()
                 println(
-                    "TEST DEBUG: aucun noeud avec tag SignInTags.CREATE_ACCOUNT_TEXT trouvé - écran AuthMain non affiché ?"
+                    "TEST DEBUG: après timeout, CREATE_ACCOUNT_TEXT nodes count = ${nodes.size}"
                 )
             }
+            Assert.fail(
+                "CREATE_ACCOUNT_TEXT jamais trouvé en 120s \- voir logs CI pour comprendre pourquoi AuthMain n'est pas affiché."
+            )
         }
 
         // Go to Create Account screen
