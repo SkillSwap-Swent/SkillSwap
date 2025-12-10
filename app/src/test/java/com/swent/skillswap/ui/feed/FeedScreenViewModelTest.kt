@@ -2,6 +2,10 @@ package com.swent.skillswap.ui.feed
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.model.feed.Image
@@ -11,6 +15,10 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.ui.notification.NotificationViewModel
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -18,7 +26,13 @@ import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 @OptIn(ExperimentalCoroutinesApi::class)
 class FeedScreenViewModelTest {
 
@@ -44,6 +58,30 @@ class FeedScreenViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        // Initialize FirebaseApp to prevent IllegalStateException when accessing Firebase.auth
+        val context = RuntimeEnvironment.getApplication()
+        try {
+            FirebaseApp.getInstance()
+        } catch (e: IllegalStateException) {
+            FirebaseApp.initializeApp(
+                context,
+                FirebaseOptions.Builder()
+                    .setApplicationId("test-app-id")
+                    .setApiKey("test-api-key")
+                    .setProjectId("test-project")
+                    .build()
+            )
+        }
+
+        // Mock Firebase Auth to return a user so NotificationViewModel can work
+        mockkStatic(FirebaseAuth::class)
+        val mockAuth = mockk<FirebaseAuth>(relaxed = true)
+        val mockUser = mockk<FirebaseUser>(relaxed = true)
+        every { mockUser.uid } returns "user-1"
+        every { mockAuth.currentUser } returns mockUser
+        every { FirebaseAuth.getInstance() } returns mockAuth
+
         fakeNotificationRepository = FakeNotificationRepository()
         notificationViewModel = NotificationViewModel(fakeNotificationRepository)
 
@@ -108,7 +146,11 @@ class FeedScreenViewModelTest {
             FeedScreenViewModel(mockNavigation, mockController, notificationViewModel)
     }
 
-    @After fun tearDown() = Dispatchers.resetMain()
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+        unmockkStatic(FirebaseAuth::class)
+    }
 
     @Test
     fun accept_withNotificationViewModel_createsPostReplyNotification() = runTest {
