@@ -31,6 +31,7 @@ class NotificationViewModel(
 ) : ViewModel() {
 
     private val TAG = "NotificationViewModel"
+    private val authErrorMessage = "No authenticated user found"
     private val _uiState = MutableStateFlow(NotificationUiState())
     val uiState: StateFlow<NotificationUiState> = _uiState.asStateFlow()
     private var loadJob: Job? = null
@@ -42,10 +43,8 @@ class NotificationViewModel(
     fun loadNotifications() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update {
-                it.copy(isLoading = false, error = "No authenticated user found. Please log in.")
-            }
-            Log.w(TAG, "No authenticated user found")
+            _uiState.update { it.copy(isLoading = false, error = authErrorMessage) }
+            Log.w(TAG, authErrorMessage)
             return
         }
 
@@ -88,7 +87,7 @@ class NotificationViewModel(
     ) {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No authenticated user found.") }
+            _uiState.update { it.copy(error = authErrorMessage) }
             return
         }
         viewModelScope.launch {
@@ -144,7 +143,7 @@ class NotificationViewModel(
     fun markAllAsRead() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            _uiState.update { it.copy(error = authErrorMessage) }
             return
         }
 
@@ -182,7 +181,7 @@ class NotificationViewModel(
     fun deleteAllNotifications() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            _uiState.update { it.copy(error = authErrorMessage) }
             return
         }
 
@@ -212,7 +211,7 @@ class NotificationViewModel(
     fun markChatNotificationsAsRead(chatId: String) {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            _uiState.update { it.copy(error = authErrorMessage) }
             return
         }
         val userId = currentUser.uid
