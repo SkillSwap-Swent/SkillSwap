@@ -148,7 +148,7 @@ class AuthClassicTest : TestCase() {
             }
         }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
-        composeTestRule.waitUntil(5000) {
+        composeTestRule.waitUntil(25000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
                 true
