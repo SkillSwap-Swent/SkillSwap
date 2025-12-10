@@ -121,6 +121,7 @@ class AuthClassicTest : TestCase() {
                 composable(Screen.Profile.route) { ProfileScreen() }
             }
         }
+        composeTestRule.waitForIdle()
     }
 
     @After
