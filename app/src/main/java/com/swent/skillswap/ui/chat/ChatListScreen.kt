@@ -4,26 +4,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GppGood
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.ui.utils.AvatarDisplay
@@ -45,7 +40,8 @@ object ChatListTestTags {
 fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),
     currentUserId: String = "",
-    onChatClick: (String) -> Unit = {}
+    onChatClick: (String) -> Unit = {},
+    onAvatarClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.REQUEST) }
@@ -137,7 +133,8 @@ fun ChatListScreen(
                         currentUserId = currentUserId,
                         chat = chat,
                         onClick = { onChatClick(chat.id) },
-                        isOwner = isOwnerSelected
+                        isOwner = isOwnerSelected,
+                        onAvatarClick = { userId -> onAvatarClick(userId) }
                     )
                 }
             }
@@ -188,7 +185,8 @@ fun ChatConversationItem(
     currentUserId: String,
     chat: Chat,
     onClick: () -> Unit,
-    isOwner: Boolean? = null
+    isOwner: Boolean? = null,
+    onAvatarClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showRatingDialog by remember { mutableStateOf(false) }
@@ -212,7 +210,11 @@ fun ChatConversationItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AvatarDisplay(avatarUrl = uiState.avatars[otherUser], testTag = ChatListTestTags.AVATAR, onClick = {})
+            AvatarDisplay(
+                avatarUrl = uiState.avatars[otherUser],
+                testTag = ChatListTestTags.AVATAR,
+                onClick = { onAvatarClick(otherUser) }
+            )
             Spacer(modifier = Modifier.width(16.dp))
             PostTitleDisplay(
                 title = uiState.postTitles[chat.relatedPostId],
@@ -242,8 +244,6 @@ fun ChatConversationItem(
         }
     )
 }
-
-
 
 @Composable
 private fun PostTitleDisplay(title: String?, modifier: Modifier = Modifier) {

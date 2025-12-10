@@ -47,39 +47,54 @@ fun AvatarDisplay(
                 Icon(
                     imageVector = Icons.Filled.Person,
                     contentDescription = "Default profile picture",
-                    modifier = modifier
-                        .size(imageSize)
-                        .clip(CircleShape)
-                        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                        .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+                    modifier =
+                        modifier
+                            .size(imageSize)
+                            .clip(CircleShape)
+                            .then(
+                                if (onClick != null) Modifier.clickable(onClick = onClick)
+                                else Modifier
+                            )
+                            .then(
+                                if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
+                            ),
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
                 AsyncImage(
                     model = avatarUrl,
                     contentDescription = "Profile picture",
-                    modifier = modifier
-                        .size(imageSize)
-                        .clip(CircleShape)
-                        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                        .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+                    modifier =
+                        modifier
+                            .size(imageSize)
+                            .clip(CircleShape)
+                            .then(
+                                if (onClick != null) Modifier.clickable(onClick = onClick)
+                                else Modifier
+                            )
+                            .then(
+                                if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
+                            ),
                     contentScale = ContentScale.Crop
                 )
             }
         }
-
         AvatarVariant.PROFILE -> {
             val imageSize = 140.dp
             val placeholderContainerSize = 120.dp
             val iconSize = 60.dp
             if (avatarUrl.isNullOrBlank()) {
                 Box(
-                    modifier = modifier
-                        .size(placeholderContainerSize)
-                        .clip(CircleShape)
-                        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                        .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    modifier =
+                        modifier
+                            .size(placeholderContainerSize)
+                            .clip(CircleShape)
+                            .then(
+                                if (onClick != null) Modifier.clickable(onClick = onClick)
+                                else Modifier
+                            )
+                            .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -93,11 +108,17 @@ fun AvatarDisplay(
                 AsyncImage(
                     model = avatarUrl,
                     contentDescription = "Profile picture",
-                    modifier = modifier
-                        .size(imageSize)
-                        .clip(CircleShape)
-                        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                        .then(if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier),
+                    modifier =
+                        modifier
+                            .size(imageSize)
+                            .clip(CircleShape)
+                            .then(
+                                if (onClick != null) Modifier.clickable(onClick = onClick)
+                                else Modifier
+                            )
+                            .then(
+                                if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
+                            ),
                     contentScale = ContentScale.Crop
                 )
             }

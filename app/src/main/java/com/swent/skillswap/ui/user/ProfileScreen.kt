@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,9 +37,9 @@ import com.swent.skillswap.ui.user.ProfileTestTags.PREFERENCE_SWITCH
 import com.swent.skillswap.ui.user.ProfileTestTags.PROFILE_PICTURE_IMAGE
 import com.swent.skillswap.ui.user.ProfileTestTags.SKILLS_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.USERNAME_VALUE
-import com.swent.skillswap.ui.utils.SkillSwapEditButton
 import com.swent.skillswap.ui.utils.AvatarDisplay
 import com.swent.skillswap.ui.utils.AvatarVariant
+import com.swent.skillswap.ui.utils.SkillSwapEditButton
 
 object ProfileTestTags {
     const val PROFILE_TITLE = "profile_title"
@@ -92,7 +90,8 @@ fun ProfileScreen(
         )
         Spacer(modifier = Modifier.height(10.dp))
         /** Profile picture Section */
-        // Pass onEditProfileClick as the avatar click handler so tapping the avatar navigates to edit
+        // Pass onEditProfileClick as the avatar click handler so tapping the avatar navigates to
+        // edit
         ProfilePictureBox(uiState, onEditProfileClick)
 
         Spacer(Modifier.height(40.dp))

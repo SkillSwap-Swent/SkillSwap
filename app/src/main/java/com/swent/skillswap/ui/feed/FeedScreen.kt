@@ -3,7 +3,6 @@
 package com.swent.skillswap.ui.feed
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -15,14 +14,12 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
@@ -41,12 +38,12 @@ import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_EXCEPTION_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION
+import com.swent.skillswap.ui.utils.AvatarDisplay
+import com.swent.skillswap.ui.utils.AvatarVariant
 import com.swent.skillswap.ui.utils.SkillSwapButtonOutline
 import com.swent.skillswap.ui.utils.SkillSwapButtonShape
 import com.swent.skillswap.ui.utils.SkillSwapButtonSize
 import com.swent.skillswap.ui.utils.StarRatingBar
-import com.swent.skillswap.ui.utils.AvatarDisplay
-import com.swent.skillswap.ui.utils.AvatarVariant
 
 /**
  * Displays the main FeedPost screen.
