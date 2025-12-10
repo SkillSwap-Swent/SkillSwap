@@ -210,7 +210,7 @@ class ChatListScreenTest {
 
         // Click any card (filter buttons are also clickable, so get the last one which is the chat)
         val clickableNodes = composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes()
-        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 1].performClick()
+        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 2].performClick()
         assert(clickedChatId == "c1")
     }
 
