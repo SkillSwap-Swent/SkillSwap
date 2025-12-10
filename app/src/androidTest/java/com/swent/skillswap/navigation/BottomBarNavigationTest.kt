@@ -195,5 +195,4 @@ class BottomBarNavigationTest {
         // Verify we're still on the same Chat screen
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsSelected()
     }
-
 }

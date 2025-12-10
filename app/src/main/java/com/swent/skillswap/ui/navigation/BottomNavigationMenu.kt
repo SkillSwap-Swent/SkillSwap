@@ -30,6 +30,7 @@ object NavigationTestTags {
     const val PROFILE_TAB = "ProfileTab"
     const val FEED_TAB = "FeedTab"
     const val CHAT_TAB = "ChatTab"
+
     fun getTabTestTag(tab: Tab): String =
         when (tab) {
             is Tab.Profile -> PROFILE_TAB
