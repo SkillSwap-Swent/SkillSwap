@@ -31,7 +31,7 @@ class NotificationViewModel(
 ) : ViewModel() {
 
     private val TAG = "NotificationViewModel"
-    private val authErrorMessage = "No authenticated user found"
+    private val authErrorMessage = "No authenticated user found."
     private val _uiState = MutableStateFlow(NotificationUiState())
     val uiState: StateFlow<NotificationUiState> = _uiState.asStateFlow()
     private var loadJob: Job? = null
