@@ -107,22 +107,66 @@ class SkillSwapMessagingServiceTest {
     }
 
     @Test
-    fun onMessageReceived_withPostNotification_logs_post_handling() {
+    fun onMessageReceived_withPostAcceptedNotification_logs_post_handling() {
         val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        val notification = mockk<RemoteMessage.Notification>(relaxed = true)
         every { remoteMessage.from } returns "test-sender"
         every { remoteMessage.data } returns
             mapOf("type" to NotificationType.POST_ACCEPTED.name, "relatedId" to "post456")
-        every { remoteMessage.notification } returns null
+        every { remoteMessage.notification } returns notification
+        every { notification.title } returns "Post Accepted"
+        every { notification.body } returns "Your reply was accepted"
 
         ShadowLog.clear()
         service.onMessageReceived(remoteMessage)
 
         val postLogs =
             ShadowLog.getLogs().filter {
-                it.type == android.util.Log.DEBUG &&
-                    it.msg.contains("Handling accepted post notification")
+                it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification")
             }
-        assert(postLogs.isNotEmpty()) { "Expected log for handling accepted post notification" }
+        assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
+    }
+
+    @Test
+    fun onMessageReceived_withPostReplyNotification_logs_post_handling() {
+        val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        val notification = mockk<RemoteMessage.Notification>(relaxed = true)
+        every { remoteMessage.from } returns "test-sender"
+        every { remoteMessage.data } returns
+            mapOf("type" to NotificationType.POST_REPLY.name, "relatedId" to "post789")
+        every { remoteMessage.notification } returns notification
+        every { notification.title } returns "New Post Reply"
+        every { notification.body } returns "Someone replied to your post"
+
+        ShadowLog.clear()
+        service.onMessageReceived(remoteMessage)
+
+        val postLogs =
+            ShadowLog.getLogs().filter {
+                it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification")
+            }
+        assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
+    }
+
+    @Test
+    fun onMessageReceived_withPostRejectedNotification_logs_post_handling() {
+        val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        val notification = mockk<RemoteMessage.Notification>(relaxed = true)
+        every { remoteMessage.from } returns "test-sender"
+        every { remoteMessage.data } returns
+            mapOf("type" to NotificationType.POST_REJECTED.name, "relatedId" to "post101")
+        every { remoteMessage.notification } returns notification
+        every { notification.title } returns "Post Rejected"
+        every { notification.body } returns "Your reply was rejected"
+
+        ShadowLog.clear()
+        service.onMessageReceived(remoteMessage)
+
+        val postLogs =
+            ShadowLog.getLogs().filter {
+                it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification")
+            }
+        assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
     }
 
     @Test

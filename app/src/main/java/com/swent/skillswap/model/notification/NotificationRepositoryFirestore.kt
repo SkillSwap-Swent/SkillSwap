@@ -125,6 +125,36 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         }
     }
 
+    override suspend fun markPostNotificationsAsRead(postId: String, userId: String) {
+        try {
+            // Fetch unread notifications for user
+            val unreadNotifications = getUnreadNotificationsForUser(userId)
+            // Filter post-related notifications with relatedId == postId
+            val postNotificationTypes =
+                listOf(
+                    com.swent.skillswap.model.notification.NotificationType.POST_REPLY,
+                    com.swent.skillswap.model.notification.NotificationType.POST_ACCEPTED,
+                    com.swent.skillswap.model.notification.NotificationType.POST_REJECTED,
+                    com.swent.skillswap.model.notification.NotificationType.NEW_MATCHING_POST
+                )
+            val toMark =
+                unreadNotifications.filter {
+                    it.relatedId == postId && it.type in postNotificationTypes
+                }
+
+            if (toMark.isEmpty()) return
+
+            for (notification in toMark) {
+                markAsRead(notification.uid)
+            }
+        } catch (e: Exception) {
+            throw RepositoryException(
+                "Failed to mark post notifications as read for postId $postId and user $userId",
+                e
+            )
+        }
+    }
+
     override suspend fun deleteNotification(notificationId: String) {
         try {
             notificationsCollection.document(notificationId).delete().await()

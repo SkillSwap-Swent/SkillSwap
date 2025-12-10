@@ -4,13 +4,16 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.ChatStatus
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepositery
+import com.swent.skillswap.ui.notification.NotificationViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,7 +50,8 @@ data class ChatListUIState(
 class ChatListViewModel(
     private val chatRepository: ChatRepository,
     private val userRepository: UserRepositery,
-    private val postRepository: PostRepository
+    private val postRepository: PostRepository,
+    private val notificationViewModel: NotificationViewModel? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatListUIState())
@@ -120,6 +124,38 @@ class ChatListViewModel(
         viewModelScope.launch {
             try {
                 chatRepository.acceptAPostReplyChat(chat)
+
+                // Create POST_ACCEPTED notification for the user whose reply was accepted
+                notificationViewModel?.let { vm ->
+                    try {
+                        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                        if (currentUserId != null) {
+                            // Get the other participant (the one whose reply was accepted)
+                            val acceptedUserId =
+                                chat.participants.firstOrNull { it != currentUserId }
+                            if (acceptedUserId != null) {
+                                // Get post title for the notification message
+                                val postTitle =
+                                    try {
+                                        postRepository
+                                            .getPost(chat.relatedPostType, chat.relatedPostId)
+                                            .title
+                                    } catch (e: Exception) {
+                                        "your post"
+                                    }
+
+                                vm.addNotification(
+                                    recipientId = acceptedUserId,
+                                    message = "Your reply to \"$postTitle\" has been accepted!",
+                                    type = NotificationType.POST_ACCEPTED,
+                                    relatedId = chat.relatedPostId
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ChatListViewModel", "Error creating POST_ACCEPTED notification", e)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error accepting chat", e)
             }
@@ -189,10 +225,17 @@ class ChatListViewModel(
 class ChatListViewModelFactory(
     private val chatRepository: ChatRepository,
     private val userRepository: UserRepositery,
-    private val postRepository: PostRepository
+    private val postRepository: PostRepository,
+    private val notificationViewModel: NotificationViewModel? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ChatListViewModel(chatRepository, userRepository, postRepository) as T
+        return ChatListViewModel(
+            chatRepository,
+            userRepository,
+            postRepository,
+            notificationViewModel
+        )
+            as T
     }
 }

@@ -1,0 +1,163 @@
+package com.swent.skillswap.ui.feed
+
+import com.swent.skillswap.model.feed.FeedController
+import com.swent.skillswap.model.feed.FeedPost
+import com.swent.skillswap.model.feed.FeedScreenNavigation
+import com.swent.skillswap.model.notification.FakeNotificationRepository
+import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.ui.notification.NotificationViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.*
+import org.junit.After
+import org.junit.Assert.*
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class FeedScreenViewModelTest {
+
+    private lateinit var viewModel: FeedScreenViewModel
+    private lateinit var viewModelWithNotifications: FeedScreenViewModel
+    private lateinit var fakeNotificationRepository: FakeNotificationRepository
+    private lateinit var notificationViewModel: NotificationViewModel
+    private val testPost =
+        FeedPost(
+            offerId = "post-1",
+            skillProvided = "Guitar",
+            authorID = "author-1",
+            authorName = "John",
+            requesterAvatar = "",
+            receiverName = "user-1",
+            skillRequested = "Piano",
+            thumbnail = "",
+            specification = "Learn Guitar",
+            authorRating = 4.5f,
+            description = "I want to learn guitar"
+        )
+
+    @Before
+    fun setup() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        fakeNotificationRepository = FakeNotificationRepository()
+        notificationViewModel = NotificationViewModel(fakeNotificationRepository)
+
+        val mockController =
+            object : FeedController {
+                override val currentPost = flowOf(null)
+                override val currentThumbnail = flowOf(null)
+                override val userIdPerformingActions = "user-1"
+                override val feedType = com.swent.skillswap.model.post.PostType.REQUEST
+
+                override suspend fun acceptPost(message: String) {
+                    // Mock implementation
+                }
+
+                override suspend fun skipPost() {
+                    // Mock implementation
+                }
+
+                override suspend fun getThumbnail(thumbnailId: String) {
+                    // Mock implementation
+                }
+
+                override suspend fun reportPost(
+                    postId: String,
+                    postType: com.swent.skillswap.model.post.PostType
+                ) {
+                    // Mock implementation
+                }
+
+                override suspend fun updateDistanceFilter(distance: Float) {
+                    // Mock implementation
+                }
+
+                override suspend fun updateLocation(isLiveLocationOn: Boolean) {
+                    // Mock implementation
+                }
+
+                override suspend fun inferRelevantSkill() =
+                    com.swent.skillswap.model.user.Skill("Guitar")
+
+                override suspend fun blockUser(blockedUserUID: String) {
+                    // Mock implementation
+                }
+
+                override suspend fun retrieveUser(post: com.swent.skillswap.model.post.Post) =
+                    com.swent.skillswap.model.user.User(
+                        "author-1",
+                        "John",
+                        "",
+                        "",
+                        emptySet(),
+                        4.5f,
+                        emptyList()
+                    )
+            }
+
+        val mockNavigation = FeedScreenNavigation { userId -> }
+
+        viewModel = FeedScreenViewModel(mockNavigation, mockController)
+        viewModelWithNotifications =
+            FeedScreenViewModel(mockNavigation, mockController, notificationViewModel)
+    }
+
+    @After fun tearDown() = Dispatchers.resetMain()
+
+    @Test
+    fun accept_withNotificationViewModel_createsPostReplyNotification() = runTest {
+        viewModelWithNotifications.accept(testPost)
+        advanceUntilIdle()
+
+        // Verify notification was created
+        val notifications = fakeNotificationRepository.getNotificationsForUser("author-1")
+        assertTrue(
+            "Should create POST_REPLY notification",
+            notifications.any {
+                it.type == NotificationType.POST_REPLY &&
+                    it.relatedId == "post-1" &&
+                    it.userId == "author-1" &&
+                    it.message.contains("Learn Guitar")
+            }
+        )
+    }
+
+    @Test
+    fun accept_withoutNotificationViewModel_doesNotCrash() = runTest {
+        // Should not crash when notificationViewModel is null
+        viewModel.accept(testPost)
+        advanceUntilIdle()
+    }
+
+    @Test
+    fun markPostNotificationsAsRead_withNotificationViewModel_callsViewModel() = runTest {
+        // Add a post notification
+        val notification =
+            com.swent.skillswap.model.notification.Notification(
+                uid = "notif-1",
+                userId = "user-1",
+                title = "Post Reply",
+                message = "Someone replied",
+                type = NotificationType.POST_REPLY,
+                relatedId = "post-1",
+                isRead = false
+            )
+        fakeNotificationRepository.addNotification(notification)
+
+        // Mark as read
+        viewModelWithNotifications.markPostNotificationsAsRead("post-1")
+        advanceUntilIdle()
+
+        // Verify notification was marked as read
+        val updatedNotification = fakeNotificationRepository.getNotification("notif-1")
+        assertTrue("Notification should be marked as read", updatedNotification.isRead)
+    }
+
+    @Test
+    fun markPostNotificationsAsRead_withoutNotificationViewModel_doesNotCrash() = runTest {
+        // Should not crash when notificationViewModel is null
+        viewModel.markPostNotificationsAsRead("post-1")
+        advanceUntilIdle()
+    }
+}

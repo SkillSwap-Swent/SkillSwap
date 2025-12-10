@@ -197,4 +197,67 @@ class FakeNotificationRepositoryTest {
         assertFalse(repository.getNotification(chatNotificationUser2.uid).isRead)
         assertFalse(repository.getNotification(otherChatNotification.uid).isRead)
     }
+
+    @Test
+    fun markPostNotificationsAsRead_correctly_marks_postNotifications_as_read() = runTest {
+        // Add notifications: post-related for post-1, chat notification, and post notification for
+        // different post
+        val postReplyNotification =
+            sampleNotification2.copy(
+                uid = "notification-6",
+                relatedId = "post-1",
+                type = NotificationType.POST_REPLY,
+                isRead = false
+            )
+        val postAcceptedNotification =
+            sampleNotification2.copy(
+                uid = "notification-7",
+                relatedId = "post-1",
+                type = NotificationType.POST_ACCEPTED,
+                isRead = false
+            )
+        val postRejectedNotification =
+            sampleNotification2.copy(
+                uid = "notification-8",
+                relatedId = "post-1",
+                type = NotificationType.POST_REJECTED,
+                isRead = false
+            )
+        val newMatchingPostNotification =
+            sampleNotification3.copy(
+                uid = "notification-9",
+                userId = testUserId,
+                relatedId = "post-1",
+                type = NotificationType.NEW_MATCHING_POST,
+                isRead = false
+            )
+        val chatNotification = sampleNotification1 // chat-1, not post-related
+        val otherPostNotification =
+            sampleNotification2.copy(
+                uid = "notification-10",
+                relatedId = "post-2",
+                type = NotificationType.POST_REPLY,
+                isRead = false
+            )
+
+        repository.addNotification(postReplyNotification)
+        repository.addNotification(postAcceptedNotification)
+        repository.addNotification(postRejectedNotification)
+        repository.addNotification(newMatchingPostNotification)
+        repository.addNotification(chatNotification)
+        repository.addNotification(otherPostNotification)
+
+        // Mark post-1 notifications as read for testUserId
+        repository.markPostNotificationsAsRead("post-1", testUserId)
+
+        // All post-1 related notifications should be marked as read
+        assertTrue(repository.getNotification(postReplyNotification.uid).isRead)
+        assertTrue(repository.getNotification(postAcceptedNotification.uid).isRead)
+        assertTrue(repository.getNotification(postRejectedNotification.uid).isRead)
+        assertTrue(repository.getNotification(newMatchingPostNotification.uid).isRead)
+        // Chat notification should not be marked as read
+        assertFalse(repository.getNotification(chatNotification.uid).isRead)
+        // Other post notification should not be marked as read
+        assertFalse(repository.getNotification(otherPostNotification.uid).isRead)
+    }
 }

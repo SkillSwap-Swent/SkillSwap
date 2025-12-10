@@ -82,7 +82,9 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
         // Extract the type of the notification to choose which way to handle it (chat or post)
         when (val type = message.data["type"]) {
             NotificationType.MESSAGE.name -> onChatNotificationReceived(message)
-            NotificationType.POST_ACCEPTED.name -> onAcceptedPostNotificationReceived(message)
+            NotificationType.POST_ACCEPTED.name,
+            NotificationType.POST_REJECTED.name,
+            NotificationType.POST_REPLY.name -> onPostNotificationReceived(message, type)
             else -> Log.w(TAG, "Unknown notification type: $type")
         }
     }
@@ -120,8 +122,35 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
         notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 
-    private fun onAcceptedPostNotificationReceived(message: RemoteMessage) {
-        Log.d(TAG, "Handling accepted post notification: ${message.data}")
-        // TODO: HANDLE POST NOTIFICATION PAYLOAD RECEPTION
+    private fun onPostNotificationReceived(message: RemoteMessage, type: String) {
+        Log.d(TAG, "Handling post notification: ${message.data}, type: $type")
+        val notification = message.notification
+        val title =
+            notification?.title
+                ?: when (type) {
+                    NotificationType.POST_ACCEPTED.name -> "Post Reply Accepted"
+                    NotificationType.POST_REJECTED.name -> "Post Reply Rejected"
+                    NotificationType.POST_REPLY.name -> "New Post Reply"
+                    else -> "Post Notification"
+                }
+        val body = notification?.body ?: "You have a new post notification"
+        val channelId = "post_channel"
+        val relatedPostId = message.data["relatedId"]
+
+        // If user is currently viewing this post, mark as read and do not show notification
+        // TODO: Implement CurrentPostTracker similar to CurrentChatTracker if needed
+        // For now, we'll always show the notification
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val builder =
+            NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.logo)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setAutoCancel(true)
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 }

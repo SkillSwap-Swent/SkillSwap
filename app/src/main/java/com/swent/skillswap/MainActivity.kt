@@ -110,6 +110,19 @@ class MainActivity : ComponentActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
+    private fun createPostNotificationChannel() {
+        val channelId = "post_channel"
+        val channel =
+            NotificationChannel(
+                    channelId,
+                    "Post Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+                .apply { description = "Notifications for post replies and updates" }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
     private fun requestAllPermissionsIfNeeded(locationManager: LocationManager) {
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val requestedOnce = prefs.getBoolean("permissions_requested_once", false)
@@ -141,6 +154,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createChatNotificationChannel()
+        createPostNotificationChannel()
 
         val locationManager = LocationManager(this)
         requestAllPermissionsIfNeeded(locationManager)
@@ -345,7 +359,8 @@ fun SkillSwapApp(
                             remember(controller) {
                                 FeedScreenViewModelFactory(
                                     navigation = navigation,
-                                    controller = controller!!
+                                    controller = controller!!,
+                                    notificationViewModel = notificationViewModel
                                 )
                             }
                         val vm: FeedScreenViewModel = viewModel(factory = factory)
@@ -379,7 +394,8 @@ fun SkillSwapApp(
                     ChatListViewModelFactory(
                         chatRepository = ChatRepositoryFirestore(Firebase.firestore),
                         userRepository = UserRepoFirestore(Firebase.firestore),
-                        postRepository = PostFirestoreRepository(Firebase.firestore)
+                        postRepository = PostFirestoreRepository(Firebase.firestore),
+                        notificationViewModel = notificationViewModel
                     )
                 val vm: ChatListViewModel = viewModel(factory = factory)
                 ChatListScreen(

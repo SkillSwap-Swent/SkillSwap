@@ -755,6 +755,121 @@ class NotificationViewModelInstrumentedTest {
     }
 
     @Test
+    fun markPostNotificationsAsRead_marksOnlyPostNotificationsForCurrentUser() = runBlocking {
+        // Add notifications: post-related for post-1, chat notification, and post notification for
+        // different post
+        val postId = "post-1"
+        val notif1 =
+            createNotification(
+                "notif-1",
+                testUserId,
+                "Post Reply",
+                "Someone replied",
+                NotificationType.POST_REPLY,
+                false,
+                postId
+            )
+        val notif2 =
+            createNotification(
+                "notif-2",
+                testUserId,
+                "Post Accepted",
+                "Your reply was accepted",
+                NotificationType.POST_ACCEPTED,
+                false,
+                postId
+            )
+        val notif3 =
+            createNotification(
+                "notif-3",
+                testUserId,
+                "Post Rejected",
+                "Your reply was rejected",
+                NotificationType.POST_REJECTED,
+                false,
+                postId
+            )
+        val notif4 =
+            createNotification(
+                "notif-4",
+                testUserId,
+                "New Matching Post",
+                "A new post matches your skills",
+                NotificationType.NEW_MATCHING_POST,
+                false,
+                postId
+            )
+        val notif5 =
+            createNotification(
+                "notif-5",
+                testUserId,
+                "Chat Message",
+                "You have a new message",
+                NotificationType.MESSAGE,
+                false,
+                "chat-1"
+            )
+        val notif6 =
+            createNotification(
+                "notif-6",
+                testUserId,
+                "Other Post Reply",
+                "Someone replied",
+                NotificationType.POST_REPLY,
+                false,
+                "post-2"
+            )
+        val notif7 =
+            createNotification(
+                "notif-7",
+                "other-user",
+                "Post Reply",
+                "Someone replied",
+                NotificationType.POST_REPLY,
+                false,
+                postId
+            )
+
+        repository.addNotification(notif1)
+        repository.addNotification(notif2)
+        repository.addNotification(notif3)
+        repository.addNotification(notif4)
+        repository.addNotification(notif5)
+        repository.addNotification(notif6)
+        repository.addNotification(notif7)
+
+        // Load notifications
+        viewModel.loadNotifications()
+        waitForLoadingToComplete()
+
+        // Mark post notifications as read for post-1
+        viewModel.markPostNotificationsAsRead(postId)
+        Thread.sleep(200) // Wait for async update
+
+        // Check: only post-1 related notifications for testUserId should be marked as read
+        val updated1 = repository.getNotification("notif-1")
+        val updated2 = repository.getNotification("notif-2")
+        val updated3 = repository.getNotification("notif-3")
+        val updated4 = repository.getNotification("notif-4")
+        val updated5 = repository.getNotification("notif-5")
+        val updated6 = repository.getNotification("notif-6")
+        val updated7 = repository.getNotification("notif-7")
+        assertTrue("POST_REPLY for post-1 should be marked as read", updated1.isRead)
+        assertTrue("POST_ACCEPTED for post-1 should be marked as read", updated2.isRead)
+        assertTrue("POST_REJECTED for post-1 should be marked as read", updated3.isRead)
+        assertTrue("NEW_MATCHING_POST for post-1 should be marked as read", updated4.isRead)
+        assertFalse("Chat notification should not be marked as read", updated5.isRead)
+        assertFalse(
+            "Post notification for other post should not be marked as read",
+            updated6.isRead
+        )
+        assertFalse(
+            "Post notification for other user should not be marked as read",
+            updated7.isRead
+        )
+    }
+
+    @Test
     fun addNotification_withoutAuthenticatedUser_setsErrorState() = runBlocking {
         // Sign out before calling addNotification
         FirebaseAuth.getInstance().signOut()
