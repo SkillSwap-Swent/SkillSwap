@@ -1,9 +1,14 @@
 /* With the help of Sonnet 4.5 for repetitive tasks */
 
+
 package com.swent.skillswap.post
 
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.storage.FirebaseStorage
+import com.swent.skillswap.model.images.FakePictureRepository
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -26,6 +31,7 @@ class RequestViewModelTest {
     @get:Rule val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var fakeRepository: FakePostRepository
+    private lateinit var storageRepository: FakePictureRepository
     private lateinit var viewModel: RequestViewModel
     private val testUserId = "test-user-123"
 
@@ -51,13 +57,14 @@ class RequestViewModelTest {
     @Before
     fun setUp() {
         fakeRepository = FakePostRepository()
+        storageRepository  = FakePictureRepository()
     }
 
     // ========== INITIALIZATION TESTS ==========
 
     @Test
     fun init_withoutPostId_hasEmptyState() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository,testUserId, postId = null)
 
         val state = viewModel.uiState.value
         assertEquals("", state.uid)
@@ -72,7 +79,7 @@ class RequestViewModelTest {
     @Test
     fun init_withPostId_loadsExistingPost() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository,storageRepository, testUserId, postId = sampleRequest.uid)
 
         // Wait for coroutine to complete
         kotlinx.coroutines.delay(100)
@@ -88,7 +95,7 @@ class RequestViewModelTest {
 
     @Test
     fun init_withInvalidPostId_setsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = "non-existent")
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         kotlinx.coroutines.delay(100)
 
@@ -101,7 +108,7 @@ class RequestViewModelTest {
 
     @Test
     fun setTitle_validTitle_updatesStateAndClearsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setTitle("Valid Title")
 
@@ -112,7 +119,7 @@ class RequestViewModelTest {
 
     @Test
     fun setTitle_emptyTitle_setsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setTitle("")
 
@@ -123,7 +130,7 @@ class RequestViewModelTest {
 
     @Test
     fun setTitle_blankTitle_setsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setTitle("   ")
 
@@ -135,7 +142,7 @@ class RequestViewModelTest {
 
     @Test
     fun setDescription_validDescription_updatesStateAndClearsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setDescription("Valid description")
 
@@ -146,7 +153,7 @@ class RequestViewModelTest {
 
     @Test
     fun setDescription_emptyDescription_setsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setDescription("")
 
@@ -158,7 +165,7 @@ class RequestViewModelTest {
 
     @Test
     fun addTag_newTag_addsToListAndClearsError() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.addTag(PostTag.REOCCURRING)
 
@@ -169,7 +176,7 @@ class RequestViewModelTest {
 
     @Test
     fun addTag_duplicateTag_doesNotAddTwice() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.addTag(PostTag.REOCCURRING)
         viewModel.addTag(PostTag.REOCCURRING)
@@ -180,7 +187,7 @@ class RequestViewModelTest {
 
     @Test
     fun removeTag_existingTag_removesFromList() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.addTag(PostTag.REOCCURRING)
         viewModel.removeTag(PostTag.REOCCURRING)
@@ -191,7 +198,7 @@ class RequestViewModelTest {
 
     @Test
     fun removeTag_nonExistentTag_doesNotCrash() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         // Should not throw exception
         viewModel.removeTag(PostTag.REOCCURRING)
@@ -204,7 +211,7 @@ class RequestViewModelTest {
 
     @Test
     fun togglePaymentMethod_notPresent_adds() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
 
@@ -214,7 +221,7 @@ class RequestViewModelTest {
 
     @Test
     fun togglePaymentMethod_present_doesNotAlter() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
         viewModel.togglePaymentMethod(PaymentMethod.CASH)
@@ -227,7 +234,7 @@ class RequestViewModelTest {
 
     @Test
     fun save_addMode_validData_createsNewPost() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setTitle("Test Request")
         viewModel.setDescription("Test Description")
@@ -249,7 +256,7 @@ class RequestViewModelTest {
 
     @Test
     fun save_addMode_success_setsSubmitSuccessful() = runTest {
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setTitle("Test")
         viewModel.setDescription("Test")
@@ -267,7 +274,7 @@ class RequestViewModelTest {
     @Test
     fun save_addMode_repositoryFailure_setsError() = runTest {
         fakeRepository.setShouldFailOnAdd(true)
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = null)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
 
         viewModel.setTitle("Test")
         viewModel.setDescription("Test")
@@ -287,7 +294,7 @@ class RequestViewModelTest {
     @Test
     fun save_editMode_validData_updatesExistingPost() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository,testUserId, postId = sampleRequest.uid)
 
         kotlinx.coroutines.delay(100)
 
@@ -303,7 +310,7 @@ class RequestViewModelTest {
     @Test
     fun save_editMode_usesExistingPostId() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository,testUserId, postId = sampleRequest.uid)
 
         kotlinx.coroutines.delay(100)
 
@@ -319,7 +326,7 @@ class RequestViewModelTest {
     fun save_editMode_repositoryFailure_setsError() = runTest {
         fakeRepository.preloadPosts(sampleRequest)
         fakeRepository.setShouldFailOnEdit(true)
-        viewModel = RequestViewModel(null, fakeRepository, testUserId, postId = sampleRequest.uid)
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository,testUserId, postId = sampleRequest.uid)
 
         kotlinx.coroutines.delay(100)
 
@@ -329,6 +336,29 @@ class RequestViewModelTest {
         val state = viewModel.uiState.value
         assertNotNull(state.submitError)
         assertFalse(state.isSubmitSuccessful)
+    }
+
+    @Test
+    fun loadMediaInStorageAndReturnURLOnSave() = runTest {
+        viewModel = RequestViewModel(null, fakeRepository, storageRepository, testUserId, postId = "non-existent")
+
+        viewModel.setTitle("Test Request with Media")
+        viewModel.setDescription("Test Description")
+        viewModel.addTag(PostTag.REOCCURRING)
+        viewModel.togglePaymentMethod(PaymentMethod.CASH)
+
+        // Simulate adding attachment
+        val fakeUri1 = android.net.Uri.parse("content://media/external/images/media/1")
+        val uris = setOf(fakeUri1)
+        viewModel.addAttachments(uris)
+        viewModel.save(PostOperation.ADD)
+        kotlinx.coroutines.delay(100)
+
+        val addedPosts = fakeRepository.getAddedPosts()
+        assertEquals(1, addedPosts.size)
+        val addedPost = addedPosts.first() as Request
+        assertEquals(1, addedPost.media.size)
+        assertTrue(addedPost.media.first().contains("https://"))
     }
 }
 
@@ -342,4 +372,5 @@ class MainDispatcherRule(private val testDispatcher: TestDispatcher = Unconfined
     override fun finished(description: Description) {
         Dispatchers.resetMain()
     }
+
 }
