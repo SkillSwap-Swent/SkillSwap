@@ -61,6 +61,8 @@ class RequestScreenTest {
     @Before
     fun setUp() {
         fakeRepository = FakePostRepository()
+        /** login user so that he can access storage */
+        FirebaseEmulator.auth.signInAnonymously()
         storageRepository = PictureRepository(storage)
         backButtonClicked = false
         postCreatedCalled = false
