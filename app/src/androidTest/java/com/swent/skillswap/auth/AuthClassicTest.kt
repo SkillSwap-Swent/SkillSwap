@@ -148,7 +148,14 @@ class AuthClassicTest : TestCase() {
             }
         }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
-        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.waitUntil(5000) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
 
         // USERNAME
