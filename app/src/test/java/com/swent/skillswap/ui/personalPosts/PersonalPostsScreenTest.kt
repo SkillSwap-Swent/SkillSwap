@@ -205,7 +205,6 @@ class PersonalPostsScreenTest {
         val viewModel = createViewModelWithState(PersonalPostsUiState(isLoading = false))
         composeRule.setContent { MaterialTheme { PersonalPostsScreen(viewModel = viewModel) } }
         composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).assertIsDisplayed()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_OFFERS).assertIsDisplayed()
         composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).assertIsDisplayed()
     }
 

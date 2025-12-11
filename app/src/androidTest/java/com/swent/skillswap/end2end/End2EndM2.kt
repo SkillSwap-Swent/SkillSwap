@@ -428,9 +428,6 @@ class End2EndM2 {
         composeTestRule.waitUntil(timeoutMillis = 20_000) {
             try {
                 composeTestRule
-                    .onNodeWithTag(PersonalPostsScreenTags.FILTER_OFFERS)
-                    .assertIsDisplayed()
-                composeTestRule
                     .onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS)
                     .assertIsDisplayed()
                 composeTestRule
@@ -443,10 +440,6 @@ class End2EndM2 {
         }
 
         // Filters
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_OFFERS).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()
-
         composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()

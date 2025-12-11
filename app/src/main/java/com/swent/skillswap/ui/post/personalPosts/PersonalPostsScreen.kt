@@ -52,7 +52,7 @@ object PersonalPostsScreenTags {
  * Screen that displays all posts created by the current user.
  *
  * Features:
- * - Filter posts by type (All, Offers, Requests)
+ * - Filter posts by type (All, Requests)
  * - Edit posts (navigates to edit screen)
  * - Delete posts
  * - Pull-to-refresh
@@ -108,12 +108,6 @@ fun PersonalPostsScreen(
                     isSelected = uiState.selectedPostType == PostTypeFilter.ALL,
                     onClick = { viewModel.setPostTypeFilter(PostTypeFilter.ALL) },
                     modifier = Modifier.weight(1f).testTag(PersonalPostsScreenTags.FILTER_ALL)
-                )
-                FilterButton(
-                    text = "Offers",
-                    isSelected = uiState.selectedPostType == PostTypeFilter.OFFERS,
-                    onClick = { viewModel.setPostTypeFilter(PostTypeFilter.OFFERS) },
-                    modifier = Modifier.weight(1f).testTag(PersonalPostsScreenTags.FILTER_OFFERS)
                 )
                 FilterButton(
                     text = "Requests",
