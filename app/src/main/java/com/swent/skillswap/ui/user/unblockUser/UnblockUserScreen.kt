@@ -41,16 +41,47 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 
+/**
+ * Contains [String] constants used as test tags for UI testing the Unblock User screen.
+ *
+ * These tags allow Compose UI tests to locate specific nodes like text, buttons, avatars, and
+ * cards.
+ */
 object UnblockUserScreenTestTag {
+    /** Test tag for the "Empty" state text when there are no blocked users. */
     const val EMPTY_TEXT = "unblock_user_empty_text"
+
+    /** Test tag for displaying the blocked user's name in a card. */
     const val PROFILE_NAME = "unblock_user_profile_name"
+
+    /** Test tag for displaying the blocked user's avatar in a card. */
     const val PROFILE_AVATAR = "unblock_user_profile_avatar"
+
+    /** Test tag for the blocked user's card container. */
     const val PROFILE_CARD = "unblock_user_profile_card"
+
+    /** Test tag for the unblock (cross) button in a blocked user's card. */
     const val UNBLOCK_BUTTON = "unblock_user_deny_button"
+
+    /** Test tag for the top app bar title of the Unblock User screen. */
     const val UNBLOCK_TITLE = "unblock_user_unblock_title"
+
+    /** Test tag for the back button in the top app bar. */
     const val BACK_BUTTON = "unblock_user_back_button"
 }
 
+/**
+ * Composable screen displaying the list of blocked users for the current user.
+ *
+ * Shows a [TopAppBar] with a back button, and either an empty state or a list of
+ * [BlockedUserCard]s. Users can be unblocked via the card's unblock button, or navigate to their
+ * profile by clicking the avatar.
+ *
+ * @param viewModel [UnblockUserViewModel] providing the blocked users state and unblocking logic.
+ * @param onAvatarClick Callback triggered when a user avatar is clicked, passing the user's UID.
+ * @param onGoBack Callback triggered when the back button is clicked.
+ * @author Joey Gugler using chatGPT
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnblockUserScreen(
@@ -111,7 +142,11 @@ fun UnblockUserScreen(
 }
 
 @Composable
-fun BlockedUserCard(card: UnblockCardView, onUnblock: () -> Unit, onAvatarClick: () -> Unit) {
+private fun BlockedUserCard(
+    card: UnblockCardView,
+    onUnblock: () -> Unit,
+    onAvatarClick: () -> Unit
+) {
     Card(
         modifier =
             Modifier.fillMaxWidth(0.75f)
@@ -161,7 +196,7 @@ fun BlockedUserCard(card: UnblockCardView, onUnblock: () -> Unit, onAvatarClick:
 }
 
 @Composable
-fun UserAvatar(url: String, onClick: () -> Unit) {
+private fun UserAvatar(url: String, onClick: () -> Unit) {
     if (url.isNotEmpty()) {
         AsyncImage(
             model = url,

@@ -14,7 +14,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class UnblockCardView(val name: String, val avatarUrl: String, val uid: String)
-
+/**
+ * ViewModel responsible for managing the blocked users list and unblocking functionality.
+ *
+ * This ViewModel fetches the current user's blocked users from [UserRepositery] and exposes them as
+ * a [StateFlow] of [UnblockCardView] for UI consumption. It also handles unblocking a user when
+ * triggered by UI events.
+ *
+ * @property userRepo Repository used to fetch and update user data. Defaults to [UserRepoFirestore]
+ *   with Firebase Firestore instance.
+ * @author Joey Gugler using chatGPT
+ */
 class UnblockUserViewModel(
     private val userRepo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
 ) : ViewModel() {
@@ -30,7 +40,12 @@ class UnblockUserViewModel(
     init {
         loadBlockedUsers()
     }
-
+    /**
+     * Loads the blocked users for the current user from the repository.
+     *
+     * Each blocked user is converted into an [UnblockCardView]. If a blocked user cannot be found
+     * in the repository, it is skipped and a log is emitted.
+     */
     private fun loadBlockedUsers() {
         viewModelScope.launch {
             runCatching {
@@ -61,11 +76,22 @@ class UnblockUserViewModel(
         }
     }
 
-    /** Called by UI event (button click in each card) */
+    /**
+     * Triggered by a UI event (e.g., clicking the unblock button) to remove a user from the blocked
+     * list.
+     *
+     * @param targetUid UID of the user to unblock.
+     */
     fun onUnblockUserClicked(targetUid: String) {
         viewModelScope.launch { unBlockUser(targetUid) }
     }
-
+    /**
+     * Removes a user from the current user's blocked list and updates the repository.
+     *
+     * Updates the local cache ([user]) and [_unblockCardViews] to reflect the change in the UI.
+     *
+     * @param userID UID of the user to unblock.
+     */
     private suspend fun unBlockUser(userID: String) {
         runCatching {
                 val newBlockedList = user.blockedUsers.filter { it != userID }.toSet()
