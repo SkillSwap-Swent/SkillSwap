@@ -356,33 +356,65 @@ class ChatListViewModelTest {
         every { FirebaseAuth.getInstance() } returns mockAuth
         val fakeNotificationRepository = FakeNotificationRepository()
         val notificationViewModel = NotificationViewModel(fakeNotificationRepository)
-        val viewModelWithNotifications = ChatListViewModel(
-            object : ChatRepository {
-                override suspend fun createChat(participants: List<String>, relatedPostId: String, relatedPostType: PostType) = ""
-                override fun streamMessages(chatId: String) = flowOf<List<Message>>(emptyList())
-                override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
-                override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) = emptyList<Chat>()
-                override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType) = emptyList<Chat>()
-                override suspend fun isOwnerOfRelatedPost(chat: Chat) = false
-                override suspend fun acceptAPostReplyChat(chat: Chat) {}
-                override suspend fun getChat(chatId: String) = Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
-            },
-            object : UserRepositery {
-                override fun getNewUid() = ""
-                override suspend fun getUser(userID: String) = User("", "", "", "", emptySet(), 0f, emptyList())
-                override suspend fun addUser(user: User) {}
-                override suspend fun editUser(userID: String, newValue: User) {}
-                override suspend fun deleteUser(userID: String) {}
-                override suspend fun userExists(userId: String) = true
-                override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
-                override suspend fun updateRating(userId: String, incomingRating: Float) {}
-            },
-            FakePostRepository(),
-            notificationViewModel
-        )
+        val viewModelWithNotifications =
+            ChatListViewModel(
+                object : ChatRepository {
+                    override suspend fun createChat(
+                        participants: List<String>,
+                        relatedPostId: String,
+                        relatedPostType: PostType
+                    ) = ""
+
+                    override fun streamMessages(chatId: String) = flowOf<List<Message>>(emptyList())
+
+                    override suspend fun sendMessage(
+                        chatId: String,
+                        senderId: String,
+                        content: String
+                    ) {}
+
+                    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
+                        emptyList<Chat>()
+
+                    override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType) =
+                        emptyList<Chat>()
+
+                    override suspend fun isOwnerOfRelatedPost(chat: Chat) = false
+
+                    override suspend fun acceptAPostReplyChat(chat: Chat) {}
+
+                    override suspend fun getChat(chatId: String) =
+                        Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+                },
+                object : UserRepositery {
+                    override fun getNewUid() = ""
+
+                    override suspend fun getUser(userID: String) =
+                        User("", "", "", "", emptySet(), 0f, emptyList())
+
+                    override suspend fun addUser(user: User) {}
+
+                    override suspend fun editUser(userID: String, newValue: User) {}
+
+                    override suspend fun deleteUser(userID: String) {}
+
+                    override suspend fun userExists(userId: String) = true
+
+                    override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+
+                    override suspend fun updateRating(userId: String, incomingRating: Float) {}
+                },
+                FakePostRepository(),
+                notificationViewModel
+            )
         viewModelWithNotifications.acceptAPostReplyChat(chat1)
         advanceUntilIdle()
-        assertFalse("Should not create notification when currentUser is null", fakeNotificationRepository.getNotificationsForUser("u2").any { it.type == com.swent.skillswap.model.notification.NotificationType.POST_ACCEPTED })
+        assertFalse(
+            "Should not create notification when currentUser is null",
+            fakeNotificationRepository.getNotificationsForUser("u2").any {
+                it.type == com.swent.skillswap.model.notification.NotificationType.POST_ACCEPTED
+            }
+        )
         unmockkStatic(FirebaseAuth::class)
     }
 }

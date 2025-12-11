@@ -179,7 +179,10 @@ class SkillSwapMessagingServiceTest {
         ShadowLog.clear()
         service.onMessageReceived(remoteMessage)
 
-        val postLogs = ShadowLog.getLogs().filter { it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification") }
+        val postLogs =
+            ShadowLog.getLogs().filter {
+                it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification")
+            }
         assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
     }
 
@@ -193,7 +196,10 @@ class SkillSwapMessagingServiceTest {
         ShadowLog.clear()
         service.onMessageReceived(remoteMessage)
 
-        val postLogs = ShadowLog.getLogs().filter { it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification") }
+        val postLogs =
+            ShadowLog.getLogs().filter {
+                it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification")
+            }
         assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
     }
 
