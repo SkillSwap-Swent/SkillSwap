@@ -47,6 +47,7 @@ import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
+import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -307,9 +308,11 @@ fun SkillSwapApp(
                 ) { backStackEntry ->
                     val postId = backStackEntry.arguments?.getString("postId") ?: ""
                     val postRepository = PostFirestoreRepository(Firebase.firestore)
+                    val storageRepository = PictureRepository()
                     val currentUserId = Firebase.auth.uid ?: ""
                     RequestScreen(
                         postRepository = postRepository,
+                        storageRepository = storageRepository,
                         currentUserId = currentUserId,
                         uid = postId,
                         postOperation = PostOperation.EDIT,
@@ -419,6 +422,7 @@ fun SkillSwapApp(
                 }
                 RequestScreen(
                     postRepository = PostFirestoreRepository(Firebase.firestore),
+                    storageRepository = PictureRepository(),
                     currentUserId = currentUserId,
                     uid = null,
                     onGoBack = { navigationActions.goBack() },
