@@ -5,8 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
@@ -20,13 +18,15 @@ import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.utils.LocationManager
-import kotlinx.coroutines.async
 import java.util.Date
+import kotlin.toString
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.toString
 
 enum class PostOperation {
     ADD,
@@ -196,14 +196,16 @@ class RequestViewModel(
 
                 /** attachments upload logic */
                 val stringUrls: List<String> = coroutineScope {
-                    _uiState.value.attachments.mapIndexed { index, uri ->
-                        val mediaName = "${uid}_$index"
-                        async {
-                            storageRepository
-                                .uploadPicture(mediaName, uri, FEED_PICTURES_PATH)
-                                .toString()
+                    _uiState.value.attachments
+                        .mapIndexed { index, uri ->
+                            val mediaName = "${uid}_$index"
+                            async {
+                                storageRepository
+                                    .uploadPicture(mediaName, uri, FEED_PICTURES_PATH)
+                                    .toString()
+                            }
                         }
-                    }.awaitAll()
+                        .awaitAll()
                 }
 
                 /** construct request object */
