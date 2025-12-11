@@ -5,6 +5,7 @@ package com.swent.skillswap.ui.chat
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.chat.Message
+import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostType
@@ -25,6 +26,7 @@ import org.junit.Test
 class ChatListViewModelTest {
 
     private lateinit var viewModel: ChatListViewModel
+    private lateinit var failingViewModel: ChatListViewModel
     private val chat1 = Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList())
     private val chat2 = Chat("c2", listOf("u1", "u2"), "p2", PostType.REQUEST, emptyList())
     private val user = User("u1", "John", "", "", emptySet(), 0f, emptyList())
@@ -137,6 +139,12 @@ class ChatListViewModelTest {
                     override suspend fun deletePost(type: PostType, postId: String) {}
                 }
             )
+
+        failingViewModel = ChatListViewModel(
+            FailingChatRepository(),
+            FailingUserRepository(),
+            FakePostRepository().apply { setShouldFailOnGet(true) }
+        )
     }
 
     @After fun tearDown() = Dispatchers.resetMain()
@@ -195,5 +203,26 @@ class ChatListViewModelTest {
         viewModel.acceptAPostReplyChat(chat2)
         assert(acceptedChat.contains(chat1))
         assert(acceptedChat.contains(chat2))
+    }
+
+    @Test
+    fun getChatsOfCurrentUser_onError_setsErrorState() = runTest {
+        failingViewModel.getChatsOfCurrentUser(PostType.OFFER)
+        advanceUntilIdle()
+        assertEquals("Error fetching chats", failingViewModel.uiState.value.error)
+    }
+
+    @Test
+    fun getUsernameAndAvatar_onError_setsErrorState() = runTest {
+        failingViewModel.getUsernameAndAvatar("u1")
+        advanceUntilIdle()
+        assertEquals("Error loading username and avatar", failingViewModel.uiState.value.error)
+    }
+
+    @Test
+    fun getPostTitle_onError_setsErrorState() = runTest {
+        failingViewModel.getPostTitle("p1", PostType.OFFER)
+        advanceUntilIdle()
+        assertEquals("Error loading post title", failingViewModel.uiState.value.error)
     }
 }
