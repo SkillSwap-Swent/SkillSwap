@@ -863,6 +863,16 @@ class NotificationViewModelInstrumentedTest {
     }
 
     @Test
+    fun markPostNotificationsAsRead_withoutAuthenticatedUser_setsErrorState() = runBlocking {
+        FirebaseAuth.getInstance().signOut()
+        viewModel = NotificationViewModel(repository)
+        viewModel.markPostNotificationsAsRead("post-1")
+        Thread.sleep(200)
+        val state = viewModel.uiState.value
+        assertEquals("No authenticated user found. Please log in.", state.error)
+    }
+
+    @Test
     fun addNotification_withoutAuthenticatedUser_setsErrorState() = runBlocking {
         // Sign out before calling addNotification
         FirebaseAuth.getInstance().signOut()

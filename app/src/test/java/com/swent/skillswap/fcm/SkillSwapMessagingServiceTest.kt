@@ -170,6 +170,34 @@ class SkillSwapMessagingServiceTest {
     }
 
     @Test
+    fun onMessageReceived_withPostNotification_nullNotification_usesDefaultTitle() {
+        val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        every { remoteMessage.from } returns "test-sender"
+        every { remoteMessage.data } returns mapOf("type" to NotificationType.POST_REPLY.name)
+        every { remoteMessage.notification } returns null
+
+        ShadowLog.clear()
+        service.onMessageReceived(remoteMessage)
+
+        val postLogs = ShadowLog.getLogs().filter { it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification") }
+        assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
+    }
+
+    @Test
+    fun onMessageReceived_withPostNotification_unknownType_usesDefaultTitle() {
+        val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        every { remoteMessage.from } returns "test-sender"
+        every { remoteMessage.data } returns mapOf("type" to "UNKNOWN_TYPE")
+        every { remoteMessage.notification } returns null
+
+        ShadowLog.clear()
+        service.onMessageReceived(remoteMessage)
+
+        val postLogs = ShadowLog.getLogs().filter { it.type == android.util.Log.DEBUG && it.msg.contains("Handling post notification") }
+        assert(postLogs.isNotEmpty()) { "Expected log for handling post notification" }
+    }
+
+    @Test
     fun onMessageReceived_userInChat_marksChatNotificationsAsRead_and_returns() {
         val relatedId = "chat123"
         val remoteMessage = mockk<RemoteMessage>(relaxed = true)
