@@ -10,6 +10,7 @@ import com.google.firebase.ktx.Firebase
 import com.swent.skillswap.model.notification.Notification
 import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
+import com.swent.skillswap.model.notification.NotificationType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +22,7 @@ data class NotificationUiState(
     val notifications: List<Notification> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
-    val showUnreadOnly: Boolean = false
+    val showUnreadOnly: Boolean = true
 )
 
 class NotificationViewModel(
@@ -30,6 +31,7 @@ class NotificationViewModel(
 ) : ViewModel() {
 
     private val TAG = "NotificationViewModel"
+    private val authErrorMessage = "No authenticated user found."
     private val _uiState = MutableStateFlow(NotificationUiState())
     val uiState: StateFlow<NotificationUiState> = _uiState.asStateFlow()
     private var loadJob: Job? = null
@@ -41,10 +43,8 @@ class NotificationViewModel(
     fun loadNotifications() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update {
-                it.copy(isLoading = false, error = "No authenticated user found. Please log in.")
-            }
-            Log.w(TAG, "No authenticated user found")
+            _uiState.update { it.copy(isLoading = false, error = authErrorMessage) }
+            Log.w(TAG, authErrorMessage)
             return
         }
 
@@ -79,6 +79,39 @@ class NotificationViewModel(
             }
     }
 
+    fun addNotification(
+        recipientId: String,
+        message: String,
+        type: NotificationType,
+        relatedId: String
+    ) {
+        val currentUser = Firebase.auth.currentUser
+        if (currentUser == null) {
+            _uiState.update { it.copy(error = authErrorMessage) }
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val notification =
+                    Notification(
+                        uid = notificationRepository.getNewUid(),
+                        userId = recipientId,
+                        title = "New message",
+                        message = message,
+                        type = type,
+                        relatedId = relatedId,
+                        isRead = false
+                    )
+                notificationRepository.addNotification(notification)
+                loadNotifications()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding notification", e)
+                loadNotifications()
+                _uiState.update { it.copy(error = "Failed to add notification: ${e.message}") }
+            }
+        }
+    }
+
     fun setShowUnreadOnly(showUnreadOnly: Boolean) {
         _uiState.update { it.copy(showUnreadOnly = showUnreadOnly) }
         loadNotifications()
@@ -110,7 +143,7 @@ class NotificationViewModel(
     fun markAllAsRead() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            _uiState.update { it.copy(error = authErrorMessage) }
             return
         }
 
@@ -148,7 +181,7 @@ class NotificationViewModel(
     fun deleteAllNotifications() {
         val currentUser = Firebase.auth.currentUser
         if (currentUser == null) {
-            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            _uiState.update { it.copy(error = authErrorMessage) }
             return
         }
 
@@ -173,5 +206,27 @@ class NotificationViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun markChatNotificationsAsRead(chatId: String) {
+        val currentUser = Firebase.auth.currentUser
+        if (currentUser == null) {
+            _uiState.update { it.copy(error = authErrorMessage) }
+            return
+        }
+        val userId = currentUser.uid
+
+        viewModelScope.launch {
+            try {
+                notificationRepository.markChatNotificationsAsRead(chatId, userId)
+                loadNotifications()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error marking chat notifications as read", e)
+                loadNotifications()
+                _uiState.update {
+                    it.copy(error = "Failed to mark chat notifications as read: ${e.message}")
+                }
+            }
+        }
     }
 }

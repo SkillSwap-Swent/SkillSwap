@@ -9,6 +9,7 @@ import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -32,6 +33,7 @@ class RecommendationEngineTest {
     private val skillB = SkillTag.PHYSICS_MECHANICS
 
     private val blockedUserId = "user_blocked"
+    private val otherUserId = "other_user"
     private val activeUserId = "user_active"
 
     private val activeUser =
@@ -39,6 +41,21 @@ class RecommendationEngineTest {
             uid = activeUserId,
             username = "Alice",
             email = "alice@example.com",
+            profilePicture = "",
+            skillSet =
+                setOf(Skill(SkillTag.CALCULUS, 0f, ""), Skill(SkillTag.PHYSICS_MECHANICS, 0f, "")),
+            rating = 0f,
+            availability = emptyList(),
+            preference = Preference.SKILLS,
+            location = GeoPoint(0.0, 0.0),
+            blockedUsers = setOf(blockedUserId),
+            fcmToken = null
+        )
+    private val otherUser =
+        User(
+            uid = otherUserId,
+            username = "Fred",
+            email = "fred@example.com",
             profilePicture = "",
             skillSet =
                 setOf(Skill(SkillTag.CALCULUS, 0f, ""), Skill(SkillTag.PHYSICS_MECHANICS, 0f, "")),
@@ -71,7 +88,7 @@ class RecommendationEngineTest {
             override val uid = "post1"
             override val title = "Post 1"
             override val description = "Description"
-            override val ownerId = activeUserId
+            override val ownerId = otherUserId
             override val skills = listOf(skillA)
             override val tags = emptyList<PostTag>()
             override val paymentMethod = PaymentMethod.SKILLS
@@ -90,7 +107,7 @@ class RecommendationEngineTest {
             override val uid = "post2"
             override val title = "Post 2"
             override val description = "Description"
-            override val ownerId = activeUserId
+            override val ownerId = otherUserId
             override val skills = listOf(skillA)
             override val tags = emptyList<PostTag>()
             override val paymentMethod = PaymentMethod.SKILLS
@@ -109,7 +126,7 @@ class RecommendationEngineTest {
             override val uid = "post3"
             override val title = "Post 3"
             override val description = "Description"
-            override val ownerId = activeUserId
+            override val ownerId = otherUserId
             override val skills = listOf(skillB)
             override val tags = emptyList<PostTag>()
             override val paymentMethod = PaymentMethod.SKILLS
@@ -123,7 +140,36 @@ class RecommendationEngineTest {
             override val postReplies = emptyList<PostReply>()
             override val reportCount: Long = 0
         }
-
+    private val post4 =
+        object : Post {
+            override val uid = "post2"
+            override val title = "Post 2"
+            override val description = "Description"
+            override val ownerId = otherUserId
+            override val skills = listOf(skillA)
+            override val tags = emptyList<PostTag>()
+            override val paymentMethod = PaymentMethod.SKILLS
+            override val expiry = Timestamp.now()
+            override val creation = Timestamp.now()
+            override val status = PostStatus.POSTED
+            override val media = emptyList<String>()
+            override val type = PostType.REQUEST
+            override val location = GeoPoint(0.0, 0.0)
+            override val searchKeys = emptyList<String>()
+            override val postReplies =
+                listOf(
+                    PostReply(
+                        "1",
+                        "post2",
+                        activeUserId,
+                        Timestamp.now(),
+                        "",
+                        PostType.REQUEST,
+                        ReplyStatus.PROPOSED
+                    )
+                )
+            override val reportCount: Long = 0
+        }
     private val post2Blocked =
         object : Post {
             override val uid = "post2"
@@ -152,6 +198,7 @@ class RecommendationEngineTest {
                     when (userID) {
                         activeUserId -> activeUser
                         blockedUserId -> blockedUser
+                        otherUserId -> otherUser
                         else -> throw Exception("User not found")
                     }
 
@@ -500,5 +547,13 @@ class RecommendationEngineTest {
         val filtered = engine.filterPosts(listOf(post1, post2Blocked))
         assert(filtered.contains(post1))
         assert(!filtered.contains(post2Blocked))
+    }
+
+    @Test
+    fun removePostAllReadyAcceptedFromView() {
+        val filtered = engine.filterPosts(listOf(post4, post2, post1))
+        assert(filtered.contains(post1))
+        assert(filtered.contains(post2))
+        assert(!filtered.contains(post4))
     }
 }

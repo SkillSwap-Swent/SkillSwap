@@ -1,15 +1,22 @@
 /** Created with the help of Cursor */
 package com.swent.skillswap.fcm
 
+import android.app.Notification
+import android.app.NotificationManager
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.swent.skillswap.R
+import com.swent.skillswap.model.chat.CurrentChatTracker
+import com.swent.skillswap.model.notification.NotificationRepository
+import com.swent.skillswap.model.notification.NotificationRepositoryFirestore
 import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.FCMTokenManager
-import kotlin.text.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,7 +34,10 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val userRepository: UserRepositery by lazy {
-        UserRepoFirestore(com.google.firebase.firestore.FirebaseFirestore.getInstance())
+        UserRepoFirestore(FirebaseFirestore.getInstance())
+    }
+    private val notificationRepositery: NotificationRepository by lazy {
+        NotificationRepositoryFirestore(FirebaseFirestore.getInstance())
     }
     private val fcmTokenManager: FCMTokenManager by lazy { FCMTokenManager(userRepository) }
 
@@ -70,10 +80,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
         Log.d(TAG, "Message received from: ${message.from}")
 
         // Extract the type of the notification to choose which way to handle it (chat or post)
-        val type = message.data["type"]
-        val relatedId = message.data["relatedId"]
-
-        when (type) {
+        when (val type = message.data["type"]) {
             NotificationType.MESSAGE.name -> onChatNotificationReceived(message)
             NotificationType.POST_ACCEPTED.name -> onAcceptedPostNotificationReceived(message)
             else -> Log.w(TAG, "Unknown notification type: $type")
@@ -82,7 +89,35 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
 
     private fun onChatNotificationReceived(message: RemoteMessage) {
         Log.d(TAG, "Handling chat notification: ${message.data}")
-        // TODO: HANDLE CHAT NOTIFICATION PAYLOAD RECEPTION
+        val notification = message.notification
+        val title = notification?.title ?: "New Chat"
+        val body = notification?.body ?: "You have a new message"
+        val channelId = "chat_channel"
+        val relatedChatId = message.data["relatedId"]
+
+        // If user is currently viewing this chat, mark as read and do not show notification
+        if (relatedChatId != null && CurrentChatTracker.currentChatId == relatedChatId) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            if (userId != null) {
+                serviceScope.launch {
+                    notificationRepositery.markChatNotificationsAsRead(relatedChatId, userId)
+                }
+            }
+            Log.d(TAG, "User is in chat $relatedChatId, notification marked as read and not shown.")
+            return
+        }
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val builder =
+            NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.logo)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setAutoCancel(true)
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 
     private fun onAcceptedPostNotificationReceived(message: RemoteMessage) {

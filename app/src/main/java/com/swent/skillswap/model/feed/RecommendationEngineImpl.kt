@@ -81,6 +81,9 @@ open class RecommendationEngineImpl : RecommendationEngine {
             blockedUsers = user.blockedUsers
             userPreference = user.preference
             addFilter { post -> post.skills.first() in user.skillSet.map { it.name } }
+            addFilter { it.ownerId != user.uid }
+            addFilter { it.postReplies.none { reply -> reply.ownerId == user.uid } }
+            user.viewedPosts.forEach { addViewedPost(it) }
         } catch (e: Exception) {
             lastError = e
         }

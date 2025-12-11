@@ -74,6 +74,7 @@ interface Post {
 
         searchKeysTemp.addAll(title.split(" ").map { it.lowercase() })
         searchKeysTemp.addAll(tags.map { it.toString().lowercase() })
+        searchKeysTemp.addAll(skills.map { it.toString().lowercase() })
 
         return searchKeysTemp
     }

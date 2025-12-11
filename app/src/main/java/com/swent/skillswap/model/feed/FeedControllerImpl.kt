@@ -9,6 +9,7 @@ import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
@@ -86,7 +87,18 @@ private class FeedControllerImpl(
     }
 
     override suspend fun skipPost() {
-        if (_currentPost.value != null) recommendationEngine.registerSkip(_currentPost.value!!)
+        if (_currentPost.value != null) {
+            try {
+                val user = userRepository.getUser(userIdPerformingActions)
+                userRepository.editUser(
+                    userIdPerformingActions,
+                    user.copy(viewedPosts = user.viewedPosts + _currentPost.value!!.uid)
+                )
+            } catch (e: Exception) {
+                Log.e("FeedControllerSkipPost", e.message.toString())
+            }
+            recommendationEngine.registerSkip(_currentPost.value!!)
+        }
         _currentPost.value = getNextPost()
     }
 
@@ -154,7 +166,8 @@ private class FeedControllerImpl(
                     NUMB_POSTS_TO_FETCH,
                     feedType,
                     userLocation = currentUserLocation.value,
-                    maxDistanceKm = maxDistance.floatValue
+                    maxDistanceKm = maxDistance.floatValue,
+                    status = PostStatus.POSTED
                 )
             val filtered =
                 recommendationEngine.filterPosts(
