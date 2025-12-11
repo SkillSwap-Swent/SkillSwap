@@ -63,7 +63,7 @@ class ChatListViewModel(
                     }
                 } catch (exception: Exception) {
                     Log.e("ChatViewModel", "Error fetching chats", exception)
-                    _uiState.update { it.copy(error = "Error fetching chats: ${exception.message}") }
+                    _uiState.update { it.copy(error = "Error fetching chats") }
                     return@launch
                 }
             val filteredIsOwnerChats =
