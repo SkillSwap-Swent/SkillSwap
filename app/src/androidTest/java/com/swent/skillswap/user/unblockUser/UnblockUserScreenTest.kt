@@ -238,4 +238,30 @@ class UnblockUserScreenTest {
 
         composeTestRule.onNodeWithTag(UnblockUserScreenTestTag.BACK_BUTTON).assertIsDisplayed()
     }
+
+    @Test
+    fun avatarClick_triggersCallback() {
+        var clickCount = 0
+        composeTestRule.setContent {
+            UnblockUserScreen(
+                viewModel = viewModel,
+                onAvatarClick = { clickCount++ },
+                onGoBack = {}
+            )
+        }
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule
+                .onAllNodesWithTag(UnblockUserScreenTestTag.PROFILE_AVATAR, useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .size == 2
+        }
+        composeTestRule
+            .onAllNodesWithTag(UnblockUserScreenTestTag.PROFILE_AVATAR, useUnmergedTree = true)[0]
+            .performClick()
+        assertEquals(1, clickCount)
+        composeTestRule
+            .onAllNodesWithTag(UnblockUserScreenTestTag.PROFILE_AVATAR, useUnmergedTree = true)[1]
+            .performClick()
+        assertEquals(2, clickCount)
+    }
 }
