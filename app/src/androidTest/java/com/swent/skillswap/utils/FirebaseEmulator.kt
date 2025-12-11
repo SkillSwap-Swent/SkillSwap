@@ -99,9 +99,11 @@ object FirebaseEmulator {
         clearEmulator(firestoreEndpoint)
     }
 
+    /**
     fun clearStorageEmulator() {
         clearEmulator(storageEndpoint)
     }
+    */
 
     fun reinitialize() {
         val context = ApplicationProvider.getApplicationContext<Context>()
