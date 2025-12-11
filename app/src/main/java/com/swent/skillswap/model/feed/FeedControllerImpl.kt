@@ -9,6 +9,7 @@ import com.swent.skillswap.model.chat.ChatRepository
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostRepository
+import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.post.ReplyStatus
 import com.swent.skillswap.model.post.Request
@@ -165,7 +166,8 @@ private class FeedControllerImpl(
                     NUMB_POSTS_TO_FETCH,
                     feedType,
                     userLocation = currentUserLocation.value,
-                    maxDistanceKm = maxDistance.floatValue
+                    maxDistanceKm = maxDistance.floatValue,
+                    status = PostStatus.POSTED
                 )
             val filtered =
                 recommendationEngine.filterPosts(

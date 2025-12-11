@@ -106,7 +106,7 @@ class ChatListScreenTest {
         ) = emptyList<Post>()
 
         override suspend fun getPost(type: PostType, postId: String) =
-            posts[postId] ?: throw Exception("Post not found")
+            posts[postId] ?: MockPost(postId, "Default Title")
 
         override suspend fun addPost(post: Post) {}
 
@@ -210,7 +210,7 @@ class ChatListScreenTest {
 
         // Click any card (filter buttons are also clickable, so get the last one which is the chat)
         val clickableNodes = composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes()
-        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 1].performClick()
+        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 2].performClick()
         assert(clickedChatId == "c1")
     }
 
@@ -455,5 +455,23 @@ class ChatListScreenTest {
                 .assert(hasContentDescription("Default profile picture"))
             true
         }
+    }
+
+    @Test
+    fun displays_error_message_when_fetch_fails() {
+        val viewModel =
+            ChatListViewModel(
+                FailingChatRepository(),
+                FakeUserRepository(emptyMap()),
+                FakePostRepository(emptyMap())
+            )
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(ChatListTestTags.ERROR).assertExists()
+        composeRule.onNodeWithText("Error fetching chats").assertExists()
     }
 }
