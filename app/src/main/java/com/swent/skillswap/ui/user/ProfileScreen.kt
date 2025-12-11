@@ -63,6 +63,7 @@ object ProfileTestTags {
     const val MY_POSTS_BUTTON = "profile_my_posts_button"
     const val ADD_POST_BUTTON = "profile_add_post_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
+    const val UNBLOCK_BUTTON = "profile_unblock"
 }
 
 @Composable
@@ -72,6 +73,7 @@ fun ProfileScreen(
     onSkillClick: () -> Unit = {},
     onAddPostClick: () -> Unit = {},
     onSeeMyPostsClick: () -> Unit = {},
+    onUnblockClick :() -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -209,6 +211,15 @@ fun ProfileScreen(
         }
         Spacer(modifier = Modifier.weight(1f))
 
+        Button(
+            onClick = { onUnblockClick() },
+            shape = RoundedCornerShape(26),
+            contentPadding = PaddingValues(12.dp, 0.dp),
+            modifier = Modifier.testTag(ProfileTestTags.UNBLOCK_BUTTON)
+        ){
+            Text(text = "Unblock People")
+        }
+        Spacer(modifier = Modifier.weight(1f))
         /* Add post button */
         Button(
             onClick = { onAddPostClick() },
