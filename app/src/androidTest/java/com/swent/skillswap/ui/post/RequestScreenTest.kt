@@ -84,7 +84,6 @@ class RequestScreenTest {
         }
     }
 
-
     @Before
     fun setUp() {
         fakeRepository = FakePostRepository()
@@ -92,7 +91,6 @@ class RequestScreenTest {
         backButtonClicked = false
         postCreatedCalled = false
     }
-
 
     private fun scrollAndAssertIsDisplayed(tag: String) {
         composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
