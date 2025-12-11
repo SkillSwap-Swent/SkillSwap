@@ -118,8 +118,9 @@ class ChatListViewModel(
                 try {
                     userRepository.getUser(userId)
                 } catch (exception: Exception) {
-                    Log.e("ChatViewModel", "Error fetching user with Id: $userId")
-                    throw exception
+                    Log.e("ChatViewModel", "Error fetching username and avatar of user with Id: $userId")
+                    _uiState.update { it.copy(error = "Error loading username and avatar") }
+                    return@launch
                 }
             val username = user.username
             val avatar = user.profilePicture
