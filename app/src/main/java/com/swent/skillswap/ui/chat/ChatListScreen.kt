@@ -129,7 +129,7 @@ fun ChatListScreen(
                     }
                 }
             }
-            filteredChats.isEmpty() ->{
+            filteredChats.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
                     contentAlignment = Alignment.Center

@@ -118,7 +118,10 @@ class ChatListViewModel(
                 try {
                     userRepository.getUser(userId)
                 } catch (exception: Exception) {
-                    Log.e("ChatViewModel", "Error fetching username and avatar of user with Id: $userId")
+                    Log.e(
+                        "ChatViewModel",
+                        "Error fetching username and avatar of user with Id: $userId"
+                    )
                     _uiState.update { it.copy(error = "Error loading username and avatar") }
                     return@launch
                 }
