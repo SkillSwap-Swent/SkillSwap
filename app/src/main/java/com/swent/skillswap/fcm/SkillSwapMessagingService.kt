@@ -84,7 +84,8 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
             NotificationType.MESSAGE.name -> onChatNotificationReceived(message)
             NotificationType.POST_ACCEPTED.name,
             NotificationType.POST_REJECTED.name,
-            NotificationType.POST_REPLY.name -> onPostNotificationReceived(message, type)
+            NotificationType.POST_REPLY.name,
+            NotificationType.NEW_MATCHING_POST.name -> onPostNotificationReceived(message, type)
             else -> Log.w(TAG, "Unknown notification type: $type")
         }
     }

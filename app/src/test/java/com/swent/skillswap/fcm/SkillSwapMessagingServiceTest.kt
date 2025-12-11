@@ -187,10 +187,11 @@ class SkillSwapMessagingServiceTest {
     }
 
     @Test
-    fun onMessageReceived_withPostNotification_unknownType_usesDefaultTitle() {
+    fun onMessageReceived_withNewMatchingPost_usesDefaultTitle() {
         val remoteMessage = mockk<RemoteMessage>(relaxed = true)
         every { remoteMessage.from } returns "test-sender"
-        every { remoteMessage.data } returns mapOf("type" to "UNKNOWN_TYPE")
+        every { remoteMessage.data } returns
+            mapOf("type" to NotificationType.NEW_MATCHING_POST.name)
         every { remoteMessage.notification } returns null
 
         ShadowLog.clear()
