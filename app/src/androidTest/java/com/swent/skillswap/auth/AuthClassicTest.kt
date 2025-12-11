@@ -139,18 +139,18 @@ class AuthClassicTest : TestCase() {
      */
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
-        // Ensure user does not exist
-        auth.signOut()
+
 
         // Go to Create Account screen
         composeTestRule.waitUntil(30_000L) {
             try {
-                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
                 true
             } catch (e: AssertionError) {
                 false
             }
         }
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.waitUntil(5_000L) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
