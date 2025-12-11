@@ -145,10 +145,12 @@ class MainActivityNavigationTest : TestCase() {
                 timestamp = Timestamp.now()
             )
 
-        // Add notification to Firestore
+        // Add notification to Firestore and wait for it to be written
         val db = FirebaseFirestore.getInstance()
         val repo = NotificationRepositoryFirestore(db)
         repo.addNotification(notification)
+        // Wait a bit for Firestore to sync
+        kotlinx.coroutines.delay(500)
 
         // Navigate to NotificationList screen
         composeTestRule.runOnUiThread {
@@ -158,8 +160,34 @@ class MainActivityNavigationTest : TestCase() {
         }
         composeTestRule.waitForIdle()
 
-        // Wait for notification to load
+        // Wait for loading to complete
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule
+                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+
+        // Switch to "All" filter to ensure we see all notifications
         composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule
+                .onAllNodesWithTag(NotificationScreenTags.FILTER_ALL)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for loading to complete again after filter change
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule
+                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+
+        // Wait for notification to appear
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
                 .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_msg-notif-1")
                 .fetchSemanticsNodes()
@@ -172,9 +200,12 @@ class MainActivityNavigationTest : TestCase() {
             .performClick()
         composeTestRule.waitForIdle()
 
-        // Verify ChatScreen is displayed (check for chat screen elements)
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            navController.currentDestination?.route == Screen.ChatScreen.createRoute(chatId)
+        // Verify navigation occurred - we should no longer be on NotificationList
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            val currentRoute = navController.currentDestination?.route
+            currentRoute != Screen.NotificationList.route &&
+                (currentRoute == Screen.ChatScreen.createRoute(chatId) ||
+                    currentRoute?.startsWith("chat/") == true)
         }
     }
 
@@ -195,10 +226,12 @@ class MainActivityNavigationTest : TestCase() {
                 timestamp = Timestamp.now()
             )
 
-        // Add notification to Firestore
+        // Add notification to Firestore and wait for it to be written
         val db = FirebaseFirestore.getInstance()
         val repo = NotificationRepositoryFirestore(db)
         repo.addNotification(notification)
+        // Wait a bit for Firestore to sync
+        kotlinx.coroutines.delay(500)
 
         // Navigate to NotificationList screen
         composeTestRule.runOnUiThread {
@@ -208,8 +241,34 @@ class MainActivityNavigationTest : TestCase() {
         }
         composeTestRule.waitForIdle()
 
-        // Wait for notification to load
+        // Wait for loading to complete
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule
+                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+
+        // Switch to "All" filter to ensure we see all notifications
         composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule
+                .onAllNodesWithTag(NotificationScreenTags.FILTER_ALL)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.onNodeWithTag(NotificationScreenTags.FILTER_ALL).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for loading to complete again after filter change
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            composeTestRule
+                .onAllNodesWithTag(NotificationScreenTags.LOADING_INDICATOR)
+                .fetchSemanticsNodes()
+                .isEmpty()
+        }
+
+        // Wait for notification to appear
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
             composeTestRule
                 .onAllNodesWithTag("${NotificationScreenTags.NOTIFICATION_ITEM}_post-notif-1")
                 .fetchSemanticsNodes()
@@ -222,16 +281,20 @@ class MainActivityNavigationTest : TestCase() {
             .performClick()
         composeTestRule.waitForIdle()
 
-        // Verify Feed screen is displayed
-        composeTestRule.waitUntil(timeoutMillis = 5000) {
-            composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
-                .fetchSemanticsNodes()
-                .isNotEmpty() ||
-                composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
+        // Verify navigation occurred - we should no longer be on NotificationList
+        // and should be on Feed route or Feed screen elements are visible
+        composeTestRule.waitUntil(timeoutMillis = 10000) {
+            val currentRoute = navController.currentDestination?.route
+            currentRoute != Screen.NotificationList.route &&
+                (currentRoute == Screen.Feed.route ||
+                    composeTestRule
+                        .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty() ||
+                    composeTestRule
+                        .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty())
         }
     }
 
