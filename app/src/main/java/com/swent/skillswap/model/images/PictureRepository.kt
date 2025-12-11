@@ -1,6 +1,7 @@
 package com.swent.skillswap.model.images
 
 import android.net.Uri
+import com.google.firebase.storage.FirebaseStorage
 import com.swent.skillswap.firebase.CloudReferences
 import java.net.URL
 import kotlinx.coroutines.tasks.await
@@ -14,7 +15,7 @@ import kotlinx.coroutines.tasks.await
  * The Images are stored in Firebase Storage under specific paths defined in CloudReferences. And
  * have a unique identifier as name. That way we can easily manage and retrieve them.
  */
-class PictureRepository(private val storage: com.google.firebase.storage.FirebaseStorage) :
+class PictureRepository(private val storage: FirebaseStorage = FirebaseStorage.getInstance()) :
     PictureRepositoryInterface {
 
     override suspend fun uploadPicture(uid: String, imageURI: Uri, path: String): URL {
