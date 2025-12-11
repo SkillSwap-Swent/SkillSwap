@@ -353,48 +353,46 @@ private fun PostItem(
     }
 }
 
-// NOSONAR_START
-@Preview
-@Composable
-fun PostItemPreview() {
-    val request1 =
-        Request(
-            uid = "123",
-            title = "Need help with Kotlin",
-            description = "Looking for an expert to teach me Kotlin.",
-            ownerId = "user456",
-            skills =
-                setOf(
-                    SkillTag.CIRCUIT_ANALYSIS,
-                    SkillTag.PROJECT_MANAGEMENT,
-                    SkillTag.MACHINE_DESIGN,
-                    SkillTag.ALGORITHMS
-                ),
-            tags = setOf(PostTag.REOCCURRING),
-            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
-            creation = Timestamp.now(),
-            status = PostStatus.POSTED,
-            media = listOf("media_url_1", "media_url_2"),
-            paymentMethod = PaymentMethod.SKILLSANDCASH,
-            location = GeoPoint(46.5191, 6.5668),
-            postReplies =
-                setOf(
-                    PostReply(
-                        postId = "123",
-                        ownerId = "replier123",
-                        creation = Timestamp.now(),
-                        message = "I want to help!",
-                        postType = PostType.REQUEST,
-                        replyStatus = ReplyStatus.PROPOSED
-                    )
-                )
-        )
-
-    Box(
-        modifier =
-            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(16.dp)
-    ) {
-        PostItem(request1, {}, {})
-    }
-}
-// NOSONAR_END
+//@Preview
+//@Composable
+//fun PostItemPreview() {
+//    val request1 =
+//        Request(
+//            uid = "123",
+//            title = "Need help with Kotlin",
+//            description = "Looking for an expert to teach me Kotlin.",
+//            ownerId = "user456",
+//            skills =
+//                setOf(
+//                    SkillTag.CIRCUIT_ANALYSIS,
+//                    SkillTag.PROJECT_MANAGEMENT,
+//                    SkillTag.MACHINE_DESIGN,
+//                    SkillTag.ALGORITHMS
+//                ),
+//            tags = setOf(PostTag.REOCCURRING),
+//            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+//            creation = Timestamp.now(),
+//            status = PostStatus.POSTED,
+//            media = listOf("media_url_1", "media_url_2"),
+//            paymentMethod = PaymentMethod.SKILLSANDCASH,
+//            location = GeoPoint(46.5191, 6.5668),
+//            postReplies =
+//                setOf(
+//                    PostReply(
+//                        postId = "123",
+//                        ownerId = "replier123",
+//                        creation = Timestamp.now(),
+//                        message = "I want to help!",
+//                        postType = PostType.REQUEST,
+//                        replyStatus = ReplyStatus.PROPOSED
+//                    )
+//                )
+//        )
+//
+//    Box(
+//        modifier =
+//            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(16.dp)
+//    ) {
+//        PostItem(request1, {}, {})
+//    }
+//}
