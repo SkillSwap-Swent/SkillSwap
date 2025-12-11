@@ -45,6 +45,7 @@ object SkillsEditTestTags {
 
     // Buttons
     const val BACK_BUTTON = "skills_back_button"
+    const val HELP_TIP = "skills_help_tip"
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -73,7 +74,7 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
 
             RichTooltipSkillswap(
                 body = TooltipDescriptions.SKILL_RATING,
-                modifier = Modifier.padding(end = pad)
+                modifier = Modifier.padding(end = pad).testTag(SkillsEditTestTags.HELP_TIP)
             )
         }
 

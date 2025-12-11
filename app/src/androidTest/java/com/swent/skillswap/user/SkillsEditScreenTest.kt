@@ -1,8 +1,10 @@
 package com.swent.skillswap.user
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -22,6 +24,8 @@ import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
 import com.swent.skillswap.ui.user.editUser.SkillsEditTestTags
 import com.swent.skillswap.ui.user.editUser.SkillsEditTestTags.OTHER_SKILLS_BOX
 import com.swent.skillswap.ui.user.editUser.SkillsEditTestTags.USER_SKILLS_BOX
+import com.swent.skillswap.ui.utils.RichTooltipTestTags
+import com.swent.skillswap.ui.utils.TooltipDescriptions
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
@@ -273,6 +277,34 @@ class SkillsEditScreenTest : TestCase() {
             assert(skillNames.contains(SkillTag.DATABASES))
             assert(skillNames.contains(SkillTag.DIGITAL_LOGIC))
             assert(skillNames.contains(SkillTag.PHYSICS_MECHANICS))
+        }
+    }
+
+    @Test
+    fun check_tooltip() = run {
+        step("Display SkillsEditScreen") {
+            composeTestRule.setContent {
+                SkillSwapAppTheme { SkillsEditScreen(vm = viewModel, onBackClick = {}) }
+            }
+            composeTestRule.waitForIdle()
+        }
+
+        val tag = SkillsEditTestTags.HELP_TIP
+
+        step("Open tooltip") {
+            // Wait for user to be loaded in the VM (so skills appear)
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                viewModel.uiState.value.editedUser != null
+            }
+
+            waitForNodeToExist(tag)
+            composeTestRule.onNodeWithTag(tag).performScrollTo().performClick()
+            composeTestRule.onNodeWithText(TooltipDescriptions.SKILL_RATING).assertIsDisplayed()
+        }
+
+        step("Close tooltip") {
+            composeTestRule.onNodeWithTag(RichTooltipTestTags.BUTTON).performClick()
+            composeTestRule.onNodeWithText(TooltipDescriptions.SKILL_RATING).assertIsNotDisplayed()
         }
     }
 }

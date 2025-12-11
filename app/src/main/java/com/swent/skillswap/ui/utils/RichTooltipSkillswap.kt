@@ -16,7 +16,13 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.launch
+
+object RichTooltipTestTags {
+    // Screen-level
+    const val BUTTON = "button"
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +44,10 @@ fun RichTooltipSkillswap(
             RichTooltip(
                 action = {
                     Row {
-                        TextButton(onClick = { coroutineScope.launch { tooltipState.dismiss() } }) {
+                        TextButton(
+                            modifier = Modifier.testTag(RichTooltipTestTags.BUTTON),
+                            onClick = { coroutineScope.launch { tooltipState.dismiss() } }
+                        ) {
                             Text(buttonText)
                         }
                     }
