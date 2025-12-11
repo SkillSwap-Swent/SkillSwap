@@ -160,8 +160,7 @@ class ChatListViewModel(
             try {
                 userRepository.updateRating(userId, incomingRating)
             } catch (exception: Exception) {
-                // TODO: Implement robust error handling
-                ""
+                Log.e("ChatListViewModel", "Error updating rating for user $userId", exception)
             }
         }
     }
