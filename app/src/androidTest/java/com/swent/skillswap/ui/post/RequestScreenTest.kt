@@ -8,6 +8,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
+import com.swent.skillswap.model.images.FakePictureRepository
 import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
@@ -59,13 +60,6 @@ class RequestScreenTest {
             location = defaultLocation
         )
 
-    @Before
-    fun setUp() {
-        fakeRepository = FakePostRepository()
-        backButtonClicked = false
-        postCreatedCalled = false
-    }
-
     companion object {
         @BeforeClass
         @JvmStatic
@@ -89,6 +83,16 @@ class RequestScreenTest {
             }
         }
     }
+
+
+    @Before
+    fun setUp() {
+        fakeRepository = FakePostRepository()
+        storageRepository = FakePictureRepository()
+        backButtonClicked = false
+        postCreatedCalled = false
+    }
+
 
     private fun scrollAndAssertIsDisplayed(tag: String) {
         composeTestRule.onNodeWithTag("scrollColumn").performScrollToNode(hasTestTag(tag))
