@@ -3,7 +3,6 @@ package com.swent.skillswap.ui.post
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.PostRepository
 

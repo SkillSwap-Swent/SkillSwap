@@ -9,7 +9,6 @@ import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.images.FakePictureRepository
-import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
