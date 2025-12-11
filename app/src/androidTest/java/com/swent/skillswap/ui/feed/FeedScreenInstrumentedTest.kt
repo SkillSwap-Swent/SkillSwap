@@ -1216,9 +1216,20 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        composeTestRule
-            .onNodeWithTag(FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION, useUnmergedTree = true)
-            .assertTextContains("TestUser2", substring = true, ignoreCase = true)
+        // CI can be flaky here; wait until the popup description contains the expected username
+        composeTestRule.waitUntil(timeoutMillis = 5_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(
+                        FeedScreenTestTags.POP_UP_REPORT_DESCRIPTION,
+                        useUnmergedTree = true
+                    )
+                    .assertTextContains("TestUser2", substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(FeedScreenTestTags.POP_UP_CONFIRM_BUTTON).performClick()
         composeTestRule.waitUntil(10_000L) {
             composeTestRule

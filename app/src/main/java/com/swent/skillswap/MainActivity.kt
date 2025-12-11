@@ -174,7 +174,7 @@ fun SkillSwapApp(
 
     var controller by remember { mutableStateOf<FeedController?>(null) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Firebase.auth.uid) {
         val recommendationEngine =
             RecommendationEngineFactory(UserRepoFirestore(Firebase.firestore))
                 .create(
@@ -380,6 +380,9 @@ fun SkillSwapApp(
                     onChatClick = { chatId ->
                         navController.navigate(Screen.ChatScreen.createRoute(chatId))
                         notificationViewModel.markChatNotificationsAsRead(chatId)
+                    },
+                    onAvatarClick = { userId ->
+                        navController.navigate(Screen.OtherUser.createRoute(userId))
                     }
                 )
             }
