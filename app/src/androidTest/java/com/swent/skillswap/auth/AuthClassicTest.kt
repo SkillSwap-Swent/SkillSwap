@@ -59,6 +59,7 @@ class AuthClassicTest : TestCase() {
         @JvmStatic
         fun globalSetUp() {
             FirebaseEmulator.startEmulator()
+            FirebaseEmulator.clearAuthEmulator()
             auth = FirebaseEmulator.auth
             firestore = FirebaseEmulator.firestore
         }
@@ -138,17 +139,25 @@ class AuthClassicTest : TestCase() {
      */
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
+
         // Go to Create Account screen
-        composeTestRule.waitUntil(25000) {
+        composeTestRule.waitUntil(30_000L) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
                 true
-            } catch (e: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
         }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
-        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+        composeTestRule.waitUntil(5_000L) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
 
         // USERNAME

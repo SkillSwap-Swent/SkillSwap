@@ -47,6 +47,8 @@ import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
+import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -70,6 +72,7 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.notification.NotificationScreen
 import com.swent.skillswap.ui.notification.NotificationViewModel
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
@@ -82,6 +85,8 @@ import com.swent.skillswap.ui.user.ProfileViewModel
 import com.swent.skillswap.ui.user.editUser.EditUserScreen
 import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
+import com.swent.skillswap.ui.user.unblockUser.UnblockUserScreen
+import com.swent.skillswap.ui.user.unblockUser.UnblockUserViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -268,7 +273,8 @@ fun SkillSwapApp(
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
                         onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) },
+                        onUnblockClick = { navigationActions.navigateTo(Screen.UnblockUser) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -304,9 +310,11 @@ fun SkillSwapApp(
                 ) { backStackEntry ->
                     val postId = backStackEntry.arguments?.getString("postId") ?: ""
                     val postRepository = PostFirestoreRepository(Firebase.firestore)
+                    val storageRepository = PictureRepository()
                     val currentUserId = Firebase.auth.uid ?: ""
                     RequestScreen(
                         postRepository = postRepository,
+                        storageRepository = storageRepository,
                         currentUserId = currentUserId,
                         uid = postId,
                         postOperation = PostOperation.EDIT,
@@ -383,7 +391,8 @@ fun SkillSwapApp(
                     },
                     onAvatarClick = { userId ->
                         navController.navigate(Screen.OtherUser.createRoute(userId))
-                    }
+                    },
+                    onNotificationClick = { navController.navigate(Screen.NotificationList.route) }
                 )
             }
 
@@ -408,6 +417,31 @@ fun SkillSwapApp(
                 )
             }
 
+            composable(Screen.NotificationList.route) {
+                NotificationScreen(
+                    viewModel = notificationViewModel,
+                    onGoBack = { navigationActions.goBack() },
+                    onNotificationClick = { notification ->
+                        when (notification.type) {
+                            NotificationType.MESSAGE -> {
+                                // Navigate to chat screen if relatedId (chatId) is available
+                                notification.relatedId?.let { chatId ->
+                                    navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                                }
+                            }
+                            NotificationType.POST_REPLY,
+                            NotificationType.POST_ACCEPTED,
+                            NotificationType.POST_REJECTED,
+                            NotificationType.NEW_MATCHING_POST -> {
+                                // Navigate to feed for post-related notifications
+                                // TODO: Could navigate to specific post detail screen if available
+                                navigationActions.navigateTo(Screen.Feed)
+                            }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.AddRequest.route) {
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                 if (currentUserId == null) {
@@ -416,11 +450,19 @@ fun SkillSwapApp(
                 }
                 RequestScreen(
                     postRepository = PostFirestoreRepository(Firebase.firestore),
+                    storageRepository = PictureRepository(),
                     currentUserId = currentUserId,
                     uid = null,
                     onGoBack = { navigationActions.goBack() },
                     onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
                     postOperation = PostOperation.ADD,
+                )
+            }
+            composable(Screen.UnblockUser.route) {
+                UnblockUserScreen(
+                    UnblockUserViewModel(UserRepoFirestore(Firebase.firestore)),
+                    onAvatarClick = { navController.navigate(Screen.OtherUser.createRoute(it)) },
+                    onGoBack = { navigationActions.goBack() }
                 )
             }
         }
