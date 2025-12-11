@@ -1,4 +1,4 @@
-/** Template from https://developer.android.com/develop/ui/compose/components/tooltip*/
+/** Template from https://developer.android.com/develop/ui/compose/components/tooltip */
 package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.layout.Row
