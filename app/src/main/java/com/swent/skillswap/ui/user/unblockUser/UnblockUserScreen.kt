@@ -89,7 +89,7 @@ fun UnblockUserScreen(
     onAvatarClick: (String) -> Unit,
     onGoBack: () -> Unit
 ) {
-    val blockedUsers by viewModel.unblockCardViews.collectAsState()
+    val blockedUsers by viewModel.uiState.collectAsState()
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(

@@ -34,8 +34,8 @@ class UnblockUserViewModel(
 
     private lateinit var user: User
 
-    private val _unblockCardViews = MutableStateFlow<List<UnblockCardView>>(emptyList())
-    val unblockCardViews: StateFlow<List<UnblockCardView>> = _unblockCardViews
+    private val _uiState = MutableStateFlow<List<UnblockCardView>>(emptyList())
+    val uiState: StateFlow<List<UnblockCardView>> = _uiState
 
     init {
         loadBlockedUsers()
@@ -70,7 +70,7 @@ class UnblockUserViewModel(
                                 .getOrNull()
                         }
 
-                    _unblockCardViews.value = views
+                    _uiState.value = views
                 }
                 .onFailure { e -> Log.e(errorTag, "Error loading blocked users", e) }
         }
@@ -88,7 +88,7 @@ class UnblockUserViewModel(
     /**
      * Removes a user from the current user's blocked list and updates the repository.
      *
-     * Updates the local cache ([user]) and [_unblockCardViews] to reflect the change in the UI.
+     * Updates the local cache ([user]) and [_uiState] to reflect the change in the UI.
      *
      * @param userID UID of the user to unblock.
      */
@@ -97,7 +97,7 @@ class UnblockUserViewModel(
                 val newBlockedList = user.blockedUsers.filter { it != userID }.toSet()
                 userRepo.editUser(uid, user.copy(blockedUsers = newBlockedList))
                 user = user.copy(blockedUsers = newBlockedList)
-                _unblockCardViews.value = _unblockCardViews.value.filter { it.uid != userID }
+                _uiState.value = _uiState.value.filter { it.uid != userID }
             }
             .onFailure { e -> Log.e(errorTag, "Error unblocking user", e) }
     }

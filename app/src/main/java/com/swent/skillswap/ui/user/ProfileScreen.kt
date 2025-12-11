@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
@@ -39,6 +40,7 @@ import com.swent.skillswap.ui.user.ProfileTestTags.SKILLS_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.USERNAME_VALUE
 import com.swent.skillswap.ui.utils.AvatarDisplay
 import com.swent.skillswap.ui.utils.AvatarVariant
+import com.swent.skillswap.ui.utils.ProfileActionButton
 import com.swent.skillswap.ui.utils.SkillSwapEditButton
 
 object ProfileTestTags {
@@ -179,64 +181,41 @@ fun ProfileScreen(
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        /** Skills Button */
-        Button(
-            onClick = { onSkillClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
+        ProfileActionButton(
+            text = "My skills",
+            icon = Icons.Outlined.BookmarkBorder,
+            contentDescription = "Skills",
+            onClick = onSkillClick,
             modifier = Modifier.testTag(SKILLS_BUTTON)
-        ) {
-            Icon(
-                contentDescription = "Skills",
-                imageVector = Icons.Outlined.BookmarkBorder,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "My skills")
-        }
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
-        /** See My Posts Button */
-        Button(
-            onClick = { onSeeMyPostsClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
+
+        ProfileActionButton(
+            text = "See my posts",
+            icon = Icons.AutoMirrored.Outlined.List,
+            contentDescription = "My Posts",
+            onClick = onSeeMyPostsClick,
             modifier = Modifier.testTag(MY_POSTS_BUTTON)
-        ) {
-            Icon(
-                contentDescription = "My Posts",
-                imageVector = Icons.Outlined.List,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "See my posts")
-        }
+        )
+
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = { onUnblockClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
+        ProfileActionButton(
+            text = "Unblock People",
+            onClick = onUnblockClick,
             modifier = Modifier.testTag(ProfileTestTags.UNBLOCK_BUTTON)
-        ) {
-            Text(text = "Unblock People")
-        }
+        )
+
         Spacer(modifier = Modifier.weight(1f))
-        /* Add post button */
-        Button(
-            onClick = { onAddPostClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
+
+        ProfileActionButton(
+            text = "Make a post",
+            icon = Icons.Outlined.AddCircle,
+            contentDescription = "New Post",
+            onClick = onAddPostClick,
             modifier = Modifier.testTag(ADD_POST_BUTTON)
-        ) {
-            Icon(
-                contentDescription = "New Post",
-                imageVector = Icons.Outlined.AddCircle,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "Make a post")
-        }
-        Spacer(modifier = Modifier.weight(1f))
+        )
 
         /** log Out button */
         Button(
