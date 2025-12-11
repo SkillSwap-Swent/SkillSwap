@@ -107,7 +107,7 @@ class ChatListViewModel(
             try {
                 chatRepository.acceptAPostReplyChat(chat)
             } catch (e: Exception) {
-                Log.e(e.javaClass.toString(), e.message, e)
+                Log.e("ChatViewModel", "Error accepting chat", e)
             }
         }
     }
