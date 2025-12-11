@@ -140,8 +140,9 @@ class ChatListViewModel(
                 try {
                     postRepository.getPost(postType, postId).title
                 } catch (exception: Exception) {
-                    // TODO: Implement robust error handling
-                    ""
+                    Log.e("ChatViewModel", "Error fetching post title for post with id: $postId")
+                    _uiState.update { it.copy(error = "Error loading post title") }
+                    return@launch
                 }
             _uiState.update { it.copy(postTitles = it.postTitles + (postId to title)) }
         }
