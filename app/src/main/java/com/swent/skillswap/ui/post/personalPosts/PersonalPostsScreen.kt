@@ -4,7 +4,6 @@
  */
 package com.swent.skillswap.ui.post.personalPosts
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,25 +21,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostFirestoreRepository
-import com.swent.skillswap.model.post.PostReply
-import com.swent.skillswap.model.post.PostStatus
-import com.swent.skillswap.model.post.PostType
-import com.swent.skillswap.model.post.ReplyStatus
-import com.swent.skillswap.model.post.Request
-import com.swent.skillswap.model.tags.PostTag
-import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.ui.utils.SkillPill
-import java.util.Date
 
 object PersonalPostsScreenTags {
     const val SCREEN = "personal_posts_screen"
@@ -353,9 +340,9 @@ private fun PostItem(
     }
 }
 
-//@Preview
-//@Composable
-//fun PostItemPreview() {
+// @Preview
+// @Composable
+// fun PostItemPreview() {
 //    val request1 =
 //        Request(
 //            uid = "123",
@@ -391,8 +378,9 @@ private fun PostItem(
 //
 //    Box(
 //        modifier =
-//            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(16.dp)
+//
+// Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(16.dp)
 //    ) {
 //        PostItem(request1, {}, {})
 //    }
-//}
+// }
