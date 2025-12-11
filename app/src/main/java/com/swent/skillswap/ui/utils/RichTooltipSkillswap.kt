@@ -24,6 +24,27 @@ object RichTooltipTestTags {
     const val BUTTON = "button"
 }
 
+/**
+ * A reusable Tooltip component.
+ *
+ * This wrapper around Material3's [RichTooltip] provides:
+ * - Multi-line informational text
+ * - A dismiss button
+ * - Optional initial visibility
+ * - Support for persistent tooltips (In our usecase this is default behaviour, after pressing the
+ *   button it should not dissapear untilk dismissed by user).
+ *
+ * The tooltip is opened by tapping the Info icon, and dismissed via the action button inside the
+ * tooltip. Text content should be supplied from `TooltipDescriptions` to ensure consistent
+ * messaging across the app.
+ *
+ * @param modifier Optional [Modifier] applied to the surrounding [TooltipBox].
+ * @param body Text displayed inside the tooltip. Should come from `TooltipDescriptions`.
+ * @param buttonText Label for the dismiss button.
+ * @param initialIsVisible Whether the tooltip is shown on first composition.
+ * @param isPersistent Whether the tooltip stays visible until manually dismissed or auto dissapears
+ *   after a couple of seconds.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RichTooltipSkillswap(
@@ -59,7 +80,7 @@ fun RichTooltipSkillswap(
         state = tooltipState
     ) {
         IconButton(onClick = { coroutineScope.launch { tooltipState.show() } }) {
-            Icon(imageVector = Icons.Filled.Info, contentDescription = "Open camera")
+            Icon(imageVector = Icons.Filled.Info, contentDescription = "Open tooltip")
         }
     }
 }
