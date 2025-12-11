@@ -4,12 +4,13 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.PostRepository
 
 class RequestViewModelFactory(
     private val appContext: Context? = null,
     private val postRepository: PostRepository,
-    private val storageRepository: PictureRepository,
+    private val storageRepository: PictureRepositoryInterface,
     private val currentUserId: String,
     private val postId: String? = null
 ) : ViewModelProvider.Factory {

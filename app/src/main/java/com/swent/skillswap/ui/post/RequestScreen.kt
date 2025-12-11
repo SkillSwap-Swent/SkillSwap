@@ -63,6 +63,7 @@ import coil.compose.AsyncImage
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
 import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
@@ -107,7 +108,7 @@ object RequestScreenTags {
 @Composable
 fun RequestScreen(
     postRepository: PostRepository,
-    storageRepository: PictureRepository,
+    storageRepository: PictureRepositoryInterface,
     currentUserId: String,
     uid: String? = null,
     requestViewModel: RequestViewModel =
