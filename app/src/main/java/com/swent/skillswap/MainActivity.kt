@@ -192,6 +192,7 @@ fun SkillSwapApp(
     val notificationViewModel: NotificationViewModel = viewModel()
 
     var controller by remember { mutableStateOf<FeedController?>(null) }
+    var lastSelectedTopLevelTab by remember { mutableStateOf<Tab?>(Tab.Profile) }
 
     LaunchedEffect(Firebase.auth.uid) {
         val recommendationEngine =
@@ -226,11 +227,29 @@ fun SkillSwapApp(
                     else -> null
                 }
 
-            currentTab?.let { tab ->
+            // Update last selected tab when on a top-level destination
+            if (currentTab != null) {
+                lastSelectedTopLevelTab = currentTab
+            }
+
+            // Show bottom bar if we're on a top-level destination or on AddRequest
+            val showBottomBar = currentTab != null || currentRoute == Screen.AddRequest.route
+            
+            // Determine which tab to show as selected
+            val selectedTab = when {
+                currentTab != null -> currentTab
+                currentRoute == Screen.AddRequest.route -> Tab.Posts
+                else -> lastSelectedTopLevelTab ?: Tab.Profile
+            }
+            
+            if (showBottomBar) {
                 BottomNavigationMenu(
-                    selectedTab = tab,
-                    onTabSelected = { selectedTab ->
-                        navigationActions.navigateTo(selectedTab.destination)
+                    selectedTab = selectedTab,
+                    onTabSelected = { clickedTab ->
+                        clickedTab.destination?.let {
+                            navigationActions.navigateTo(it)
+                            lastSelectedTopLevelTab = clickedTab
+                        }
                     },
                     notificationViewModel = notificationViewModel
                 )

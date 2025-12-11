@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Badge
@@ -30,24 +31,28 @@ object NavigationTestTags {
     const val PROFILE_TAB = "ProfileTab"
     const val FEED_TAB = "FeedTab"
     const val CHAT_TAB = "ChatTab"
+    const val POSTS_TAB = "PostsTab"
 
     fun getTabTestTag(tab: Tab): String =
         when (tab) {
             is Tab.Profile -> PROFILE_TAB
             is Tab.Feed -> FEED_TAB
             is Tab.Chat -> CHAT_TAB
+            is Tab.Posts -> POSTS_TAB
         }
 }
 
-sealed class Tab(val name: String, val icon: ImageVector, val destination: Screen) {
+sealed class Tab(val name: String, val icon: ImageVector, val destination: Screen?) {
     object Profile : Tab("Profile", Icons.Outlined.Person, Screen.Profile)
 
     object Feed : Tab("Feed", Icons.AutoMirrored.Outlined.List, Screen.Feed)
 
     object Chat : Tab("Chat", Icons.Outlined.ChatBubbleOutline, Screen.Chat)
+
+    object Posts : Tab("Posts", Icons.Outlined.AddCircle, Screen.AddRequest) // Navigate directly to AddRequest
 }
 
-private val tabs = listOf(Tab.Profile, Tab.Feed, Tab.Chat)
+private val tabs = listOf(Tab.Profile, Tab.Feed, Tab.Posts, Tab.Chat)
 
 @Composable
 fun BottomNavigationMenu(
