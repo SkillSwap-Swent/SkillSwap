@@ -3,7 +3,6 @@ package com.swent.skillswap.model.notification
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.model.utils.RepositoryException
 import kotlinx.coroutines.tasks.await
@@ -18,12 +17,9 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
 
     override suspend fun getNotificationsForUser(userId: String): List<Notification> {
         return try {
-            notificationsCollection
-                .whereEqualTo("userId", userId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .await()
-                .map { documentToNotification(it) }
+            notificationsCollection.whereEqualTo("userId", userId).get().await().map {
+                documentToNotification(it)
+            }
         } catch (e: Exception) {
             throw RepositoryException("Failed to get notifications for user $userId", e)
         }
@@ -34,7 +30,6 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
             notificationsCollection
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("isRead", false)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .await()
                 .map { documentToNotification(it) }
@@ -101,6 +96,26 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         } catch (e: Exception) {
             throw RepositoryException(
                 "Failed to mark all notifications as read for user $userId",
+                e
+            )
+        }
+    }
+
+    override suspend fun markChatNotificationsAsRead(chatId: String, userId: String) {
+        try {
+            // Fetch unread notifications for user
+            val unreadNotifications = getUnreadNotificationsForUser(userId)
+            // Filter notifications with relatedId == chatId
+            val toMark = unreadNotifications.filter { it.relatedId == chatId }
+
+            if (toMark.isEmpty()) return
+
+            for (notification in toMark) {
+                markAsRead(notification.uid)
+            }
+        } catch (e: Exception) {
+            throw RepositoryException(
+                "Failed to mark chat notifications as read for chatId $chatId and user $userId",
                 e
             )
         }

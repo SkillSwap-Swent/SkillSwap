@@ -3,10 +3,16 @@ package com.swent.skillswap.fcm
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.messaging.RemoteMessage
+import com.swent.skillswap.model.chat.CurrentChatTracker
+import com.swent.skillswap.model.notification.NotificationRepository
 import com.swent.skillswap.model.notification.NotificationType
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
@@ -26,7 +32,7 @@ class SkillSwapMessagingServiceTest {
         val context = RuntimeEnvironment.getApplication()
         try {
             FirebaseApp.getInstance()
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             val options =
                 FirebaseOptions.Builder()
                     .setApplicationId("test-app-id")
@@ -35,7 +41,10 @@ class SkillSwapMessagingServiceTest {
                     .build()
             FirebaseApp.initializeApp(context, options)
         }
-        service = SkillSwapMessagingService()
+        service =
+            org.robolectric.Robolectric.buildService(SkillSwapMessagingService::class.java)
+                .create()
+                .get()
     }
 
     @Test
@@ -81,10 +90,11 @@ class SkillSwapMessagingServiceTest {
     @Test
     fun onMessageReceived_withChatNotification_logs_chat_handling() {
         val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        val notification = mockk<RemoteMessage.Notification>(relaxed = true)
         every { remoteMessage.from } returns "test-sender"
         every { remoteMessage.data } returns
             mapOf("type" to NotificationType.MESSAGE.name, "relatedId" to "chat123")
-        every { remoteMessage.notification } returns null
+        every { remoteMessage.notification } returns notification
 
         ShadowLog.clear()
         service.onMessageReceived(remoteMessage)
@@ -113,5 +123,50 @@ class SkillSwapMessagingServiceTest {
                     it.msg.contains("Handling accepted post notification")
             }
         assert(postLogs.isNotEmpty()) { "Expected log for handling accepted post notification" }
+    }
+
+    @Test
+    fun onMessageReceived_userInChat_marksChatNotificationsAsRead_and_returns() {
+        val relatedId = "chat123"
+        val remoteMessage = mockk<RemoteMessage>(relaxed = true)
+        every { remoteMessage.from } returns "test-sender"
+        every { remoteMessage.data } returns
+            mapOf("type" to NotificationType.MESSAGE.name, "relatedId" to relatedId)
+        every { remoteMessage.notification } returns null
+
+        // Set current chat to the same relatedId so the service should mark as read and return
+        CurrentChatTracker.currentChatId = relatedId
+
+        // Mock FirebaseAuth.getInstance() to return a FirebaseAuth with a current user
+        mockkStatic(FirebaseAuth::class)
+        val mockAuth = mockk<FirebaseAuth>(relaxed = true)
+        val mockUser = mockk<FirebaseUser>(relaxed = true)
+        every { mockAuth.currentUser } returns mockUser
+        every { mockUser.uid } returns "user-1"
+        every { FirebaseAuth.getInstance() } returns mockAuth
+
+        // Create a mock NotificationRepository and inject it by replacing the lazy delegate
+        val mockRepo = mockk<NotificationRepository>(relaxed = true)
+        val delegateField = service.javaClass.getDeclaredField("notificationRepositery\$delegate")
+        delegateField.isAccessible = true
+        delegateField.set(service, lazy { mockRepo })
+
+        ShadowLog.clear()
+        service.onMessageReceived(remoteMessage)
+
+        // Verify that markChatNotificationsAsRead was called for the related chat and user
+        io.mockk.coVerify(timeout = 2000) {
+            mockRepo.markChatNotificationsAsRead(relatedId, "user-1")
+        }
+
+        val debugLogs =
+            ShadowLog.getLogs().filter {
+                it.type == android.util.Log.DEBUG && it.msg.contains("User is in chat $relatedId")
+            }
+        assert(debugLogs.isNotEmpty()) { "Expected debug log about user in chat" }
+
+        // Cleanup
+        CurrentChatTracker.currentChatId = null
+        unmockkStatic(FirebaseAuth::class)
     }
 }

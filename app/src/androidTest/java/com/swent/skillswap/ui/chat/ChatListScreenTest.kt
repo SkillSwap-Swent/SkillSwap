@@ -1,5 +1,5 @@
 /* With the help of Sonnet 4.5 for repetitive tasks */
-
+/* updated with chatGPT*/
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.material3.MaterialTheme
@@ -31,8 +31,14 @@ class ChatListScreenTest {
     @get:Rule val composeRule = createComposeRule()
 
     // Minimal fake implementations
-    private class FakeChatRepository(private val chats: Map<PostType, List<Chat>> = emptyMap()) :
-        ChatRepository {
+    private class FakeChatRepository(
+        private val chats: Map<PostType, List<Chat>> = emptyMap(),
+        private val pendingChats: Map<PostType, List<Chat>> = emptyMap(),
+        private val owners: Map<String, Boolean> = emptyMap()
+    ) : ChatRepository {
+
+        var lastAcceptedChatId: String? = null
+
         override suspend fun createChat(
             participants: List<String>,
             relatedPostId: String,
@@ -43,8 +49,25 @@ class ChatListScreenTest {
 
         override suspend fun sendMessage(chatId: String, senderId: String, content: String) {}
 
-        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
+        // Non-pending chats of current user
+        override suspend fun getChatsOfCurrentUser(relatedPostType: PostType): List<Chat> =
             chats[relatedPostType] ?: emptyList()
+
+        // Pending chats of current user
+        override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> =
+            pendingChats[relatedPostType] ?: emptyList()
+
+        override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean = owners[chat.id] ?: false
+
+        override suspend fun acceptAPostReplyChat(chat: Chat) {
+            // Just record which chat was accepted so tests can assert on it
+            lastAcceptedChatId = chat.id
+        }
+
+        override suspend fun getChat(chatId: String): Chat {
+            // JUST HERE TO REMOVE OVERRIDE ERROR
+            return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+        }
     }
 
     private class FakeUserRepository(private val users: Map<String, User>) : UserRepositery {
@@ -97,18 +120,17 @@ class ChatListScreenTest {
         Chat(id, listOf("u1", user), postId, type, emptyList())
 
     private fun createViewModel(
-        offerChats: List<Chat> = emptyList(),
+        REQUESTChats: List<Chat> = emptyList(),
         requestChats: List<Chat> = emptyList(),
         users: Map<String, User> = emptyMap(),
         posts: Map<String, Post> = emptyMap()
-    ) =
-        ChatListViewModel(
+    ): ChatListViewModel {
+        val chatRepo =
             FakeChatRepository(
-                mapOf(PostType.OFFER to offerChats, PostType.REQUEST to requestChats)
-            ),
-            FakeUserRepository(users),
-            FakePostRepository(posts)
-        )
+                chats = mapOf(PostType.REQUEST to REQUESTChats, PostType.REQUEST to requestChats)
+            )
+        return ChatListViewModel(chatRepo, FakeUserRepository(users), FakePostRepository(posts))
+    }
 
     // Minimal mock posts for titles
     private class MockPost(
@@ -125,7 +147,7 @@ class ChatListScreenTest {
         override val status = com.swent.skillswap.model.post.PostStatus.POSTED
         override val media = emptyList<String>()
         override val location = com.google.firebase.firestore.GeoPoint(0.0, 0.0)
-        override val type = PostType.OFFER
+        override val type = PostType.REQUEST
         override val postReplies = emptyList<com.swent.skillswap.model.post.PostReply>()
         override val searchKeys = listOf<String>()
         override val reportCount: Long = 0L
@@ -136,56 +158,42 @@ class ChatListScreenTest {
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") }
         }
+        composeRule.onNodeWithTag(ChatListTestTags.SCREEN).assertExists()
         composeRule.onNodeWithText("Chat").assertExists()
-        composeRule.onNodeWithText("Offer").assertExists()
         composeRule.onNodeWithText("Request").assertExists()
+        composeRule.onNodeWithText("To Approve").assertExists()
+        composeRule.onNodeWithText("Awaiting").assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
         composeRule.onNodeWithText("No chats available").assertExists()
     }
 
     @Test
-    fun displays_offer_chats_and_switches_to_request_chats() {
-        val offerChat = createChat("c1", "p1", PostType.OFFER)
+    fun displays_request_chats_and_switches_to_other_tab() {
         val requestChat = createChat("c2", "p2", PostType.REQUEST)
         val users = mapOf("u2" to User("u2", "Sarah", "", "", emptySet(), 4.5f, emptyList()))
         val posts =
-            mapOf("p1" to MockPost("p1", "Offer Title"), "p2" to MockPost("p2", "Request Title"))
+            mapOf("p1" to MockPost("p1", "Request Title"), "p2" to MockPost("p2", "Request Title"))
 
         val viewModel =
-            createViewModel(
-                offerChats = listOf(offerChat),
-                requestChats = listOf(requestChat),
-                users = users,
-                posts = posts
-            )
+            createViewModel(requestChats = listOf(requestChat), users = users, posts = posts)
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
-        // Trigger initial load for offers
-        viewModel.getChatsOfCurrentUser(PostType.OFFER)
-        viewModel.getUsername("u2")
-        viewModel.getPostTitle("p1", PostType.OFFER)
-        composeRule.waitForIdle()
-
-        // Check offer content
+        // Check REQUEST content
         composeRule.onNodeWithText("Sarah").assertExists()
-        composeRule.onNodeWithText("Offer Title").assertExists()
-
-        // Switch to requests
-        composeRule.onNodeWithText("Request").performClick()
-        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
-        viewModel.getPostTitle("p2", PostType.REQUEST)
-        composeRule.waitForIdle()
-
         composeRule.onNodeWithText("Request Title").assertExists()
+        // Switch to other tab
+        composeRule.onNodeWithText("To Approve").performClick()
+        composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
     }
 
     @Test
     fun chat_click_triggers_callback() {
         var clickedChatId = ""
-        val chat = createChat("c1", "p1", PostType.OFFER)
-        val viewModel = createViewModel(offerChats = listOf(chat))
+        val chat = createChat("c1", "p1", PostType.REQUEST)
+        val viewModel = createViewModel(requestChats = listOf(chat))
 
         composeRule.setContent {
             MaterialTheme {
@@ -197,7 +205,7 @@ class ChatListScreenTest {
             }
         }
 
-        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
         composeRule.waitForIdle()
 
         // Click any card (filter buttons are also clickable, so get the last one which is the chat)
@@ -208,18 +216,19 @@ class ChatListScreenTest {
 
     @Test
     fun handles_loading_state_for_usernames_and_titles() {
-        val chat = createChat("c1", "p1", PostType.OFFER)
-        val viewModel = createViewModel(offerChats = listOf(chat))
+        val chat = createChat("c1", "p1", PostType.REQUEST)
+        val viewModel = createViewModel(requestChats = listOf(chat))
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
-        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
         composeRule.waitForIdle()
 
-        // With fake repos, verify chat item is rendered (at least 3: 2 filter buttons + 1 chat)
-        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3)
+        // With fake repos, verify chat item is rendered
+        // (3 filter buttons + at least 1 chat card clickable)
+        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 4)
     }
 
     @Test
@@ -231,24 +240,24 @@ class ChatListScreenTest {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
-        // Default is offers - should be empty
-        viewModel.getChatsOfCurrentUser(PostType.OFFER)
-        composeRule.waitForIdle()
-        composeRule.onNodeWithText("No chats available").assertExists()
-
-        // Switch to requests - should have content
-        composeRule.onNodeWithText("Request").performClick()
+        // Default is requests - should have content
         viewModel.getChatsOfCurrentUser(PostType.REQUEST)
         composeRule.waitForIdle()
-        assert(composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes().size >= 3)
+        composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertDoesNotExist()
+        composeRule.onNodeWithText("No chats available").assertDoesNotExist()
+
+        // Switch to waiting - should not have content
+        composeRule.onNodeWithText("Awaiting").performClick()
+        composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
+        composeRule.onNodeWithText("No chats available").assertExists()
     }
 
     @Test
     fun multiple_chats_render_correctly() {
         val chats =
             listOf(
-                createChat("c1", "p1", PostType.OFFER, "u2"),
-                createChat("c2", "p2", PostType.OFFER, "u3")
+                createChat("c1", "p1", PostType.REQUEST, "u2"),
+                createChat("c2", "p2", PostType.REQUEST, "u3")
             )
         val users =
             mapOf(
@@ -258,16 +267,16 @@ class ChatListScreenTest {
         val posts =
             mapOf("p1" to MockPost("p1", "First Post"), "p2" to MockPost("p2", "Second Post"))
 
-        val viewModel = createViewModel(offerChats = chats, users = users, posts = posts)
+        val viewModel = createViewModel(requestChats = chats, users = users, posts = posts)
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
         }
 
-        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
         chats.forEach { chat ->
             val otherUser = chat.participants.first { it != "u1" }
-            viewModel.getUsername(otherUser)
+            viewModel.getUsernameAndAvatar(otherUser)
             viewModel.getPostTitle(chat.relatedPostId, chat.relatedPostType)
         }
         composeRule.waitForIdle()
@@ -279,14 +288,47 @@ class ChatListScreenTest {
     }
 
     @Test
+    fun to_approve_shows_accept_button_and_triggers_accept() {
+        val pendingChat = createChat("c1", "p1", PostType.REQUEST)
+        val users = mapOf("u2" to User("u2", "Pending User", "", "", emptySet(), 4.5f, emptyList()))
+        val posts = mapOf("p1" to MockPost("p1", "Pending Request"))
+
+        val fakeChatRepo =
+            FakeChatRepository(
+                chats = emptyMap(),
+                pendingChats = mapOf(PostType.REQUEST to listOf(pendingChat)),
+                owners = mapOf("c1" to true) // current user is owner of related post
+            )
+
+        val viewModel =
+            ChatListViewModel(fakeChatRepo, FakeUserRepository(users), FakePostRepository(posts))
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+
+        // Select the "To Approve" filter (pending + owner == true)
+        composeRule.onNodeWithTag(ChatListTestTags.TO_APPROVE).performClick()
+        composeRule.waitForIdle()
+
+        // Accept button should be visible
+        composeRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).performScrollTo()
+        composeRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).performClick()
+
+        // Verify repository was called with the right chat
+        assert(fakeChatRepo.lastAcceptedChatId == "c1")
+    }
+
+    @Test
     fun rating_button_shows_for_completed_post_and_dialog_submits_rating() {
         val chat =
-            Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+            Chat("c1", listOf("u1", "u2"), "p1", PostType.REQUEST, emptyList(), ChatStatus.ACTIVE)
         val post =
             object : Post by MockPost("p1", "Test") {
                 override val status = PostStatus.COMPLETED
             }
-        val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
+        val viewModel = createViewModel(requestChats = listOf(chat), posts = mapOf("p1" to post))
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
@@ -306,12 +348,12 @@ class ChatListScreenTest {
     @Test
     fun rating_button_hidden_for_posted_status() {
         val chat =
-            Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+            Chat("c1", listOf("u1", "u2"), "p1", PostType.REQUEST, emptyList(), ChatStatus.ACTIVE)
         val post =
             object : Post by MockPost("p1", "Test") {
                 override val status = PostStatus.POSTED
             }
-        val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
+        val viewModel = createViewModel(requestChats = listOf(chat), posts = mapOf("p1" to post))
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
@@ -324,12 +366,12 @@ class ChatListScreenTest {
     @Test
     fun rating_dialog_cancel_dismisses() {
         val chat =
-            Chat("c1", listOf("u1", "u2"), "p1", PostType.OFFER, emptyList(), ChatStatus.ACTIVE)
+            Chat("c1", listOf("u1", "u2"), "p1", PostType.REQUEST, emptyList(), ChatStatus.ACTIVE)
         val post =
             object : Post by MockPost("p1", "Test") {
                 override val status = PostStatus.ARCHIVED
             }
-        val viewModel = createViewModel(offerChats = listOf(chat), posts = mapOf("p1" to post))
+        val viewModel = createViewModel(requestChats = listOf(chat), posts = mapOf("p1" to post))
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
@@ -339,5 +381,79 @@ class ChatListScreenTest {
         composeRule.onNodeWithContentDescription("Rate User").performClick()
         composeRule.onNodeWithText("Cancel").performClick()
         composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
+    }
+
+    @Test
+    fun profile_picture_is_displayed_for_chat_item_with_avatar_url() {
+        val chat = createChat("c1", "p1", PostType.OFFER, "u2")
+        val user =
+            User(
+                "u2",
+                "Sarah",
+                "test@gmail.com",
+                "https://example.com/avatar.jpg",
+                emptySet(),
+                4.5f,
+                emptyList()
+            )
+        val post = MockPost("p1", "Offer Title")
+        val viewModel =
+            createViewModel(
+                requestChats = listOf(chat),
+                users = mapOf("u2" to user),
+                posts = mapOf("p1" to post)
+            )
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getUsernameAndAvatar("u2")
+        viewModel.getPostTitle("p1", PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // Assert profile picture AsyncImage is displayed
+        composeRule.waitUntil(5000L) {
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assertExists()
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assert(hasContentDescription("Profile picture"))
+            true
+        }
+    }
+
+    @Test
+    fun default_profile_icon_is_displayed_for_empty_avatar_url() {
+        val chat = createChat("c2", "p2", PostType.OFFER, "u3")
+        val user = User("u3", "Tom", "test@gmail.com", "", emptySet(), 4.2f, emptyList())
+        val post = MockPost("p2", "Request Title")
+        val viewModel =
+            createViewModel(
+                requestChats = listOf(chat),
+                users = mapOf("u3" to user),
+                posts = mapOf("p2" to post)
+            )
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        viewModel.getChatsOfCurrentUser(PostType.OFFER)
+        viewModel.getUsernameAndAvatar("u3")
+        viewModel.getPostTitle("p2", PostType.OFFER)
+        composeRule.waitForIdle()
+
+        // Assert default profile icon is displayed
+        // Assert profile picture AsyncImage is displayed
+        composeRule.waitUntil(5000L) {
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assertExists()
+            composeRule
+                .onNodeWithTag(ChatListTestTags.AVATAR, useUnmergedTree = true)
+                .assert(hasContentDescription("Default profile picture"))
+            true
+        }
     }
 }
