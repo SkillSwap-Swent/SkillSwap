@@ -34,8 +34,6 @@ class FakePictureRepository : PictureRepositoryInterface {
         uploadedPictures.remove(key)
     }
 
-    // Utility methods for testing
-
     /** Checks if a picture has been uploaded */
     fun isPictureUploaded(uid: String, path: String): Boolean {
         val key = "$path/$uid"
