@@ -140,11 +140,12 @@ class ChatListViewModelTest {
                 }
             )
 
-        failingViewModel = ChatListViewModel(
-            FailingChatRepository(),
-            FailingUserRepository(),
-            FakePostRepository().apply { setShouldFailOnGet(true) }
-        )
+        failingViewModel =
+            ChatListViewModel(
+                FailingChatRepository(),
+                FailingUserRepository(),
+                FakePostRepository().apply { setShouldFailOnGet(true) }
+            )
     }
 
     @After fun tearDown() = Dispatchers.resetMain()

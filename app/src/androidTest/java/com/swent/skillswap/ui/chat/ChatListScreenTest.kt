@@ -459,11 +459,12 @@ class ChatListScreenTest {
 
     @Test
     fun displays_error_message_when_fetch_fails() {
-        val viewModel = ChatListViewModel(
-            FailingChatRepository(),
-            FakeUserRepository(emptyMap()),
-            FakePostRepository(emptyMap())
-        )
+        val viewModel =
+            ChatListViewModel(
+                FailingChatRepository(),
+                FakeUserRepository(emptyMap()),
+                FakePostRepository(emptyMap())
+            )
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
@@ -473,5 +474,4 @@ class ChatListScreenTest {
         composeRule.onNodeWithTag(ChatListTestTags.ERROR).assertExists()
         composeRule.onNodeWithText("Error fetching chats").assertExists()
     }
-
 }
