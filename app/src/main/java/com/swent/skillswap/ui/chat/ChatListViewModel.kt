@@ -76,6 +76,7 @@ class ChatListViewModel(
                         }
                     }
                 } catch (e: Exception) {
+                    Log.e("ChatViewModel", "Error filtering chats by ownership", e)
                     chats
                 }
             val fullFilteredChats = filteredIsOwnerChats.filter { it.status == ChatStatus.ACTIVE }
@@ -91,8 +92,11 @@ class ChatListViewModel(
                         )
                     }
                 } catch (exception: Exception) {
-                    // TODO: Implement robust error handling
-                    ""
+                    Log.e(
+                        "ChatViewModel",
+                        "Error fetching post status for postId: ${chat.relatedPostId}",
+                        exception
+                    )
                 }
             }
         }
