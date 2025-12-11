@@ -83,6 +83,8 @@ import com.swent.skillswap.ui.user.ProfileViewModel
 import com.swent.skillswap.ui.user.editUser.EditUserScreen
 import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
+import com.swent.skillswap.ui.user.unblockUser.UnblockUserScreen
+import com.swent.skillswap.ui.user.unblockUser.UnblockUserViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -269,7 +271,8 @@ fun SkillSwapApp(
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
                         onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
+                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) },
+                        onUnblockClick = { navigationActions.navigateTo(Screen.UnblockUser) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -425,6 +428,13 @@ fun SkillSwapApp(
                     onGoBack = { navigationActions.goBack() },
                     onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
                     postOperation = PostOperation.ADD,
+                )
+            }
+            composable(Screen.UnblockUser.route) {
+                UnblockUserScreen(
+                    UnblockUserViewModel(UserRepoFirestore(Firebase.firestore)),
+                    onAvatarClick = { navController.navigate(Screen.OtherUser.createRoute(it)) },
+                    onGoBack = { navigationActions.goBack() }
                 )
             }
         }

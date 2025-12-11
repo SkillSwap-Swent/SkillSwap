@@ -41,6 +41,8 @@ sealed class Screen(
     }
 
     object AddRequest : Screen(route = "addRequest", name = "Add Request")
+
+    object UnblockUser : Screen(route = "unblockUser", name = "unblock user")
 }
 
 open class NavigationActions(
