@@ -353,6 +353,7 @@ private fun PostItem(
     }
 }
 
+// NOSONAR_START
 @Preview
 @Composable
 fun PostItemPreview() {
@@ -396,3 +397,4 @@ fun PostItemPreview() {
         PostItem(request1, {}, {})
     }
 }
+// NOSONAR_END
