@@ -13,11 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-data class UnblockCardView(
-    val name: String,
-    val avatarUrl: String,
-    val uid: String
-)
+data class UnblockCardView(val name: String, val avatarUrl: String, val uid: String)
 
 class UnblockUserViewModel(
     private val userRepo: UserRepositery = UserRepoFirestore(FirebaseFirestore.getInstance())
@@ -38,43 +34,45 @@ class UnblockUserViewModel(
     private fun loadBlockedUsers() {
         viewModelScope.launch {
             runCatching {
-                user = userRepo.getUser(uid)
-                val views = user.blockedUsers.mapNotNull { blockedUid ->
-                    runCatching {
-                        val blockedUser = userRepo.getUser(blockedUid)
-                        UnblockCardView(
-                            name = blockedUser.username,
-                            avatarUrl = blockedUser.profilePicture,
-                            uid = blockedUid
-                        )
-                    }.onFailure {
-                        Log.e(errorTag, "Blocked user $blockedUid not found. Skipping.", it)
-                    }.getOrNull()
-                }
+                    user = userRepo.getUser(uid)
+                    val views =
+                        user.blockedUsers.mapNotNull { blockedUid ->
+                            runCatching {
+                                    val blockedUser = userRepo.getUser(blockedUid)
+                                    UnblockCardView(
+                                        name = blockedUser.username,
+                                        avatarUrl = blockedUser.profilePicture,
+                                        uid = blockedUid
+                                    )
+                                }
+                                .onFailure {
+                                    Log.e(
+                                        errorTag,
+                                        "Blocked user $blockedUid not found. Skipping.",
+                                        it
+                                    )
+                                }
+                                .getOrNull()
+                        }
 
-                _unblockCardViews.value = views
-            }.onFailure { e ->
-                Log.e(errorTag, "Error loading blocked users", e)
-            }
+                    _unblockCardViews.value = views
+                }
+                .onFailure { e -> Log.e(errorTag, "Error loading blocked users", e) }
         }
     }
 
     /** Called by UI event (button click in each card) */
     fun onUnblockUserClicked(targetUid: String) {
-        viewModelScope.launch {
-            unBlockUser(targetUid)
-        }
+        viewModelScope.launch { unBlockUser(targetUid) }
     }
 
     private suspend fun unBlockUser(userID: String) {
         runCatching {
-            val newBlockedList = user.blockedUsers.filter { it != userID }.toSet()
-            userRepo.editUser(uid, user.copy(blockedUsers = newBlockedList))
-            user = user.copy(blockedUsers = newBlockedList)
-            _unblockCardViews.value =
-                _unblockCardViews.value.filter { it.uid != userID }
-        }.onFailure { e ->
-            Log.e(errorTag, "Error unblocking user", e)
-        }
+                val newBlockedList = user.blockedUsers.filter { it != userID }.toSet()
+                userRepo.editUser(uid, user.copy(blockedUsers = newBlockedList))
+                user = user.copy(blockedUsers = newBlockedList)
+                _unblockCardViews.value = _unblockCardViews.value.filter { it.uid != userID }
+            }
+            .onFailure { e -> Log.e(errorTag, "Error unblocking user", e) }
     }
 }

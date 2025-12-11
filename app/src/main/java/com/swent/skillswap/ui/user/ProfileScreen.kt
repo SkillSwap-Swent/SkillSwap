@@ -73,7 +73,7 @@ fun ProfileScreen(
     onSkillClick: () -> Unit = {},
     onAddPostClick: () -> Unit = {},
     onSeeMyPostsClick: () -> Unit = {},
-    onUnblockClick :() -> Unit = {},
+    onUnblockClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -216,7 +216,7 @@ fun ProfileScreen(
             shape = RoundedCornerShape(26),
             contentPadding = PaddingValues(12.dp, 0.dp),
             modifier = Modifier.testTag(ProfileTestTags.UNBLOCK_BUTTON)
-        ){
+        ) {
             Text(text = "Unblock People")
         }
         Spacer(modifier = Modifier.weight(1f))

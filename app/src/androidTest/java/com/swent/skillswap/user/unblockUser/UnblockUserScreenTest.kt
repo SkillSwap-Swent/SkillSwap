@@ -22,17 +22,16 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.Assert.assertEquals
 
 @RunWith(AndroidJUnit4::class)
 class UnblockUserScreenTest {
 
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
 
     private lateinit var viewModel: UnblockUserViewModel
     private lateinit var userRepository: UserRepositery
@@ -49,59 +48,59 @@ class UnblockUserScreenTest {
         val firestore = FirebaseFirestore.getInstance()
         userRepository = UserRepoFirestore(firestore)
 
-        FirebaseEmulator.auth.createUserWithEmailAndPassword(
-            "main@test.com", "password123"
-        ).await()
+        FirebaseEmulator.auth.createUserWithEmailAndPassword("main@test.com", "password123").await()
 
-        val authResult = FirebaseEmulator.auth.signInWithEmailAndPassword(
-            "main@test.com", "password123"
-        ).await()
+        val authResult =
+            FirebaseEmulator.auth.signInWithEmailAndPassword("main@test.com", "password123").await()
         currentUserId = authResult.user!!.uid
         blockedUser1 = userRepository.getNewUid()
         blockedUser2 = userRepository.getNewUid()
-        currentUser = User(
-            uid = currentUserId,
-            username = "MainUser",
-            email = "main@test.com",
-            profilePicture = "",
-            skillSet = emptySet(),
-            rating = 0f,
-            availability = emptyList(),
-            preference = Preference.SKILLS,
-            location = GeoPoint(0.0, 0.0),
-            blockedUsers = setOf(blockedUser1, blockedUser2),
-            fcmToken = null
-        )
+        currentUser =
+            User(
+                uid = currentUserId,
+                username = "MainUser",
+                email = "main@test.com",
+                profilePicture = "",
+                skillSet = emptySet(),
+                rating = 0f,
+                availability = emptyList(),
+                preference = Preference.SKILLS,
+                location = GeoPoint(0.0, 0.0),
+                blockedUsers = setOf(blockedUser1, blockedUser2),
+                fcmToken = null
+            )
 
         currentUserNoBlock = currentUser.copy(blockedUsers = emptySet())
 
-        val user1 = User(
-            uid = blockedUser1,
-            username = "Alice",
-            email = "alice@test.com",
-            profilePicture = "",
-            skillSet = emptySet(),
-            rating = 0f,
-            availability = emptyList(),
-            preference = Preference.SKILLS,
-            location = GeoPoint(0.0, 0.0),
-            blockedUsers = emptySet(),
-            fcmToken = null
-        )
+        val user1 =
+            User(
+                uid = blockedUser1,
+                username = "Alice",
+                email = "alice@test.com",
+                profilePicture = "",
+                skillSet = emptySet(),
+                rating = 0f,
+                availability = emptyList(),
+                preference = Preference.SKILLS,
+                location = GeoPoint(0.0, 0.0),
+                blockedUsers = emptySet(),
+                fcmToken = null
+            )
 
-        val user2 = User(
-            uid = blockedUser2,
-            username = "Bob",
-            email = "bob@test.com",
-            profilePicture = "https://avatars.com/bob.png",
-            skillSet = emptySet(),
-            rating = 0f,
-            availability = emptyList(),
-            preference = Preference.SKILLS,
-            location = GeoPoint(0.0, 0.0),
-            blockedUsers = emptySet(),
-            fcmToken = null
-        )
+        val user2 =
+            User(
+                uid = blockedUser2,
+                username = "Bob",
+                email = "bob@test.com",
+                profilePicture = "https://avatars.com/bob.png",
+                skillSet = emptySet(),
+                rating = 0f,
+                availability = emptyList(),
+                preference = Preference.SKILLS,
+                location = GeoPoint(0.0, 0.0),
+                blockedUsers = emptySet(),
+                fcmToken = null
+            )
 
         // 5. Add users to Firestore
         userRepository.addUser(currentUser)
@@ -125,10 +124,8 @@ class UnblockUserScreenTest {
         try {
             withTimeout(timeoutMillis) {
                 while (true) {
-                    val snapshot = firestore.collection(collectionPath)
-                        .document(documentId)
-                        .get()
-                        .await()
+                    val snapshot =
+                        firestore.collection(collectionPath).document(documentId).get().await()
 
                     if (snapshot.exists()) {
                         return@withTimeout
@@ -161,7 +158,8 @@ class UnblockUserScreenTest {
         }
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             try {
-                composeTestRule.onNodeWithTag(UnblockUserScreenTestTag.EMPTY_TEXT)
+                composeTestRule
+                    .onNodeWithTag(UnblockUserScreenTestTag.EMPTY_TEXT)
                     .assertIsDisplayed()
                 true
             } catch (e: AssertionError) {
@@ -174,22 +172,17 @@ class UnblockUserScreenTest {
     @Test
     fun screen_displaysAllUserCards() {
         composeTestRule.setContent {
-            UnblockUserScreen(
-                viewModel = viewModel,
-                onAvatarClick = {},
-                onGoBack = {}
-            )
+            UnblockUserScreen(viewModel = viewModel, onAvatarClick = {}, onGoBack = {})
         }
 
         composeTestRule.waitUntil(timeoutMillis = 5000) {
             composeTestRule
                 .onAllNodesWithTag(UnblockUserScreenTestTag.PROFILE_CARD)
-                .fetchSemanticsNodes().size == 2
+                .fetchSemanticsNodes()
+                .size == 2
         }
 
-        composeTestRule
-            .onNodeWithTag(UnblockUserScreenTestTag.UNBLOCK_TITLE)
-            .assertIsDisplayed()
+        composeTestRule.onNodeWithTag(UnblockUserScreenTestTag.UNBLOCK_TITLE).assertIsDisplayed()
 
         composeTestRule
             .onAllNodesWithTag(UnblockUserScreenTestTag.PROFILE_CARD)
@@ -199,26 +192,24 @@ class UnblockUserScreenTest {
     @Test
     fun unblockButton_triggersViewModelAndUpdatesRepo() = runBlocking {
         composeTestRule.setContent {
-            UnblockUserScreen(
-                viewModel = viewModel,
-                onAvatarClick = {},
-                onGoBack = {}
-            )
+            UnblockUserScreen(viewModel = viewModel, onAvatarClick = {}, onGoBack = {})
         }
 
         composeTestRule.waitUntil(
             timeoutMillis = 5000,
             condition = {
                 composeTestRule
-                    .onAllNodesWithTag(UnblockUserScreenTestTag.UNBLOCK_BUTTON,
-                        useUnmergedTree = true)
-                    .fetchSemanticsNodes().isNotEmpty()
+                    .onAllNodesWithTag(
+                        UnblockUserScreenTestTag.UNBLOCK_BUTTON,
+                        useUnmergedTree = true
+                    )
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
             }
         )
 
         composeTestRule
-            .onAllNodesWithTag(UnblockUserScreenTestTag.UNBLOCK_BUTTON,
-                useUnmergedTree = true)[0]
+            .onAllNodesWithTag(UnblockUserScreenTestTag.UNBLOCK_BUTTON, useUnmergedTree = true)[0]
             .performClick()
 
         // Allow some time for the background coroutine in VM to update Repo
@@ -232,11 +223,7 @@ class UnblockUserScreenTest {
     @Test
     fun backButton_isDisplayed() {
         composeTestRule.setContent {
-            UnblockUserScreen(
-                viewModel = viewModel,
-                onAvatarClick = {},
-                onGoBack = {}
-            )
+            UnblockUserScreen(viewModel = viewModel, onAvatarClick = {}, onGoBack = {})
         }
 
         composeTestRule.waitUntil(
@@ -244,12 +231,11 @@ class UnblockUserScreenTest {
             condition = {
                 composeTestRule
                     .onAllNodesWithTag(UnblockUserScreenTestTag.BACK_BUTTON)
-                    .fetchSemanticsNodes().isNotEmpty()
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
             }
         )
 
-        composeTestRule
-            .onNodeWithTag(UnblockUserScreenTestTag.BACK_BUTTON)
-            .assertIsDisplayed()
+        composeTestRule.onNodeWithTag(UnblockUserScreenTestTag.BACK_BUTTON).assertIsDisplayed()
     }
 }

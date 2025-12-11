@@ -271,7 +271,7 @@ fun SkillSwapApp(
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
                         onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
                         onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) },
-                        onUnblockClick = {navigationActions.navigateTo(Screen.UnblockUser)}
+                        onUnblockClick = { navigationActions.navigateTo(Screen.UnblockUser) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -423,12 +423,10 @@ fun SkillSwapApp(
                     postOperation = PostOperation.ADD,
                 )
             }
-            composable(Screen.UnblockUser.route){
+            composable(Screen.UnblockUser.route) {
                 UnblockUserScreen(
                     UnblockUserViewModel(UserRepoFirestore(Firebase.firestore)),
-                    onAvatarClick = {
-                        navController.navigate(Screen.OtherUser.createRoute(it))
-                    },
+                    onAvatarClick = { navController.navigate(Screen.OtherUser.createRoute(it)) },
                     onGoBack = { navigationActions.goBack() }
                 )
             }
