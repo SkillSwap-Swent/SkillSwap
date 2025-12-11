@@ -756,8 +756,6 @@ class NotificationViewModelInstrumentedTest {
 
     @Test
     fun markPostNotificationsAsRead_marksOnlyPostNotificationsForCurrentUser() = runBlocking {
-        // Add notifications: post-related for post-1, chat notification, and post notification for
-        // different post
         val postId = "post-1"
         val notif1 =
             createNotification(
@@ -838,15 +836,10 @@ class NotificationViewModelInstrumentedTest {
         repository.addNotification(notif6)
         repository.addNotification(notif7)
 
-        // Load notifications
         viewModel.loadNotifications()
         waitForLoadingToComplete()
-
-        // Mark post notifications as read for post-1
         viewModel.markPostNotificationsAsRead(postId)
-        Thread.sleep(200) // Wait for async update
-
-        // Check: only post-1 related notifications for testUserId should be marked as read
+        Thread.sleep(200)
         val updated1 = repository.getNotification("notif-1")
         val updated2 = repository.getNotification("notif-2")
         val updated3 = repository.getNotification("notif-3")

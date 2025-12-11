@@ -124,44 +124,55 @@ class ChatListViewModel(
         viewModelScope.launch {
             try {
                 chatRepository.acceptAPostReplyChat(chat)
-
-                // Create POST_ACCEPTED notification for the user whose reply was accepted
-                notificationViewModel?.let { vm ->
-                    try {
-                        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                        if (currentUserId != null) {
-                            // Get the other participant (the one whose reply was accepted)
-                            val acceptedUserId =
-                                chat.participants.firstOrNull { it != currentUserId }
-                            if (acceptedUserId != null) {
-                                // Get post title for the notification message
-                                val postTitle =
-                                    try {
-                                        postRepository
-                                            .getPost(chat.relatedPostType, chat.relatedPostId)
-                                            .title
-                                    } catch (e: Exception) {
-                                        "your post"
-                                    }
-
-                                vm.addNotification(
-                                    recipientId = acceptedUserId,
-                                    message = "Your reply to \"$postTitle\" has been accepted!",
-                                    type = NotificationType.POST_ACCEPTED,
-                                    relatedId = chat.relatedPostId
-                                )
-                            } else {
-                                // No accepted user found
-                            }
-                        } else {
-                            // No current user
-                        }
-                    } catch (e: Exception) {
-                        Log.e("ChatListViewModel", "Error creating POST_ACCEPTED notification", e)
-                    }
-                }
+                createPostAcceptedNotification(chat)
             } catch (e: Exception) {
                 Log.e("ChatViewModel", "Error accepting chat", e)
+            }
+        }
+    }
+
+    /**
+     * Creates a POST_ACCEPTED notification for the user whose reply was accepted.
+     *
+     * @param chat The chat where a reply was accepted
+     */
+    private suspend fun createPostAcceptedNotification(chat: Chat) {
+        notificationViewModel?.let { vm ->
+            try {
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                if (currentUserId == null) {
+                    Log.w("ChatListViewModel", "Cannot create notification: no authenticated user")
+                    return
+                }
+
+                // Get the other participant (the one whose reply was accepted)
+                val acceptedUserId = chat.participants.firstOrNull { it != currentUserId }
+                if (acceptedUserId == null) {
+                    Log.w("ChatListViewModel", "Cannot create notification: no accepted user found")
+                    return
+                }
+
+                // Get post title for the notification message
+                val postTitle =
+                    try {
+                        postRepository.getPost(chat.relatedPostType, chat.relatedPostId).title
+                    } catch (e: Exception) {
+                        Log.e(
+                            "ChatListViewModel",
+                            "Error fetching post title for notification, using default",
+                            e
+                        )
+                        "your post"
+                    }
+
+                vm.addNotification(
+                    recipientId = acceptedUserId,
+                    message = "Your reply to \"$postTitle\" has been accepted!",
+                    type = NotificationType.POST_ACCEPTED,
+                    relatedId = chat.relatedPostId
+                )
+            } catch (e: Exception) {
+                Log.e("ChatListViewModel", "Error creating POST_ACCEPTED notification", e)
             }
         }
     }

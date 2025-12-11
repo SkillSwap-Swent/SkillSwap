@@ -156,8 +156,6 @@ class FeedScreenViewModelTest {
     fun accept_withNotificationViewModel_createsPostReplyNotification() = runTest {
         viewModelWithNotifications.accept(testPost)
         advanceUntilIdle()
-
-        // Verify notification was created
         val notifications = fakeNotificationRepository.getNotificationsForUser("author-1")
         assertTrue(
             "Should create POST_REPLY notification",
@@ -172,14 +170,12 @@ class FeedScreenViewModelTest {
 
     @Test
     fun accept_withoutNotificationViewModel_doesNotCrash() = runTest {
-        // Should not crash when notificationViewModel is null
         viewModel.accept(testPost)
         advanceUntilIdle()
     }
 
     @Test
     fun markPostNotificationsAsRead_withNotificationViewModel_callsViewModel() = runTest {
-        // Add a post notification
         val notification =
             com.swent.skillswap.model.notification.Notification(
                 uid = "notif-1",
@@ -191,19 +187,16 @@ class FeedScreenViewModelTest {
                 isRead = false
             )
         fakeNotificationRepository.addNotification(notification)
-
-        // Mark as read
         viewModelWithNotifications.markPostNotificationsAsRead("post-1")
         advanceUntilIdle()
-
-        // Verify notification was marked as read
-        val updatedNotification = fakeNotificationRepository.getNotification("notif-1")
-        assertTrue("Notification should be marked as read", updatedNotification.isRead)
+        assertTrue(
+            "Notification should be marked as read",
+            fakeNotificationRepository.getNotification("notif-1").isRead
+        )
     }
 
     @Test
     fun markPostNotificationsAsRead_withoutNotificationViewModel_doesNotCrash() = runTest {
-        // Should not crash when notificationViewModel is null
         viewModel.markPostNotificationsAsRead("post-1")
         advanceUntilIdle()
     }
