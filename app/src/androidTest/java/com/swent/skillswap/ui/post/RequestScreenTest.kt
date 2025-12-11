@@ -8,7 +8,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
-import com.swent.skillswap.model.images.FakePictureRepository
 import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
@@ -21,9 +20,10 @@ import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import org.junit.After
+import org.junit.AfterClass
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,13 +62,22 @@ class RequestScreenTest {
     @Before
     fun setUp() {
         fakeRepository = FakePostRepository()
-        storageRepository = FakePictureRepository()
         backButtonClicked = false
         postCreatedCalled = false
     }
 
-    @After
+    @BeforeClass
+    fun setupClass() {
+        /** Ensure Firebase Emulators are started */
+        FirebaseEmulator.startEmulator()
+        FirebaseEmulator.auth.signInAnonymously()
+    }
+
+    @AfterClass
     fun cleanUp() = runBlocking {
+        /** Clean up emulators */
+        FirebaseEmulator.auth.signOut()
+        FirebaseEmulator.clearAuthEmulator()
         /** Clean up storage manually */
         val storageRef = FirebaseEmulator.storage.reference.child(FEED_PICTURES_PATH)
         val listResult = storageRef.listAll().await()
