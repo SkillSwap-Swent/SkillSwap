@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GppGood
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,7 +43,8 @@ fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),
     currentUserId: String = "",
     onChatClick: (String) -> Unit = {},
-    onAvatarClick: (String) -> Unit = {}
+    onAvatarClick: (String) -> Unit = {},
+    onNotificationClick: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.REQUEST) }
@@ -51,15 +53,28 @@ fun ChatListScreen(
     // Chat List
     viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
-        // Title
-        Text(
-            text = "Chat",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier =
-                Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
-        )
+        // Title with notification button
+        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+            Text(
+                text = "Chat",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier =
+                    Modifier.fillMaxWidth().align(Alignment.Center).testTag(ChatListTestTags.TITLE)
+            )
+            if (onNotificationClick != null) {
+                IconButton(
+                    onClick = onNotificationClick,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Notifications"
+                    )
+                }
+            }
+        }
 
         // Related post type filter buttons
         Row(
