@@ -123,7 +123,7 @@ class SkillSwapMessagingService : FirebaseMessagingService() {
     }
 
     private fun onPostNotificationReceived(message: RemoteMessage, type: String) {
-        Log.d(TAG, "Handling post notification: ${message.data}, type: $type")
+        Log.d(TAG, "Handling post notification, type: $type")
         val notification = message.notification
         val title =
             notification?.title
