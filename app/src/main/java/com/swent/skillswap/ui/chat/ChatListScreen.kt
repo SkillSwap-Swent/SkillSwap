@@ -54,28 +54,25 @@ fun ChatListScreen(
     viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
         // Title with notification button
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
+        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
             Text(
                 text = "Chat",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f).testTag(ChatListTestTags.TITLE)
+                modifier =
+                    Modifier.fillMaxWidth().align(Alignment.Center).testTag(ChatListTestTags.TITLE)
             )
             if (onNotificationClick != null) {
-                IconButton(onClick = onNotificationClick) {
+                IconButton(
+                    onClick = onNotificationClick,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
                         contentDescription = "Notifications"
                     )
                 }
-            } else {
-                Spacer(modifier = Modifier.weight(1f))
             }
         }
 

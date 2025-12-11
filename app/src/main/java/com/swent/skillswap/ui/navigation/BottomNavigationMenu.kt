@@ -74,11 +74,10 @@ fun BottomNavigationMenu(
                     if (tab is Tab.Chat) {
                         Box {
                             Icon(imageVector = tab.icon, contentDescription = null)
-                            val unreadCount = uiState.notifications.count { !it.isRead }
-                            if (unreadCount > 0) {
+                            if (uiState.notifications.isNotEmpty()) {
                                 Badge(modifier = Modifier.offset(x = 16.dp, y = (-4).dp)) {
                                     Text(
-                                        text = unreadCount.toString(),
+                                        text = uiState.notifications.size.toString(),
                                         style = MaterialTheme.typography.labelSmall
                                     )
                                 }
