@@ -195,7 +195,7 @@ class RequestViewModel(
                 var counter = 0
                 for (uri in _uiState.value.attachments) {
                     /** media name construction : concatenate uid and counter */
-                    val mediaName = "$uid$counter"
+                    val mediaName = "${uid}_${counter}"
                     counter += 1
 
                     val url = storageRepository.uploadPicture(mediaName, uri, FEED_PICTURES_PATH)
