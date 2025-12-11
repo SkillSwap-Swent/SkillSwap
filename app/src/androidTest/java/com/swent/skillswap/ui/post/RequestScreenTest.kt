@@ -66,23 +66,27 @@ class RequestScreenTest {
         postCreatedCalled = false
     }
 
-    @BeforeClass
-    fun setupClass() {
-        /** Ensure Firebase Emulators are started */
-        FirebaseEmulator.startEmulator()
-        FirebaseEmulator.auth.signInAnonymously()
-    }
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setupClass() {
+            /** Ensure Firebase Emulators are started */
+            FirebaseEmulator.startEmulator()
+            FirebaseEmulator.auth.signInAnonymously()
+        }
 
-    @AfterClass
-    fun cleanUp() = runBlocking {
-        /** Clean up emulators */
-        FirebaseEmulator.auth.signOut()
-        FirebaseEmulator.clearAuthEmulator()
-        /** Clean up storage manually */
-        val storageRef = FirebaseEmulator.storage.reference.child(FEED_PICTURES_PATH)
-        val listResult = storageRef.listAll().await()
-        for (item in listResult.items) {
-            item.delete().await()
+        @AfterClass
+        @JvmStatic
+        fun cleanUp() = runBlocking {
+            /** Clean up emulators */
+            FirebaseEmulator.auth.signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            /** Clean up storage manually */
+            val storageRef = FirebaseEmulator.storage.reference.child(FEED_PICTURES_PATH)
+            val listResult = storageRef.listAll().await()
+            for (item in listResult.items) {
+                item.delete().await()
+            }
         }
     }
 
