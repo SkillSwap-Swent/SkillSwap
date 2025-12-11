@@ -437,24 +437,3 @@ fun RequestScreen(
         }
     }
 }
-// NOSONAR_START
-/*
-@Preview(showBackground = true)
-@Composable
-fun NewRequestScreenPreview() {
-    // Create a fake repository for preview
-    val fakeRepository = FakePostRepository()
-
-    val viewModel =
-        RequestViewModel(null, fakeRepository,, currentUserId = "preview-user", postId = null)
-
-    SkillSwapAppTheme {
-        RequestScreen(
-            postRepository = fakeRepository,
-            currentUserId = "preview-user",
-            requestViewModel = viewModel,
-            postOperation = PostOperation.EDIT
-        )
-    }
-}
-// NOSONAR_END*/
