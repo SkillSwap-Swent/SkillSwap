@@ -140,7 +140,6 @@ class AuthClassicTest : TestCase() {
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
 
-
         // Go to Create Account screen
         composeTestRule.waitUntil(30_000L) {
             try {
