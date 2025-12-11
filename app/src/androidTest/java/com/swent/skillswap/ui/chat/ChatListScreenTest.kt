@@ -106,7 +106,7 @@ class ChatListScreenTest {
         ) = emptyList<Post>()
 
         override suspend fun getPost(type: PostType, postId: String) =
-            posts[postId] ?: throw Exception("Post not found")
+            posts[postId] ?: MockPost(postId, "Default Title")
 
         override suspend fun addPost(post: Post) {}
 
