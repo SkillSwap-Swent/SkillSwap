@@ -59,6 +59,7 @@ class AuthClassicTest : TestCase() {
         @JvmStatic
         fun globalSetUp() {
             FirebaseEmulator.startEmulator()
+            FirebaseEmulator.clearAuthEmulator()
             auth = FirebaseEmulator.auth
             firestore = FirebaseEmulator.firestore
         }
@@ -138,50 +139,8 @@ class AuthClassicTest : TestCase() {
      */
     @Test
     fun t1_classicNewUser_createsAccount_andNavigatesToOffers() {
-        println("TEST DEBUG: début t1_classicNewUser_createsAccount_andNavigatesToOffers")
-
-        println("TEST DEBUG: avant waitUntil CREATE_ACCOUNT_TEXT")
-        val foundCreateAccount =
-            try {
-                composeTestRule.waitUntil(timeoutMillis = 120_000L) {
-                    try {
-                        composeTestRule
-                            .onAllNodesWithTag(
-                                SignInTags.CREATE_ACCOUNT_TEXT,
-                                useUnmergedTree = true
-                            )
-                            .fetchSemanticsNodes()
-                            .isNotEmpty()
-                    } catch (t: Throwable) {
-                        false
-                    }
-                }
-                true
-            } catch (t: Throwable) {
-                println(
-                    "TEST DEBUG: waitUntil CREATE_ACCOUNT_TEXT a levé ${t::class.simpleName} - ${t.message}"
-                )
-                false
-            }
-        println(
-            "TEST DEBUG: après waitUntil CREATE_ACCOUNT_TEXT, foundCreateAccount=$foundCreateAccount"
-        )
-
-        if (!foundCreateAccount) {
-            // dump minimal état puis fail explicitement
-            runCatching {
-                val nodes =
-                    composeTestRule
-                        .onAllNodesWithTag(SignInTags.CREATE_ACCOUNT_TEXT, useUnmergedTree = true)
-                        .fetchSemanticsNodes()
-                println(
-                    "TEST DEBUG: après timeout, CREATE_ACCOUNT_TEXT nodes count = ${nodes.size}"
-                )
-            }
-            Assert.fail(
-                "CREATE_ACCOUNT_TEXT jamais trouvé en 120s  voir logs CI pour comprendre pourquoi AuthMain n'est pas affiché."
-            )
-        }
+        // Ensure user does not exist
+        auth.signOut()
 
         // Go to Create Account screen
         composeTestRule.waitUntil(30_000L) {
