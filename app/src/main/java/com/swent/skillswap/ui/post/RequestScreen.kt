@@ -107,7 +107,7 @@ object RequestScreenTags {
 @Composable
 fun RequestScreen(
     postRepository: PostRepository,
-    storageRepository: PictureRepository = PictureRepository(),
+    storageRepository: PictureRepository,
     currentUserId: String,
     uid: String? = null,
     requestViewModel: RequestViewModel =
