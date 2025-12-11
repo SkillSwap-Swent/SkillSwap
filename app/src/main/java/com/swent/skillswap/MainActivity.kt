@@ -419,6 +419,7 @@ fun SkillSwapApp(
                 }
                 RequestScreen(
                     postRepository = PostFirestoreRepository(Firebase.firestore),
+                    storageRepository = PictureRepository(),
                     currentUserId = currentUserId,
                     uid = null,
                     onGoBack = { navigationActions.goBack() },
