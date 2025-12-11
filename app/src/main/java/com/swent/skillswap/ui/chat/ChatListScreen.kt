@@ -48,7 +48,9 @@ fun ChatListScreen(
     var isPendingSelected by remember { mutableStateOf(false) }
     var isOwnerSelected by remember { mutableStateOf<Boolean?>(null) }
     // Chat List
-    viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
+    LaunchedEffect(selectedPostType, isPendingSelected, isOwnerSelected) {
+        viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
+    }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
         // Title
         Text(
