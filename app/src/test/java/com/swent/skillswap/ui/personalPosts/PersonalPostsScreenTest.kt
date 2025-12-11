@@ -1,7 +1,11 @@
-/** @author Younes Belgroune - Made with the help of AI */
+/**
+ * @author Younes Belgroune - Made with the help of AI @author Alex Magnus - ChatGPT for status text
+ *   test
+ */
 package com.swent.skillswap.ui.personalPosts
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.google.firebase.FirebaseApp
@@ -63,10 +67,10 @@ class PersonalPostsScreenTest {
         }
     }
 
-    private fun createTestRequest(id: String, title: String) =
+    val testRequest =
         Request(
-            uid = id,
-            title = title,
+            uid = "123",
+            title = "Test title",
             description = "Test description",
             ownerId = "test-user",
             skills = setOf(SkillTag.MACHINE_DESIGN),
@@ -79,6 +83,9 @@ class PersonalPostsScreenTest {
             postReplies = emptySet(),
             location = testLocation
         )
+
+    private fun createTestRequest(id: String, title: String) =
+        testRequest.copy(uid = id, title = title)
 
     private fun createViewModelWithState(uiState: PersonalPostsUiState): PersonalPostsViewModel {
         val viewModel = PersonalPostsViewModel(fakeRepository)
@@ -137,25 +144,60 @@ class PersonalPostsScreenTest {
 
     @Test
     fun displays_posts_list() {
-        val posts = listOf(createTestRequest("req-1", "Test Post 1"))
+        val uid = "req-1"
+        val title = "Test Post 1"
+        val posts = listOf(createTestRequest(uid, title))
         val viewModel =
             createViewModelWithState(PersonalPostsUiState(isLoading = false, posts = posts))
         composeRule.setContent { MaterialTheme { PersonalPostsScreen(viewModel = viewModel) } }
-        composeRule.onNodeWithText("Test Post 1").assertIsDisplayed()
-        composeRule.onNodeWithText("Request").assertIsDisplayed()
+
+        composeRule
+            .onNodeWithTag(PersonalPostsScreenTags.ITEM_TITLE + uid)
+            .assertExists()
+            .assertTextEquals(title)
     }
 
     @Test
     fun displays_post_details() {
-        val posts = listOf(createTestRequest("req-1", "Detailed Post"))
+        val uid = "req-1"
+        val title = "Detailed Post"
+
+        val posts = listOf(createTestRequest(uid, title))
         val viewModel =
             createViewModelWithState(PersonalPostsUiState(isLoading = false, posts = posts))
         composeRule.setContent { MaterialTheme { PersonalPostsScreen(viewModel = viewModel) } }
-        composeRule.onNodeWithText("Detailed Post").assertIsDisplayed()
-        composeRule.onNodeWithText("Request").assertIsDisplayed()
-        composeRule.onNodeWithText("Test description").assertIsDisplayed()
-        composeRule.onNodeWithText("Payment: SKILLS").assertIsDisplayed()
-        composeRule.onNodeWithText("Posted").assertIsDisplayed()
+
+        composeRule
+            .onNodeWithTag(PersonalPostsScreenTags.ITEM_TITLE + uid)
+            .assertExists()
+            .assertTextEquals(title)
+
+        composeRule
+            .onNodeWithTag(PersonalPostsScreenTags.ITEM_DESCRIPTION + uid)
+            .assertExists()
+            .assertTextEquals(testRequest.description)
+
+        // --- Status Text ---
+        // This check checks that the info is displayed in some way, not the exact formatting to not
+        // be reliant on UI
+        val statusNode =
+            composeRule.onNodeWithTag(PersonalPostsScreenTags.ITEM_STATUS + uid).assertExists()
+
+        val displayedStatus =
+            statusNode
+                .fetchSemanticsNode()
+                .config[SemanticsProperties.Text]
+                .joinToString(separator = "") { it.text }
+                .lowercase()
+
+        assert(displayedStatus.contains(testRequest.status.name.lowercase()))
+        assert(displayedStatus.contains(testRequest.paymentMethod.displayName.lowercase()))
+        assert(displayedStatus.contains(testRequest.postReplies.size.toString()))
+
+        val firstSkill = testRequest.skills.first()
+        composeRule
+            .onNodeWithTag(PersonalPostsScreenTags.ITEM_SKILL + firstSkill.name + uid)
+            .assertExists()
     }
 
     @Test

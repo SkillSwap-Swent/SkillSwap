@@ -1,4 +1,7 @@
-/** @author Younes Belgroune - Made with the help of AI */
+/**
+ * @author Younes Belgroune - Made with the help of AI @author Alex Magnus - ChatGPT for some UI
+ *   elements
+ */
 package com.swent.skillswap.ui.post.personalPosts
 
 import androidx.compose.foundation.background
@@ -52,6 +55,10 @@ object PersonalPostsScreenTags {
     const val POST_ITEM = "post_item"
     const val EDIT_BUTTON = "edit_button"
     const val DELETE_BUTTON = "delete_button"
+    const val ITEM_TITLE = "item_title"
+    const val ITEM_DESCRIPTION = "item_description"
+    const val ITEM_STATUS = "item_status"
+    const val ITEM_SKILL = "item_skill"
 }
 
 /**
@@ -247,7 +254,8 @@ private fun PostItem(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.testTag(PersonalPostsScreenTags.ITEM_TITLE + post.uid)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -260,7 +268,8 @@ private fun PostItem(
                     Text(
                         text = "$statustext • $paymentText • $repliesText",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.testTag(PersonalPostsScreenTags.ITEM_STATUS + post.uid)
                     )
                 }
                 // Action buttons
@@ -294,7 +303,8 @@ private fun PostItem(
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                modifier = Modifier.testTag(PersonalPostsScreenTags.ITEM_DESCRIPTION + post.uid)
             )
 
             if (post.skills.isNotEmpty()) {
@@ -311,7 +321,13 @@ private fun PostItem(
                                 skill = skill,
                                 isSelected = false,
                                 onClick = {},
-                                modifier = Modifier.padding(end = 4.dp)
+                                modifier =
+                                    Modifier.padding(end = 4.dp)
+                                        .testTag(
+                                            PersonalPostsScreenTags.ITEM_SKILL +
+                                                skill.name +
+                                                post.uid
+                                        ),
                             )
                         }
                     }
