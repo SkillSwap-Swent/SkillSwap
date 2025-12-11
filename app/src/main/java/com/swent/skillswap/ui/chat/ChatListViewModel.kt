@@ -62,7 +62,9 @@ class ChatListViewModel(
                         chatRepository.getPendingChatsOfCurrentUser(relatedPostType)
                     }
                 } catch (exception: Exception) {
-                    emptyList()
+                    Log.e("ChatViewModel", "Error fetching chats", exception)
+                    _uiState.update { it.copy(error = "Error fetching chats: ${exception.message}") }
+                    return@launch
                 }
             val filteredIsOwnerChats =
                 try {

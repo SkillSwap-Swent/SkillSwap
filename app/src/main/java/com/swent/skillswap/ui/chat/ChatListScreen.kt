@@ -34,6 +34,7 @@ object ChatListTestTags {
     const val ACCEPT_CHAT = "AcceptChatButton"
     const val EMPTY_STATE = "EmptyState"
     const val AVATAR = "Avatar"
+    const val ERROR = "ErrorMessage"
 }
 
 @Composable
@@ -109,33 +110,53 @@ fun ChatListScreen(
         }
 
         val filteredChats = uiState.chats
-        if (filteredChats.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No chats available",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center
-                )
+        when {
+            uiState.error != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().fillMaxSize().testTag(ChatListTestTags.ERROR),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = uiState.error ?: "An unknown error occurred",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
-            ) {
-                items(filteredChats) { chat ->
-                    ChatConversationItem(
-                        viewModel = viewModel,
-                        currentUserId = currentUserId,
-                        chat = chat,
-                        onClick = { onChatClick(chat.id) },
-                        isOwner = isOwnerSelected,
-                        onAvatarClick = { userId -> onAvatarClick(userId) }
+            filteredChats.isEmpty() ->{
+                Box(
+                    modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No chats available",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center
                     )
+                }
+            }
+            else -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
+                ) {
+                    items(filteredChats) { chat ->
+                        ChatConversationItem(
+                            viewModel = viewModel,
+                            currentUserId = currentUserId,
+                            chat = chat,
+                            onClick = { onChatClick(chat.id) },
+                            isOwner = isOwnerSelected,
+                            onAvatarClick = { userId -> onAvatarClick(userId) }
+                        )
+                    }
                 }
             }
         }
