@@ -156,7 +156,13 @@ class ChatListScreenTest {
     @Test
     fun shows_filters_and_empty_state_by_default() {
         composeRule.setContent {
-            MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") }
+            MaterialTheme {
+                ChatListScreen(
+                    viewModel = createViewModel(),
+                    currentUserId = "u1",
+                    onNotificationClick = {}
+                )
+            }
         }
         composeRule.onNodeWithTag(ChatListTestTags.SCREEN).assertExists()
         composeRule.onNodeWithTag(ChatListTestTags.USER_AVATAR).assertExists()
