@@ -10,6 +10,7 @@ import com.swent.skillswap.SkillSwapApp
 import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.feed.FeedScreenTestTags
 import com.swent.skillswap.ui.navigation.*
+import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import org.junit.Before
 import org.junit.Rule
@@ -81,6 +82,7 @@ class BottomBarNavigationTest {
             // Verify all tabs remain visible
             composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).assertIsDisplayed()
             composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
+            composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertIsDisplayed()
             composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
         }
     }
@@ -105,6 +107,23 @@ class BottomBarNavigationTest {
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsSelected()
+    }
+
+    @Test
+    fun bottomBar_clickingPostsTabNavigatesToAddRequestScreen() {
+        // Navigate to Posts tab (AddRequest screen)
+        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
+        composeTestRule.waitForIdle()
+
+        // Verify Posts tab is selected
+        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertIsSelected()
+
+        // Verify we're on the AddRequest screen by checking for RequestScreen elements
+        composeTestRule.assertAnyDisplayed(
+            RequestScreenTags.TITLE_INPUT,
+            RequestScreenTags.DESCRIPTION_INPUT,
+            RequestScreenTags.CREATE_BUTTON
+        )
     }
 
     @Test
@@ -143,6 +162,7 @@ class BottomBarNavigationTest {
         // Verify only Feed is selected
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsSelected()
         composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).assertIsNotSelected()
+        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertIsNotSelected()
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsNotSelected()
     }
 
