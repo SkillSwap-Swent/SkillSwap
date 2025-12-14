@@ -9,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.List
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.User
-import com.swent.skillswap.ui.user.ProfileTestTags.ADD_POST_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
 import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
@@ -72,7 +70,6 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onSkillClick: () -> Unit = {},
-    onAddPostClick: () -> Unit = {},
     onSeeMyPostsClick: () -> Unit = {},
     onUnblockClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
@@ -208,14 +205,6 @@ fun ProfileScreen(
         )
 
         Spacer(modifier = Modifier.weight(1f))
-
-        ProfileActionButton(
-            text = "Make a post",
-            icon = Icons.Outlined.AddCircle,
-            contentDescription = "New Post",
-            onClick = onAddPostClick,
-            modifier = Modifier.testTag(ADD_POST_BUTTON)
-        )
 
         /** log Out button */
         Button(
