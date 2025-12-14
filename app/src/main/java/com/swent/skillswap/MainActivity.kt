@@ -234,14 +234,15 @@ fun SkillSwapApp(
 
             // Show bottom bar if we're on a top-level destination or on AddRequest
             val showBottomBar = currentTab != null || currentRoute == Screen.AddRequest.route
-            
+
             // Determine which tab to show as selected
-            val selectedTab = when {
-                currentTab != null -> currentTab
-                currentRoute == Screen.AddRequest.route -> Tab.Posts
-                else -> lastSelectedTopLevelTab ?: Tab.Profile
-            }
-            
+            val selectedTab =
+                when {
+                    currentTab != null -> currentTab
+                    currentRoute == Screen.AddRequest.route -> Tab.Posts
+                    else -> lastSelectedTopLevelTab ?: Tab.Profile
+                }
+
             if (showBottomBar) {
                 BottomNavigationMenu(
                     selectedTab = selectedTab,

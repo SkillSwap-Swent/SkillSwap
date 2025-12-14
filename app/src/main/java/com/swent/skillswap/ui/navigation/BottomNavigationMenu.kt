@@ -49,7 +49,8 @@ sealed class Tab(val name: String, val icon: ImageVector, val destination: Scree
 
     object Chat : Tab("Chat", Icons.Outlined.ChatBubbleOutline, Screen.Chat)
 
-    object Posts : Tab("Posts", Icons.Outlined.AddCircle, Screen.AddRequest) // Navigate directly to AddRequest
+    object Posts :
+        Tab("Posts", Icons.Outlined.AddCircle, Screen.AddRequest) // Navigate directly to AddRequest
 }
 
 private val tabs = listOf(Tab.Profile, Tab.Feed, Tab.Posts, Tab.Chat)
