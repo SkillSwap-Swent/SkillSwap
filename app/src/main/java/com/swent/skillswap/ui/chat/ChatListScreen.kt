@@ -246,6 +246,10 @@ fun ChatConversationItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp).height(70.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            RatingButton(
+                shouldDisplay = viewModel.shouldDisplayRatingButton(chat),
+                onClick = { showRatingDialog = true }
+            )
             ApprovalIcon(isOwner = isOwner, onApprove = { viewModel.acceptAPostReplyChat(chat) })
             Spacer(modifier = Modifier.weight(0.2f))
             AvatarDisplay(
@@ -287,10 +291,6 @@ fun ChatConversationItem(
                 }
             }
         }
-        RatingButton(
-            shouldDisplay = viewModel.shouldDisplayRatingButton(chat),
-            onClick = { showRatingDialog = true }
-        )
     }
     RatingDialog(
         show = showRatingDialog,
@@ -407,7 +407,7 @@ private fun ApprovalIcon(isOwner: Boolean? = true, onApprove: () -> Unit = {}) {
                 IconButtonDefaults.iconButtonColors(
                     containerColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-            modifier = Modifier.testTag(ChatListTestTags.ACCEPT_CHAT)
+            modifier = Modifier.testTag(ChatListTestTags.ACCEPT_CHAT).size(32.dp)
         ) {
             Icon(Icons.Default.Check, "approve", tint = MaterialTheme.colorScheme.onPrimary)
         }
@@ -417,7 +417,14 @@ private fun ApprovalIcon(isOwner: Boolean? = true, onApprove: () -> Unit = {}) {
 @Composable
 private fun RatingButton(shouldDisplay: Boolean, onClick: () -> Unit) {
     if (shouldDisplay) {
-        IconButton(onClick = onClick, modifier = Modifier.size(32.dp)) {
+        IconButton(
+            onClick = onClick,
+            colors =
+                IconButtonDefaults.iconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+            modifier = Modifier.size(32.dp)
+        ) {
             Icon(
                 imageVector = Icons.Outlined.Star,
                 contentDescription = "Rate User",
