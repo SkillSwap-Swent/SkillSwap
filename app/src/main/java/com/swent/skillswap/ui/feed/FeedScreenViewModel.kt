@@ -9,8 +9,10 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedPost
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostType
+import com.swent.skillswap.ui.notification.NotificationViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -51,6 +53,7 @@ sealed class FeedScreenEvent() {
 open class FeedScreenViewModel(
     private val navigation: FeedScreenNavigation,
     private val controller: FeedController,
+    private val notificationViewModel: NotificationViewModel? = null
 ) : ViewModel() {
 
     /**
@@ -90,11 +93,28 @@ open class FeedScreenViewModel(
 
     /** Accepts the specified offer on behalf of the current user. */
     fun accept(post: FeedPost) {
-        viewModelScope.launch { controller.acceptPost("I'm interested in this offer") }
+        viewModelScope.launch {
+            controller.acceptPost("I'm interested in this offer")
+
+            // Create POST_REPLY notification for the post owner
+            notificationViewModel?.let { vm ->
+                try {
+                    vm.addNotification(
+                        recipientId = post.authorID,
+                        message = "Someone is interested in your post: ${post.specification}",
+                        type = NotificationType.POST_REPLY,
+                        relatedId = post.offerId
+                    )
+                } catch (e: Exception) {
+                    Log.e("FeedScreenViewModel", "Error creating POST_REPLY notification", e)
+                }
+            }
+        }
     } // TODO: A Pop-up Window with a textField or preFab message to send is a good idea
 
     /** Declines the specified offer, removes it from the feed, and loads the next one. */
     fun decline(post: FeedPost) {
+        // post parameter is kept for API consistency but not used
         skip()
         // TODO: Placeholder for rollback implementation
     }
@@ -148,6 +168,11 @@ open class FeedScreenViewModel(
         viewModelScope.launch { controller.updateLocation(isLiveLocationOn) }
     }
 
+    /** Marks post notifications as read when viewing a post */
+    fun markPostNotificationsAsRead(postId: String) {
+        notificationViewModel?.markPostNotificationsAsRead(postId)
+    }
+
     /**
      * Converts a [Post] object into a [FeedPost] for display on the feed.
      *
@@ -196,13 +221,14 @@ open class FeedScreenViewModel(
  */
 class FeedScreenViewModelFactory(
     private val navigation: FeedScreenNavigation,
-    private val controller: FeedController
+    private val controller: FeedController,
+    private val notificationViewModel: NotificationViewModel? = null
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(FeedScreenViewModel::class.java)) {
-            return FeedScreenViewModel(navigation, controller) as T
+            return FeedScreenViewModel(navigation, controller, notificationViewModel) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }

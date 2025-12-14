@@ -229,4 +229,26 @@ class NotificationViewModel(
             }
         }
     }
+
+    fun markPostNotificationsAsRead(postId: String) {
+        val currentUser = Firebase.auth.currentUser
+        if (currentUser == null) {
+            _uiState.update { it.copy(error = "No authenticated user found. Please log in.") }
+            return
+        }
+        val userId = currentUser.uid
+
+        viewModelScope.launch {
+            try {
+                notificationRepository.markPostNotificationsAsRead(postId, userId)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error marking post notifications as read", e)
+                _uiState.update {
+                    it.copy(error = "Failed to mark post notifications as read: ${e.message}")
+                }
+            }
+            // Always reload notifications to reflect the updated state
+            loadNotifications()
+        }
+    }
 }

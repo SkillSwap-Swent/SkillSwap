@@ -40,7 +40,12 @@ sealed class Screen(
         fun createRoute(chatId: String) = "chat/$chatId"
     }
 
+    object NotificationList :
+        Screen(route = "notifications", name = "Notifications", isTopLevelDestination = true)
+
     object AddRequest : Screen(route = "addRequest", name = "Add Request")
+
+    object UnblockUser : Screen(route = "unblockUser", name = "unblock user")
 }
 
 open class NavigationActions(

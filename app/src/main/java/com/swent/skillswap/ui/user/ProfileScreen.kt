@@ -7,8 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.List
@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.swent.skillswap.model.user.Preference
 import com.swent.skillswap.model.user.User
-import com.swent.skillswap.ui.user.ProfileTestTags.ADD_POST_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EDIT_PROFILE_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.EMAIL_VALUE
 import com.swent.skillswap.ui.user.ProfileTestTags.INFO_CARD
@@ -39,6 +38,7 @@ import com.swent.skillswap.ui.user.ProfileTestTags.SKILLS_BUTTON
 import com.swent.skillswap.ui.user.ProfileTestTags.USERNAME_VALUE
 import com.swent.skillswap.ui.utils.AvatarDisplay
 import com.swent.skillswap.ui.utils.AvatarVariant
+import com.swent.skillswap.ui.utils.ProfileActionButton
 import com.swent.skillswap.ui.utils.SkillSwapEditButton
 
 object ProfileTestTags {
@@ -62,6 +62,7 @@ object ProfileTestTags {
     const val MY_POSTS_BUTTON = "profile_my_posts_button"
     const val ADD_POST_BUTTON = "profile_add_post_button"
     const val LOGOUT_BUTTON = "profile_logout_button"
+    const val UNBLOCK_BUTTON = "profile_unblock"
 }
 
 @Composable
@@ -69,8 +70,8 @@ fun ProfileScreen(
     onEditProfileClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onSkillClick: () -> Unit = {},
-    onAddPostClick: () -> Unit = {},
     onSeeMyPostsClick: () -> Unit = {},
+    onUnblockClick: () -> Unit = {},
     vm: ProfileViewModel = viewModel()
 ) {
 
@@ -177,54 +178,32 @@ fun ProfileScreen(
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        /** Skills Button */
-        Button(
-            onClick = { onSkillClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
+        ProfileActionButton(
+            text = "My skills",
+            icon = Icons.Outlined.BookmarkBorder,
+            contentDescription = "Skills",
+            onClick = onSkillClick,
             modifier = Modifier.testTag(SKILLS_BUTTON)
-        ) {
-            Icon(
-                contentDescription = "Skills",
-                imageVector = Icons.Outlined.BookmarkBorder,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "My skills")
-        }
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
-        /** See My Posts Button */
-        Button(
-            onClick = { onSeeMyPostsClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
+
+        ProfileActionButton(
+            text = "See my posts",
+            icon = Icons.AutoMirrored.Outlined.List,
+            contentDescription = "My Posts",
+            onClick = onSeeMyPostsClick,
             modifier = Modifier.testTag(MY_POSTS_BUTTON)
-        ) {
-            Icon(
-                contentDescription = "My Posts",
-                imageVector = Icons.Outlined.List,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "See my posts")
-        }
+        )
+
         Spacer(modifier = Modifier.weight(1f))
 
-        /* Add post button */
-        Button(
-            onClick = { onAddPostClick() },
-            shape = RoundedCornerShape(26),
-            contentPadding = PaddingValues(12.dp, 0.dp),
-            modifier = Modifier.testTag(ADD_POST_BUTTON)
-        ) {
-            Icon(
-                contentDescription = "New Post",
-                imageVector = Icons.Outlined.AddCircle,
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "Make a post")
-        }
+        ProfileActionButton(
+            text = "Unblock People",
+            onClick = onUnblockClick,
+            modifier = Modifier.testTag(ProfileTestTags.UNBLOCK_BUTTON)
+        )
+
         Spacer(modifier = Modifier.weight(1f))
 
         /** log Out button */

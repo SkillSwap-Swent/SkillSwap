@@ -290,3 +290,37 @@ fun SkillSwapEditButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         )
     }
 }
+/**
+ * A rounded action button used in the profile screen.
+ *
+ * @param text The label displayed inside the button.
+ * @param onClick Callback invoked when the button is pressed.
+ * @param modifier Optional [Modifier] for customizing layout or adding test tags.
+ * @param icon Optional icon displayed before the text.
+ * @param contentDescription Content description for the optional icon.
+ */
+@Composable
+fun ProfileActionButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    contentDescription: String? = null
+) {
+    Button(
+        onClick = onClick,
+        shape = RoundedCornerShape(26),
+        contentPadding = PaddingValues(12.dp, 0.dp),
+        modifier = modifier
+    ) {
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+        }
+        Text(text = text)
+    }
+}

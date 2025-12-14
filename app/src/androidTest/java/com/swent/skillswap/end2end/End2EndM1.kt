@@ -248,6 +248,7 @@ class End2EndM1 {
                 NavigationTestTags.BOTTOM_NAVIGATION_MENU,
                 NavigationTestTags.PROFILE_TAB,
                 NavigationTestTags.FEED_TAB,
+                NavigationTestTags.POSTS_TAB,
                 NavigationTestTags.CHAT_TAB
             )
 

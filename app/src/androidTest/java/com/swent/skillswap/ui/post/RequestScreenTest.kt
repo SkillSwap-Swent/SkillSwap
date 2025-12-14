@@ -6,7 +6,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
+import com.swent.skillswap.model.images.FakePictureRepository
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.*
 import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
@@ -14,9 +17,14 @@ import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.post.RequestViewModel
+import com.swent.skillswap.utils.FirebaseEmulator
 import java.util.Date
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import org.junit.AfterClass
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,6 +35,9 @@ class RequestScreenTest {
     @get:Rule val composeTestRule = createComposeRule()
 
     private lateinit var fakeRepository: FakePostRepository
+    private lateinit var storageRepository: PictureRepositoryInterface
+
+    private val storage = FirebaseEmulator.storage
     private val testUserId = "test-user-123"
     private var backButtonClicked = false
     private var postCreatedCalled = false
@@ -49,9 +60,34 @@ class RequestScreenTest {
             location = defaultLocation
         )
 
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setupClass() {
+            /** Ensure Firebase Emulators are started */
+            FirebaseEmulator.startEmulator()
+            FirebaseEmulator.auth.signInAnonymously()
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun cleanUp() = runBlocking {
+            /** Clean up emulators */
+            FirebaseEmulator.auth.signOut()
+            FirebaseEmulator.clearAuthEmulator()
+            /** Clean up storage manually */
+            val storageRef = FirebaseEmulator.storage.reference.child(FEED_PICTURES_PATH)
+            val listResult = storageRef.listAll().await()
+            for (item in listResult.items) {
+                item.delete().await()
+            }
+        }
+    }
+
     @Before
     fun setUp() {
         fakeRepository = FakePostRepository()
+        storageRepository = FakePictureRepository()
         backButtonClicked = false
         postCreatedCalled = false
     }
@@ -73,14 +109,14 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
                 onGoBack = { backButtonClicked = true },
                 onPostCreated = { postCreatedCalled = true }
             )
         }
-        // Can't scroll because not in column
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
+        // Back button was removed as part of bottom nav feature
 
         scrollAndAssertIsDisplayed(RequestScreenTags.TITLE_INPUT)
         scrollAndAssertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
@@ -94,6 +130,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -109,6 +146,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.EDIT,
                 uid = sampleRequest.uid
@@ -127,6 +165,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -146,6 +185,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -168,6 +208,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -186,6 +227,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -207,6 +249,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -223,6 +266,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -246,18 +290,9 @@ class RequestScreenTest {
 
     @Test
     fun backButton_triggersCallback() {
-        composeTestRule.setContent {
-            RequestScreen(
-                postRepository = fakeRepository,
-                currentUserId = testUserId,
-                postOperation = PostOperation.ADD,
-                onGoBack = { backButtonClicked = true }
-            )
-        }
-
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).performClick()
-
-        assertTrue(backButtonClicked)
+        // Back button was removed from RequestScreen as part of bottom nav feature
+        // Navigation is now handled through bottom navigation bar
+        // This test is no longer applicable
     }
 
     @Test
@@ -267,6 +302,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.EDIT,
                 uid = sampleRequest.uid
@@ -292,11 +328,18 @@ class RequestScreenTest {
     @Test
     fun tagChip_displayAndRemove() {
         val viewModel =
-            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
+            RequestViewModel(
+                null,
+                fakeRepository,
+                storageRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
 
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
                 requestViewModel = viewModel
@@ -323,11 +366,18 @@ class RequestScreenTest {
     fun submit_showsLoadingIndicator() {
         fakeRepository.setDelay(1000) // Add delay to see loading state
         val viewModel =
-            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
+            RequestViewModel(
+                null,
+                fakeRepository,
+                storageRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
 
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
                 requestViewModel = viewModel
@@ -361,6 +411,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -385,11 +436,18 @@ class RequestScreenTest {
     @Test
     fun submit_success_triggersCallback() {
         val viewModel =
-            RequestViewModel(null, fakeRepository, currentUserId = testUserId, postId = null)
+            RequestViewModel(
+                null,
+                fakeRepository,
+                storageRepository,
+                currentUserId = testUserId,
+                postId = null
+            )
 
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
                 requestViewModel = viewModel,
@@ -428,6 +486,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -451,6 +510,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -475,6 +535,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -514,6 +575,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -546,6 +608,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -567,6 +630,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD
             )
@@ -591,6 +655,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
             )
@@ -608,6 +673,7 @@ class RequestScreenTest {
             RequestViewModel(
                 appContext = null,
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postId = null
             )
@@ -615,6 +681,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
                 requestViewModel = testViewModel
@@ -646,6 +713,7 @@ class RequestScreenTest {
             RequestViewModel(
                 appContext = null,
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postId = null
             )
@@ -653,6 +721,7 @@ class RequestScreenTest {
         composeTestRule.setContent {
             RequestScreen(
                 postRepository = fakeRepository,
+                storageRepository = storageRepository,
                 currentUserId = testUserId,
                 postOperation = PostOperation.ADD,
                 requestViewModel = testViewModel

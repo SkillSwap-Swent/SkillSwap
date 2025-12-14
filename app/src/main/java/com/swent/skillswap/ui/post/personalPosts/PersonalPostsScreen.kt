@@ -1,6 +1,10 @@
-/** @author Younes Belgroune - Made with the help of AI */
+/**
+ * @author Younes Belgroune - Made with the help of AI @author Alex Magnus - ChatGPT for some UI
+ *   elements
+ */
 package com.swent.skillswap.ui.post.personalPosts
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,6 +42,10 @@ object PersonalPostsScreenTags {
     const val POST_ITEM = "post_item"
     const val EDIT_BUTTON = "edit_button"
     const val DELETE_BUTTON = "delete_button"
+    const val ITEM_TITLE = "item_title"
+    const val ITEM_DESCRIPTION = "item_description"
+    const val ITEM_STATUS = "item_status"
+    const val ITEM_SKILL = "item_skill"
 }
 
 /**
@@ -202,12 +210,20 @@ private fun PostItem(
     post: Post,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(12.dp)
+                ),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -225,13 +241,22 @@ private fun PostItem(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.testTag(PersonalPostsScreenTags.ITEM_TITLE + post.uid)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+
+                    val statustext =
+                        post.status.name.lowercase().replaceFirstChar { it.uppercase() }
+                    val paymentText = post.paymentMethod.displayName
+                    val repliesText =
+                        "${post.postReplies.size} ${if (post.postReplies.size != 1) "replies" else "reply"}"
+
                     Text(
-                        text = post.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                        text = "$statustext • $paymentText • $repliesText",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.testTag(PersonalPostsScreenTags.ITEM_STATUS + post.uid)
                     )
                 }
                 // Action buttons
@@ -265,41 +290,97 @@ private fun PostItem(
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                modifier = Modifier.testTag(PersonalPostsScreenTags.ITEM_DESCRIPTION + post.uid)
             )
 
             if (post.skills.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    post.skills.take(3).forEach { skill ->
-                        SkillPill(skill = skill, isSelected = false, onClick = {})
+                    // giving the row weight forces it to respect the fixed width of the box below
+                    Row(
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        post.skills.take(3).forEach { skill ->
+                            SkillPill(
+                                skill = skill,
+                                isSelected = false,
+                                onClick = {},
+                                modifier =
+                                    Modifier.padding(end = 4.dp)
+                                        .testTag(
+                                            PersonalPostsScreenTags.ITEM_SKILL +
+                                                skill.name +
+                                                post.uid
+                                        ),
+                            )
+                        }
                     }
-                }
-                if (post.skills.size > 3) {
-                    Text(
-                        text = "+${post.skills.size - 3}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
+
+                    // give overflow text a box with fixed width to ensure its always drawn
+                    val overflow = post.skills.size - 3
+                    val overflowWidth = 16.dp
+                    Box(
+                        modifier = Modifier.width(overflowWidth),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (overflow > 0) {
+                            Text(
+                                text = "+$overflow",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
                 }
             }
         }
-
-        // Payment method and status
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                text = "Payment: ${post.paymentMethod.name.replace("_", " ")}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-            Text(
-                text = post.status.name.lowercase().replaceFirstChar { it.uppercase() },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
-        }
     }
 }
+
+// @Preview
+// @Composable
+// fun PostItemPreview() {
+//    val request1 =
+//        Request(
+//            uid = "123",
+//            title = "Need help with Kotlin",
+//            description = "Looking for an expert to teach me Kotlin.",
+//            ownerId = "user456",
+//            skills =
+//                setOf(
+//                    SkillTag.CIRCUIT_ANALYSIS,
+//                    SkillTag.PROJECT_MANAGEMENT,
+//                    SkillTag.MACHINE_DESIGN,
+//                    SkillTag.ALGORITHMS
+//                ),
+//            tags = setOf(PostTag.REOCCURRING),
+//            expiry = Timestamp(Date(System.currentTimeMillis() + 86400000)),
+//            creation = Timestamp.now(),
+//            status = PostStatus.POSTED,
+//            media = listOf("media_url_1", "media_url_2"),
+//            paymentMethod = PaymentMethod.SKILLSANDCASH,
+//            location = GeoPoint(46.5191, 6.5668),
+//            postReplies =
+//                setOf(
+//                    PostReply(
+//                        postId = "123",
+//                        ownerId = "replier123",
+//                        creation = Timestamp.now(),
+//                        message = "I want to help!",
+//                        postType = PostType.REQUEST,
+//                        replyStatus = ReplyStatus.PROPOSED
+//                    )
+//                )
+//        )
+//
+//    Box(
+//        modifier =
+//
+// Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(16.dp)
+//    ) {
+//        PostItem(request1, {}, {})
+//    }
+// }

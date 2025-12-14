@@ -99,10 +99,7 @@ object FirebaseEmulator {
         clearEmulator(firestoreEndpoint)
     }
 
-    fun clearStorageEmulator() {
-        clearEmulator(storageEndpoint)
-    }
-
+    /** fun clearStorageEmulator() { clearEmulator(storageEndpoint) } */
     fun reinitialize() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         // Sign out first to stop any pending auth background tasks

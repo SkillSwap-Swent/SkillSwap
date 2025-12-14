@@ -1,6 +1,7 @@
 /** Created with the help of Cursor */
 package com.swent.skillswap.model.notification
 
+import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
@@ -8,6 +9,17 @@ import com.swent.skillswap.model.utils.RepositoryException
 import kotlinx.coroutines.tasks.await
 
 class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : NotificationRepository {
+
+    companion object {
+        /** Set of notification types related to posts. Using Set for O(1) membership checks. */
+        private val POST_NOTIFICATION_TYPES =
+            setOf(
+                NotificationType.POST_REPLY,
+                NotificationType.POST_ACCEPTED,
+                NotificationType.POST_REJECTED,
+                NotificationType.NEW_MATCHING_POST
+            )
+    }
 
     private val notificationsCollection = db.collection(FirestorePaths.NOTIFICATIONS_COLLECTION)
 
@@ -17,9 +29,12 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
 
     override suspend fun getNotificationsForUser(userId: String): List<Notification> {
         return try {
-            notificationsCollection.whereEqualTo("userId", userId).get().await().map {
-                documentToNotification(it)
-            }
+            notificationsCollection
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+                .map { documentToNotification(it) }
+                .sortedByDescending { it.timestamp }
         } catch (e: Exception) {
             throw RepositoryException("Failed to get notifications for user $userId", e)
         }
@@ -33,6 +48,7 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
                 .get()
                 .await()
                 .map { documentToNotification(it) }
+                .sortedByDescending { it.timestamp }
         } catch (e: Exception) {
             throw RepositoryException("Failed to get unread notifications for user $userId", e)
         }
@@ -116,6 +132,34 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         } catch (e: Exception) {
             throw RepositoryException(
                 "Failed to mark chat notifications as read for chatId $chatId and user $userId",
+                e
+            )
+        }
+    }
+
+    override suspend fun markPostNotificationsAsRead(postId: String, userId: String) {
+        try {
+            // Fetch unread notifications for user
+            val unreadNotifications = getUnreadNotificationsForUser(userId)
+            // Filter post-related notifications with relatedId == postId
+            val toMark =
+                unreadNotifications.filter {
+                    it.relatedId == postId && it.type in POST_NOTIFICATION_TYPES
+                }
+
+            if (toMark.isEmpty()) return
+
+            for (notification in toMark) {
+                markAsRead(notification.uid)
+            }
+        } catch (e: Exception) {
+            Log.e(
+                "NotificationRepositoryFirestore",
+                "Failed to mark post notifications as read for postId $postId and user $userId",
+                e
+            )
+            throw RepositoryException(
+                "Failed to mark post notifications as read for postId $postId and user $userId",
                 e
             )
         }

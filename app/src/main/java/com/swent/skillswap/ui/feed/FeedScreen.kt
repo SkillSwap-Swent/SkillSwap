@@ -81,6 +81,12 @@ fun FeedScreen(
     val verticalPadding = screenHeightDp * 0.03f
     val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
     val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
+
+    // Mark post notifications as read when viewing a post
+    LaunchedEffect(offer?.offerId) {
+        offer?.offerId?.let { postId -> vm.markPostNotificationsAsRead(postId) }
+    }
+
     LaunchedEffect(Unit) {
         vm.eventFlow.collect { event ->
             when (event) {

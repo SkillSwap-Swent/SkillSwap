@@ -28,13 +28,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -55,7 +51,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
@@ -63,11 +58,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.swent.skillswap.firebase.FirestoreSettings
 import com.swent.skillswap.firebase.FirestoreSettings.MAX_SEARCH_KEYS
-import com.swent.skillswap.model.post.FakePostRepository
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.tags.SkillTag
-import com.swent.skillswap.resources.theme.SkillSwapAppTheme
 import com.swent.skillswap.ui.utils.SkillSwapShadowButton
 
 object RequestScreenTags {
@@ -109,6 +103,7 @@ object RequestScreenTags {
 @Composable
 fun RequestScreen(
     postRepository: PostRepository,
+    storageRepository: PictureRepositoryInterface,
     currentUserId: String,
     uid: String? = null,
     requestViewModel: RequestViewModel =
@@ -117,6 +112,7 @@ fun RequestScreen(
                 RequestViewModelFactory(
                     appContext = LocalContext.current.applicationContext,
                     postRepository = postRepository,
+                    storageRepository = storageRepository,
                     currentUserId = currentUserId,
                     postId = uid
                 )
@@ -141,16 +137,9 @@ fun RequestScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(postOperation.toTitle() + " Request") },
-            navigationIcon = {
-                IconButton(
-                    onClick = { onGoBack() },
-                    modifier = Modifier.testTag(RequestScreenTags.BACK_BUTTON)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back"
-                    )
+            title = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(postOperation.toTitle() + " Request")
                 }
             }
         )
@@ -437,23 +426,3 @@ fun RequestScreen(
         }
     }
 }
-// NOSONAR_START
-@Preview(showBackground = true)
-@Composable
-fun NewRequestScreenPreview() {
-    // Create a fake repository for preview
-    val fakeRepository = FakePostRepository()
-
-    val viewModel =
-        RequestViewModel(null, fakeRepository, currentUserId = "preview-user", postId = null)
-
-    SkillSwapAppTheme {
-        RequestScreen(
-            postRepository = fakeRepository,
-            currentUserId = "preview-user",
-            requestViewModel = viewModel,
-            postOperation = PostOperation.EDIT
-        )
-    }
-}
-// NOSONAR_END

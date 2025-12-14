@@ -310,6 +310,8 @@ class ChatScreenTest {
                 override suspend fun deleteAllNotificationsForUser(userId: String) {}
 
                 override suspend fun markChatNotificationsAsRead(chatId: String, userId: String) {}
+
+                override suspend fun markPostNotificationsAsRead(postId: String, userId: String) {}
             }
 
         val notificationViewModel = NotificationViewModel(fakeNotificationRepository)

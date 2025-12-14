@@ -208,7 +208,7 @@ class End2EndM2 {
                 ProfileTestTags.USERNAME_VALUE,
                 ProfileTestTags.PREFERENCE_SWITCH,
                 ProfileTestTags.SKILLS_BUTTON,
-                ProfileTestTags.ADD_POST_BUTTON,
+                // ADD_POST_BUTTON was removed - functionality moved to bottom nav Posts tab
                 ProfileTestTags.LOGOUT_BUTTON,
                 ProfileTestTags.MY_POSTS_BUTTON
             )
@@ -475,10 +475,9 @@ class End2EndM2 {
                 .isNotEmpty()
         }
 
-        // ---------- Navigate to Add Post Screen ----------
-        composeTestRule.onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON).performScrollTo()
+        // ---------- Navigate to Add Post Screen via bottom nav Posts tab ----------
+        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON).performClick()
 
         // ---------- Wait for Add Request Screen ----------
         composeTestRule.waitUntil(10_000) {

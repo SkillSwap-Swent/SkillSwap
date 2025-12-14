@@ -1086,6 +1086,17 @@ class FeedScreenInstrumentedTest {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
+        // Wait for author name to be loaded (ensures user data is retrieved)
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.REQUESTER_NAME)
+                    .assertTextContains("TestUser2", substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         // === Menu interactions ===
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_MENU_BUTTON).performClick()

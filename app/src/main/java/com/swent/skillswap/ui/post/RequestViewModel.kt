@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
+import com.swent.skillswap.firebase.CloudReferences.FEED_PICTURES_PATH
 import com.swent.skillswap.firebase.FirestoreSettings
+import com.swent.skillswap.model.images.PictureRepositoryInterface
 import com.swent.skillswap.model.post.PaymentMethod
 import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -17,6 +19,10 @@ import com.swent.skillswap.model.tags.PostTag
 import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.utils.LocationManager
 import java.util.Date
+import kotlin.toString
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -63,6 +69,7 @@ data class RequestUIState(
 class RequestViewModel(
     private val appContext: Context? = null,
     private val postRepository: PostRepository,
+    private val storageRepository: PictureRepositoryInterface,
     private val currentUserId: String,
     private val postId: String? = null // Only necessary if postOperation is edit
 ) : ViewModel() {
@@ -177,6 +184,7 @@ class RequestViewModel(
             _uiState.update { it.copy(isLoading = true, submitError = null) }
 
             try {
+                /** determine uid based on operation */
                 val uid =
                     when (postOperation) {
                         PostOperation.ADD -> postRepository.getNewUid(PostType.REQUEST)
@@ -186,6 +194,21 @@ class RequestViewModel(
                     setLocation(LocationManager(appContext).getCurrentLocationSync())
                 }
 
+                /** attachments upload logic */
+                val stringUrls: List<String> = coroutineScope {
+                    _uiState.value.attachments
+                        .mapIndexed { index, uri ->
+                            val mediaName = "${uid}_$index"
+                            async {
+                                storageRepository
+                                    .uploadPicture(mediaName, uri, FEED_PICTURES_PATH)
+                                    .toString()
+                            }
+                        }
+                        .awaitAll()
+                }
+
+                /** construct request object */
                 val request =
                     Request(
                         uid = uid,
@@ -204,7 +227,7 @@ class RequestViewModel(
                             ),
                         creation = Timestamp.now(),
                         status = PostStatus.POSTED,
-                        media = emptyList(), // TODO: upload attachments to db and store links
+                        media = stringUrls,
                         location = _uiState.value.location
                     )
 

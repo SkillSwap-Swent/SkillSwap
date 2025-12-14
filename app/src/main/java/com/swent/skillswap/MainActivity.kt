@@ -47,6 +47,8 @@ import com.swent.skillswap.model.feed.FeedController
 import com.swent.skillswap.model.feed.FeedControllerFactory
 import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
+import com.swent.skillswap.model.images.PictureRepository
+import com.swent.skillswap.model.notification.NotificationType
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -70,6 +72,7 @@ import com.swent.skillswap.ui.navigation.BottomNavigationMenu
 import com.swent.skillswap.ui.navigation.NavigationActions
 import com.swent.skillswap.ui.navigation.Screen
 import com.swent.skillswap.ui.navigation.Tab
+import com.swent.skillswap.ui.notification.NotificationScreen
 import com.swent.skillswap.ui.notification.NotificationViewModel
 import com.swent.skillswap.ui.post.PostOperation
 import com.swent.skillswap.ui.post.RequestScreen
@@ -82,6 +85,8 @@ import com.swent.skillswap.ui.user.ProfileViewModel
 import com.swent.skillswap.ui.user.editUser.EditUserScreen
 import com.swent.skillswap.ui.user.editUser.EditUserViewModel
 import com.swent.skillswap.ui.user.editUser.SkillsEditScreen
+import com.swent.skillswap.ui.user.unblockUser.UnblockUserScreen
+import com.swent.skillswap.ui.user.unblockUser.UnblockUserViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -101,6 +106,19 @@ class MainActivity : ComponentActivity() {
                     NotificationManager.IMPORTANCE_HIGH
                 )
                 .apply { description = "Notifications for chat messages" }
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun createPostNotificationChannel() {
+        val channelId = "post_channel"
+        val channel =
+            NotificationChannel(
+                    channelId,
+                    "Post Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+                .apply { description = "Notifications for post replies and updates" }
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
@@ -136,6 +154,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createChatNotificationChannel()
+        createPostNotificationChannel()
 
         val locationManager = LocationManager(this)
         requestAllPermissionsIfNeeded(locationManager)
@@ -173,6 +192,7 @@ fun SkillSwapApp(
     val notificationViewModel: NotificationViewModel = viewModel()
 
     var controller by remember { mutableStateOf<FeedController?>(null) }
+    var lastSelectedTopLevelTab by remember { mutableStateOf<Tab?>(Tab.Profile) }
 
     LaunchedEffect(Firebase.auth.uid) {
         val recommendationEngine =
@@ -207,11 +227,30 @@ fun SkillSwapApp(
                     else -> null
                 }
 
-            currentTab?.let { tab ->
+            // Update last selected tab when on a top-level destination
+            if (currentTab != null) {
+                lastSelectedTopLevelTab = currentTab
+            }
+
+            // Show bottom bar if we're on a top-level destination or on AddRequest
+            val showBottomBar = currentTab != null || currentRoute == Screen.AddRequest.route
+
+            // Determine which tab to show as selected
+            val selectedTab =
+                when {
+                    currentTab != null -> currentTab
+                    currentRoute == Screen.AddRequest.route -> Tab.Posts
+                    else -> lastSelectedTopLevelTab ?: Tab.Profile
+                }
+
+            if (showBottomBar) {
                 BottomNavigationMenu(
-                    selectedTab = tab,
-                    onTabSelected = { selectedTab ->
-                        navigationActions.navigateTo(selectedTab.destination)
+                    selectedTab = selectedTab,
+                    onTabSelected = { clickedTab ->
+                        clickedTab.destination?.let {
+                            navigationActions.navigateTo(it)
+                            lastSelectedTopLevelTab = clickedTab
+                        }
                     },
                     notificationViewModel = notificationViewModel
                 )
@@ -268,7 +307,7 @@ fun SkillSwapApp(
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
                         onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) }
+                        onUnblockClick = { navigationActions.navigateTo(Screen.UnblockUser) }
                     )
                 }
                 composable(Screen.EditProfile.route) {
@@ -304,9 +343,11 @@ fun SkillSwapApp(
                 ) { backStackEntry ->
                     val postId = backStackEntry.arguments?.getString("postId") ?: ""
                     val postRepository = PostFirestoreRepository(Firebase.firestore)
+                    val storageRepository = PictureRepository()
                     val currentUserId = Firebase.auth.uid ?: ""
                     RequestScreen(
                         postRepository = postRepository,
+                        storageRepository = storageRepository,
                         currentUserId = currentUserId,
                         uid = postId,
                         postOperation = PostOperation.EDIT,
@@ -337,7 +378,8 @@ fun SkillSwapApp(
                             remember(controller) {
                                 FeedScreenViewModelFactory(
                                     navigation = navigation,
-                                    controller = controller!!
+                                    controller = controller!!,
+                                    notificationViewModel = notificationViewModel
                                 )
                             }
                         val vm: FeedScreenViewModel = viewModel(factory = factory)
@@ -371,7 +413,8 @@ fun SkillSwapApp(
                     ChatListViewModelFactory(
                         chatRepository = ChatRepositoryFirestore(Firebase.firestore),
                         userRepository = UserRepoFirestore(Firebase.firestore),
-                        postRepository = PostFirestoreRepository(Firebase.firestore)
+                        postRepository = PostFirestoreRepository(Firebase.firestore),
+                        notificationViewModel = notificationViewModel
                     )
                 val vm: ChatListViewModel = viewModel(factory = factory)
                 ChatListScreen(
@@ -383,7 +426,8 @@ fun SkillSwapApp(
                     },
                     onAvatarClick = { userId ->
                         navController.navigate(Screen.OtherUser.createRoute(userId))
-                    }
+                    },
+                    onNotificationClick = { navController.navigate(Screen.NotificationList.route) }
                 )
             }
 
@@ -408,6 +452,31 @@ fun SkillSwapApp(
                 )
             }
 
+            composable(Screen.NotificationList.route) {
+                NotificationScreen(
+                    viewModel = notificationViewModel,
+                    onGoBack = { navigationActions.goBack() },
+                    onNotificationClick = { notification ->
+                        when (notification.type) {
+                            NotificationType.MESSAGE -> {
+                                // Navigate to chat screen if relatedId (chatId) is available
+                                notification.relatedId?.let { chatId ->
+                                    navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                                }
+                            }
+                            NotificationType.POST_REPLY,
+                            NotificationType.POST_ACCEPTED,
+                            NotificationType.POST_REJECTED,
+                            NotificationType.NEW_MATCHING_POST -> {
+                                // Navigate to feed for post-related notifications
+                                // TODO: Could navigate to specific post detail screen if available
+                                navigationActions.navigateTo(Screen.Feed)
+                            }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.AddRequest.route) {
                 val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                 if (currentUserId == null) {
@@ -416,11 +485,19 @@ fun SkillSwapApp(
                 }
                 RequestScreen(
                     postRepository = PostFirestoreRepository(Firebase.firestore),
+                    storageRepository = PictureRepository(),
                     currentUserId = currentUserId,
                     uid = null,
                     onGoBack = { navigationActions.goBack() },
                     onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
                     postOperation = PostOperation.ADD,
+                )
+            }
+            composable(Screen.UnblockUser.route) {
+                UnblockUserScreen(
+                    UnblockUserViewModel(UserRepoFirestore(Firebase.firestore)),
+                    onAvatarClick = { navController.navigate(Screen.OtherUser.createRoute(it)) },
+                    onGoBack = { navigationActions.goBack() }
                 )
             }
         }

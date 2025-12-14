@@ -74,6 +74,23 @@ class NotificationScreenTest : TestCase() {
                 .filter { it.value.userId == userId && it.value.relatedId == chatId }
                 .forEach { markAsRead(it.value.uid) }
         }
+
+        override suspend fun markPostNotificationsAsRead(postId: String, userId: String) {
+            val postNotificationTypes =
+                listOf(
+                    NotificationType.POST_REPLY,
+                    NotificationType.POST_ACCEPTED,
+                    NotificationType.POST_REJECTED,
+                    NotificationType.NEW_MATCHING_POST
+                )
+            data
+                .filter {
+                    it.value.userId == userId &&
+                        it.value.relatedId == postId &&
+                        it.value.type in postNotificationTypes
+                }
+                .forEach { markAsRead(it.value.uid) }
+        }
     }
 
     private fun notif(

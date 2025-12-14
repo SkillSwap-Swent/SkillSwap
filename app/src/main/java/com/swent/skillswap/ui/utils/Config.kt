@@ -1,6 +1,7 @@
 package com.swent.skillswap.ui.utils
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 
 val text_disable_button_alpha = 0.16f
 val container_disable_button_alpha = 0.08f
@@ -9,3 +10,4 @@ val container_field_alpha = 0.6f
 val shadow_opacity = 120
 val pill_shape = RoundedCornerShape(50)
 val report_treshold = 3L
+val icon_size = 24.dp

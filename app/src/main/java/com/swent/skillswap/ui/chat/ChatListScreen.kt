@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GppGood
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,6 +35,7 @@ object ChatListTestTags {
     const val ACCEPT_CHAT = "AcceptChatButton"
     const val EMPTY_STATE = "EmptyState"
     const val AVATAR = "Avatar"
+    const val ERROR = "ErrorMessage"
 }
 
 @Composable
@@ -41,7 +43,8 @@ fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel(),
     currentUserId: String = "",
     onChatClick: (String) -> Unit = {},
-    onAvatarClick: (String) -> Unit = {}
+    onAvatarClick: (String) -> Unit = {},
+    onNotificationClick: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedPostType by remember { mutableStateOf(PostType.REQUEST) }
@@ -52,15 +55,28 @@ fun ChatListScreen(
         viewModel.getChatsOfCurrentUser(selectedPostType, isPendingSelected, isOwnerSelected)
     }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).testTag(ChatListTestTags.SCREEN)) {
-        // Title
-        Text(
-            text = "Chat",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier =
-                Modifier.fillMaxWidth().padding(bottom = 24.dp).testTag(ChatListTestTags.TITLE)
-        )
+        // Title with notification button
+        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+            Text(
+                text = "Chat",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier =
+                    Modifier.fillMaxWidth().align(Alignment.Center).testTag(ChatListTestTags.TITLE)
+            )
+            if (onNotificationClick != null) {
+                IconButton(
+                    onClick = onNotificationClick,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Notifications"
+                    )
+                }
+            }
+        }
 
         // Related post type filter buttons
         Row(
@@ -111,33 +127,53 @@ fun ChatListScreen(
         }
 
         val filteredChats = uiState.chats
-        if (filteredChats.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No chats available",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center
-                )
+        when {
+            uiState.error != null -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().fillMaxSize().testTag(ChatListTestTags.ERROR),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = uiState.error ?: "An unknown error occurred",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
-            ) {
-                items(filteredChats) { chat ->
-                    ChatConversationItem(
-                        viewModel = viewModel,
-                        currentUserId = currentUserId,
-                        chat = chat,
-                        onClick = { onChatClick(chat.id) },
-                        isOwner = isOwnerSelected,
-                        onAvatarClick = { userId -> onAvatarClick(userId) }
+            filteredChats.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize().testTag(ChatListTestTags.EMPTY_STATE),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No chats available",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center
                     )
+                }
+            }
+            else -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.testTag(ChatListTestTags.POSTS_LIST)
+                ) {
+                    items(filteredChats) { chat ->
+                        ChatConversationItem(
+                            viewModel = viewModel,
+                            currentUserId = currentUserId,
+                            chat = chat,
+                            onClick = { onChatClick(chat.id) },
+                            isOwner = isOwnerSelected,
+                            onAvatarClick = { userId -> onAvatarClick(userId) }
+                        )
+                    }
                 }
             }
         }

@@ -91,4 +91,12 @@ interface NotificationRepository {
      * @param userId The Id of the user who opened the chat
      */
     suspend fun markChatNotificationsAsRead(chatId: String, userId: String)
+
+    /**
+     * Marks all unread post-related notifications for a user related to a specific post as read.
+     *
+     * @param postId The Id of the post being viewed by the user
+     * @param userId The Id of the user viewing the post
+     */
+    suspend fun markPostNotificationsAsRead(postId: String, userId: String)
 }

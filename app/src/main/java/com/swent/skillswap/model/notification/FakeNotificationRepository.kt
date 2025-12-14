@@ -139,6 +139,25 @@ class FakeNotificationRepository : NotificationRepository {
         }
     }
 
+    override suspend fun markPostNotificationsAsRead(postId: String, userId: String) {
+        val postNotificationTypes =
+            listOf(
+                NotificationType.POST_REPLY,
+                NotificationType.POST_ACCEPTED,
+                NotificationType.POST_REJECTED,
+                NotificationType.NEW_MATCHING_POST
+            )
+        notifications.forEach { notification ->
+            if (
+                notification.value.relatedId == postId &&
+                    userId == notification.value.userId &&
+                    notification.value.type in postNotificationTypes
+            ) {
+                markAsRead(notification.value.uid)
+            }
+        }
+    }
+
     // Test helpers
     fun getAddedNotifications(): List<Notification> = notifications.values.toList()
 
