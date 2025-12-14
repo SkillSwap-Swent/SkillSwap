@@ -8,10 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.swent.skillswap.model.Auth.AuthClassicModel
-import com.swent.skillswap.model.Auth.AuthGoogleModel
-import com.swent.skillswap.model.Auth.SignInClassicParams
-import com.swent.skillswap.model.Auth.SignInGoogleParams
+import com.swent.skillswap.model.auth.AuthClassicModel
+import com.swent.skillswap.model.auth.AuthGoogleModel
+import com.swent.skillswap.model.auth.SignInClassicParams
+import com.swent.skillswap.model.auth.SignInGoogleParams
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.FCMTokenManager
 import com.swent.skillswap.resources.config.ValidationConfig
