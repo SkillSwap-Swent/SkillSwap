@@ -226,7 +226,6 @@ fun ChatConversationItem(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showRatingDialog by remember { mutableStateOf(false) }
-    var selectedRating by remember { mutableIntStateOf(0) }
     val currentUser = currentUserId
     val otherUser = chat.participants.first { it != currentUser } // Assuming two participants
 
@@ -266,14 +265,12 @@ fun ChatConversationItem(
     }
     RatingDialog(
         show = showRatingDialog,
-        selectedRating = selectedRating,
-        onRatingSelected = { selectedRating = it },
         onCancel = { showRatingDialog = false },
-        onSubmit = {
-            if (selectedRating > 0) {
+        onSubmit = { rating ->
+            if (rating > 0) {
                 viewModel.updateUserRating(
                     userId = otherUser,
-                    incomingRating = selectedRating.toFloat()
+                    incomingRating = rating.toFloat()
                 )
             }
             showRatingDialog = false
@@ -332,15 +329,15 @@ private fun RatingButton(shouldDisplay: Boolean, onClick: () -> Unit) {
 @Composable
 private fun RatingDialog(
     show: Boolean,
-    selectedRating: Int,
-    onRatingSelected: (Int) -> Unit,
     onCancel: () -> Unit,
-    onSubmit: () -> Unit
+    onSubmit: (Int) -> Unit
 ) {
     if (show) {
         Dialog(
             onDismissRequest = onCancel,
             content = {
+                var selectedRating by remember { mutableIntStateOf(0) }
+
                 Card(shape = RoundedCornerShape(16.dp)) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -350,13 +347,16 @@ private fun RatingDialog(
                         Spacer(Modifier.height(16.dp))
                         Row {
                             (1..5).forEach { rating ->
-                                IconButton(onClick = { onRatingSelected(rating) }) {
+                                val isSelected = rating <= selectedRating
+                                IconButton(onClick = { selectedRating = rating }) {
                                     Icon(
                                         imageVector =
-                                            if (rating <= selectedRating) Icons.Filled.Star
+                                            if (isSelected) Icons.Filled.Star
                                             else Icons.Outlined.Star,
                                         contentDescription = "rating stars",
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint =
+                                            if (isSelected) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                     )
                                 }
                             }
@@ -364,7 +364,7 @@ private fun RatingDialog(
                         Spacer(Modifier.height(16.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = onCancel) { Text("Cancel") }
-                            Button(onClick = onSubmit) { Text("Submit") }
+                            Button(onClick = { onSubmit(selectedRating) }) { Text("Submit") }
                         }
                     }
                 }
