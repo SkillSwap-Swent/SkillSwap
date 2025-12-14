@@ -116,8 +116,7 @@ class RequestScreenTest {
                 onPostCreated = { postCreatedCalled = true }
             )
         }
-        // Can't scroll because not in column
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).assertIsDisplayed()
+        // Back button was removed as part of bottom nav feature
 
         scrollAndAssertIsDisplayed(RequestScreenTags.TITLE_INPUT)
         scrollAndAssertIsDisplayed(RequestScreenTags.DESCRIPTION_INPUT)
@@ -291,19 +290,9 @@ class RequestScreenTest {
 
     @Test
     fun backButton_triggersCallback() {
-        composeTestRule.setContent {
-            RequestScreen(
-                postRepository = fakeRepository,
-                storageRepository = storageRepository,
-                currentUserId = testUserId,
-                postOperation = PostOperation.ADD,
-                onGoBack = { backButtonClicked = true }
-            )
-        }
-
-        composeTestRule.onNodeWithTag(RequestScreenTags.BACK_BUTTON).performClick()
-
-        assertTrue(backButtonClicked)
+        // Back button was removed from RequestScreen as part of bottom nav feature
+        // Navigation is now handled through bottom navigation bar
+        // This test is no longer applicable
     }
 
     @Test
