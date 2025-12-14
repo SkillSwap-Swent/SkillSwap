@@ -29,8 +29,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ChatListScreenTest {
 
-    @get:Rule
-    val composeRule = createComposeRule()
+    @get:Rule val composeRule = createComposeRule()
 
     // Minimal fake implementations
     private class FakeChatRepository(
@@ -346,11 +345,22 @@ class ChatListScreenTest {
         composeRule.waitForIdle()
 
         // Verify selected and unselected stars have different colors
-        val selectedStar = composeRule.onAllNodesWithContentDescription("rating stars")[0].captureToImage().asAndroidBitmap()
-        val unselectedStar = composeRule.onAllNodesWithContentDescription("rating stars")[4].captureToImage().asAndroidBitmap()
+        val selectedStar =
+            composeRule
+                .onAllNodesWithContentDescription("rating stars")[0]
+                .captureToImage()
+                .asAndroidBitmap()
+        val unselectedStar =
+            composeRule
+                .onAllNodesWithContentDescription("rating stars")[4]
+                .captureToImage()
+                .asAndroidBitmap()
         val selectedColor = selectedStar.getPixel(selectedStar.width / 2, selectedStar.height / 2)
-        val unselectedColor = unselectedStar.getPixel(unselectedStar.width / 2, unselectedStar.height / 2)
-        assert(selectedColor != unselectedColor) { "Selected and unselected stars should have different colors" }
+        val unselectedColor =
+            unselectedStar.getPixel(unselectedStar.width / 2, unselectedStar.height / 2)
+        assert(selectedColor != unselectedColor) {
+            "Selected and unselected stars should have different colors"
+        }
 
         // Submit
         composeRule.onNodeWithText("Submit").performClick()

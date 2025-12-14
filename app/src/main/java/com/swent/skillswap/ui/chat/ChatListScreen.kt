@@ -268,10 +268,7 @@ fun ChatConversationItem(
         onCancel = { showRatingDialog = false },
         onSubmit = { rating ->
             if (rating > 0) {
-                viewModel.updateUserRating(
-                    userId = otherUser,
-                    incomingRating = rating.toFloat()
-                )
+                viewModel.updateUserRating(userId = otherUser, incomingRating = rating.toFloat())
             }
             showRatingDialog = false
         }
@@ -327,11 +324,7 @@ private fun RatingButton(shouldDisplay: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun RatingDialog(
-    show: Boolean,
-    onCancel: () -> Unit,
-    onSubmit: (Int) -> Unit
-) {
+private fun RatingDialog(show: Boolean, onCancel: () -> Unit, onSubmit: (Int) -> Unit) {
     if (show) {
         Dialog(
             onDismissRequest = onCancel,
@@ -356,7 +349,10 @@ private fun RatingDialog(
                                         contentDescription = "rating stars",
                                         tint =
                                             if (isSelected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                            else
+                                                MaterialTheme.colorScheme.onSurface.copy(
+                                                    alpha = 0.4f
+                                                )
                                     )
                                 }
                             }
