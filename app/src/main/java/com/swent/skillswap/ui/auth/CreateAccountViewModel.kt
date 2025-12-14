@@ -9,11 +9,11 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import com.swent.skillswap.model.Auth.AuthClassicModel
-import com.swent.skillswap.model.Auth.AuthGoogleModel
-import com.swent.skillswap.model.Auth.CreateAccountClassicParams
-import com.swent.skillswap.model.Auth.CreateAccountGoogleParams
-import com.swent.skillswap.model.Auth.SignInInterface
+import com.swent.skillswap.model.auth.AuthClassicModel
+import com.swent.skillswap.model.auth.AuthGoogleModel
+import com.swent.skillswap.model.auth.CreateAccountClassicParams
+import com.swent.skillswap.model.auth.CreateAccountGoogleParams
+import com.swent.skillswap.model.auth.SignInInterface
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.SkillRank
 import com.swent.skillswap.model.user.UserRepoFirestore

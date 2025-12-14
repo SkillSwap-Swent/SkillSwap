@@ -1,9 +1,11 @@
 /** @author Topaze17 used ChatGPT for comment. */
-package com.swent.skillswap.model.Auth
+package com.swent.skillswap.model.auth
 
 import android.app.Activity
+import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -12,6 +14,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import java.security.MessageDigest
+import java.util.UUID
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -25,6 +29,8 @@ class AuthGoogleModel(
     auth: FirebaseAuth = FirebaseAuth.getInstance(),
     firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
 ) : AuthAbstractClass(auth, firestore) {
+    private val clientId =
+        "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com"
     /**
      * Requests a Google ID token using the Android Credential Manager API.
      *
@@ -41,13 +47,15 @@ class AuthGoogleModel(
     suspend fun requestGoogleIdToken(
         credentialManager: CredentialManager,
         activity: Activity
-    ): String? {
+    ): Pair<String?, String?> {
+        val rawNonce = UUID.randomUUID().toString()
+        val hashedNonce =
+            MessageDigest.getInstance("SHA-256").digest(rawNonce.toByteArray()).joinToString("") {
+                "%02x".format(it)
+            }
 
         val googleIdOption =
-            GetSignInWithGoogleOption.Builder(
-                    "1093507723333-3b1m7h16p2rk3fv7ulkg52lh3iprs83v.apps.googleusercontent.com" // TODO add to XML at some point
-                )
-                .build()
+            GetSignInWithGoogleOption.Builder(clientId).setNonce(hashedNonce).build()
 
         val request =
             GetCredentialRequest.Builder()
@@ -58,27 +66,35 @@ class AuthGoogleModel(
         return try {
             val result = credentialManager.getCredential(activity, request)
             val google = GoogleIdTokenCredential.createFrom(result.credential.data)
-            google.idToken
+            google.idToken to rawNonce
+        } catch (e: GetCredentialCancellationException) {
+            Log.w("AuthGoogle", "User cancelled Google sign-in", e)
+            null to null
         } catch (e: GetCredentialException) {
-            null
+            Log.e("AuthGoogle", "Google sign-in failed", e)
+            null to null
         }
     }
 
     override suspend fun signIn(params: SignInParams) {
-        val googleParams: SignInGoogleParams = params as SignInGoogleParams
-        val credentialManager = googleParams.credentialManager
-        val activity = googleParams.activity
-        val idToken =
-            requestGoogleIdToken(credentialManager, activity)
-                ?: throw Exception("failed connection")
+        val googleParams =
+            params as? SignInGoogleParams
+                ?: throw IllegalArgumentException("Invalid params for Google sign-in")
 
-        val auth = this.auth
-        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+        val (idToken, rawNonce) =
+            requestGoogleIdToken(googleParams.credentialManager, googleParams.activity)
+        if (idToken == null || rawNonce == null) {
+            Log.w("AuthGoogle", "Google sign-in was cancelled or requires reauth")
+            return
+        }
 
-        auth
-            .signInWithCredential(firebaseCredential)
-            .addOnFailureListener { throw Exception("failed connection") }
-            .await()
+        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, rawNonce)
+
+        try {
+            auth.signInWithCredential(firebaseCredential).await()
+        } catch (e: Exception) {
+            throw Exception("Firebase sign-in failed", e)
+        }
     }
 
     /**
@@ -109,12 +125,7 @@ class AuthGoogleModel(
         val username = googleParams.username
         val skills = googleParams.skills
         val userLogged = auth.currentUser
-        require(
-            username.isNotBlank() &&
-                skills.isNotEmpty() &&
-                userLogged != null &&
-                userLogged.email != null
-        )
+        require(username.isNotBlank() && userLogged != null && userLogged.email != null)
         val user =
             User(
                 uid = userLogged.uid,
