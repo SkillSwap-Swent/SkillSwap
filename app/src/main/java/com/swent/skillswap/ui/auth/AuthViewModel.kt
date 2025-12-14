@@ -91,7 +91,13 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
                     if (!googleModel.googleAccountInfoAreSavedInFirestore()) {
                         _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
                     }
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    Log.e(
+                        "AuthVM",
+                        "Failed to check if Google account info is saved in Firestore",
+                        e
+                    )
+                }
             }
         }
 
