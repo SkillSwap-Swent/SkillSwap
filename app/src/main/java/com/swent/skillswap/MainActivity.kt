@@ -306,7 +306,6 @@ fun SkillSwapApp(
                         onEditProfileClick = { navigationActions.navigateTo(Screen.EditProfile) },
                         onSkillClick = { navigationActions.navigateTo(Screen.EditSkills) },
                         onSeeMyPostsClick = { navigationActions.navigateTo(Screen.PersonalPosts) },
-                        onAddPostClick = { navigationActions.navigateTo(Screen.AddRequest) },
                         onUnblockClick = { navigationActions.navigateTo(Screen.UnblockUser) }
                     )
                 }
