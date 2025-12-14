@@ -165,6 +165,7 @@ class ChatListScreenTest {
         composeRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).assertExists()
         composeRule.onNodeWithTag(ChatListTestTags.PENDING_TAB).assertExists()
         composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.NOTIFICATION).assertExists()
         composeRule.onNodeWithText("No chats available").assertExists()
     }
 

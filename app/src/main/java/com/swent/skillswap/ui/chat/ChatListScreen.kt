@@ -30,6 +30,7 @@ import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.ui.chat.ChatListTestTags.BLOCK_BUTTON
 import com.swent.skillswap.ui.chat.ChatListTestTags.CHAT_MENU_BUTTON
+import com.swent.skillswap.ui.chat.ChatListTestTags.NOTIFICATION
 import com.swent.skillswap.ui.chat.ChatListTestTags.ONGOING_TAB
 import com.swent.skillswap.ui.chat.ChatListTestTags.PENDING_TAB
 import com.swent.skillswap.ui.chat.ChatListTestTags.REPLIES_TAB
@@ -49,6 +50,7 @@ object ChatListTestTags {
     const val EMPTY_STATE = "EmptyState"
     const val USER_AVATAR = "UserAvatar"
     const val CHAT_MENU_BUTTON = "ChatMenuButton"
+    const val NOTIFICATION = "Notification"
     const val BLOCK_BUTTON = "BlockButton"
     const val USERNAME = "Username"
     const val AVATAR = "Avatar"
@@ -100,7 +102,7 @@ fun ChatListScreen(
             if (onNotificationClick != null) {
                 IconButton(
                     onClick = onNotificationClick,
-                    modifier = Modifier.align(Alignment.CenterEnd)
+                    modifier = Modifier.align(Alignment.CenterEnd).testTag(NOTIFICATION)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Notifications,
@@ -312,7 +314,7 @@ fun ChatConversationItem(
 @Composable
 fun ChatListTopBarInfo(
     modifier: Modifier = Modifier,
-    username: String? = "Topaze17",
+    username: String? = "Loading...",
     avatarURL: String? = null
 ) {
     Column(modifier = modifier) {
