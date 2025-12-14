@@ -3,6 +3,7 @@
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,7 +29,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ChatListScreenTest {
 
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule
+    val composeRule = createComposeRule()
 
     // Minimal fake implementations
     private class FakeChatRepository(
@@ -339,8 +341,18 @@ class ChatListScreenTest {
         composeRule.onNodeWithContentDescription("Rate User").assertExists().performClick()
         composeRule.onNodeWithText("Rate this exchange").assertExists()
 
-        // Select 4 stars and submit
+        // Select 4 stars
         composeRule.onAllNodesWithContentDescription("rating stars")[3].performClick()
+        composeRule.waitForIdle()
+
+        // Verify selected and unselected stars have different colors
+        val selectedStar = composeRule.onAllNodesWithContentDescription("rating stars")[0].captureToImage().asAndroidBitmap()
+        val unselectedStar = composeRule.onAllNodesWithContentDescription("rating stars")[4].captureToImage().asAndroidBitmap()
+        val selectedColor = selectedStar.getPixel(selectedStar.width / 2, selectedStar.height / 2)
+        val unselectedColor = unselectedStar.getPixel(unselectedStar.width / 2, unselectedStar.height / 2)
+        assert(selectedColor != unselectedColor) { "Selected and unselected stars should have different colors" }
+
+        // Submit
         composeRule.onNodeWithText("Submit").performClick()
         composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
     }
