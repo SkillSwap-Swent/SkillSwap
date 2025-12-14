@@ -1,5 +1,5 @@
 /** @author Topaze17 used ChatGPT for comment. */
-package com.swent.skillswap.model.Auth
+package com.swent.skillswap.model.auth
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

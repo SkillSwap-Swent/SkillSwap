@@ -8,10 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.swent.skillswap.model.Auth.AuthClassicModel
-import com.swent.skillswap.model.Auth.AuthGoogleModel
-import com.swent.skillswap.model.Auth.SignInClassicParams
-import com.swent.skillswap.model.Auth.SignInGoogleParams
+import com.swent.skillswap.model.auth.AuthClassicModel
+import com.swent.skillswap.model.auth.AuthGoogleModel
+import com.swent.skillswap.model.auth.SignInClassicParams
+import com.swent.skillswap.model.auth.SignInGoogleParams
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.model.utils.FCMTokenManager
 import com.swent.skillswap.resources.config.ValidationConfig
@@ -79,22 +79,33 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
      * creation for existing users.
      */
     fun check() {
-        if (auth.currentUser != null) {
-            val isGoogleUser = auth.currentUser?.providerData?.any { it.providerId == "google.com" }
-            if (isGoogleUser == true) {
-                viewModelScope.launch {
-                    if (googleModel.googleAccountInfoAreSavedInFirestore()) {
-                        fcmTokenManager.getAndSaveToken()
-                        _eventFlow.emit(SignInEvent.NavigateToMainScreen)
-                    } else {
+        val user = auth.currentUser ?: return
+
+        viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToMainScreen) }
+
+        val isGoogleUser = user.providerData.any { it.providerId == "google.com" }
+
+        if (isGoogleUser) {
+            viewModelScope.launch {
+                try {
+                    if (!googleModel.googleAccountInfoAreSavedInFirestore()) {
                         _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
                     }
+                } catch (e: Exception) {
+                    Log.e(
+                        "AuthVM",
+                        "Failed to check if Google account info is saved in Firestore",
+                        e
+                    )
                 }
-            } else {
-                viewModelScope.launch {
-                    fcmTokenManager.getAndSaveToken()
-                    _eventFlow.emit(SignInEvent.NavigateToMainScreen)
-                }
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                fcmTokenManager.getAndSaveToken()
+            } catch (_: Exception) {
+                // Ignore offline failure
             }
         }
     }
