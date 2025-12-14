@@ -79,22 +79,27 @@ class SignInViewModel(private val auth: FirebaseAuth = FirebaseAuth.getInstance(
      * creation for existing users.
      */
     fun check() {
-        if (auth.currentUser != null) {
-            val isGoogleUser = auth.currentUser?.providerData?.any { it.providerId == "google.com" }
-            if (isGoogleUser == true) {
-                viewModelScope.launch {
-                    if (googleModel.googleAccountInfoAreSavedInFirestore()) {
-                        fcmTokenManager.getAndSaveToken()
-                        _eventFlow.emit(SignInEvent.NavigateToMainScreen)
-                    } else {
+        val user = auth.currentUser ?: return
+
+        viewModelScope.launch { _eventFlow.emit(SignInEvent.NavigateToMainScreen) }
+
+        val isGoogleUser = user.providerData.any { it.providerId == "google.com" }
+
+        if (isGoogleUser) {
+            viewModelScope.launch {
+                try {
+                    if (!googleModel.googleAccountInfoAreSavedInFirestore()) {
                         _eventFlow.emit(SignInEvent.NavigateToCreateAccountScreen)
                     }
-                }
-            } else {
-                viewModelScope.launch {
-                    fcmTokenManager.getAndSaveToken()
-                    _eventFlow.emit(SignInEvent.NavigateToMainScreen)
-                }
+                } catch (_: Exception) {}
+            }
+        }
+
+        viewModelScope.launch {
+            try {
+                fcmTokenManager.getAndSaveToken()
+            } catch (_: Exception) {
+                // Ignore offline failure
             }
         }
     }
