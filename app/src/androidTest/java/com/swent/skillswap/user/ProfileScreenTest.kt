@@ -137,8 +137,8 @@ class ProfileScreenTest : TestCase() {
                     ProfileTestTags.USERNAME_VALUE,
                     ProfileTestTags.PREFERENCE_SWITCH,
                     ProfileTestTags.SKILLS_BUTTON,
-                    ProfileTestTags.LOGOUT_BUTTON,
-                    ProfileTestTags.ADD_POST_BUTTON
+                    ProfileTestTags.LOGOUT_BUTTON
+                    // ADD_POST_BUTTON was removed - functionality moved to bottom nav Posts tab
                 )
 
             tags.forEach { tag ->
@@ -213,15 +213,7 @@ class ProfileScreenTest : TestCase() {
                 .assertHasClickAction()
                 .performClick()
         }
-        step("Add post button is clickable") {
-            waitForNodeToExist(ProfileTestTags.ADD_POST_BUTTON)
-            composeTestRule
-                .onNodeWithTag(ProfileTestTags.ADD_POST_BUTTON)
-                .performScrollTo()
-                .assertIsDisplayed()
-                .assertHasClickAction()
-                .performClick()
-        }
+        // Add post button was removed - functionality moved to bottom nav Posts tab
 
         step("Logout button is clickable") {
             waitForNodeToExist(ProfileTestTags.LOGOUT_BUTTON)
