@@ -71,6 +71,7 @@ open class FeedScreenViewModel(
 
     init {
         viewModelScope.launch {
+            controller.refresh()
             runCatching {
                     controller.currentPost.value?.let { post ->
                         _uiState.value = toFeedPost(post, uid)
@@ -90,7 +91,6 @@ open class FeedScreenViewModel(
                 }
         }
     }
-
     /** Accepts the specified offer on behalf of the current user. */
     fun accept(post: FeedPost) {
         viewModelScope.launch {

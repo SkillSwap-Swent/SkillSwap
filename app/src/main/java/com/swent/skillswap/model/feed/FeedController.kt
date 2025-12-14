@@ -46,6 +46,18 @@ interface FeedController {
      * @param blockedUserUID uid of the user being blocked
      */
     suspend fun blockUser(blockedUserUID: String)
-
+    /**
+     * Retrieves the author of the given post.
+     *
+     * @param post The post whose owner should be fetched.
+     * @return The user who created the post.
+     */
     suspend fun retrieveUser(post: Post): User
+    /**
+     * Refreshes the feed by clearing the current post queue and reloading recommendations.
+     *
+     * This resets the current post state and fetches the next available post based on the updated
+     * recommendations.
+     */
+    suspend fun refresh()
 }
