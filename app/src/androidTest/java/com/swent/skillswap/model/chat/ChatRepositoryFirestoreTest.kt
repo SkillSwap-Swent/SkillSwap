@@ -90,8 +90,8 @@ class ChatRepositoryFirestoreTest {
         runBlocking {
             FirebaseEmulator.startEmulator()
             db = FirebaseEmulator.firestore
-            chatRepo = ChatRepositoryFirestore(db)
             postRepo = PostFirestoreRepository(db)
+            chatRepo = ChatRepositoryFirestore(db, postRepo)
             val userRepository = UserRepoFirestore(db)
             testUserId = FirebaseEmulator.auth.signInAnonymously().await().user!!.uid
 

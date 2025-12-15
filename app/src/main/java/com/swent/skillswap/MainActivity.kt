@@ -207,7 +207,11 @@ fun SkillSwapApp(
                     recommendationEngine = recommendationEngine,
                     thumbnailRepository = ThumbnailRepository(),
                     postRepository = PostFirestoreRepository(Firebase.firestore),
-                    chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                    chatRepository =
+                        ChatRepositoryFirestore(
+                            Firebase.firestore,
+                            PostFirestoreRepository(Firebase.firestore)
+                        ),
                     userRepository = UserRepoFirestore(Firebase.firestore),
                     locationManager = locationManager
                 )
@@ -409,11 +413,13 @@ fun SkillSwapApp(
                     Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
                     return@composable
                 }
+                val postRepository = PostFirestoreRepository(Firebase.firestore)
                 val factory =
                     ChatListViewModelFactory(
-                        chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                        chatRepository =
+                            ChatRepositoryFirestore(Firebase.firestore, postRepository),
                         userRepository = UserRepoFirestore(Firebase.firestore),
-                        postRepository = PostFirestoreRepository(Firebase.firestore),
+                        postRepository = postRepository,
                         notificationViewModel = notificationViewModel
                     )
                 val vm: ChatListViewModel = viewModel(factory = factory)
@@ -440,7 +446,11 @@ fun SkillSwapApp(
                 val viewModel =
                     remember(chatId) {
                         ChatViewModel(
-                            chatRepository = ChatRepositoryFirestore(Firebase.firestore),
+                            chatRepository =
+                                ChatRepositoryFirestore(
+                                    Firebase.firestore,
+                                    PostFirestoreRepository(Firebase.firestore)
+                                ),
                             chatId = chatId,
                         )
                     }
