@@ -54,6 +54,10 @@ open class FeedControllerTest : PostDataClassTest() {
         override suspend fun acceptAPostReplyChat(chat: Chat) {
             // JUST HERE FOR OVERRIDE REASON
         }
+
+        override suspend fun closeChat(chatId: String) {
+            // JUST HERE FOR OVERRIDE REASON
+        }
     }
 
     suspend fun initController(): Pair<FakePostRepository, FeedController> {

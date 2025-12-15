@@ -29,6 +29,10 @@ class FailingChatRepository : ChatRepository {
 
     override suspend fun acceptAPostReplyChat(chat: Chat) {}
 
+    override suspend fun closeChat(chatId: String) {
+        throw Exception("ERROR IN UPDATE")
+    }
+
     override suspend fun getChat(chatId: String): Chat = throw Exception("Not found")
 }
 
