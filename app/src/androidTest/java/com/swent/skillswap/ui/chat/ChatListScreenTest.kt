@@ -39,6 +39,7 @@ class ChatListScreenTest {
     ) : ChatRepository {
 
         var lastAcceptedChatId: String? = null
+        var lastClosedChatId: String? = null
 
         override suspend fun createChat(
             participants: List<String>,
@@ -66,6 +67,7 @@ class ChatListScreenTest {
         }
 
         override suspend fun closeChat(chatId: String) {
+            lastClosedChatId = chatId
             chats.forEach { chats ->
                 chats.value.map {
                     if (it.id == chatId)
@@ -368,7 +370,13 @@ class ChatListScreenTest {
             object : Post by MockPost("p1", "Test") {
                 override val status = PostStatus.COMPLETED
             }
-        val viewModel = createViewModel(requestChats = listOf(chat), posts = mapOf("p1" to post))
+        val fakeChatRepo = FakeChatRepository(chats = mapOf(PostType.REQUEST to listOf(chat)))
+        val viewModel =
+            ChatListViewModel(
+                fakeChatRepo,
+                FakeUserRepository(emptyMap()),
+                FakePostRepository(mapOf("p1" to post))
+            )
 
         composeRule.setContent {
             MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
@@ -401,9 +409,10 @@ class ChatListScreenTest {
             "Selected and unselected stars should have different colors"
         }
 
-        // Submit
+        // Submit and verify chat was closed
         composeRule.onNodeWithText("Submit").performClick()
         composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
+        assert(fakeChatRepo.lastClosedChatId == "c1")
     }
 
     @Test
