@@ -238,8 +238,28 @@ class ChatConversationItemTest {
         // The LaunchedEffect triggers immediately, so we verify the card exists
         // and data loading was triggered
         composeRule.waitForIdle()
-        // Verify there are two clickable elements (card + avatar)
-        composeRule.onAllNodes(hasClickAction()).assertCountEquals(2)
+        // Verify there are two clickable elements (card + avatar + 3dots)
+        composeRule.onAllNodes(hasClickAction()).assertCountEquals(3)
+    }
+
+    @Test
+    fun can_correctly_click_on_block_user() {
+        val chat = Chat("c1", listOf("currentUser", "u1"), "p1", PostType.OFFER, emptyList())
+
+        composeRule.setContent {
+            MaterialTheme {
+                ChatConversationItem(
+                    viewModel = mockViewModel,
+                    currentUserId = "currentUser",
+                    chat = chat,
+                    onClick = {}
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(ChatListTestTags.CHAT_MENU_BUTTON).performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag(ChatListTestTags.BLOCK_BUTTON).performClick()
     }
 
     @Test

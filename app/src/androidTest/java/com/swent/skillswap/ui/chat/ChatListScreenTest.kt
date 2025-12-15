@@ -3,6 +3,7 @@
 package com.swent.skillswap.ui.chat
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -156,14 +157,22 @@ class ChatListScreenTest {
     @Test
     fun shows_filters_and_empty_state_by_default() {
         composeRule.setContent {
-            MaterialTheme { ChatListScreen(viewModel = createViewModel(), currentUserId = "u1") }
+            MaterialTheme {
+                ChatListScreen(
+                    viewModel = createViewModel(),
+                    currentUserId = "u1",
+                    onNotificationClick = {}
+                )
+            }
         }
         composeRule.onNodeWithTag(ChatListTestTags.SCREEN).assertExists()
-        composeRule.onNodeWithText("Chat").assertExists()
-        composeRule.onNodeWithText("Request").assertExists()
-        composeRule.onNodeWithText("To Approve").assertExists()
-        composeRule.onNodeWithText("Awaiting").assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.USER_AVATAR).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.USERNAME).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.ONGOING_TAB).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.PENDING_TAB).assertExists()
         composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
+        composeRule.onNodeWithTag(ChatListTestTags.NOTIFICATION).assertExists()
         composeRule.onNodeWithText("No chats available").assertExists()
     }
 
@@ -185,7 +194,7 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("Sarah").assertExists()
         composeRule.onNodeWithText("Request Title").assertExists()
         // Switch to other tab
-        composeRule.onNodeWithText("To Approve").performClick()
+        composeRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
         composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
     }
 
@@ -210,7 +219,7 @@ class ChatListScreenTest {
 
         // Click any card (filter buttons are also clickable, so get the last one which is the chat)
         val clickableNodes = composeRule.onAllNodes(hasClickAction()).fetchSemanticsNodes()
-        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 2].performClick()
+        composeRule.onAllNodes(hasClickAction())[clickableNodes.size - 3].performClick()
         assert(clickedChatId == "c1")
     }
 
@@ -247,7 +256,7 @@ class ChatListScreenTest {
         composeRule.onNodeWithText("No chats available").assertDoesNotExist()
 
         // Switch to waiting - should not have content
-        composeRule.onNodeWithText("Awaiting").performClick()
+        composeRule.onNodeWithTag(ChatListTestTags.PENDING_TAB).performClick()
         composeRule.onNodeWithTag(ChatListTestTags.EMPTY_STATE).assertExists()
         composeRule.onNodeWithText("No chats available").assertExists()
     }
@@ -308,7 +317,7 @@ class ChatListScreenTest {
         }
 
         // Select the "To Approve" filter (pending + owner == true)
-        composeRule.onNodeWithTag(ChatListTestTags.TO_APPROVE).performClick()
+        composeRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
         composeRule.waitForIdle()
 
         // Accept button should be visible
@@ -339,8 +348,29 @@ class ChatListScreenTest {
         composeRule.onNodeWithContentDescription("Rate User").assertExists().performClick()
         composeRule.onNodeWithText("Rate this exchange").assertExists()
 
-        // Select 4 stars and submit
+        // Select 4 stars
         composeRule.onAllNodesWithContentDescription("rating stars")[3].performClick()
+        composeRule.waitForIdle()
+
+        // Verify selected and unselected stars have different colors
+        val selectedStar =
+            composeRule
+                .onAllNodesWithContentDescription("rating stars")[0]
+                .captureToImage()
+                .asAndroidBitmap()
+        val unselectedStar =
+            composeRule
+                .onAllNodesWithContentDescription("rating stars")[4]
+                .captureToImage()
+                .asAndroidBitmap()
+        val selectedColor = selectedStar.getPixel(selectedStar.width / 2, selectedStar.height / 2)
+        val unselectedColor =
+            unselectedStar.getPixel(unselectedStar.width / 2, unselectedStar.height / 2)
+        assert(selectedColor != unselectedColor) {
+            "Selected and unselected stars should have different colors"
+        }
+
+        // Submit
         composeRule.onNodeWithText("Submit").performClick()
         composeRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
     }
