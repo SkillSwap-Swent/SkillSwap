@@ -291,7 +291,11 @@ class AuthClassicTest : TestCase() {
                 recommendationEngine = RecommendationEngineImpl(),
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = PostFirestoreRepository(FirebaseEmulator.firestore),
-                chatRepository = ChatRepositoryFirestore(FirebaseEmulator.firestore),
+                chatRepository =
+                    ChatRepositoryFirestore(
+                        FirebaseEmulator.firestore,
+                        PostFirestoreRepository(FirebaseEmulator.firestore)
+                    ),
                 userRepository = UserRepoFirestore(FirebaseEmulator.firestore),
                 locationManager = null
             )

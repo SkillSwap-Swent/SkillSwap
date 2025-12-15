@@ -6,7 +6,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.swent.skillswap.firebase.FirestorePaths
-import com.swent.skillswap.model.post.PostFirestoreRepository
+import com.swent.skillswap.model.post.PostRepository
 import com.swent.skillswap.model.post.PostStatus
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.utils.deserializeMessage
@@ -29,7 +29,10 @@ private const val STATUS_FIELD = "status"
  *
  * @property db The FirebaseFirestore instance for database operations
  */
-class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepository {
+class ChatRepositoryFirestore(
+    private val db: FirebaseFirestore,
+    private val postRepository: PostRepository
+) : ChatRepository {
 
     override suspend fun createChat(
         participants: List<String>,
@@ -159,7 +162,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
 
         try {
             return getChats(relatedPostType).filter {
-                PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                postRepository.getPost(relatedPostType, it.relatedPostId).status ==
                     PostStatus.COMPLETED
             }
         } catch (e: Exception) {
@@ -170,7 +173,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
     override suspend fun getPendingChatsOfCurrentUser(relatedPostType: PostType): List<Chat> {
         try {
             return getChats(relatedPostType).filter {
-                PostFirestoreRepository(db).getPost(relatedPostType, it.relatedPostId).status ==
+                postRepository.getPost(relatedPostType, it.relatedPostId).status ==
                     PostStatus.POSTED
             }
         } catch (e: Exception) {
@@ -180,9 +183,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
 
     override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
         try {
-            return PostFirestoreRepository(db)
-                .getPost(chat.relatedPostType, chat.relatedPostId)
-                .ownerId ==
+            return postRepository.getPost(chat.relatedPostType, chat.relatedPostId).ownerId ==
                 (Firebase.auth.currentUser?.uid ?: throw Exception("No authenticated user found"))
         } catch (e: Exception) {
             throw Exception("Error while fetching post: ${e.message}")
@@ -218,8 +219,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
             // Commit all updates
             batch.commit().await()
 
-            val postRepo = PostFirestoreRepository(db)
-            val post = postRepo.getPost(chat.relatedPostType, postID)
+            val post = postRepository.getPost(chat.relatedPostType, postID)
 
             // We need to build a new Post instance with updated status.
             val completedPost =
@@ -231,7 +231,7 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
                     else -> throw Exception("Unsupported post implementation: ${post::class}")
                 }
 
-            postRepo.editPost(postID, completedPost)
+            postRepository.editPost(postID, completedPost)
         } catch (e: Exception) {
             throw Exception("Error while accepting post reply chat: ${e.message}")
         }

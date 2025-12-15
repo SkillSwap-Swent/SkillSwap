@@ -247,7 +247,8 @@ class FeedScreenInstrumentedTest {
                 recommendationEngine = engine,
                 thumbnailRepository = ThumbnailRepository(),
                 postRepository = postRepository,
-                chatRepository = ChatRepositoryFirestore(FirebaseEmulator.firestore),
+                chatRepository =
+                    ChatRepositoryFirestore(FirebaseEmulator.firestore, postRepository),
                 userRepository = userRepository,
                 locationManager = null
             )
