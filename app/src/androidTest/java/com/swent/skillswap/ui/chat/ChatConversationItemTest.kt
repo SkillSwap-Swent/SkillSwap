@@ -96,6 +96,10 @@ class ChatConversationItemTest {
                 override suspend fun acceptAPostReplyChat(chat: Chat) {
                     // JUST HERE TO REMOVE OVERRIDE ERROR
                 }
+
+                override suspend fun closeChat(chatId: String) {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                }
             }
 
         mockUserRepo =

@@ -70,6 +70,10 @@ class ChatScreenTest {
                         // JUST HERE FOR OVERRIDE REASON
                     }
 
+                    override suspend fun closeChat(chatId: String) {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                    }
+
                     override suspend fun getChat(chatId: String): Chat {
                         // JUST HERE TO REMOVE OVERRIDE ERROR
                         return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
@@ -274,6 +278,10 @@ class ChatScreenTest {
                 }
 
                 override suspend fun acceptAPostReplyChat(chat: Chat) {
+                    // JUST HERE TO REMOVE OVERRIDE ERROR
+                }
+
+                override suspend fun closeChat(chatId: String) {
                     // JUST HERE TO REMOVE OVERRIDE ERROR
                 }
             }

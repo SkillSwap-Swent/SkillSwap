@@ -131,6 +131,10 @@ class ChatViewModelTest {
             // JUST HERE FOR OVERRIDE REASON
         }
 
+        override suspend fun closeChat(chatId: String) {
+            // JUST HERE FOR OVERRIDE REASON
+        }
+
         fun addMessages(messages: List<Message>) {
             messagesFlow.value = messages
         }
