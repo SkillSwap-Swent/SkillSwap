@@ -39,6 +39,8 @@ import com.swent.skillswap.ui.chat.ChatListTestTags.USER_AVATAR
 import com.swent.skillswap.ui.utils.AvatarDisplay
 import com.swent.skillswap.ui.utils.pill_shape
 
+const val defaultText = "Loading..."
+
 object ChatListTestTags {
     const val SCREEN = "ChatListScreen"
     const val TITLE = "ChatListTitle"
@@ -314,7 +316,7 @@ fun ChatConversationItem(
 @Composable
 fun ChatListTopBarInfo(
     modifier: Modifier = Modifier,
-    username: String? = "Loading...",
+    username: String? = null,
     avatarURL: String? = null
 ) {
     Column(modifier = modifier) {
@@ -326,7 +328,7 @@ fun ChatListTopBarInfo(
             )
             Spacer(modifier = Modifier.weight(0.5f))
             Text(
-                text = username ?: "Loading...",
+                text = username ?: defaultText,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -379,7 +381,7 @@ private fun PostTitleDisplay(title: String?, modifier: Modifier = Modifier) {
     ) {
         Box(modifier = Modifier.padding(5.dp, 1.dp).fillMaxWidth(1f)) {
             Text(
-                text = title ?: "Loading...",
+                text = title ?: "defaultText",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -393,7 +395,7 @@ private fun PostTitleDisplay(title: String?, modifier: Modifier = Modifier) {
 private fun UsernameDisplay(username: String?, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.Start) {
         Text(
-            text = username ?: "Loading...",
+            text = username ?: "defaultText",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
