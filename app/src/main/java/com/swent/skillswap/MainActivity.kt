@@ -354,7 +354,7 @@ fun SkillSwapApp(
                         onGoBack = { navigationActions.goBack() },
                         onPostCreated = {
                             // Navigate back to personal posts after successful edit
-                            navigationActions.navigateTo(Screen.PersonalPosts)
+                            navigationActions.goBack()
                         }
                     )
                 }
