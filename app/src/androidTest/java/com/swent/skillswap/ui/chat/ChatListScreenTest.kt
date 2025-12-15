@@ -65,6 +65,37 @@ class ChatListScreenTest {
             lastAcceptedChatId = chat.id
         }
 
+        override suspend fun closeChat(chatId: String) {
+            chats.forEach { chats ->
+                chats.value.map {
+                    if (it.id == chatId)
+                        Chat(
+                            it.id,
+                            it.participants,
+                            it.relatedPostId,
+                            it.relatedPostType,
+                            it.messages,
+                            ChatStatus.INACTIVE
+                        )
+                    else it
+                }
+            }
+            pendingChats.forEach { chats ->
+                chats.value.map {
+                    if (it.id == chatId)
+                        Chat(
+                            it.id,
+                            it.participants,
+                            it.relatedPostId,
+                            it.relatedPostType,
+                            it.messages,
+                            ChatStatus.INACTIVE
+                        )
+                    else it
+                }
+            }
+        }
+
         override suspend fun getChat(chatId: String): Chat {
             // JUST HERE TO REMOVE OVERRIDE ERROR
             return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())

@@ -373,4 +373,26 @@ class ChatRepositoryFirestoreTest {
             )
         )
     }
+
+    @Test
+    fun correctly_close_chat() = runBlocking {
+        val senderId1 = "user1"
+        val senderId2 = "user2"
+
+        // create chat first
+        val chatId = chatRepo.createChat(listOf("user1", "user2"), "none", PostType.REQUEST)
+        var fetchedChat = chatRepo.getChat(chatId)
+
+        // Check chat properties
+        assertEquals(chatId, fetchedChat.id)
+        assertEquals(listOf(senderId1, senderId2), fetchedChat.participants)
+        assertEquals(ChatStatus.ACTIVE, fetchedChat.status)
+        assertEquals("none", fetchedChat.relatedPostId)
+        assertEquals(PostType.REQUEST, fetchedChat.relatedPostType)
+
+        // Close Chat
+        chatRepo.closeChat(chatId)
+        fetchedChat = chatRepo.getChat(chatId)
+        assertEquals(ChatStatus.INACTIVE, fetchedChat.status)
+    }
 }

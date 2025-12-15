@@ -237,6 +237,17 @@ class ChatRepositoryFirestore(private val db: FirebaseFirestore) : ChatRepositor
         }
     }
 
+    override suspend fun closeChat(chatId: String) {
+        try {
+            val doc =
+                db.collection(FirestorePaths.CHATS_COLLECTION)
+                    .document(chatId)
+                    .update(STATUS_FIELD, ChatStatus.INACTIVE)
+        } catch (e: Exception) {
+            throw Exception("Error while updating chat in closeChat: ${e.message}")
+        }
+    }
+
     private fun documentToChat(document: DocumentSnapshot): Chat {
         val id = document.getString("id") ?: ""
         val participants: List<String> =
