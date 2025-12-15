@@ -77,4 +77,10 @@ interface ChatRepository {
      * @param chat the chat that the user accept
      */
     suspend fun acceptAPostReplyChat(chat: Chat)
+    /**
+     * close the chat with the given id (change chatStatus to INACTIVE)
+     *
+     * @param chatId the id of the chat that need to be closed
+     */
+    suspend fun closeChat(chatId: String)
 }

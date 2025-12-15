@@ -100,6 +100,10 @@ class ChatListViewModelTest {
                         acceptedChat.add(chat)
                     }
 
+                    override suspend fun closeChat(chatId: String) {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                    }
+
                     override suspend fun getChat(chatId: String): Chat {
                         // JUST HERE TO REMOVE OVERRIDE ERROR
                         return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
@@ -279,6 +283,10 @@ class ChatListViewModelTest {
                         acceptedChat.add(chat)
                     }
 
+                    override suspend fun closeChat(chatId: String) {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                    }
+
                     override suspend fun getChat(chatId: String): Chat {
                         return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
                     }
@@ -382,6 +390,10 @@ class ChatListViewModelTest {
                     override suspend fun isOwnerOfRelatedPost(chat: Chat) = false
 
                     override suspend fun acceptAPostReplyChat(chat: Chat) {}
+
+                    override suspend fun closeChat(chatId: String) {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                    }
 
                     override suspend fun getChat(chatId: String) =
                         Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
