@@ -140,4 +140,13 @@ interface RecommendationEngine {
      * @param postId The [Post] to report and block.
      */
     suspend fun reportPost(postId: String)
+    /**
+     * Refreshes the internal state used for generating recommendations.
+     *
+     * This suspending function reloads user-related data and updates filtering rules that determine
+     * which posts are eligible to be shown. It rebuilds dynamic filters based on the current user
+     * context and applies global exclusion rules such as blocked users, reported posts, and
+     * previously viewed content.
+     */
+    suspend fun refresh()
 }
