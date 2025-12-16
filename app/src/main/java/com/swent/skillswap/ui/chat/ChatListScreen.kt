@@ -300,7 +300,11 @@ fun ChatConversationItem(
         onCancel = { showRatingDialog = false },
         onSubmit = { rating ->
             if (rating > 0) {
-                viewModel.updateUserRating(userId = otherUser, incomingRating = rating.toFloat())
+                viewModel.updateUserRating(
+                    userId = otherUser,
+                    incomingRating = rating.toFloat(),
+                    chatId = chat.id
+                )
             }
             showRatingDialog = false
         }
