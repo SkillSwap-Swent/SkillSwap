@@ -224,11 +224,12 @@ class ChatListViewModel(
             (postStatus == PostStatus.COMPLETED || postStatus == PostStatus.ARCHIVED)
     }
 
-    /** Submits a rating for another user. */
-    fun updateUserRating(userId: String, incomingRating: Float) {
+    /** Submits a rating for another user and closes the chat. */
+    fun updateUserRating(userId: String, incomingRating: Float, chatId: String) {
         viewModelScope.launch {
             try {
                 userRepository.updateRating(userId, incomingRating)
+                chatRepository.closeChat(chatId)
             } catch (exception: Exception) {
                 Log.e("ChatListViewModel", "Error updating rating for user $userId", exception)
             }
