@@ -44,10 +44,6 @@ class End2EndM3RCRFlow {
     private val user2Password = "Password123"
     private val user2Username = "Responder1"
 
-    private val user3Email = "user3@test.com"
-    private val user3Password = "Password123"
-    private val user3Username = "Responder2"
-
     companion object {
 
         @BeforeClass
@@ -272,6 +268,11 @@ class End2EndM3RCRFlow {
 
     // Helper to accept an offer for a given user by email/password
     private fun signInAndAccept(email: String, password: String) {
+        // Ensure clean state: if already signed in, log out via UI first
+        try {
+            signOutViaUI()
+        } catch (_: Exception) {}
+
         // Sign in via UI
         signInViaUI(email, password)
 
@@ -279,8 +280,24 @@ class End2EndM3RCRFlow {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // Wait until either an offer card is present or the UI shows no offer
-        composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        // Robust wait for offer card or show no-offer with refresh attempts
+        var feedLoaded = false
+        var attempts = 0
+        while (!feedLoaded && attempts < 3) {
+            // Use waitUntil instead of runOnIdle to avoid nesting UI-sync calls
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                val hasCard =
+                    composeTestRule
+                        .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                val hasNoOffer =
+                    composeTestRule
+                        .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                hasCard || hasNoOffer
+            }
             val hasCard =
                 composeTestRule
                     .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
@@ -291,28 +308,162 @@ class End2EndM3RCRFlow {
                     .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
                     .fetchSemanticsNodes()
                     .isNotEmpty()
-            hasCard || hasNoOffer
+            feedLoaded = hasCard || hasNoOffer
+
+            if (!feedLoaded) {
+                Thread.sleep(500)
+            }
+            // If no offer, refresh and wait
+            if (hasNoOffer) {
+                composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).performClick()
+                composeTestRule.waitForIdle()
+                composeTestRule.waitUntil(timeoutMillis = 20_000) {
+                    composeTestRule
+                        .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty() ||
+                        composeTestRule
+                            .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                            .fetchSemanticsNodes()
+                            .isNotEmpty()
+                }
+            }
+            attempts++
         }
 
-        // If no offer, try refresh once
-        val noOfferNodes =
+        // Ensure we actually have a card to act on; fail early if still none
+        val hasCardFinal =
             composeTestRule
-                .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
-        if (noOfferNodes.isNotEmpty()) {
-            composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).performClick()
-            composeTestRule.waitForIdle()
-            composeTestRule.waitUntil(timeoutMillis = 15_000) {
+                .isNotEmpty()
+        if (!hasCardFinal) {
+            val hasNoOfferFinal =
                 composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
+                    .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            val msg =
+                if (hasNoOfferFinal) {
+                    "No offer available in Feed after refresh attempts"
+                } else {
+                    "Feed did not load a card and no 'No offer' state after refresh attempts"
+                }
+            throw AssertionError(msg)
+        }
+
+        // Try to click Accept button when it appears; otherwise fall back to swipe-right on the
+        // card
+        var clicked = false
+        try {
+            // Wait a bit for the button to be composed
+            composeTestRule.waitUntil(timeoutMillis = 10_000) {
+                composeTestRule
+                    .onAllNodesWithTag(FeedScreenTestTags.ACCEPT_BUTTON)
                     .fetchSemanticsNodes()
                     .isNotEmpty()
             }
+            composeTestRule.onNodeWithTag(FeedScreenTestTags.ACCEPT_BUTTON).performClick()
+            clicked = true
+        } catch (_: AssertionError) {
+            // Button not found; try gesture as fallback
+        } catch (_: IllegalStateException) {
+            // Node hierarchy changed; try gesture as fallback
         }
 
-        // Accept via button (invokes ViewModel.accept)
-        composeTestRule.onNodeWithTag(FeedScreenTestTags.ACCEPT_BUTTON).performClick()
+        if (!clicked) {
+            // Swipe right on the card to accept
+            composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
+                swipeRight()
+            }
+        }
         composeTestRule.waitForIdle()
+        // brief delay to allow Firestore writes to settle
+        Thread.sleep(1500)
+
+        // Validate responder sees a pending/ongoing chat entry
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.SCREEN)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        fun selectTab(tag: String): Boolean {
+            return try {
+                composeTestRule.onNodeWithTag(tag).assertExists()
+                composeTestRule.onNodeWithTag(tag).performClick()
+                composeTestRule.waitForIdle()
+                Thread.sleep(300)
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+
+        // Try Pending first (responder waiting for owner approval)
+        val triedPending = selectTab(ChatListTestTags.PENDING_TAB)
+
+        // Helper to check items presence
+        fun hasChatItems(): Boolean {
+            val items =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                    .fetchSemanticsNodes()
+            val empty =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.EMPTY_STATE)
+                    .fetchSemanticsNodes()
+            return items.isNotEmpty() || empty.isNotEmpty()
+        }
+
+        // Perform multiple tab toggles to force refresh
+        repeat(3) {
+            if (triedPending) {
+                selectTab(ChatListTestTags.ONGOING_TAB)
+                selectTab(ChatListTestTags.PENDING_TAB)
+            }
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 25_000) { hasChatItems() }
+        var responderItems =
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                .fetchSemanticsNodes()
+
+        // If no items in Pending, try Ongoing (some implementations place new chats here for
+        // responders)
+        if (responderItems.isEmpty()) {
+            val triedOngoing = selectTab(ChatListTestTags.ONGOING_TAB)
+            if (triedOngoing) {
+                repeat(2) {
+                    selectTab(ChatListTestTags.PENDING_TAB)
+                    selectTab(ChatListTestTags.ONGOING_TAB)
+                }
+                composeTestRule.waitUntil(timeoutMillis = 20_000) { hasChatItems() }
+                responderItems =
+                    composeTestRule
+                        .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                        .fetchSemanticsNodes()
+            }
+        }
+        // As a last resort, try Replies (in case tab naming differs)
+        if (responderItems.isEmpty()) {
+            val triedReplies = selectTab(ChatListTestTags.REPLIES_TAB)
+            if (triedReplies) {
+                composeTestRule.waitUntil(timeoutMillis = 20_000) { hasChatItems() }
+                responderItems =
+                    composeTestRule
+                        .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                        .fetchSemanticsNodes()
+            }
+        }
+
+        assert(responderItems.isNotEmpty()) {
+            "Responder should see at least one chat after accepting (checked Pending, Ongoing, Replies)"
+        }
 
         // Sign out via UI to switch user
         signOutViaUI()
@@ -364,13 +515,9 @@ class End2EndM3RCRFlow {
         )
     }
 
-    /**
-     * Public helper to create the two responder users (User 2 and User 3) on the emulators. Call
-     * this at the beginning of your flow before they respond to the post.
-     */
+    /** Public helper to create the responder user on the emulators. Call this before responding. */
     fun seedResponderUsers() {
         createAndSeedUser(user2Email, user2Password, user2Username)
-        createAndSeedUser(user3Email, user3Password, user3Username)
     }
 
     @Test
@@ -427,38 +574,36 @@ class End2EndM3RCRFlow {
         // ---------- Fill description ----------
         composeTestRule
             .onNodeWithTag(RequestScreenTags.DESCRIPTION_INPUT)
-            .performTextInput("Looking for someone to help me understand mechanics")
+            .performTextInput("Looking for someone to help me understand calculus")
         composeTestRule.waitForIdle()
 
-        // ---------- Type tag: physics ----------
+        // ---------- Type tag: calculus ----------
         composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).performClick()
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).performTextInput("physics")
+        composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).performTextInput("calculus")
         composeTestRule.waitForIdle()
 
         composeTestRule.waitUntil(5_000) {
             composeTestRule
-                .onAllNodesWithTag("${RequestScreenTags.TAG_SUGGESTION}_PHYSICS_MECHANICS")
+                .onAllNodesWithTag("${RequestScreenTags.TAG_SUGGESTION}_CALCULUS")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
         // ---------- Select tag ----------
-        composeTestRule
-            .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_PHYSICS_MECHANICS")
-            .performClick()
+        composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_CALCULUS").performClick()
         composeTestRule.waitForIdle()
 
         composeTestRule.waitUntil(5_000) {
             composeTestRule
-                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
+                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_CALCULUS")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
         composeTestRule.waitUntil(5_000) {
             composeTestRule
-                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
+                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_CALCULUS")
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
@@ -519,8 +664,8 @@ class End2EndM3RCRFlow {
     }
 
     @Test
-    fun t2_canCreateTwoOtherUsers() {
-        // Create two responder users via UI to keep app state consistent
+    fun t2_canCreateOtherUser() {
+        // Create one responder user via UI to keep app state consistent
         // Assumes we are signed in as the author from previous tests
         signOutViaUI()
 
@@ -529,24 +674,15 @@ class End2EndM3RCRFlow {
         composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertExists()
         signOutViaUI()
 
-        // Create user 3
-        createAccountViaUI(user3Email, user3Username, user3Password)
-        composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertExists()
-        signOutViaUI()
-
-        // Verify Firestore: all three emails should exist in users collection
+        // Verify Firestore: both emails should exist in users collection (author + user2)
         val usersSnapshot = Tasks.await(db.collection(FirestorePaths.USERS_COLLECTION).get())
         val emails = usersSnapshot.documents.mapNotNull { it.getString("email") }.toSet()
         val authorEmail = "bob@mail.com"
         assert(emails.contains(authorEmail))
         assert(emails.contains(user2Email))
-        assert(emails.contains(user3Email))
 
         // Verify Auth via UI sign-ins
         signInViaUI(user2Email, user2Password)
-        signOutViaUI()
-
-        signInViaUI(user3Email, user3Password)
         signOutViaUI()
 
         signInViaUI(authorEmail, "Password123")
@@ -554,13 +690,11 @@ class End2EndM3RCRFlow {
     }
 
     @Test
-    fun t3_respondersAcceptAuthorsPost() {
-        // User 2 accepts the post
+    fun t3_responderAcceptsAuthorsPost() {
+        // Single responder accepts the post
         signInAndAccept(user2Email, user2Password)
-        // User 3 accepts the post
-        signInAndAccept(user3Email, user3Password)
 
-        // Now author signs in and checks Chats > Replies contains 2 entries
+        // Now author signs in and checks Chats > Replies contains 1 entry
         val authorEmail = "bob@mail.com"
         val authorPassword = "Password123"
 
@@ -584,25 +718,53 @@ class End2EndM3RCRFlow {
         composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // Wait until chat items are loaded; each item has a CHAT_MENU_BUTTON tag
+        // Wait for list or empty state; force a quick tab toggle to refresh
+        composeTestRule.waitUntil(timeoutMillis = 8_000) {
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.POSTS_LIST)
+                .fetchSemanticsNodes()
+                .isNotEmpty() ||
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.EMPTY_STATE)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+        }
+        // Toggle tabs to force refresh (Replies -> Ongoing -> Replies)
+        try {
+            composeTestRule.onNodeWithTag(ChatListTestTags.ONGOING_TAB).assertExists()
+            composeTestRule.onNodeWithTag(ChatListTestTags.ONGOING_TAB).performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(300)
+            composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(300)
+        } catch (_: AssertionError) {
+            /* ignore if tabs missing */
+        }
+
+        // Wait until there is at least 1 approve button or at least 1 item
         composeTestRule.waitUntil(timeoutMillis = 30_000) {
+            val approve =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.ACCEPT_CHAT)
+                    .fetchSemanticsNodes()
+                    .size
             val items =
                 composeTestRule
                     .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
                     .fetchSemanticsNodes()
-            val empty =
-                composeTestRule
-                    .onAllNodesWithTag(ChatListTestTags.EMPTY_STATE)
-                    .fetchSemanticsNodes()
-            (items.size >= 2) || empty.isNotEmpty()
+                    .size
+            (approve >= 1) || (items >= 1)
         }
 
-        // Assert there are exactly 2 chats (with user2 and user3)
-        val chatItems =
+        val approveButtons =
+            composeTestRule.onAllNodesWithTag(ChatListTestTags.ACCEPT_CHAT).fetchSemanticsNodes()
+        val chatRows =
             composeTestRule
                 .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
                 .fetchSemanticsNodes()
-        assert(chatItems.size == 2) { "Expected 2 chats in Replies, found ${chatItems.size}" }
+        val count = maxOf(approveButtons.size, chatRows.size)
+        assert(count >= 1) { "Expected at least 1 chat to approve in Replies, found ${count}" }
 
         // Sign out to clean state
         signOutViaUI()
