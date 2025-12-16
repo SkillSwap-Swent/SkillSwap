@@ -33,9 +33,9 @@ class ChatListScreenTest {
 
     // Minimal fake implementations
     private class FakeChatRepository(
-        private val chats: Map<PostType, List<Chat>> = emptyMap(),
-        private val pendingChats: Map<PostType, List<Chat>> = emptyMap(),
-        private val owners: Map<String, Boolean> = emptyMap()
+        private var chats: Map<PostType, List<Chat>> = mutableMapOf(),
+        private var pendingChats: Map<PostType, List<Chat>> = mutableMapOf(),
+        private val owners: Map<String, Boolean> = mutableMapOf()
     ) : ChatRepository {
 
         var lastAcceptedChatId: String? = null
@@ -65,37 +65,45 @@ class ChatListScreenTest {
             // Just record which chat was accepted so tests can assert on it
             lastAcceptedChatId = chat.id
         }
-
+        /*made using chatGPT*/
         override suspend fun closeChat(chatId: String) {
             lastClosedChatId = chatId
-            chats.forEach { chats ->
-                chats.value.map {
-                    if (it.id == chatId)
-                        Chat(
-                            it.id,
-                            it.participants,
-                            it.relatedPostId,
-                            it.relatedPostType,
-                            it.messages,
-                            ChatStatus.INACTIVE
-                        )
-                    else it
-                }
-            }
-            pendingChats.forEach { chats ->
-                chats.value.map {
-                    if (it.id == chatId)
-                        Chat(
-                            it.id,
-                            it.participants,
-                            it.relatedPostId,
-                            it.relatedPostType,
-                            it.messages,
-                            ChatStatus.INACTIVE
-                        )
-                    else it
-                }
-            }
+
+            chats =
+                chats
+                    .mapValues { (_, chatList) ->
+                        chatList.map { chat ->
+                            if (chat.id == chatId)
+                                Chat(
+                                    chat.id,
+                                    chat.participants,
+                                    chat.relatedPostId,
+                                    chat.relatedPostType,
+                                    chat.messages,
+                                    ChatStatus.INACTIVE
+                                )
+                            else chat
+                        }
+                    }
+                    .toMutableMap()
+
+            pendingChats =
+                pendingChats
+                    .mapValues { (_, chatList) ->
+                        chatList.map { chat ->
+                            if (chat.id == chatId)
+                                Chat(
+                                    chat.id,
+                                    chat.participants,
+                                    chat.relatedPostId,
+                                    chat.relatedPostType,
+                                    chat.messages,
+                                    ChatStatus.INACTIVE
+                                )
+                            else chat
+                        }
+                    }
+                    .toMutableMap()
         }
 
         override suspend fun getChat(chatId: String): Chat {
@@ -154,15 +162,11 @@ class ChatListScreenTest {
         Chat(id, listOf("u1", user), postId, type, emptyList())
 
     private fun createViewModel(
-        REQUESTChats: List<Chat> = emptyList(),
         requestChats: List<Chat> = emptyList(),
         users: Map<String, User> = emptyMap(),
         posts: Map<String, Post> = emptyMap()
     ): ChatListViewModel {
-        val chatRepo =
-            FakeChatRepository(
-                chats = mapOf(PostType.REQUEST to REQUESTChats, PostType.REQUEST to requestChats)
-            )
+        val chatRepo = FakeChatRepository(chats = mapOf(PostType.REQUEST to requestChats))
         return ChatListViewModel(chatRepo, FakeUserRepository(users), FakePostRepository(posts))
     }
 
@@ -543,5 +547,48 @@ class ChatListScreenTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithTag(ChatListTestTags.ERROR).assertExists()
         composeRule.onNodeWithText("Error fetching chats").assertExists()
+    }
+
+    @Test
+    fun can_correctly_click_on_block_user() {
+        val chat = createChat("c1", "p1", PostType.REQUEST, "u2")
+        val user =
+            User(
+                "u2",
+                "Sarah",
+                "test@gmail.com",
+                "https://example.com/avatar.jpg",
+                emptySet(),
+                4.5f,
+                emptyList()
+            )
+        val post = MockPost("p1", "Offer Title")
+        val viewModel =
+            createViewModel(
+                requestChats = listOf(chat),
+                users = mapOf("u2" to user),
+                posts = mapOf("p1" to post)
+            )
+
+        composeRule.setContent {
+            MaterialTheme { ChatListScreen(viewModel = viewModel, currentUserId = "u1") }
+        }
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
+        viewModel.getUsernameAndAvatar("u2")
+        viewModel.getPostTitle("p1", PostType.REQUEST)
+        composeRule.waitForIdle()
+
+        // Assert profile picture AsyncImage is displayed
+        composeRule.waitUntil(5000L) {
+            composeRule
+                .onNodeWithTag(ChatListTestTags.CHAT_MENU_BUTTON, useUnmergedTree = true)
+                .assertExists()
+            true
+        }
+        composeRule.onNodeWithTag(ChatListTestTags.CHAT_MENU_BUTTON).performClick()
+        composeRule.onNodeWithTag(ChatListTestTags.BLOCK_BUTTON).performClick()
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
+        composeRule.waitForIdle()
+        assert(viewModel.uiState.value.chats.isEmpty())
     }
 }

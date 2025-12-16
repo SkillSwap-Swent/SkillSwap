@@ -149,6 +149,17 @@ private class FeedControllerImpl(
             userIdPerformingActions,
             user.copy(blockedUsers = user.blockedUsers + blockedUserUID)
         )
+        try {
+            val chats =
+                chatRepository.getChatsOfCurrentUser(PostType.REQUEST).filter {
+                    it.participants.contains(blockedUserUID)
+                }
+            for (chat in chats) {
+                chatRepository.closeChat(chat.id)
+            }
+        } catch (e: Exception) {
+            throw Exception("Failed to close chat after blocking :${blockedUserUID}", e)
+        }
         recommendationEngine.updateBlockedUser()
         postQueue.removeAll { it.ownerId == blockedUserUID }
         _currentPost.value = getNextPost()

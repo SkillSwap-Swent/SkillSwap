@@ -235,6 +235,37 @@ class ChatListViewModel(
             }
         }
     }
+
+    fun blockUser(blockedUserID: String) {
+        val userIdPerformingActions: String =
+            FirebaseAuth.getInstance().currentUser?.uid ?: "AnoUser"
+        viewModelScope.launch {
+            try {
+                val user = userRepository.getUser(userIdPerformingActions)
+                userRepository.editUser(
+                    userIdPerformingActions,
+                    user.copy(blockedUsers = user.blockedUsers + blockedUserID)
+                )
+            } catch (e: Exception) {
+                Log.e("UserBlocking", "Failed in blocking user :${blockedUserID}", e)
+                _uiState.update { it.copy(error = "Failed in blocking user :${blockedUserID}") }
+            }
+            try {
+                val chats =
+                    chatRepository.getChatsOfCurrentUser(PostType.REQUEST).filter {
+                        it.participants.contains(blockedUserID)
+                    }
+                for (chat in chats) {
+                    chatRepository.closeChat(chat.id)
+                }
+            } catch (e: Exception) {
+                Log.e("UserBlocking", "Failed to close chat after blocking :${blockedUserID}", e)
+                _uiState.update {
+                    it.copy(error = "Failed to close chat after blocking :${blockedUserID}")
+                }
+            }
+        }
+    }
 }
 
 /** Factory for creating [ChatListViewModel] instances with required dependencies. */
