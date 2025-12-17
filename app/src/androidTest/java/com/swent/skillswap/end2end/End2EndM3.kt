@@ -396,6 +396,22 @@ class End2EndM3 {
         }
 
         // Create a request - wait for bottom navigation to be available first
+        // Ensure UI is idle after getting user ID, then wait for bottom nav
+        composeTestRule.waitForIdle()
+
+        // Wait for bottom navigation menu to be displayed first
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertExists()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        // Then wait for POSTS_TAB to be available
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertExists()
@@ -404,6 +420,7 @@ class End2EndM3 {
                 false
             }
         }
+        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertIsDisplayed()
         composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
         composeTestRule.waitForIdle()
 
