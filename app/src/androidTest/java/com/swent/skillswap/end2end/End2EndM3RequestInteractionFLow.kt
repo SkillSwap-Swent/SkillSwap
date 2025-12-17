@@ -98,7 +98,7 @@ class End2EndM3RequestInteractionFLow {
 
             // Clear emulators AFTER this test class finishes
             FirebaseEmulator.clearAuthEmulator()
-            // FirebaseEmulator.clearFirestoreEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
         }
     }
 
@@ -282,7 +282,7 @@ class End2EndM3RequestInteractionFLow {
         }
 
         /** Wait for the reply to show up */
-        composeTestRule.waitUntil(30_000) {
+        composeTestRule.waitUntil(30_001) {
             try {
                 composeTestRule.onNodeWithText("E2EResponder").assertExists()
                 true
@@ -309,7 +309,7 @@ class End2EndM3RequestInteractionFLow {
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
 
         /** Wait for the my posts screen to load */
-        composeTestRule.waitUntil(30_000) {
+        composeTestRule.waitUntil(30_002) {
             try {
                 composeTestRule.onNodeWithTag(PersonalPostsScreenTags.SCREEN).assertExists()
                 true
@@ -414,7 +414,7 @@ class End2EndM3RequestInteractionFLow {
         }
 
         /** Wait for the reply to show up */
-        composeTestRule.waitUntil(30_000) {
+        composeTestRule.waitUntil(30_003) {
             try {
                 composeTestRule.onNodeWithText("E2EResponder").assertExists()
                 true
@@ -440,7 +440,7 @@ class End2EndM3RequestInteractionFLow {
         /** Go to my post screen */
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
         /** Wait for the my posts screen to load */
-        composeTestRule.waitUntil(30_000) {
+        composeTestRule.waitUntil(30_004) {
             try {
                 composeTestRule.onNodeWithTag(PersonalPostsScreenTags.SCREEN).assertExists()
                 true
