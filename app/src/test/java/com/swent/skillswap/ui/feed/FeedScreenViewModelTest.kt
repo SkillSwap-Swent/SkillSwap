@@ -137,6 +137,10 @@ class FeedScreenViewModelTest {
                         4.5f,
                         emptyList()
                     )
+
+                override suspend fun refresh() {
+                    // empty
+                }
             }
 
         val mockNavigation = FeedScreenNavigation { userId -> }
