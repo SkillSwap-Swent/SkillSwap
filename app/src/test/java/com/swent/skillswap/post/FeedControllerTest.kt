@@ -2,6 +2,7 @@ package com.swent.skillswap.model.feed
 
 import com.swent.skillswap.model.chat.Chat
 import com.swent.skillswap.model.chat.ChatRepository
+import com.swent.skillswap.model.chat.ChatStatus
 import com.swent.skillswap.model.chat.Message
 import com.swent.skillswap.model.post.FakePostRepository
 import com.swent.skillswap.model.post.PostStatus
@@ -21,7 +22,7 @@ import org.junit.Test
 
 open class FeedControllerTest : PostDataClassTest() {
 
-    private class FakeChatRepository(private val chats: Map<PostType, List<Chat>> = emptyMap()) :
+    private class FakeChatRepository(var chats: Map<PostType, List<Chat>> = emptyMap()) :
         ChatRepository {
         override suspend fun createChat(
             participants: List<String>,
@@ -56,7 +57,25 @@ open class FeedControllerTest : PostDataClassTest() {
         }
 
         override suspend fun closeChat(chatId: String) {
-            // JUST HERE FOR OVERRIDE REASON
+            val lastClosedChatId = chatId
+
+            chats =
+                chats
+                    .mapValues { (_, chatList) ->
+                        chatList.map { chat ->
+                            if (chat.id == chatId)
+                                Chat(
+                                    chat.id,
+                                    chat.participants,
+                                    chat.relatedPostId,
+                                    chat.relatedPostType,
+                                    chat.messages,
+                                    ChatStatus.INACTIVE
+                                )
+                            else chat
+                        }
+                    }
+                    .toMutableMap()
         }
     }
 
@@ -204,6 +223,22 @@ open class FeedControllerTest : PostDataClassTest() {
             val repo = FakeUserRepository()
             val uid1 = "User1"
             val uid2 = "User2"
+            val chatRepo =
+                FakeChatRepository(
+                    mapOf(
+                        PostType.REQUEST to
+                            listOf(
+                                Chat(
+                                    "1",
+                                    listOf(uid1, uid2),
+                                    "2",
+                                    PostType.REQUEST,
+                                    emptyList(),
+                                    ChatStatus.ACTIVE
+                                )
+                            )
+                    )
+                )
             repo.addUser(User(uid = uid1))
             repo.addUser(User(uid = uid2))
             val ctrl =
@@ -211,7 +246,7 @@ open class FeedControllerTest : PostDataClassTest() {
                         recommendationEngine = RecommendationEngineImpl(),
                         thumbnailRepository = ThumbnailRepository(),
                         postRepository = FakePostRepository(),
-                        chatRepository = FakeChatRepository(),
+                        chatRepository = chatRepo,
                         userRepository = repo,
                         locationManager = null
                     )
@@ -222,6 +257,10 @@ open class FeedControllerTest : PostDataClassTest() {
             // Verify that the user uid2 as been correctly blocked by user uid1
             assert(repo.getUser(uid1).blockedUsers.isNotEmpty())
             assert(repo.getUser(uid1).blockedUsers.contains(uid2))
+            assert(
+                chatRepo.getChatsOfCurrentUser(PostType.REQUEST).get(0).status ==
+                    ChatStatus.INACTIVE
+            )
         }
     }
 

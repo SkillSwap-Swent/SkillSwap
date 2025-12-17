@@ -19,8 +19,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
@@ -56,7 +60,7 @@ import com.swent.skillswap.ui.utils.StarRatingBar
  */
 @Composable
 fun FeedScreen(
-    swipeThreshold: Float = 50f,
+    swipeThresholdDp: Dp = 100.dp,
     vm: FeedScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
@@ -81,6 +85,9 @@ fun FeedScreen(
     val verticalPadding = screenHeightDp * 0.03f
     val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
     val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
+
+    val density = LocalDensity.current
+    val swipeThresholdPx = remember(density) { with(density) { swipeThresholdDp.toPx() } }
 
     // Mark post notifications as read when viewing a post
     LaunchedEffect(offer?.offerId) {
@@ -189,18 +196,11 @@ fun FeedScreen(
                         .heightIn(max = screenHeightDp * 0.9f)
                         .aspectRatio(0.8f)
                         .pointerInput(Unit) {
-                            detectDragGestures { _, dragAmount ->
-                                val (x, y) = dragAmount
-                                when {
-                                    y > swipeThreshold -> vm.skip() // swipe down
-                                    // TODO: previous is disable since the controller don't
-                                    // implement it
-                                    // y < -swipeThreshold -> vm.previous() // swipe up
-                                    x < -swipeThreshold ->
-                                        vm.goToProfile(offer.authorID) // swipe left
-                                    x > swipeThreshold -> vm.accept(offer) // swipe right
-                                }
-                            }
+                            feedSwipingInputs(
+                                swipeThresholdPx = swipeThresholdPx,
+                                vm = vm,
+                                offer = offer
+                            )
                         },
                 elevation = CardDefaults.cardElevation(8.dp),
                 colors =
@@ -259,25 +259,13 @@ fun FeedScreen(
                             )
                         }
 
-                        Box {
-                            IconButton(
-                                onClick = { showMenu = true },
-                                modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = "Menu"
-                                )
-                            }
-
-                            if (showMenu) {
-                                FeedOfferMenu(
-                                    onBlockUser = { vm.blockUser(offer.authorID) },
-                                    onReportOffer = { vm.reportOffer(offer) },
-                                    onDismiss = { showMenu = false }
-                                )
-                            }
-                        }
+                        FeedOfferMenuSection(
+                            showMenu = showMenu,
+                            onOpenMenu = { showMenu = true },
+                            onDismissMenu = { showMenu = false },
+                            onBlockUser = { vm.blockUser(offer.authorID) },
+                            onReportOffer = { vm.reportOffer(offer) }
+                        )
                     }
 
                     // === Thumbnail ===
@@ -371,15 +359,72 @@ fun FeedScreen(
                     distance = it
                     vm.updateDistanceFilter(it)
                 },
-                modifier =
-                    Modifier.align(Alignment.TopCenter)
-                        .padding(top = if (offer == null) 0.dp else 8.dp),
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = dp(offer)),
                 onLiveLocationClicked = {
                     isLiveLocationEnabled = !isLiveLocationEnabled
                     vm.toggleLiveLocation(isLiveLocationEnabled)
                 },
                 checked = isLiveLocationEnabled
             )
+        }
+    }
+}
+
+@Composable
+private fun FeedOfferMenuSection(
+    showMenu: Boolean,
+    onOpenMenu: () -> Unit,
+    onDismissMenu: () -> Unit,
+    onBlockUser: () -> Unit,
+    onReportOffer: () -> Unit
+) {
+    Box {
+        IconButton(
+            onClick = onOpenMenu,
+            modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+        ) {
+            Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+        }
+
+        if (showMenu) {
+            FeedOfferMenu(
+                onBlockUser = onBlockUser,
+                onReportOffer = onReportOffer,
+                onDismiss = onDismissMenu
+            )
+        }
+    }
+}
+
+@Composable private fun dp(offer: FeedPost?): Dp = if (offer == null) 0.dp else 8.dp
+
+private suspend fun PointerInputScope.feedSwipingInputs(
+    swipeThresholdPx: Float,
+    vm: FeedScreenViewModel,
+    offer: FeedPost
+) {
+    var totalDrag = Offset.Zero
+
+    detectDragGestures(
+        onDragStart = { totalDrag = Offset.Zero },
+        onDragEnd = { totalDrag = Offset.Zero }
+    ) { change, dragAmount ->
+        change.consume()
+        totalDrag += dragAmount
+        val (x, y) = totalDrag
+        when {
+            y < -swipeThresholdPx -> {
+                vm.skip()
+                totalDrag = Offset.Zero
+            }
+            x < -swipeThresholdPx -> {
+                vm.goToProfile(offer.authorID)
+                totalDrag = Offset.Zero
+            }
+            x > swipeThresholdPx -> {
+                vm.accept(offer)
+                totalDrag = Offset.Zero
+            }
         }
     }
 }

@@ -59,13 +59,7 @@ fun AvatarDisplay(
                     model = avatarUrl,
                     contentDescription = "Profile picture",
                     modifier =
-                        modifier
-                            .size(imageSize)
-                            .clip(CircleShape)
-                            .then(
-                                if (onClick != null) Modifier.clickable(onClick = onClick)
-                                else Modifier
-                            ),
+                        modifier.size(imageSize).clip(CircleShape).clickableIfNotNull(onClick),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -80,10 +74,7 @@ fun AvatarDisplay(
                         modifier
                             .size(placeholderContainerSize)
                             .clip(CircleShape)
-                            .then(
-                                if (onClick != null) Modifier.clickable(onClick = onClick)
-                                else Modifier
-                            )
+                            .clickableIfNotNull(onClick)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -99,16 +90,18 @@ fun AvatarDisplay(
                     model = avatarUrl,
                     contentDescription = "Profile picture",
                     modifier =
-                        modifier
-                            .size(imageSize)
-                            .clip(CircleShape)
-                            .then(
-                                if (onClick != null) Modifier.clickable(onClick = onClick)
-                                else Modifier
-                            ),
+                        modifier.size(imageSize).clip(CircleShape).clickableIfNotNull(onClick),
                     contentScale = ContentScale.Crop
                 )
             }
         }
+    }
+}
+
+private fun Modifier.clickableIfNotNull(onClick: (() -> Unit)?): Modifier {
+    return if (onClick != null) {
+        this.clickable(onClick = onClick)
+    } else {
+        this
     }
 }

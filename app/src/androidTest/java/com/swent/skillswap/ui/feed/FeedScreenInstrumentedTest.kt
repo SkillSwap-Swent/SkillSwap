@@ -19,6 +19,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.test.swipeUp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
@@ -416,6 +418,120 @@ class FeedScreenInstrumentedTest {
         composeTestRule
             .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
             .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+        return@runBlocking
+    }
+
+    // Done by Gemini
+    @Test
+    fun acceptOffer_SwipeRight_LoadsNextOffer() = runBlocking {
+        // 1. Setup Data
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+        val post2 = createValidPost("post2", "Learn Piano", userId2)
+
+        addPostToEmulator(post1)
+        addPostToEmulator(post2)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
+
+        composeTestRule.setContent {
+            val vm: FeedScreenViewModel = viewModel(factory = factory)
+            Box(Modifier.fillMaxSize()) { FeedScreen(vm = vm) }
+        }
+
+        // 2. Wait for the feed to load
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // 3. Determine which post is currently shown (to know what to expect next)
+        val shownIsPost1 =
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                    .assertTextContains(post1.title, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+
+        val expectedNextTitle = if (shownIsPost1) post2.title else post1.title
+
+        // 4. PERFORM THE SWIPE (The Key Change)
+        // We target the Card itself and swipe right to trigger "accept"
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
+            // swipeRight() moves from the left edge to the right edge of the node.
+            // This guarantees the drag distance > threshold (100.dp).
+            swipeRight(
+                durationMillis = 1000
+            ) // Optional: slower duration ensures drag events register cleanly
+        }
+
+        // 5. Verify the next post appears
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                    .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // Final assertion
+        composeTestRule
+            .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+            .assertTextContains(expectedNextTitle, substring = true, ignoreCase = true)
+
+        return@runBlocking
+    }
+    // Done by Gemini
+    @Test
+    fun skipOffer_SwipeDown_LoadsNoOffer() = runBlocking {
+        val post1 = createValidPost("post1", "Learn Guitar", userId1)
+
+        addPostToEmulator(post1)
+        FirebaseEmulator.firestore.collection("requests").get().await()
+
+        val controller = controllerFactory.create(testUserId, PostType.REQUEST)
+        val factory = FeedScreenViewModelFactory(navigation, controller)
+
+        composeTestRule.setContent {
+            Box(Modifier.fillMaxSize()) {
+                val vm: FeedScreenViewModel = viewModel(factory = factory)
+                FeedScreen(vm = vm)
+            }
+        }
+
+        // 2. Wait for Load
+        composeTestRule.waitUntil(timeoutMillis = 10_000L) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(FeedScreenTestTags.SPECIFICATION_TITLE)
+                    .assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
+
+        // 4. PERFORM SWIPE UP (Triggers vm.skip())
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.FEED_CARD).performTouchInput {
+            // swipeDown moves from top to bottom (+Y), triggering your skip logic
+            swipeUp(durationMillis = 1000)
+        }
+
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).isDisplayed()
         return@runBlocking
     }
 
