@@ -157,34 +157,10 @@ fun RequestScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Title Input
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = { requestViewModel.setTitle(it) },
-                label = { Text("Title") },
-                placeholder = { Text("Enter the title of your request") },
-                isError = uiState.titleError.isNotEmpty(),
-                supportingText = {
-                    if (uiState.titleError.isNotEmpty()) {
-                        Text(uiState.titleError, color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
-            )
+            TitleInputField(uiState, requestViewModel)
 
             // Description Input
-            OutlinedTextField(
-                value = uiState.description,
-                onValueChange = { requestViewModel.setDescription(it) },
-                label = { Text("Description") },
-                placeholder = { Text("Describe the skill you are requesting") },
-                isError = uiState.descriptionError.isNotEmpty(),
-                supportingText = {
-                    if (uiState.descriptionError.isNotEmpty()) {
-                        Text(uiState.descriptionError, color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
-            )
+            DescriptionInputField(uiState, requestViewModel)
 
             SkillInputField(uiState, requestViewModel)
 
@@ -192,13 +168,7 @@ fun RequestScreen(
             SelectedSkillsRow(uiState, requestViewModel)
 
             // Add a photo
-            Text(
-                text = "Photos: ${uiState.attachments.size}/${FirestoreSettings.MAX_ATTACHMENTS}",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            AttachmentPreviewList(uiState, requestViewModel)
+            AttachmentPreviewRow(uiState, requestViewModel)
 
             AddAttachmentsButton(uiState, pickMultipleMedia)
 
@@ -209,6 +179,40 @@ fun RequestScreen(
             SubmitCreateRequestButton(requestViewModel, postOperation, uiState)
         }
     }
+}
+
+@Composable
+private fun TitleInputField(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    OutlinedTextField(
+        value = uiState.title,
+        onValueChange = { requestViewModel.setTitle(it) },
+        label = { Text("Title") },
+        placeholder = { Text("Enter the title of your request") },
+        isError = uiState.titleError.isNotEmpty(),
+        supportingText = {
+            if (uiState.titleError.isNotEmpty()) {
+                Text(uiState.titleError, color = MaterialTheme.colorScheme.error)
+            }
+        },
+        modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.TITLE_INPUT)
+    )
+}
+
+@Composable
+private fun DescriptionInputField(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    OutlinedTextField(
+        value = uiState.description,
+        onValueChange = { requestViewModel.setDescription(it) },
+        label = { Text("Description") },
+        placeholder = { Text("Describe the skill you are requesting") },
+        isError = uiState.descriptionError.isNotEmpty(),
+        supportingText = {
+            if (uiState.descriptionError.isNotEmpty()) {
+                Text(uiState.descriptionError, color = MaterialTheme.colorScheme.error)
+            }
+        },
+        modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
+    )
 }
 
 @Composable
@@ -327,7 +331,13 @@ private fun AddAttachmentsButton(
 }
 
 @Composable
-private fun AttachmentPreviewList(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+private fun AttachmentPreviewRow(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    Text(
+        text = "Photos: ${uiState.attachments.size}/${FirestoreSettings.MAX_ATTACHMENTS}",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(top = 8.dp)
+    )
+
     if (uiState.attachments.isNotEmpty()) {
         Row(
             modifier =
