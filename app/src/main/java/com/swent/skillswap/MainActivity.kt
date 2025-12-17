@@ -521,7 +521,7 @@ private fun FeedContent(
             remember(controller) {
                 FeedScreenViewModelFactory(
                     navigation = navigation,
-                    controller = controller!!,
+                    controller = controller,
                     notificationViewModel = notificationViewModel
                 )
             }
