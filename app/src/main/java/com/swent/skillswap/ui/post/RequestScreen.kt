@@ -7,6 +7,8 @@
 
 package com.swent.skillswap.ui.post
 
+import android.net.Uri
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -184,36 +186,10 @@ fun RequestScreen(
                 modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
             )
 
-            skillInputField(uiState, requestViewModel)
+            SkillInputField(uiState, requestViewModel)
 
             // Display selected skills as chips
-            Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
-                val flowScroll = rememberScrollState()
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.verticalScroll(flowScroll)
-                ) {
-                    uiState.skills.forEach { skills ->
-                        Box(
-                            modifier =
-                                Modifier.background(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        shape = RoundedCornerShape(16.dp)
-                                    )
-                                    .clickable { requestViewModel.removeSkill(skills) }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                                    .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
-                        ) {
-                            Text(
-                                text = skills.name.replace("_", " "),
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-                }
-            }
+            SelectedSkillsRow(uiState, requestViewModel)
 
             // Add a photo
             Text(
@@ -222,133 +198,95 @@ fun RequestScreen(
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            if (uiState.attachments.isNotEmpty()) {
-                Row(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .padding(top = 8.dp)
-                            .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    uiState.attachments.forEach { uri ->
-                        Box(
-                            modifier =
-                                Modifier.size(80.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { requestViewModel.removeAttachments(setOf(uri)) }
-                                    .testTag("${RequestScreenTags.ATTACHMENT_PREVIEW}_${uri}")
-                        ) {
-                            AsyncImage(
-                                model = uri,
-                                contentDescription = "Selected photo",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                            )
-                        }
-                    }
-                }
-            }
+            AttachmentPreviewList(uiState, requestViewModel)
 
-            if (uiState.attachmentsError.isNotBlank()) {
-                Text(
-                    text = uiState.attachmentsError,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.testTag(RequestScreenTags.ATTACHMENT_ERROR)
-                )
-            }
+            AddAttachmentsButton(uiState, pickMultipleMedia)
 
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                SkillSwapShadowButton(
-                    onClick = {
-                        pickMultipleMedia.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                            )
-                        )
-                    },
-                    modifier =
-                        Modifier.testTag(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
-                            .fillMaxWidth(0.4f)
-                            .height(55.dp)
-                ) {
-                    Text(text = "Add photos")
-                }
-            }
-
-            // Payment method input
-            Text(
-                text = "Payment Methods",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                PaymentMethod.entries.forEach { method ->
-                    val isSelected = uiState.paymentMethod == method
-                    val backgroundColor =
-                        if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceVariant
-
-                    val textColor =
-                        if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurfaceVariant
-
-                    Box(
-                        modifier =
-                            Modifier.background(
-                                    color = backgroundColor,
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .clickable { requestViewModel.togglePaymentMethod(method) }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .testTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
-                    ) {
-                        Text(
-                            text = method.displayName,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = textColor
-                        )
-                    }
-                }
-            }
+            SelectPaymentMethodField(uiState, requestViewModel)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SkillSwapShadowButton(
-                onClick = { requestViewModel.save(postOperation) },
-                enable = !uiState.isLoading,
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .testTag(
-                            when (postOperation) {
-                                PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
-                                PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
-                            }
-                        )
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier =
-                            Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    Text("Submit", fontSize = 18.sp)
-                }
-            }
+            SubmitCreateRequestButton(requestViewModel, postOperation, uiState)
+        }
+    }
+}
 
-            // Show error if submission failed
-            if (uiState.submitError != null) {
+@Composable
+private fun SubmitCreateRequestButton(
+    requestViewModel: RequestViewModel,
+    postOperation: PostOperation,
+    uiState: RequestUIState
+) {
+    SkillSwapShadowButton(
+        onClick = { requestViewModel.save(postOperation) },
+        enable = !uiState.isLoading,
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(vertical = 16.dp)
+                .testTag(
+                    when (postOperation) {
+                        PostOperation.ADD -> RequestScreenTags.CREATE_BUTTON
+                        PostOperation.EDIT -> RequestScreenTags.EDIT_BUTTON
+                    }
+                )
+    ) {
+        if (uiState.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp).testTag(RequestScreenTags.LOADING_INDICATOR),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Text("Submit", fontSize = 18.sp)
+        }
+    }
+
+    // Show error if submission failed
+    if (uiState.submitError != null) {
+        Text(
+            text = uiState.submitError!!,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun SelectPaymentMethodField(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    // Payment method input
+    Text(
+        text = "Payment Methods",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(top = 8.dp)
+    )
+
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        PaymentMethod.entries.forEach { method ->
+            val isSelected = uiState.paymentMethod == method
+            val backgroundColor =
+                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant
+
+            val textColor =
+                if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                else MaterialTheme.colorScheme.onSurfaceVariant
+
+            Box(
+                modifier =
+                    Modifier.background(color = backgroundColor, shape = RoundedCornerShape(16.dp))
+                        .clickable { requestViewModel.togglePaymentMethod(method) }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .testTag("${RequestScreenTags.PAYMENT_METHOD_CHIP}_${method.name}")
+            ) {
                 Text(
-                    text = uiState.submitError!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
+                    text = method.displayName,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                    color = textColor
                 )
             }
         }
@@ -356,7 +294,100 @@ fun RequestScreen(
 }
 
 @Composable
-private fun skillInputField(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+private fun AddAttachmentsButton(
+    uiState: RequestUIState,
+    pickMultipleMedia:
+        ManagedActivityResultLauncher<PickVisualMediaRequest, List<@JvmSuppressWildcards Uri>>
+) {
+    // error text
+    if (uiState.attachmentsError.isNotBlank()) {
+        Text(
+            text = uiState.attachmentsError,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.testTag(RequestScreenTags.ATTACHMENT_ERROR)
+        )
+    }
+
+    // add photos button
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        SkillSwapShadowButton(
+            onClick = {
+                pickMultipleMedia.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
+            modifier =
+                Modifier.testTag(RequestScreenTags.CHOOSE_ATTACHMENT_BUTTON)
+                    .fillMaxWidth(0.4f)
+                    .height(55.dp)
+        ) {
+            Text(text = "Add photos")
+        }
+    }
+}
+
+@Composable
+private fun AttachmentPreviewList(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    if (uiState.attachments.isNotEmpty()) {
+        Row(
+            modifier =
+                Modifier.fillMaxWidth().padding(top = 8.dp).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            uiState.attachments.forEach { uri ->
+                Box(
+                    modifier =
+                        Modifier.size(80.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { requestViewModel.removeAttachments(setOf(uri)) }
+                            .testTag("${RequestScreenTags.ATTACHMENT_PREVIEW}_${uri}")
+                ) {
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = "Selected photo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun SelectedSkillsRow(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
+        val flowScroll = rememberScrollState()
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.verticalScroll(flowScroll)
+        ) {
+            uiState.skills.forEach { skills ->
+                Box(
+                    modifier =
+                        Modifier.background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .clickable { requestViewModel.removeSkill(skills) }
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .testTag("${RequestScreenTags.TAG_CHIP}_${skills}")
+                ) {
+                    Text(
+                        text = skills.name.replace("_", " "),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SkillInputField(uiState: RequestUIState, requestViewModel: RequestViewModel) {
     /* Skill input. The following is heavily inspired by the implementation in the create account screen. */
     var tagsExpanded by remember { mutableStateOf(false) }
     val tagsQuery = remember { mutableStateOf("") }
