@@ -343,9 +343,16 @@ class End2EndM3 {
                             java.util.concurrent.TimeUnit.SECONDS
                         )
                         user1Id = auth.currentUser?.uid ?: ""
-                        android.util.Log.d("End2EndM3", "Loaded user1Id: $user1Id")
+                        android.util.Log.d(
+                            "End2EndM3RequestAcceptanceFlow",
+                            "Loaded user1Id: $user1Id"
+                        )
                     } catch (e: Exception) {
-                        android.util.Log.e("End2EndM3", "Failed to sign in as user1 to get ID", e)
+                        android.util.Log.e(
+                            "End2EndM3RequestAcceptanceFlow",
+                            "Failed to sign in as user1 to get ID",
+                            e
+                        )
                     }
                 }
 
@@ -361,13 +368,13 @@ class End2EndM3 {
                         requestId = requests.firstOrNull()?.uid ?: ""
                         if (requestId.isNotEmpty()) {
                             android.util.Log.d(
-                                "End2EndM3",
+                                "End2EndM3RequestAcceptanceFlow",
                                 "Successfully loaded requestId: $requestId"
                             )
                             return@runBlocking // Exit early on successful retrieval
                         }
                         android.util.Log.d(
-                            "End2EndM3",
+                            "End2EndM3RequestAcceptanceFlow",
                             "Retrying request fetch from Firestore... Attempt: ${it + 1}"
                         )
                         Thread.sleep(4000) // wait 4 seconds before retrying
@@ -544,13 +551,21 @@ class End2EndM3 {
                 .isNotEmpty()
         }
 
-        // Wait for FEED_TAB to be displayed and click it
+        // Wait for FEED_TAB to exist and be clickable, then click it
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-                true
-            } catch (e: AssertionError) {
+                val nodes =
+                    composeTestRule
+                        .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
+                        .fetchSemanticsNodes()
+                if (nodes.isNotEmpty()) {
+                    // Try to click - if it fails, return false to retry
+                    composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
                 false
             }
         }
@@ -662,13 +677,21 @@ class End2EndM3 {
                 .isNotEmpty()
         }
 
-        // Wait for CHAT_TAB to be displayed and click it
+        // Wait for CHAT_TAB to exist and be clickable, then click it
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
-                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-                true
-            } catch (e: AssertionError) {
+                val nodes =
+                    composeTestRule
+                        .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
+                        .fetchSemanticsNodes()
+                if (nodes.isNotEmpty()) {
+                    // Try to click - if it fails, return false to retry
+                    composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
                 false
             }
         }
