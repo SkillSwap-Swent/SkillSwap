@@ -250,8 +250,9 @@ class End2EndM3 {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
-        // Wait for profile screen with longer timeout for CI
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+        // Wait until firestore auth operation completes and Profile Screen is displayed
+        // Match End2EndM1 pattern with 60 second timeout
+        composeTestRule.waitUntil(timeoutMillis = 60_000) {
             try {
                 composeTestRule
                     .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
@@ -262,6 +263,7 @@ class End2EndM3 {
                 false
             }
         }
+        composeTestRule.waitForIdle()
     }
 
     /** Helper function to sign in via Firebase Auth (for programmatic sign-in) */
@@ -379,8 +381,13 @@ class End2EndM3 {
     fun t0_createAccountsAndRequest() {
         // Create user1 account
         createAccountViaUI(user1Email, user1Username, user1Password)
-        user1Id = auth.currentUser?.uid ?: ""
-        assert(user1Id.isNotEmpty()) { "User1 ID should not be empty" }
+
+        // Get user ID after account creation - use runOnIdle like End2EndM2 to ensure
+        // UI is completely idle and auth.currentUser is definitely set
+        composeTestRule.runOnIdle {
+            user1Id = auth.currentUser?.uid ?: ""
+            assert(user1Id.isNotEmpty()) { "User1 ID should not be empty" }
+        }
 
         // Create a request - wait for bottom navigation to be available first
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
@@ -507,8 +514,12 @@ class End2EndM3 {
 
         // Create user2 account
         createAccountViaUI(user2Email, user2Username, user2Password)
-        user2Id = auth.currentUser?.uid ?: ""
-        assert(user2Id.isNotEmpty()) { "User2 ID should not be empty" }
+
+        // Get user ID after account creation - use runOnIdle like End2EndM2
+        composeTestRule.runOnIdle {
+            user2Id = auth.currentUser?.uid ?: ""
+            assert(user2Id.isNotEmpty()) { "User2 ID should not be empty" }
+        }
 
         // Navigate to feed and accept the request (this creates a reply)
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
@@ -573,8 +584,12 @@ class End2EndM3 {
 
         // Create user3 account
         createAccountViaUI(user3Email, user3Username, user3Password)
-        user3Id = auth.currentUser?.uid ?: ""
-        assert(user3Id.isNotEmpty()) { "User3 ID should not be empty" }
+
+        // Get user ID after account creation - use runOnIdle like End2EndM2
+        composeTestRule.runOnIdle {
+            user3Id = auth.currentUser?.uid ?: ""
+            assert(user3Id.isNotEmpty()) { "User3 ID should not be empty" }
+        }
 
         // Create reply programmatically
         runBlocking(Dispatchers.IO) {
