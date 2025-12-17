@@ -252,9 +252,9 @@ class ChatListViewModel(
             }
             try {
                 val chats =
-                    chatRepository.getChatsOfCurrentUser(PostType.REQUEST).filter {
-                        it.participants.contains(blockedUserID)
-                    }
+                    (chatRepository.getChatsOfCurrentUser(PostType.REQUEST) +
+                            chatRepository.getPendingChatsOfCurrentUser(PostType.REQUEST))
+                        .filter { it.participants.contains(blockedUserID) }
                 for (chat in chats) {
                     chatRepository.closeChat(chat.id)
                 }

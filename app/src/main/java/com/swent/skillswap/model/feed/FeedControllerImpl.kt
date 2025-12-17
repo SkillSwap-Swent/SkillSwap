@@ -17,6 +17,7 @@ import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepositery
 import com.swent.skillswap.model.utils.LocationManager
+import kotlin.collections.plus
 
 const val NUMB_POSTS_TO_FETCH = 10L
 const val PRELOAD_THRESHOLD = 3
@@ -151,9 +152,9 @@ private class FeedControllerImpl(
         )
         try {
             val chats =
-                chatRepository.getChatsOfCurrentUser(PostType.REQUEST).filter {
-                    it.participants.contains(blockedUserUID)
-                }
+                (chatRepository.getChatsOfCurrentUser(PostType.REQUEST) +
+                        chatRepository.getPendingChatsOfCurrentUser(PostType.REQUEST))
+                    .filter { it.participants.contains(blockedUserUID) }
             for (chat in chats) {
                 chatRepository.closeChat(chat.id)
             }
