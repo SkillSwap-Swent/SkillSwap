@@ -7,13 +7,9 @@ import androidx.test.rule.GrantPermissionRule
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.GeoPoint
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.firebase.FirestorePaths
 import com.swent.skillswap.model.post.PaymentMethod
-import com.swent.skillswap.model.user.*
-import com.swent.skillswap.model.user.Preference
-import com.swent.skillswap.model.user.User
 import com.swent.skillswap.ui.auth.CreateAccountTags
 import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListTestTags
@@ -24,6 +20,7 @@ import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreenTags
 import com.swent.skillswap.ui.user.ProfileTestTags
 import com.swent.skillswap.utils.FirebaseEmulator
 import org.junit.AfterClass
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -43,6 +40,73 @@ class End2EndM3RCRFlow {
     private val user2Email = "user2@test.com"
     private val user2Password = "Password123"
     private val user2Username = "Responder1"
+
+    // Generic wait/navigation helpers to reduce duplication in tests
+    private fun waitForNodeWithTag(tag: String, timeout: Long = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = timeout) {
+            try {
+                composeTestRule.onNodeWithTag(tag).assertExists()
+                true
+            } catch (_: Throwable) {
+                false
+            }
+        }
+    }
+
+    private fun waitForAnyNodeWithTag(tag: String, timeout: Long = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = timeout) {
+            composeTestRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    private fun navigateToBottomTab(tabTag: String) {
+        composeTestRule.onNodeWithTag(tabTag).performClick()
+        composeTestRule.waitForIdle()
+    }
+
+    private fun waitForProfileScreen(timeout: Long = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = timeout) {
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+            try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                true
+            } catch (_: Throwable) {
+                false
+            }
+        }
+    }
+
+    private fun waitForRequestByTitle(
+        title: String,
+        authorEmail: String = "bob@mail.com",
+        maxAttempts: Int = 10,
+        delayMillis: Long = 500
+    ) {
+        var attempt = 0
+        var found = false
+        while (attempt < maxAttempts && !found) {
+            val snapshot =
+                Tasks.await(
+                    db.collection(FirestorePaths.REQUESTS_COLLECTION)
+                        .whereEqualTo("title", title)
+                        .get()
+                )
+            found = snapshot.documents.isNotEmpty()
+            if (!found) {
+                Thread.sleep(delayMillis)
+                attempt++
+            }
+        }
+        assertTrue(
+            "Author request '$title' for $authorEmail was not found in Firestore after creation UI flow",
+            found
+        )
+    }
 
     companion object {
 
@@ -107,42 +171,22 @@ class End2EndM3RCRFlow {
                 false
             }
         }
-        composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).performClick()
-        composeTestRule.waitForIdle()
+        navigateToBottomTab(NavigationTestTags.PROFILE_TAB)
 
         // Wait for Logout button and click it
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.LOGOUT_BUTTON)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForAnyNodeWithTag(ProfileTestTags.LOGOUT_BUTTON, timeout = 10_000)
         composeTestRule.onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(ProfileTestTags.LOGOUT_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
         // Wait until sign-in screen is visible
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            try {
-                composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertExists()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
+        waitForNodeWithTag(SignInTags.EMAIL_FIELD, timeout = 10_000)
     }
 
     /** Create account via UI (replicating the pattern used elsewhere) */
     private fun createAccountViaUI(email: String, username: String, password: String) {
         // Ensure sign-in screen is visible
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            try {
-                composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
+        waitForNodeWithTag(SignInTags.LOGO, timeout = 10_000)
 
         // Navigate to Create Account
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
@@ -151,12 +195,7 @@ class End2EndM3RCRFlow {
         composeTestRule.waitForIdle()
 
         // Username
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForAnyNodeWithTag(CreateAccountTags.USERNAME_FIELD, timeout = 20_000)
         composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput(username)
         composeTestRule.waitForIdle()
         // Wait until Next is enabled
@@ -172,12 +211,7 @@ class End2EndM3RCRFlow {
         composeTestRule.waitForIdle()
 
         // Email
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.EMAIL_FIELD)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForAnyNodeWithTag(CreateAccountTags.EMAIL_FIELD, timeout = 20_000)
         composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).performTextInput(email)
         composeTestRule.waitForIdle()
         // Wait until Next is enabled (regex must pass and uniqueness must not have disabled button)
@@ -193,12 +227,7 @@ class End2EndM3RCRFlow {
         composeTestRule.waitForIdle()
 
         // Password
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.PASSWORD_FIELD)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForAnyNodeWithTag(CreateAccountTags.PASSWORD_FIELD, timeout = 20_000)
         composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).performTextInput(password)
         composeTestRule.waitForIdle()
         composeTestRule
@@ -219,37 +248,20 @@ class End2EndM3RCRFlow {
 
         // Skills (pick at least one)
         val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.SKILLS_FLOW)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForAnyNodeWithTag(CreateAccountTags.SKILLS_FLOW, timeout = 20_000)
         composeTestRule.onNodeWithTag(skillTag).performScrollTo()
         composeTestRule.onNodeWithTag(skillTag).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // Wait for profile screen to confirm account created
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForProfileScreen(timeout = 15_000)
     }
 
     /** Sign in via UI */
     private fun signInViaUI(email: String, password: String) {
         // Ensure sign-in fields are visible
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            try {
-                composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertExists()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
+        waitForNodeWithTag(SignInTags.EMAIL_FIELD, timeout = 10_000)
         composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).performTextInput(email)
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).performTextInput(password)
@@ -258,12 +270,7 @@ class End2EndM3RCRFlow {
         composeTestRule.waitForIdle()
 
         // Wait for profile as home after sign-in
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForProfileScreen(timeout = 15_000)
     }
 
     // Helper to accept an offer for a given user by email/password
@@ -426,63 +433,13 @@ class End2EndM3RCRFlow {
             }
         }
 
-        assert(responderItems.isNotEmpty()) {
-            "Responder should see at least one chat after accepting (checked Pending, Ongoing, Replies)"
-        }
+        assertTrue(
+            "Responder should see at least one chat after accepting (checked Pending, Ongoing, Replies)",
+            responderItems.isNotEmpty()
+        )
 
         // Sign out via UI to switch user
         signOutViaUI()
-    }
-
-    /**
-     * Create a user on the Auth emulator and seed the corresponding Firestore user document.
-     * Minimal fields are populated to satisfy app requirements.
-     */
-    private fun createAndSeedUser(email: String, password: String, username: String) {
-        // Create auth account
-        val authResult = Tasks.await(auth.createUserWithEmailAndPassword(email, password))
-        val uid = authResult.user?.uid ?: throw IllegalStateException("No UID returned for $email")
-
-        // Seed Firestore user document
-        val user =
-            User(
-                uid = uid,
-                username = username,
-                email = email,
-                profilePicture = "",
-                skillSet = emptySet(),
-                rating = 5.0f,
-                availability = emptyList(),
-                preference = Preference.SKILLS,
-                location = GeoPoint(0.0, 0.0),
-                blockedUsers = emptySet(),
-                viewedPosts = emptySet(),
-                fcmToken = null
-            )
-        Tasks.await(
-            db.collection(FirestorePaths.USERS_COLLECTION)
-                .document(uid)
-                .set(
-                    mapOf(
-                        "username" to user.username,
-                        "email" to user.email,
-                        "profilePicture" to user.profilePicture,
-                        "skillSet" to serializeSkills(user.skillSet),
-                        "rating" to user.rating,
-                        "availability" to serializeAvailabilities(user.availability),
-                        "preference" to serializePreference(user.preference),
-                        "location" to user.location,
-                        "blockedUsers" to serializeBlockedUsers(user.blockedUsers),
-                        "viewedPosts" to serializeViewedPosts(user.viewedPosts),
-                        "fcmToken" to ""
-                    )
-                )
-        )
-    }
-
-    /** Public helper to create the responder user on the emulators. Call this before responding. */
-    fun seedResponderUsers() {
-        createAndSeedUser(user2Email, user2Password, user2Username)
     }
 
     @Test
@@ -498,19 +455,12 @@ class End2EndM3RCRFlow {
     fun t1_authorCanCreatePost() {
 
         // ---------- Navigate to Add Post Screen via bottom nav Posts tab ----------
-        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
-        composeTestRule.waitForIdle()
+        navigateToBottomTab(NavigationTestTags.POSTS_TAB)
 
         // ---------- Wait for Add Request Screen ----------
-        composeTestRule.waitUntil(10_000) {
-            composeTestRule
-                .onAllNodesWithTag(RequestScreenTags.TITLE_INPUT)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
+        waitForAnyNodeWithTag(RequestScreenTags.TITLE_INPUT, timeout = 10_000)
 
         // ---------- Verify UI ----------
-
         listOf(
                 RequestScreenTags.TITLE_INPUT,
                 RequestScreenTags.DESCRIPTION_INPUT,
@@ -558,13 +508,6 @@ class End2EndM3RCRFlow {
         // ---------- Select tag ----------
         composeTestRule.onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_CALCULUS").performClick()
         composeTestRule.waitForIdle()
-
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule
-                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_CALCULUS")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
 
         composeTestRule.waitUntil(5_000) {
             composeTestRule
@@ -628,26 +571,12 @@ class End2EndM3RCRFlow {
         signOutViaUI()
 
         // Extra safety: verify the author's request has been written to Firestore
-        val authorEmail = "bob@mail.com"
-        val maxAttempts = 10
-        var attempt = 0
-        var found = false
-        while (attempt < maxAttempts && !found) {
-            val snapshot =
-                Tasks.await(
-                    db.collection(FirestorePaths.REQUESTS_COLLECTION)
-                        .whereEqualTo("title", createdTitle)
-                        .get()
-                )
-            found = snapshot.documents.isNotEmpty()
-            if (!found) {
-                Thread.sleep(500)
-                attempt++
-            }
-        }
-        assert(found) {
-            "Author request '$createdTitle' for $authorEmail was not found in Firestore after creation UI flow"
-        }
+        waitForRequestByTitle(
+            createdTitle,
+            authorEmail = "bob@mail.com",
+            maxAttempts = 10,
+            delayMillis = 500
+        )
     }
 
     @Test
@@ -665,8 +594,8 @@ class End2EndM3RCRFlow {
         val usersSnapshot = Tasks.await(db.collection(FirestorePaths.USERS_COLLECTION).get())
         val emails = usersSnapshot.documents.mapNotNull { it.getString("email") }.toSet()
         val authorEmail = "bob@mail.com"
-        assert(emails.contains(authorEmail))
-        assert(emails.contains(user2Email))
+        assertTrue(emails.contains(authorEmail))
+        assertTrue(emails.contains(user2Email))
 
         // Verify Auth via UI sign-ins
         signInViaUI(user2Email, user2Password)
@@ -751,7 +680,7 @@ class End2EndM3RCRFlow {
                 .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
                 .fetchSemanticsNodes()
         val count = maxOf(approveButtons.size, chatRows.size)
-        assert(count >= 1) { "Expected at least 1 chat to approve in Replies, found ${count}" }
+        assertTrue("Expected at least 1 chat to approve in Replies, found $count", count >= 1)
 
         // If an explicit approve button exists, click it to move chat to ongoing/completed flow
         if (approveButtons.isNotEmpty()) {
@@ -762,7 +691,24 @@ class End2EndM3RCRFlow {
             Thread.sleep(2_000)
         }
 
-        // --------- Author rates the responder and chat closes for author ---------
+        // Author remains signed in at end of this test so that t4 can continue.
+    }
+
+    @Test
+    fun t4_authorApprovesAndRatesChat() {
+        // Assumes author is already signed in and has at least one approved chat from t3.
+        // Navigate to Chat screen via bottom nav (in case we're not already there)
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for ChatList screen visible
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.SCREEN)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
         // Switch to Ongoing tab where active chats live
         composeTestRule.onNodeWithTag(ChatListTestTags.ONGOING_TAB).performClick()
         composeTestRule.waitForIdle()
@@ -806,7 +752,12 @@ class End2EndM3RCRFlow {
             ongoingItems.isEmpty() && emptyState.isNotEmpty()
         }
 
-        // --------- Now verify responder also sees chat as closed ---------
+        // Author remains signed in at end of this test so that t5 can continue.
+    }
+
+    @Test
+    fun t5_chatClosedForBothUsers() {
+        // Now verify responder also sees chat as closed
         signOutViaUI()
 
         // Sign back in as responder
@@ -844,9 +795,10 @@ class End2EndM3RCRFlow {
             composeTestRule
                 .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
                 .fetchSemanticsNodes()
-        assert(responderChatsAfterRating.isEmpty()) {
-            "Chat should be closed/hidden for responder after author rates the exchange"
-        }
+        assertTrue(
+            "Chat should be closed/hidden for responder after author rates the exchange",
+            responderChatsAfterRating.isEmpty()
+        )
 
         // Clean up: sign out
         signOutViaUI()
