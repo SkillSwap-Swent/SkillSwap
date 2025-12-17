@@ -198,10 +198,11 @@ fun NotificationScreen(
                             NotificationItem(
                                 notification = notification,
                                 onClick = {
-                                    if (!notification.isRead) {
-                                        viewModel.markAsRead(notification)
-                                    }
-                                    onNotificationClick(notification)
+                                    clickNotificationItem(
+                                        notification,
+                                        viewModel,
+                                        onNotificationClick
+                                    )
                                 },
                                 onDelete = { viewModel.deleteNotification(notification) },
                                 modifier =
@@ -215,6 +216,17 @@ fun NotificationScreen(
             }
         }
     }
+}
+
+private fun clickNotificationItem(
+    notification: Notification,
+    viewModel: NotificationViewModel,
+    onNotificationClick: (Notification) -> Unit
+) {
+    if (!notification.isRead) {
+        viewModel.markAsRead(notification)
+    }
+    onNotificationClick(notification)
 }
 
 /** Individual notification item with type-based styling. */
