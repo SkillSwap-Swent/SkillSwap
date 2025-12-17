@@ -225,7 +225,7 @@ private class FeedControllerImpl(
         if (postQueue.size <= PRELOAD_THRESHOLD) {
             fetchPosts()
         }
-        return postQueue.removeAt(0)
+        return if (postQueue.isNotEmpty()) postQueue.removeAt(0) else null
     }
 }
 
