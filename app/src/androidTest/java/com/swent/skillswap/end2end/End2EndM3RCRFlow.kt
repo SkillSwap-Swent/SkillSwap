@@ -752,5 +752,103 @@ class End2EndM3RCRFlow {
                 .fetchSemanticsNodes()
         val count = maxOf(approveButtons.size, chatRows.size)
         assert(count >= 1) { "Expected at least 1 chat to approve in Replies, found ${count}" }
+
+        // If an explicit approve button exists, click it to move chat to ongoing/completed flow
+        if (approveButtons.isNotEmpty()) {
+            composeTestRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).performScrollTo()
+            composeTestRule.onNodeWithTag(ChatListTestTags.ACCEPT_CHAT).performClick()
+            composeTestRule.waitForIdle()
+            // Small delay to allow backend to update chat/post status
+            Thread.sleep(2_000)
+        }
+
+        // --------- Author rates the responder and chat closes for author ---------
+        // Switch to Ongoing tab where active chats live
+        composeTestRule.onNodeWithTag(ChatListTestTags.ONGOING_TAB).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for at least one chat row
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        // Open rating dialog via "Rate User" button
+        composeTestRule
+            .onNodeWithContentDescription("Rate User", useUnmergedTree = true)
+            .assertExists()
+            .performClick()
+        composeTestRule.onNodeWithText("Rate this exchange").assertExists()
+
+        // Select a rating (e.g., 4 stars) and submit
+        composeTestRule.onAllNodesWithContentDescription("rating stars")[3].performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Submit").performClick()
+        composeTestRule.waitForIdle()
+
+        // Dialog should close
+        composeTestRule.onNodeWithText("Rate this exchange").assertDoesNotExist()
+
+        // After submitting rating, chat should disappear from author's Ongoing list
+        // Give some time for UI to refresh / Firestore to propagate
+        Thread.sleep(2_000)
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            val ongoingItems =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                    .fetchSemanticsNodes()
+            val emptyState =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.EMPTY_STATE)
+                    .fetchSemanticsNodes()
+            ongoingItems.isEmpty() && emptyState.isNotEmpty()
+        }
+
+        // --------- Now verify responder also sees chat as closed ---------
+        signOutViaUI()
+
+        // Sign back in as responder
+        signInViaUI(user2Email, user2Password)
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for chat list screen
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.SCREEN)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        // Go to Ongoing tab for responder
+        composeTestRule.onNodeWithTag(ChatListTestTags.ONGOING_TAB).performClick()
+        composeTestRule.waitForIdle()
+
+        // Wait for either empty state or chats
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            val items =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                    .fetchSemanticsNodes()
+            val empty =
+                composeTestRule
+                    .onAllNodesWithTag(ChatListTestTags.EMPTY_STATE)
+                    .fetchSemanticsNodes()
+            items.isEmpty() && empty.isNotEmpty()
+        }
+
+        // Responder should not see the chat anymore
+        val responderChatsAfterRating =
+            composeTestRule
+                .onAllNodesWithTag(ChatListTestTags.CHAT_MENU_BUTTON)
+                .fetchSemanticsNodes()
+        assert(responderChatsAfterRating.isEmpty()) {
+            "Chat should be closed/hidden for responder after author rates the exchange"
+        }
+
+        // Clean up: sign out
+        signOutViaUI()
     }
 }
