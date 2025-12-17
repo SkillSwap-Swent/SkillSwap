@@ -230,6 +230,7 @@ private fun ActionButtons(isLoading: Boolean, onValidate: () -> Unit, onGoBack: 
 
         SkillSwapShadowButton(
             onClick = onValidate,
+            enable = !isLoading,
             modifier =
                 Modifier.height(56.dp)
                     .weight(1f) // optional: make buttons equally wide

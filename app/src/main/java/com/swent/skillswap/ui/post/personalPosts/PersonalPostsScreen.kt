@@ -46,13 +46,13 @@ object PersonalPostsScreenTags {
     const val ITEM_DESCRIPTION = "item_description"
     const val ITEM_STATUS = "item_status"
     const val ITEM_SKILL = "item_skill"
+    const val BACK_BUTTON = "personal_posts_back_button"
 }
 
 /**
  * Screen that displays all posts created by the current user.
  *
  * Features:
- * - Filter posts by type (All, Offers, Requests)
  * - Edit posts (navigates to edit screen)
  * - Delete posts
  * - Pull-to-refresh
@@ -81,7 +81,10 @@ fun PersonalPostsScreen(
                     Text("My Posts", modifier = Modifier.testTag(PersonalPostsScreenTags.TITLE))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onGoBack) {
+                    IconButton(
+                        onClick = onGoBack,
+                        modifier = Modifier.testTag("personal_posts_back_button")
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
@@ -98,31 +101,6 @@ fun PersonalPostsScreen(
                     .padding(16.dp)
                     .testTag(PersonalPostsScreenTags.SCREEN)
         ) {
-            // Filter Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterButton(
-                    text = "All",
-                    isSelected = uiState.selectedPostType == PostTypeFilter.ALL,
-                    onClick = { viewModel.setPostTypeFilter(PostTypeFilter.ALL) },
-                    modifier = Modifier.weight(1f).testTag(PersonalPostsScreenTags.FILTER_ALL)
-                )
-                FilterButton(
-                    text = "Offers",
-                    isSelected = uiState.selectedPostType == PostTypeFilter.OFFERS,
-                    onClick = { viewModel.setPostTypeFilter(PostTypeFilter.OFFERS) },
-                    modifier = Modifier.weight(1f).testTag(PersonalPostsScreenTags.FILTER_OFFERS)
-                )
-                FilterButton(
-                    text = "Requests",
-                    isSelected = uiState.selectedPostType == PostTypeFilter.REQUESTS,
-                    onClick = { viewModel.setPostTypeFilter(PostTypeFilter.REQUESTS) },
-                    modifier = Modifier.weight(1f).testTag(PersonalPostsScreenTags.FILTER_REQUESTS)
-                )
-            }
-
             // Content
             when {
                 uiState.isLoading -> {

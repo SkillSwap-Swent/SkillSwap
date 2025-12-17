@@ -349,7 +349,7 @@ fun SkillScreen(vm: CreateAccountViewModel) {
                     .testTag(CreateAccountTags.SKILLS_FLOW)
         ) {
             // Loop through all skill tags and render as selectable chips
-            for (tag in SkillTag.entries) {
+            for (tag in SkillTag.entries.filter { it != SkillTag.MONEY }) {
                 // Do we already have this skill selected?
                 val existingSkill = uiState.skills.firstOrNull { it.name == tag }
 
