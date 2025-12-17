@@ -288,18 +288,23 @@ class End2EndM3 {
 
     /**
      * Helper function to reload requestId from Firestore if it's empty. This makes tests more
-     * robust by recovering from potential failures in t0.
+     * robust by recovering from potential failures in t0. Includes retry logic to handle Firestore
+     * emulator timing issues in CI environments.
      */
     private fun ensureRequestIdLoaded() {
         if (requestId.isEmpty() && user1Id.isNotEmpty()) {
             runBlocking(Dispatchers.IO) {
-                val requests =
-                    postRepository.getMultiplePosts(
-                        numberOfPosts = 10,
-                        type = PostType.REQUEST,
-                        ownerId = user1Id
-                    )
-                requestId = requests.firstOrNull()?.uid ?: ""
+                repeat(5) { // try up to 5 times
+                    val requests =
+                        postRepository.getMultiplePosts(
+                            numberOfPosts = 10,
+                            type = PostType.REQUEST,
+                            ownerId = user1Id
+                        )
+                    requestId = requests.firstOrNull()?.uid ?: ""
+                    if (requestId.isNotEmpty()) return@runBlocking
+                    Thread.sleep(2000) // wait 2 seconds before retrying
+                }
             }
         }
     }
@@ -377,8 +382,8 @@ class End2EndM3 {
         }
 
         // Get the created request ID from Firestore
-        // Wait until the request is persisted in Firestore
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        // Wait until the request is persisted in Firestore with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 30_000) {
             runBlocking(Dispatchers.IO) {
                 val requests =
                     postRepository.getMultiplePosts(
