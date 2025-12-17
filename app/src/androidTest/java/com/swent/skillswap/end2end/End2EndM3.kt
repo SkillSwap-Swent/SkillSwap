@@ -359,8 +359,8 @@ class End2EndM3 {
 
         // Get the created request ID from Firestore
         // Wait until the request is persisted in Firestore
-        runBlocking(Dispatchers.IO) {
-            composeTestRule.waitUntil(timeoutMillis = 15_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            runBlocking(Dispatchers.IO) {
                 val requests =
                     postRepository.getMultiplePosts(
                         numberOfPosts = 10,
@@ -370,9 +370,9 @@ class End2EndM3 {
                 requestId = requests.firstOrNull()?.uid ?: ""
                 requestId.isNotEmpty()
             }
-            assert(requestId.isNotEmpty()) {
-                "Request ID should not be empty. Request may not have been created or persisted."
-            }
+        }
+        assert(requestId.isNotEmpty()) {
+            "Request ID should not be empty. Request may not have been created or persisted."
         }
     }
 
@@ -504,13 +504,13 @@ class End2EndM3 {
         // Navigate to "To Approve" section to see pending chats
         composeTestRule.waitUntil(10_000) {
             try {
-                composeTestRule.onNodeWithTag(ChatListTestTags.TO_APPROVE).assertExists()
+                composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).assertExists()
                 true
             } catch (_: Exception) {
                 false
             }
         }
-        composeTestRule.onNodeWithTag(ChatListTestTags.TO_APPROVE).performClick()
+        composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
         composeTestRule.waitForIdle()
 
         // Wait for pending chats to appear
