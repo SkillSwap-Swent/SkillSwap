@@ -283,8 +283,7 @@ private fun NotificationItem(
                     Text(
                         text = notification.title,
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight =
-                            if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
+                        fontWeight = notificationItemWeight(notification),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -355,6 +354,9 @@ private fun NotificationItem(
         }
     }
 }
+
+private fun notificationItemWeight(notification: Notification): FontWeight =
+    if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold
 
 /** Configuration for notification type styling. */
 private data class NotificationTypeConfig(
