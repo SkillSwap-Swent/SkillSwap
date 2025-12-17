@@ -29,6 +29,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -183,82 +184,7 @@ fun RequestScreen(
                 modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.DESCRIPTION_INPUT)
             )
 
-            /* Skill input. The following is heavily inspired by the implementation in the create account screen. */
-            var tagsExpanded by remember { mutableStateOf(false) }
-            val tagsQuery = remember { mutableStateOf("") }
-            var tagsHasFocus by remember { mutableStateOf(false) }
-
-            Box(modifier = Modifier.fillMaxWidth()) {
-                val tagSuggestions =
-                    remember(tagsQuery.value) {
-                        SkillTag.entries
-                            .filter {
-                                tagsQuery.value.isNotBlank() &&
-                                    it.name.contains(tagsQuery.value, ignoreCase = true) &&
-                                    it !in uiState.skills &&
-                                    it != SkillTag.MONEY
-                            }
-                            .take(MAX_SEARCH_KEYS)
-                    }
-
-                Column {
-                    OutlinedTextField(
-                        value = tagsQuery.value,
-                        onValueChange = {
-                            tagsQuery.value = it
-                            if (it.isNotBlank()) {
-                                tagsExpanded = true
-                            }
-                        },
-                        label = { Text("Tags") },
-                        placeholder = { Text("Search and add skill tags") },
-                        isError = uiState.tagsError.isNotEmpty(),
-                        supportingText = {
-                            if (uiState.tagsError.isNotEmpty()) {
-                                Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .onFocusChanged {
-                                    tagsHasFocus = it.isFocused
-                                    if (it.isFocused && tagsQuery.value.isNotBlank()) {
-                                        tagsExpanded = true
-                                    }
-                                }
-                                .testTag(RequestScreenTags.TAGS_INPUT)
-                    )
-
-                    androidx.compose.material3.DropdownMenu(
-                        expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
-                        onDismissRequest = { tagsExpanded = false },
-                        properties =
-                            PopupProperties(focusable = false), // KEY: This prevents focus loss
-                        modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.INFERRED_MENU)
-                    ) {
-                        tagSuggestions.forEach { tag ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        tag.name.replace("_", " "),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
-                                onClick = {
-                                    requestViewModel.addSkill(tag)
-                                    tagsQuery.value = ""
-                                    tagsExpanded = false
-                                },
-                                modifier =
-                                    Modifier.testTag(
-                                        "${RequestScreenTags.TAG_SUGGESTION}_${tag.name}"
-                                    )
-                            )
-                        }
-                    }
-                }
-            }
+            skillInputField(uiState, requestViewModel)
 
             // Display selected skills as chips
             Box(modifier = Modifier.height(100.dp).fillMaxWidth()) {
@@ -424,6 +350,83 @@ fun RequestScreen(
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun skillInputField(uiState: RequestUIState, requestViewModel: RequestViewModel) {
+    /* Skill input. The following is heavily inspired by the implementation in the create account screen. */
+    var tagsExpanded by remember { mutableStateOf(false) }
+    val tagsQuery = remember { mutableStateOf("") }
+    var tagsHasFocus by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        val tagSuggestions =
+            remember(tagsQuery.value) {
+                SkillTag.entries
+                    .filter {
+                        tagsQuery.value.isNotBlank() &&
+                            it.name.contains(tagsQuery.value, ignoreCase = true) &&
+                            it !in uiState.skills &&
+                            it != SkillTag.MONEY
+                    }
+                    .take(MAX_SEARCH_KEYS)
+            }
+
+        Column {
+            OutlinedTextField(
+                value = tagsQuery.value,
+                onValueChange = {
+                    tagsQuery.value = it
+                    if (it.isNotBlank()) {
+                        tagsExpanded = true
+                    }
+                },
+                label = { Text("Tags") },
+                placeholder = { Text("Search and add skill tags") },
+                isError = uiState.tagsError.isNotEmpty(),
+                supportingText = {
+                    if (uiState.tagsError.isNotEmpty()) {
+                        Text(uiState.tagsError, color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .onFocusChanged {
+                            tagsHasFocus = it.isFocused
+                            if (it.isFocused && tagsQuery.value.isNotBlank()) {
+                                tagsExpanded = true
+                            }
+                        }
+                        .testTag(RequestScreenTags.TAGS_INPUT)
+            )
+
+            DropdownMenu(
+                expanded = tagsExpanded && tagsHasFocus && tagSuggestions.isNotEmpty(),
+                onDismissRequest = { tagsExpanded = false },
+                properties = PopupProperties(focusable = false), // KEY: This prevents focus loss
+                modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.INFERRED_MENU)
+            ) {
+                tagSuggestions.forEach { tag ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                tag.name.replace("_", " "),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        onClick = {
+                            requestViewModel.addSkill(tag)
+                            tagsQuery.value = ""
+                            tagsExpanded = false
+                        },
+                        modifier =
+                            Modifier.testTag("${RequestScreenTags.TAG_SUGGESTION}_${tag.name}")
+                    )
+                }
             }
         }
     }
