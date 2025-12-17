@@ -542,7 +542,7 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Ensure profile screen is ready before navigating
+        // Wait for profile screen to be ready (matching End2EndM3RCRFlow pattern)
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             composeTestRule
@@ -550,25 +550,18 @@ class End2EndM3 {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-
-        // Wait for FEED_TAB to exist and be clickable, then click it
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+        // Wait for profile title to be displayed (matching End2EndM3RCRFlow waitForProfileScreen)
+        composeTestRule.waitUntil(timeoutMillis = 5_000) {
             try {
-                val nodes =
-                    composeTestRule
-                        .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
-                        .fetchSemanticsNodes()
-                if (nodes.isNotEmpty()) {
-                    // Try to click - if it fails, return false to retry
-                    composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-                    true
-                } else {
-                    false
-                }
-            } catch (e: Exception) {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                true
+            } catch (_: Throwable) {
                 false
             }
         }
+
+        // Navigate to feed tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
+        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
         // Wait for feed to load - just wait for navigation, don't check for specific elements
@@ -668,7 +661,7 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Ensure profile screen is ready before navigating
+        // Wait for profile screen to be ready (matching End2EndM3RCRFlow pattern)
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             composeTestRule
@@ -676,25 +669,18 @@ class End2EndM3 {
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-
-        // Wait for CHAT_TAB to exist and be clickable, then click it
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+        // Wait for profile title to be displayed (matching End2EndM3RCRFlow waitForProfileScreen)
+        composeTestRule.waitUntil(timeoutMillis = 5_000) {
             try {
-                val nodes =
-                    composeTestRule
-                        .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
-                        .fetchSemanticsNodes()
-                if (nodes.isNotEmpty()) {
-                    // Try to click - if it fails, return false to retry
-                    composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-                    true
-                } else {
-                    false
-                }
-            } catch (e: Exception) {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                true
+            } catch (_: Throwable) {
                 false
             }
         }
+
+        // Navigate to chat tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
         // Wait for chat list to load with longer timeout for CI
