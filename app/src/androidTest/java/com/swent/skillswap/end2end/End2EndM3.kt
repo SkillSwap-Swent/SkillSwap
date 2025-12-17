@@ -286,6 +286,24 @@ class End2EndM3 {
         }
     }
 
+    /**
+     * Helper function to reload requestId from Firestore if it's empty. This makes tests more
+     * robust by recovering from potential failures in t0.
+     */
+    private fun ensureRequestIdLoaded() {
+        if (requestId.isEmpty() && user1Id.isNotEmpty()) {
+            runBlocking(Dispatchers.IO) {
+                val requests =
+                    postRepository.getMultiplePosts(
+                        numberOfPosts = 10,
+                        type = PostType.REQUEST,
+                        ownerId = user1Id
+                    )
+                requestId = requests.firstOrNull()?.uid ?: ""
+            }
+        }
+    }
+
     @Test
     fun t0_createAccountsAndRequest() {
         // Create user1 account
@@ -379,9 +397,10 @@ class End2EndM3 {
 
     @Test
     fun t1_createUser2AndReply() {
-        // Validate that requestId was set in previous test
+        // Ensure requestId is loaded (reload from Firestore if needed)
+        ensureRequestIdLoaded()
         assert(requestId.isNotEmpty()) {
-            "Request ID is empty. Previous test (t0_createAccountsAndRequest) may have failed."
+            "Request ID is empty. Could not find request created by user1 in Firestore."
         }
 
         // Sign out user1
@@ -439,9 +458,10 @@ class End2EndM3 {
 
     @Test
     fun t2_createUser3AndReply() {
-        // Validate that requestId was set in previous test
+        // Ensure requestId is loaded (reload from Firestore if needed)
+        ensureRequestIdLoaded()
         assert(requestId.isNotEmpty()) {
-            "Request ID is empty. Previous test (t0_createAccountsAndRequest) may have failed."
+            "Request ID is empty. Could not find request created by user1 in Firestore."
         }
 
         // Sign out user2
@@ -476,9 +496,10 @@ class End2EndM3 {
 
     @Test
     fun t3_user1AcceptsReplyAndVerifiesNotifications() {
-        // Validate that requestId was set in previous test
+        // Ensure requestId is loaded (reload from Firestore if needed)
+        ensureRequestIdLoaded()
         assert(requestId.isNotEmpty()) {
-            "Request ID is empty. Previous test (t0_createAccountsAndRequest) may have failed."
+            "Request ID is empty. Could not find request created by user1 in Firestore."
         }
 
         // Sign out user3 and sign in as user1
