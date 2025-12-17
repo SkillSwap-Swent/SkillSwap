@@ -71,6 +71,8 @@ class ChatListViewModelTest {
                         relatedPostType: PostType
                     ) = ""
 
+                    var chats = listOf(chat1)
+
                     override fun streamMessages(chatId: String) = flowOf(emptyList<Message>())
 
                     override suspend fun sendMessage(
@@ -79,8 +81,7 @@ class ChatListViewModelTest {
                         content: String
                     ) {}
 
-                    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) =
-                        listOf(chat1)
+                    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) = chats
 
                     override suspend fun getPendingChatsOfCurrentUser(
                         relatedPostType: PostType
@@ -101,7 +102,7 @@ class ChatListViewModelTest {
                     }
 
                     override suspend fun closeChat(chatId: String) {
-                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                        chats = emptyList()
                     }
 
                     override suspend fun getChat(chatId: String): Chat {
@@ -237,6 +238,99 @@ class ChatListViewModelTest {
         failingViewModel.getPostTitle("p1", PostType.OFFER)
         advanceUntilIdle()
         assertEquals("Error loading post title", failingViewModel.uiState.value.error)
+    }
+
+    @Test
+    fun block_user_correctly_close_chats() = runTest {
+        viewModel.blockUser("u1")
+        advanceUntilIdle()
+        viewModel.getChatsOfCurrentUser(PostType.REQUEST)
+        advanceUntilIdle()
+        assert(viewModel.uiState.value.chats.isEmpty())
+    }
+
+    @Test
+    fun block_user_correctly_throw_in_case_of_error() = runTest {
+        failingViewModel =
+            ChatListViewModel(
+                object : ChatRepository {
+                    override suspend fun createChat(
+                        participants: List<String>,
+                        relatedPostId: String,
+                        relatedPostType: PostType
+                    ) = ""
+
+                    var chats = listOf(chat1)
+
+                    override fun streamMessages(chatId: String) = flowOf(emptyList<Message>())
+
+                    override suspend fun sendMessage(
+                        chatId: String,
+                        senderId: String,
+                        content: String
+                    ) {}
+
+                    override suspend fun getChatsOfCurrentUser(relatedPostType: PostType) = chats
+
+                    override suspend fun getPendingChatsOfCurrentUser(
+                        relatedPostType: PostType
+                    ): List<Chat> {
+                        if (relatedPostType == PostType.REQUEST) {
+                            return listOf(chat2)
+                        } else {
+                            return emptyList()
+                        }
+                    }
+
+                    override suspend fun isOwnerOfRelatedPost(chat: Chat): Boolean {
+                        return chat == chat1
+                    }
+
+                    override suspend fun acceptAPostReplyChat(chat: Chat) {
+                        acceptedChat.add(chat)
+                    }
+
+                    override suspend fun closeChat(chatId: String) {
+                        chats = emptyList()
+                    }
+
+                    override suspend fun getChat(chatId: String): Chat {
+                        // JUST HERE TO REMOVE OVERRIDE ERROR
+                        return Chat("mock", emptyList(), "", PostType.REQUEST, emptyList())
+                    }
+                },
+                FailingUserRepository(),
+                FakePostRepository().apply { setShouldFailOnGet(true) }
+            )
+        failingViewModel.blockUser("u1")
+        assertEquals("Failed in blocking user :u1", failingViewModel.uiState.value.error)
+        failingViewModel =
+            ChatListViewModel(
+                FailingChatRepository(),
+                object : UserRepositery {
+                    override fun getNewUid() = ""
+
+                    override suspend fun getUser(userID: String) = user
+
+                    override suspend fun addUser(user: User) {}
+
+                    override suspend fun editUser(userID: String, newValue: User) {}
+
+                    override suspend fun deleteUser(userID: String) {}
+
+                    override suspend fun userExists(userId: String) = true
+
+                    override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+
+                    override suspend fun updateRating(userId: String, incomingRating: Float) {}
+                },
+                FakePostRepository().apply { setShouldFailOnGet(true) }
+            )
+        failingViewModel.blockUser("u2")
+        assertEquals(
+            "Failed to close chat after blocking :u2",
+            failingViewModel.uiState.value.error
+        )
     }
 
     @Test

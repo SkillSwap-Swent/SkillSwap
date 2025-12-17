@@ -41,15 +41,17 @@ class FailingUserRepository : UserRepositery {
 
     override suspend fun getUser(userID: String): User = throw Exception("User not found")
 
-    override suspend fun addUser(user: User) {}
+    override suspend fun addUser(user: User) = throw Exception("Failed")
 
-    override suspend fun editUser(userID: String, newValue: User) {}
+    override suspend fun editUser(userID: String, newValue: User) = throw Exception("Failed")
 
-    override suspend fun deleteUser(userID: String) {}
+    override suspend fun deleteUser(userID: String) = throw Exception("Failed")
 
     override suspend fun userExists(userId: String) = false
 
-    override suspend fun updateFcmToken(userId: String, fcmToken: String) {}
+    override suspend fun updateFcmToken(userId: String, fcmToken: String) =
+        throw Exception("Failed")
 
-    override suspend fun updateRating(userId: String, incomingRating: Float) {}
+    override suspend fun updateRating(userId: String, incomingRating: Float) =
+        throw Exception("Failed")
 }
