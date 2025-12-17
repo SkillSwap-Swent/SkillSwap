@@ -200,7 +200,6 @@ class PersonalPostsScreenTest {
             .assertExists()
     }
 
-
     @Test
     fun edit_button_triggers_callback() {
         var editClicked = false
