@@ -395,32 +395,24 @@ class End2EndM3 {
             assert(user1Id.isNotEmpty()) { "User1 ID should not be empty after account creation" }
         }
 
-        // Create a request - wait for bottom navigation to be available first
-        // Ensure UI is idle after getting user ID, then wait for bottom nav
+        // Ensure profile screen is fully displayed including bottom navigation
+        // Match End2EndM1 pattern: wait for profile screen AND bottom nav to be ready
         composeTestRule.waitForIdle()
-
-        // Wait for bottom navigation menu to be displayed first
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 composeTestRule
                     .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertExists()
+                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertIsDisplayed()
                 true
             } catch (_: Exception) {
                 false
             }
         }
 
-        // Then wait for POSTS_TAB to be available
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertExists()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
-        composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertIsDisplayed()
+        // Create a request - POSTS_TAB is already verified above, just click it
+        // Match End2EndM2 pattern: direct click after verification
         composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
         composeTestRule.waitForIdle()
 
