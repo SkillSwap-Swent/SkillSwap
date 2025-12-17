@@ -80,6 +80,7 @@ object RequestScreenTags {
     const val ATTACHMENT_PREVIEW = "attachmentPreview"
     const val ATTACHMENT_ERROR = "attachmentError"
     const val SCROLL_COLUMN = "scrollColumn"
+    const val INFERRED_MENU = "INFERRED_MENU"
 }
 
 /*
@@ -194,7 +195,8 @@ fun RequestScreen(
                             .filter {
                                 tagsQuery.value.isNotBlank() &&
                                     it.name.contains(tagsQuery.value, ignoreCase = true) &&
-                                    it !in uiState.skills // Exclude already selected tags
+                                    it !in uiState.skills &&
+                                    it != SkillTag.MONEY
                             }
                             .take(MAX_SEARCH_KEYS)
                     }
@@ -232,7 +234,7 @@ fun RequestScreen(
                         onDismissRequest = { tagsExpanded = false },
                         properties =
                             PopupProperties(focusable = false), // KEY: This prevents focus loss
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().testTag(RequestScreenTags.INFERRED_MENU)
                     ) {
                         tagSuggestions.forEach { tag ->
                             DropdownMenuItem(
