@@ -248,25 +248,13 @@ fun FeedScreen(
                             )
                         }
 
-                        Box {
-                            IconButton(
-                                onClick = { showMenu = true },
-                                modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = "Menu"
-                                )
-                            }
-
-                            if (showMenu) {
-                                FeedOfferMenu(
-                                    onBlockUser = { vm.blockUser(offer.authorID) },
-                                    onReportOffer = { vm.reportOffer(offer) },
-                                    onDismiss = { showMenu = false }
-                                )
-                            }
-                        }
+                        FeedOfferMenuSection(
+                            showMenu = showMenu,
+                            onOpenMenu = { showMenu = true },
+                            onDismissMenu = { showMenu = false },
+                            onBlockUser = { vm.blockUser(offer.authorID) },
+                            onReportOffer = { vm.reportOffer(offer) }
+                        )
                     }
 
                     // === Thumbnail ===
@@ -360,9 +348,7 @@ fun FeedScreen(
                     distance = it
                     vm.updateDistanceFilter(it)
                 },
-                modifier =
-                    Modifier.align(Alignment.TopCenter)
-                        .padding(top = if (offer == null) 0.dp else 8.dp),
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = dp(offer)),
                 onLiveLocationClicked = {
                     isLiveLocationEnabled = !isLiveLocationEnabled
                     vm.toggleLiveLocation(isLiveLocationEnabled)
@@ -372,6 +358,34 @@ fun FeedScreen(
         }
     }
 }
+
+@Composable
+private fun FeedOfferMenuSection(
+    showMenu: Boolean,
+    onOpenMenu: () -> Unit,
+    onDismissMenu: () -> Unit,
+    onBlockUser: () -> Unit,
+    onReportOffer: () -> Unit
+) {
+    Box {
+        IconButton(
+            onClick = onOpenMenu,
+            modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+        ) {
+            Icon(Icons.Default.MoreVert, contentDescription = "Menu")
+        }
+
+        if (showMenu) {
+            FeedOfferMenu(
+                onBlockUser = onBlockUser,
+                onReportOffer = onReportOffer,
+                onDismiss = onDismissMenu
+            )
+        }
+    }
+}
+
+@Composable private fun dp(offer: FeedPost?): Dp = if (offer == null) 0.dp else 8.dp
 
 private suspend fun PointerInputScope.feedSwipingInputs(
     swipeThreshold: Float,
