@@ -34,7 +34,6 @@ open class RecommendationEngineImpl : RecommendationEngine {
     private lateinit var userRepository: UserRepositery
     private var blockedUsers: Set<String> = emptySet()
     private var userPreference: Preference = Preference.SKILLS
-    private val blockedPosts: MutableSet<String> = mutableSetOf()
     private val viewedPosts: MutableSet<String> = mutableSetOf()
     private var undesiredSkillThreshold: Float = 0.3f
     private var desiredSkillThreshold: Float = 0.6f
@@ -76,20 +75,7 @@ open class RecommendationEngineImpl : RecommendationEngine {
         this.userRepository = userRepository
         this.undesiredSkillThreshold = undesiredSkillThreshold
         this.desiredSkillThreshold = desiredSkillThreshold
-        try {
-            val user = userRepository.getUser(userId)
-            blockedUsers = user.blockedUsers
-            userPreference = user.preference
-            addFilter { post -> post.skills.first() in user.skillSet.map { it.name } }
-            addFilter { it.ownerId != user.uid }
-            addFilter { it.postReplies.none { reply -> reply.ownerId == user.uid } }
-            user.viewedPosts.forEach { addViewedPost(it) }
-        } catch (e: Exception) {
-            lastError = e
-        }
-        // Always apply a filter for blocked users
-        addFilter { it.ownerId !in blockedUsers }
-        addFilter { it.reportCount < report_treshold }
+        refresh()
     }
 
     /**
@@ -127,8 +113,32 @@ open class RecommendationEngineImpl : RecommendationEngine {
      * @param postId The [Post] to report and block.
      */
     override suspend fun reportPost(postId: String) {
-        blockedPosts.add(postId)
-        addFilter { post -> post.ownerId !in blockedPosts }
+        addViewedPost(postId)
+    }
+
+    /**
+     * Refreshes user-dependent filters used for post recommendation.
+     *
+     * This method reloads the current user data and rebuilds the dynamic filtering logic based on
+     * the user's skills, preferences, blocked users, previously viewed posts, and reporting
+     * constraints. Any error encountered during user retrieval is stored for later inspection.
+     */
+    override suspend fun refresh() {
+        try {
+            val user = userRepository.getUser(userId)
+            dynamicFilters.clear()
+            blockedUsers = user.blockedUsers
+            userPreference = user.preference
+            addFilter { post -> post.skills.first() in user.skillSet.map { it.name } }
+            addFilter { it.ownerId != user.uid }
+            addFilter { it.postReplies.none { reply -> reply.ownerId == user.uid } }
+            user.viewedPosts.forEach { addViewedPost(it) }
+        } catch (e: Exception) {
+            lastError = e
+        }
+        addFilter { it.ownerId !in blockedUsers }
+        addFilter { it.reportCount < report_treshold }
+        addFilter { it.uid !in viewedPosts }
     }
 
     /**

@@ -181,7 +181,7 @@ class EditUserViewModel(
     fun setSkills(skills: Set<Skill>) {
         setField(
             input = skills,
-            precondition = { it.isNotEmpty() },
+            precondition = { true },
             applyToUser = { user, value -> user.copy(skillSet = value) },
             applyToError = {
                 _uiState.update { it.copy(skillSetError = "You should select at least one skill") }
@@ -257,7 +257,15 @@ class EditUserViewModel(
 
             /** Init the network call to edit the user */
             try {
-                repo.editUser(editedUser.uid, editedUser)
+                val currentUser = repo.getUser(editedUser.uid)
+                repo.editUser(
+                    editedUser.uid,
+                    editedUser.copy(
+                        blockedUsers = currentUser.blockedUsers,
+                        viewedPosts = currentUser.viewedPosts,
+                        rating = currentUser.rating
+                    )
+                )
                 /** Operation successful, update the state */
                 _uiState.update { it.copy(isLoading = false, isSaved = true) }
             } catch (e: Exception) {
