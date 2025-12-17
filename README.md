@@ -13,16 +13,16 @@
   Once a match is made, users can chat directly in the app to coordinate the exchange and details.
 
 * **Media Uploads**
-  Users can upload profile photos or share images and videos with their skill requests or offers.
+  Users can upload profile photos and add images to offers.
 
 * **Location Preferences**
   Users can set a maximum distance for in-person exchanges to filter out requests that are too far away.
 
 * **User Ratings & Favorites**
-  After a skill exchange, users can rate each other based on communication, expertise, and reliability. You can also favorite users you want to collaborate with again.
+  After a skill exchange, users can rate each other based on communication, expertise, and reliability.
 
 * **Offline Mode**
-  Access saved posts, chat history, and edit drafts while offline. Changes are synced automatically when you're back online.
+  Access chat history and reply to open chats. Changes are synced automatically when you're back online.
 
 * **Push Notifications**
   Get real-time updates about new requests, responses, and messages so you never miss an opportunity.
