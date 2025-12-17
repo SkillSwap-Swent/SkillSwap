@@ -19,9 +19,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -58,7 +60,7 @@ import com.swent.skillswap.ui.utils.StarRatingBar
  */
 @Composable
 fun FeedScreen(
-    swipeThreshold: Float = 50f,
+    swipeThresholdDp: Dp = 100.dp,
     vm: FeedScreenViewModel = viewModel(),
 ) {
     val uiState by vm.uiState.collectAsState()
@@ -83,6 +85,9 @@ fun FeedScreen(
     val verticalPadding = screenHeightDp * 0.03f
     val avatarSize = min(screenWidthDp * 0.12f, 40.dp)
     val maxThumbnailHeight = min(screenHeightDp * 0.4f, 250.dp)
+
+    val density = LocalDensity.current
+    val swipeThresholdPx = remember(density) { with(density) { swipeThresholdDp.toPx() } }
 
     // Mark post notifications as read when viewing a post
     LaunchedEffect(offer?.offerId) {
@@ -190,7 +195,13 @@ fun FeedScreen(
                         .widthIn(max = screenWidthDp * 0.9f)
                         .heightIn(max = screenHeightDp * 0.9f)
                         .aspectRatio(0.8f)
-                        .pointerInput(Unit) { feedSwipingInputs(swipeThreshold, vm, offer) },
+                        .pointerInput(Unit) {
+                            feedSwipingInputs(
+                                swipeThresholdPx = swipeThresholdPx,
+                                vm = vm,
+                                offer = offer
+                            )
+                        },
                 elevation = CardDefaults.cardElevation(8.dp),
                 colors =
                     CardDefaults.cardColors(
@@ -388,16 +399,32 @@ private fun FeedOfferMenuSection(
 @Composable private fun dp(offer: FeedPost?): Dp = if (offer == null) 0.dp else 8.dp
 
 private suspend fun PointerInputScope.feedSwipingInputs(
-    swipeThreshold: Float,
+    swipeThresholdPx: Float,
     vm: FeedScreenViewModel,
     offer: FeedPost
 ) {
-    detectDragGestures { _, dragAmount ->
-        val (x, y) = dragAmount
+    var totalDrag = Offset.Zero
+
+    detectDragGestures(
+        onDragStart = { totalDrag = Offset.Zero },
+        onDragEnd = { totalDrag = Offset.Zero }
+    ) { change, dragAmount ->
+        change.consume()
+        totalDrag += dragAmount
+        val (x, y) = totalDrag
         when {
-            y > swipeThreshold -> vm.skip() // swipe down
-            x < -swipeThreshold -> vm.goToProfile(offer.authorID) // swipe left
-            x > swipeThreshold -> vm.accept(offer) // swipe right
+            y < -swipeThresholdPx -> {
+                vm.skip()
+                totalDrag = Offset.Zero
+            }
+            x < -swipeThresholdPx -> {
+                vm.goToProfile(offer.authorID)
+                totalDrag = Offset.Zero
+            }
+            x > swipeThresholdPx -> {
+                vm.accept(offer)
+                totalDrag = Offset.Zero
+            }
         }
     }
 }
