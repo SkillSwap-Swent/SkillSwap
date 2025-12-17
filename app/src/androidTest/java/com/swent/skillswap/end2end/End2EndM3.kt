@@ -131,8 +131,10 @@ class End2EndM3 {
 
     @Before
     fun setup() {
+        // Use FirebaseEmulator instances directly - these are singletons, so no reset occurs
         db = FirebaseEmulator.firestore
         auth = FirebaseEmulator.auth
+        // Create new repository instances (they just wrap the same db/auth instances)
         postRepository = PostFirestoreRepository(db)
         chatRepository = ChatRepositoryFirestore(db)
         notificationRepository = NotificationRepositoryFirestore(db)
@@ -263,24 +265,18 @@ class End2EndM3 {
         }
     }
 
-    /** Helper function to sign in via UI */
-    private fun signInViaUI(email: String, password: String) {
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            try {
-                composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
+    /** Helper function to sign in programmatically (login UI is already tested in M1/M2) */
+    private fun signInProgrammaticallyToApp(email: String, password: String) {
+        runBlocking(Dispatchers.IO) {
+            Tasks.await(
+                auth.signInWithEmailAndPassword(email, password),
+                15,
+                java.util.concurrent.TimeUnit.SECONDS
+            )
         }
-        composeTestRule.onNodeWithTag(SignInTags.EMAIL_FIELD).performTextInput(email)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(SignInTags.PASSWORD_FIELD).performTextInput(password)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(SignInTags.SIGN_IN_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
-        // Wait for profile screen
+        // Wait for profile screen to appear after sign in
         composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
@@ -362,12 +358,9 @@ class End2EndM3 {
         }
 
         // Get the created request ID from Firestore
-        // Wait a bit for the request to be persisted
-        Thread.sleep(2000)
+        // Wait until the request is persisted in Firestore
         runBlocking(Dispatchers.IO) {
-            // Retry getting the request with a timeout
-            var attempts = 0
-            while (requestId.isEmpty() && attempts < 10) {
+            composeTestRule.waitUntil(timeoutMillis = 15_000) {
                 val requests =
                     postRepository.getMultiplePosts(
                         numberOfPosts = 10,
@@ -375,10 +368,7 @@ class End2EndM3 {
                         ownerId = user1Id
                     )
                 requestId = requests.firstOrNull()?.uid ?: ""
-                if (requestId.isEmpty()) {
-                    Thread.sleep(500)
-                    attempts++
-                }
+                requestId.isNotEmpty()
             }
             assert(requestId.isNotEmpty()) {
                 "Request ID should not be empty. Request may not have been created or persisted."
@@ -492,7 +482,7 @@ class End2EndM3 {
 
         // Sign out user3 and sign in as user1
         signOut()
-        signInViaUI(user1Email, user1Password)
+        signInProgrammaticallyToApp(user1Email, user1Password)
 
         // Navigate to chat list
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
