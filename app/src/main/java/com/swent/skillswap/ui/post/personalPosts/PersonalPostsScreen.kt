@@ -46,6 +46,7 @@ object PersonalPostsScreenTags {
     const val ITEM_DESCRIPTION = "item_description"
     const val ITEM_STATUS = "item_status"
     const val ITEM_SKILL = "item_skill"
+    const val BACK_BUTTON = "personal_posts_back_button"
 }
 
 /**
@@ -81,7 +82,10 @@ fun PersonalPostsScreen(
                     Text("My Posts", modifier = Modifier.testTag(PersonalPostsScreenTags.TITLE))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onGoBack) {
+                    IconButton(
+                        onClick = onGoBack,
+                        modifier = Modifier.testTag("personal_posts_back_button")
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
