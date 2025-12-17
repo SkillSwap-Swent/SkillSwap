@@ -114,7 +114,9 @@ fun SkillsEditScreen(vm: EditUserViewModel = viewModel(), onBackClick: () -> Uni
         )
         Spacer(modifier = Modifier.height(20.dp))
         val otherSkills =
-            (SkillTag.entries.filter { skillTag -> !(skillOfUser.any { it.name == skillTag }) })
+            (SkillTag.entries.filter { skillTag ->
+                    !(skillOfUser.any { it.name == skillTag }) && skillTag != SkillTag.MONEY
+                })
                 .toSet()
 
         Box(
