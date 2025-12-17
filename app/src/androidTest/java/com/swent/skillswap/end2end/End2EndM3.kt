@@ -292,18 +292,46 @@ class End2EndM3 {
      * emulator timing issues in CI environments.
      */
     private fun ensureRequestIdLoaded() {
-        if (requestId.isEmpty() && user1Id.isNotEmpty()) {
+        if (requestId.isEmpty()) {
             runBlocking(Dispatchers.IO) {
-                repeat(5) { // try up to 5 times
-                    val requests =
-                        postRepository.getMultiplePosts(
-                            numberOfPosts = 10,
-                            type = PostType.REQUEST,
-                            ownerId = user1Id
+                // First, ensure user1Id is loaded by signing in if needed
+                if (user1Id.isEmpty()) {
+                    try {
+                        Tasks.await(
+                            auth.signInWithEmailAndPassword(user1Email, user1Password),
+                            15,
+                            java.util.concurrent.TimeUnit.SECONDS
                         )
-                    requestId = requests.firstOrNull()?.uid ?: ""
-                    if (requestId.isNotEmpty()) return@runBlocking
-                    Thread.sleep(2000) // wait 2 seconds before retrying
+                        user1Id = auth.currentUser?.uid ?: ""
+                        android.util.Log.d("End2EndM3", "Loaded user1Id: $user1Id")
+                    } catch (e: Exception) {
+                        android.util.Log.e("End2EndM3", "Failed to sign in as user1 to get ID", e)
+                    }
+                }
+
+                // Now try to find the request with retries
+                if (user1Id.isNotEmpty()) {
+                    repeat(7) { // try up to 7 times
+                        val requests =
+                            postRepository.getMultiplePosts(
+                                numberOfPosts = 10,
+                                type = PostType.REQUEST,
+                                ownerId = user1Id
+                            )
+                        requestId = requests.firstOrNull()?.uid ?: ""
+                        if (requestId.isNotEmpty()) {
+                            android.util.Log.d(
+                                "End2EndM3",
+                                "Successfully loaded requestId: $requestId"
+                            )
+                            return@runBlocking // Exit early on successful retrieval
+                        }
+                        android.util.Log.d(
+                            "End2EndM3",
+                            "Retrying request fetch from Firestore... Attempt: ${it + 1}"
+                        )
+                        Thread.sleep(4000) // wait 4 seconds before retrying
+                    }
                 }
             }
         }
