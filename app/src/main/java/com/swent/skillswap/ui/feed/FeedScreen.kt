@@ -19,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
@@ -32,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.swent.skillswap.model.feed.FeedPost
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_BLOCK_DESCRIPTION
 import com.swent.skillswap.ui.feed.FeedScreenTestTags.POP_UP_CONFIRM_BUTTON
@@ -190,7 +188,20 @@ fun FeedScreen(
                         .widthIn(max = screenWidthDp * 0.9f)
                         .heightIn(max = screenHeightDp * 0.9f)
                         .aspectRatio(0.8f)
-                        .pointerInput(Unit) { feedSwipingInputs(swipeThreshold, vm, offer) },
+                        .pointerInput(Unit) {
+                            detectDragGestures { _, dragAmount ->
+                                val (x, y) = dragAmount
+                                when {
+                                    y > swipeThreshold -> vm.skip() // swipe down
+                                    // TODO: previous is disable since the controller don't
+                                    // implement it
+                                    // y < -swipeThreshold -> vm.previous() // swipe up
+                                    x < -swipeThreshold ->
+                                        vm.goToProfile(offer.authorID) // swipe left
+                                    x > swipeThreshold -> vm.accept(offer) // swipe right
+                                }
+                            }
+                        },
                 elevation = CardDefaults.cardElevation(8.dp),
                 colors =
                     CardDefaults.cardColors(
@@ -248,7 +259,25 @@ fun FeedScreen(
                             )
                         }
 
-                        FeedOfferMenuButton(showMenu, vm, offer)
+                        Box {
+                            IconButton(
+                                onClick = { showMenu = true },
+                                modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "Menu"
+                                )
+                            }
+
+                            if (showMenu) {
+                                FeedOfferMenu(
+                                    onBlockUser = { vm.blockUser(offer.authorID) },
+                                    onReportOffer = { vm.reportOffer(offer) },
+                                    onDismiss = { showMenu = false }
+                                )
+                            }
+                        }
                     }
 
                     // === Thumbnail ===
@@ -350,42 +379,6 @@ fun FeedScreen(
                     vm.toggleLiveLocation(isLiveLocationEnabled)
                 },
                 checked = isLiveLocationEnabled
-            )
-        }
-    }
-}
-
-private suspend fun PointerInputScope.feedSwipingInputs(
-    swipeThreshold: Float,
-    vm: FeedScreenViewModel,
-    offer: FeedPost
-) {
-    detectDragGestures { _, dragAmount ->
-        val (x, y) = dragAmount
-        when {
-            y > swipeThreshold -> vm.skip() // swipe down
-            x < -swipeThreshold -> vm.goToProfile(offer.authorID) // swipe left
-            x > swipeThreshold -> vm.accept(offer) // swipe right
-        }
-    }
-}
-
-@Composable
-private fun FeedOfferMenuButton(showMenu: Boolean, vm: FeedScreenViewModel, offer: FeedPost) {
-    var showMenu1 = showMenu
-    Box {
-        IconButton(
-            onClick = { showMenu1 = true },
-            modifier = Modifier.testTag(FeedScreenTestTags.FEED_MENU_BUTTON)
-        ) {
-            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu")
-        }
-
-        if (showMenu1) {
-            FeedOfferMenu(
-                onBlockUser = { vm.blockUser(offer.authorID) },
-                onReportOffer = { vm.reportOffer(offer) },
-                onDismiss = { showMenu1 = false }
             )
         }
     }
