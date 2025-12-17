@@ -35,7 +35,7 @@ Many people have valuable skills but lack a convenient way to share and exchange
   Once both parties agree to an exchange, an in-app chat opens for coordination. Chats are organized into three tabs: Ongoing exchanges, Replies to your posts, and Pending requests you have made.
 
 * **Smart Notifications**
-  Push notifications keep you informed about new messages, incoming replies, and matching requests. The system is context-aware and suppresses notifications when you are already viewing a conversation.
+  Push notifications keep you informed about new messages, incoming replies, and matching requests. The system is context-aware and suppresses notifications when you are already viewing a conversation. In the chat tab you can access a notification history menu where all your unread and read notifications can be seen.
 
 * **Location Filtering**
   Set your preferred distance for in-person exchanges. The app uses your location to filter requests and show you opportunities nearby.
@@ -48,6 +48,9 @@ Many people have valuable skills but lack a convenient way to share and exchange
 
 * **Media Support**
   Upload a profile picture and attach images to your skill requests to better communicate what you need or can offer.
+
+* **Offline Mode**
+  Access chat history and reply to open chats. Changes are synced automatically when you're back online.
 
 ---
 
