@@ -14,10 +14,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.swent.skillswap.firebase.FirestorePaths.REQUESTS_COLLECTION
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.firebase.CloudReferences.values
-import com.swent.skillswap.model.post.Post
+import com.swent.skillswap.firebase.FirestorePaths.REQUESTS_COLLECTION
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostType
@@ -28,30 +27,22 @@ import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
 import com.swent.skillswap.ui.auth.SignInTags
-import com.swent.skillswap.ui.feed.FeedScreenTestTags
+import com.swent.skillswap.ui.chat.ChatListTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
 import com.swent.skillswap.ui.post.RequestScreenTags
 import com.swent.skillswap.ui.post.personalPosts.PersonalPostsScreenTags
 import com.swent.skillswap.ui.user.ProfileTestTags
-import com.swent.skillswap.ui.chat.ChatListTestTags
-import com.swent.skillswap.ui.feed.FeedScreen
-import com.swent.skillswap.ui.post.personalPosts.PostTypeFilter
 import com.swent.skillswap.utils.FirebaseEmulator
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.wait
 import org.junit.AfterClass
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import org.junit.Assert.assertTrue
-import org.junit.Assert.assertEquals
-import org.junit.Before
-
-
 
 /** End-to-end tests for Milestone 3 Tests complete user flows */
 @RunWith(AndroidJUnit4::class)
@@ -64,28 +55,28 @@ class End2EndM3RequestInteractionFLow {
     lateinit var chatRepo: com.swent.skillswap.model.chat.ChatRepositoryFirestore
     lateinit var userRepo: com.swent.skillswap.model.user.UserRepoFirestore
 
-
     val testEmail = "e2e@test.com"
     val responderEmail = "e2eResponder@test.com"
     val testPassword = "Password1234"
     val RESPONDER_UID = "RESPONDER_UID"
 
-    val user = User(
-        uid = "", //evaluated at runtime
-        username = "E2ETester",
-        email = testEmail,
-        skillSet = setOf(Skill(SkillTag.DATA_STRUCTURES,2.5F, "I'm good"))
-    )
+    val user =
+        User(
+            uid = "", // evaluated at runtime
+            username = "E2ETester",
+            email = testEmail,
+            skillSet = setOf(Skill(SkillTag.DATA_STRUCTURES, 2.5F, "I'm good"))
+        )
 
-    val responder = User(
-        uid = RESPONDER_UID,
-        username = "E2EResponder",
-        email = responderEmail,
-        skillSet = setOf(Skill(SkillTag.CALCULUS,3.0F, "I can help"))
-    )
+    val responder =
+        User(
+            uid = RESPONDER_UID,
+            username = "E2EResponder",
+            email = responderEmail,
+            skillSet = setOf(Skill(SkillTag.CALCULUS, 3.0F, "I can help"))
+        )
 
     companion object {
-
 
         @BeforeClass
         @JvmStatic
@@ -105,7 +96,7 @@ class End2EndM3RequestInteractionFLow {
 
             // Clear emulators AFTER this test class finishes
             FirebaseEmulator.clearAuthEmulator()
-           // FirebaseEmulator.clearFirestoreEmulator()
+            // FirebaseEmulator.clearFirestoreEmulator()
         }
     }
 
@@ -115,7 +106,7 @@ class End2EndM3RequestInteractionFLow {
         auth = FirebaseEmulator.auth
         storage = FirebaseEmulator.storage
         postRepo = PostFirestoreRepository(db)
-        chatRepo = com.swent.skillswap.model.chat.ChatRepositoryFirestore(db,postRepo)
+        chatRepo = com.swent.skillswap.model.chat.ChatRepositoryFirestore(db, postRepo)
         userRepo = com.swent.skillswap.model.user.UserRepoFirestore(db)
 
         runBlocking {
@@ -126,7 +117,6 @@ class End2EndM3RequestInteractionFLow {
                 // User may already exist, do nothing
             }
         }
-
     }
 
     /**
@@ -191,7 +181,6 @@ class End2EndM3RequestInteractionFLow {
             userRepo.addUser(responder)
         }
 
-
         /** Wait for the profile screen to load after login */
         composeTestRule.waitUntil(10_000) {
             try {
@@ -235,10 +224,11 @@ class End2EndM3RequestInteractionFLow {
         /** wait for the post to be upload on firestore */
         composeTestRule.waitUntil(10_000) {
             runBlocking {
-                val querySnapshot = db.collection(REQUESTS_COLLECTION)
-                    .whereEqualTo("title", "TitleForE2E")
-                    .get()
-                    .await()
+                val querySnapshot =
+                    db.collection(REQUESTS_COLLECTION)
+                        .whereEqualTo("title", "TitleForE2E")
+                        .get()
+                        .await()
 
                 querySnapshot.documents.isNotEmpty()
             }
@@ -262,35 +252,31 @@ class End2EndM3RequestInteractionFLow {
 
         /** Add a response to the created post in firestore */
         runBlocking {
-            val querySnapshot = db.collection(REQUESTS_COLLECTION)
-                .whereEqualTo("title", "TitleForE2E")
-                .get()
-                .await()
+            val querySnapshot =
+                db.collection(REQUESTS_COLLECTION)
+                    .whereEqualTo("title", "TitleForE2E")
+                    .get()
+                    .await()
 
             val post = postRepo.getPost(PostType.REQUEST, querySnapshot.documents[0].id)
 
-            val postReply = PostReply(
-                postId = post.uid,
-                ownerId = "RESPONDER_UID",
-                creation = Timestamp.now(),
-                message = "Hi, I can help you with that!",
-                postType = PostType.REQUEST,
-                replyStatus = ReplyStatus.PROPOSED
-            )
+            val postReply =
+                PostReply(
+                    postId = post.uid,
+                    ownerId = "RESPONDER_UID",
+                    creation = Timestamp.now(),
+                    message = "Hi, I can help you with that!",
+                    postType = PostType.REQUEST,
+                    replyStatus = ReplyStatus.PROPOSED
+                )
 
-            val responsePost = (post as Request).copy(
-                postReplies = post.postReplies + postReply
-            )
+            val responsePost = (post as Request).copy(postReplies = post.postReplies + postReply)
 
             /** Inject the reply directly into firestore */
             postRepo.editPost(responsePost.uid, responsePost)
 
             /** Manage chat creation */
-            chatRepo.createChat(
-                listOf("RESPONDER_UID", post.ownerId),
-                post.uid,
-                post.type
-            )
+            chatRepo.createChat(listOf("RESPONDER_UID", post.ownerId), post.uid, post.type)
         }
 
         /** Wait for the reply to show up */
@@ -355,10 +341,8 @@ class End2EndM3RequestInteractionFLow {
         /** Wait for the post to be edited on firestore */
         composeTestRule.waitUntil(10_000) {
             runBlocking {
-                val querySnapshot = db.collection(REQUESTS_COLLECTION)
-                    .whereEqualTo("title", "Edited")
-                    .get()
-                    .await()
+                val querySnapshot =
+                    db.collection(REQUESTS_COLLECTION).whereEqualTo("title", "Edited").get().await()
 
                 querySnapshot.documents.isNotEmpty()
             }
