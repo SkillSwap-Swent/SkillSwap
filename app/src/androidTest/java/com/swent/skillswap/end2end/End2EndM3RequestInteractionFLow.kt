@@ -15,7 +15,6 @@ import androidx.test.rule.GrantPermissionRule
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
-import com.swent.skillswap.firebase.CloudReferences.values
 import com.swent.skillswap.firebase.FirestorePaths.REQUESTS_COLLECTION
 import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.post.PostFirestoreRepository
@@ -46,14 +45,13 @@ import org.junit.runner.RunWith
 /**
  * End-to-end tests for Milestone 3 Tests complete user flow
  *
- * USER FLOW As a user, I want to create a request, see responses, edit it (which removes all
+ * USER FLOW : As a user, I want to create a request, see responses, edit it (which removes all
  * accepted responses), review new responses, and then delete it.
  */
 @RunWith(AndroidJUnit4::class)
 class End2EndM3RequestInteractionFLow {
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
     lateinit var auth: FirebaseAuth
-    lateinit var storage: com.google.firebase.storage.FirebaseStorage
     lateinit var postRepo: PostFirestoreRepository
     lateinit var chatRepo: ChatRepositoryFirestore
     lateinit var userRepo: UserRepoFirestore
@@ -107,7 +105,6 @@ class End2EndM3RequestInteractionFLow {
     fun initialSetup() {
         db = FirebaseEmulator.firestore
         auth = FirebaseEmulator.auth
-        storage = FirebaseEmulator.storage
         postRepo = PostFirestoreRepository(db)
         chatRepo = ChatRepositoryFirestore(db, postRepo)
         userRepo = UserRepoFirestore(db)
@@ -119,29 +116,6 @@ class End2EndM3RequestInteractionFLow {
             } catch (_: Exception) {
                 // User may already exist, do nothing
             }
-        }
-    }
-
-    /**
-     * Clears all files in Firebase Storage emulator under specified paths
-     *
-     * @throws Exception if clearing storage fails
-     */
-    fun clearStorage() {
-        for (path in values) {
-            val storageRef = storage.reference.child(path)
-            storageRef
-                .listAll()
-                .addOnSuccessListener { listResult ->
-                    for (item in listResult.items) {
-                        item.delete()
-                    }
-                }
-                .addOnFailureListener {
-                    throw Exception(
-                        "Failed to clear storage after end2end-request interaction flow at a child path of: $path"
-                    )
-                }
         }
     }
 
