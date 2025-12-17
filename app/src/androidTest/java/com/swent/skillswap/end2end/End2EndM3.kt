@@ -536,7 +536,6 @@ class End2EndM3 {
         }
 
         // Ensure profile screen is ready before navigating
-        // Match t0 pattern exactly: check if profile title exists, then click tab directly
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             composeTestRule
@@ -545,9 +544,16 @@ class End2EndM3 {
                 .isNotEmpty()
         }
 
-        // Navigate to feed and accept the request (this creates a reply)
-        // Match t0 pattern exactly: direct click without extra waits
-        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+        // Wait for FEED_TAB to be displayed and click it
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.waitForIdle()
 
         // Wait for feed to load - just wait for navigation, don't check for specific elements
@@ -648,7 +654,6 @@ class End2EndM3 {
         signInProgrammaticallyToApp(user1Email, user1Password)
 
         // Ensure profile screen is ready before navigating
-        // Match t0 pattern exactly: check if profile title exists, then click tab directly
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             composeTestRule
@@ -657,9 +662,16 @@ class End2EndM3 {
                 .isNotEmpty()
         }
 
-        // Navigate to chat list
-        // Match t0 pattern exactly: direct click without extra waits
-        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+        // Wait for CHAT_TAB to be displayed and click it
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.waitForIdle()
 
         // Wait for chat list to load with longer timeout for CI
