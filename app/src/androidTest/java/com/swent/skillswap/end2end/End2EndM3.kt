@@ -75,62 +75,61 @@ class End2EndM3 {
 
         @BeforeClass
         @JvmStatic
-        fun setupEmulator() =
-            runBlocking(Dispatchers.IO) {
-                FirebaseEmulator.reinitialize()
+        fun setupEmulator(): Unit {
+            FirebaseEmulator.reinitialize()
 
-                FirebaseEmulator.clearAuthEmulator()
-                FirebaseEmulator.clearFirestoreEmulator()
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
 
-                // Clear storage emulator by manually deleting all files
-                // Note: clearStorageEmulator() doesn't work due to incorrect endpoint,
-                // so we loop through storage paths and delete all files
-                try {
-                    for (path in CloudReferences.values) {
-                        val storageRef = FirebaseEmulator.storage.reference.child(path)
-                        val listResult = storageRef.listAll().await()
-                        for (item in listResult.items) {
-                            item.delete().await()
-                        }
+            // Clear storage emulator by manually deleting all files
+            // Note: clearStorageEmulator() doesn't work due to incorrect endpoint,
+            // so we loop through storage paths and delete all files
+            try {
+                for (path in CloudReferences.values) {
+                    val storageRef = FirebaseEmulator.storage.reference.child(path)
+                    val listResult =
+                        Tasks.await(storageRef.listAll(), 10, java.util.concurrent.TimeUnit.SECONDS)
+                    for (item in listResult.items) {
+                        Tasks.await(item.delete(), 10, java.util.concurrent.TimeUnit.SECONDS)
                     }
-                } catch (_: Exception) {
-                    // Ignore errors during setup
                 }
+            } catch (_: Exception) {
+                // Ignore errors during setup
             }
+        }
 
         @AfterClass
         @JvmStatic
-        fun tearDownFirebase() =
-            runBlocking(Dispatchers.IO) {
+        fun tearDownFirebase(): Unit {
+            // Sign out before clearing
+            try {
+                FirebaseAuth.getInstance().signOut()
+            } catch (_: Exception) {}
 
-                // Sign out before clearing
-                try {
-                    FirebaseAuth.getInstance().signOut()
-                } catch (_: Exception) {}
-
-                // Clear storage emulator by manually deleting all files
-                // Note: clearStorageEmulator() doesn't work due to incorrect endpoint,
-                // so we loop through storage paths and delete all files
-                try {
-                    for (path in CloudReferences.values) {
-                        val storageRef = FirebaseEmulator.storage.reference.child(path)
-                        val listResult = storageRef.listAll().await()
-                        for (item in listResult.items) {
-                            item.delete().await()
-                        }
+            // Clear storage emulator by manually deleting all files
+            // Note: clearStorageEmulator() doesn't work due to incorrect endpoint,
+            // so we loop through storage paths and delete all files
+            try {
+                for (path in CloudReferences.values) {
+                    val storageRef = FirebaseEmulator.storage.reference.child(path)
+                    val listResult =
+                        Tasks.await(storageRef.listAll(), 10, java.util.concurrent.TimeUnit.SECONDS)
+                    for (item in listResult.items) {
+                        Tasks.await(item.delete(), 10, java.util.concurrent.TimeUnit.SECONDS)
                     }
-                } catch (_: Exception) {
-                    // Ignore errors during cleanup
                 }
-
-                // Clear emulators AFTER this test class finishes
-                FirebaseEmulator.clearAuthEmulator()
-                FirebaseEmulator.clearFirestoreEmulator()
+            } catch (_: Exception) {
+                // Ignore errors during cleanup
             }
+
+            // Clear emulators AFTER this test class finishes
+            FirebaseEmulator.clearAuthEmulator()
+            FirebaseEmulator.clearFirestoreEmulator()
+        }
     }
 
     @Before
-    fun setup() {
+    fun setup(): Unit {
         // Use FirebaseEmulator instances directly - these are singletons, so no reset occurs
         db = FirebaseEmulator.firestore
         auth = FirebaseEmulator.auth
@@ -383,7 +382,15 @@ class End2EndM3 {
         user1Id = auth.currentUser?.uid ?: ""
         assert(user1Id.isNotEmpty()) { "User1 ID should not be empty" }
 
-        // Create a request
+        // Create a request - wait for bottom navigation to be available first
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).assertExists()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
         composeTestRule.waitForIdle()
 
