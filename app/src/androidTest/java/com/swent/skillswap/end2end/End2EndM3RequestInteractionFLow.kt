@@ -38,22 +38,24 @@ import kotlinx.coroutines.tasks.await
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.MethodSorters
 
-/** End-to-end tests for Milestone 3 Tests complete user flows */
+/**
+ * End-to-end tests for Milestone 3 Tests complete user flow
+ *
+ * USER FLOW As a user, I want to create a request, see responses, edit it (which removes all
+ * accepted responses), review new responses, and then delete it.
+ */
 @RunWith(AndroidJUnit4::class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class End2EndM3RequestInteractionFLow {
     lateinit var db: com.google.firebase.firestore.FirebaseFirestore
     lateinit var auth: FirebaseAuth
     lateinit var storage: com.google.firebase.storage.FirebaseStorage
     lateinit var postRepo: PostFirestoreRepository
     lateinit var chatRepo: com.swent.skillswap.model.chat.ChatRepositoryFirestore
-    lateinit var userRepo: com.swent.skillswap.model.user.UserRepoFirestore
+    lateinit var userRepo: UserRepoFirestore
 
     val testEmail = "e2e@test.com"
     val responderEmail = "e2eResponder@test.com"
@@ -153,7 +155,7 @@ class End2EndM3RequestInteractionFLow {
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun t0_createPost() {
+    fun end2EndM3RequestInteractionFLow() {
         /** Wait for initial load of login screen */
         composeTestRule.waitUntil(10_000) {
             try {
@@ -182,7 +184,7 @@ class End2EndM3RequestInteractionFLow {
         }
 
         /** Wait for the profile screen to load after login */
-        composeTestRule.waitUntil(10_000) {
+        composeTestRule.waitUntil(20_000) {
             try {
                 composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertExists()
                 true
@@ -382,6 +384,82 @@ class End2EndM3RequestInteractionFLow {
                 true
             } catch (_: AssertionError) {
                 false
+            }
+        }
+
+        /** Simulate response again */
+        runBlocking {
+            val querySnapshot =
+                db.collection(REQUESTS_COLLECTION).whereEqualTo("title", "Edited").get().await()
+
+            val post = postRepo.getPost(PostType.REQUEST, querySnapshot.documents[0].id)
+
+            val postReply =
+                PostReply(
+                    postId = post.uid,
+                    ownerId = "RESPONDER_UID",
+                    creation = Timestamp.now(),
+                    message = "Hi, I can help you with that!",
+                    postType = PostType.REQUEST,
+                    replyStatus = ReplyStatus.PROPOSED
+                )
+
+            val responsePost = (post as Request).copy(postReplies = post.postReplies + postReply)
+
+            /** Inject the reply directly into firestore */
+            postRepo.editPost(responsePost.uid, responsePost)
+
+            /** Manage chat creation */
+            chatRepo.createChat(listOf("RESPONDER_UID", post.ownerId), post.uid, post.type)
+        }
+
+        /** Wait for the reply to show up */
+        composeTestRule.waitUntil(30_000) {
+            try {
+                composeTestRule.onNodeWithText("E2EResponder").assertExists()
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        composeTestRule.waitForIdle()
+
+        /** Go back to profile screen */
+        composeTestRule.onNodeWithTag(NavigationTestTags.PROFILE_TAB).performClick()
+        /** Wait for the profile screen to load */
+        composeTestRule.waitUntil(10_000) {
+            try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertExists()
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        composeTestRule.waitForIdle()
+
+        /** Go to my post screen */
+        composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
+        /** Wait for the my posts screen to load */
+        composeTestRule.waitUntil(30_000) {
+            try {
+                composeTestRule.onNodeWithTag(PersonalPostsScreenTags.SCREEN).assertExists()
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        composeTestRule.waitForIdle()
+
+        /** Delete the created post */
+        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.DELETE_BUTTON).performClick()
+
+        /** Check that the post is deleted from firestore */
+        composeTestRule.waitUntil(10_000) {
+            runBlocking {
+                val querySnapshot =
+                    db.collection(REQUESTS_COLLECTION).whereEqualTo("title", "Edited").get().await()
+
+                querySnapshot.documents.isEmpty()
             }
         }
     }
