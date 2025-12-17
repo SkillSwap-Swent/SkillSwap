@@ -247,7 +247,7 @@ private fun SubmitCreateRequestButton(
     // Show error if submission failed
     if (uiState.submitError != null) {
         Text(
-            text = uiState.submitError!!,
+            text = uiState.submitError,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 8.dp).testTag(RequestScreenTags.ERROR_MESSAGE)
