@@ -536,7 +536,6 @@ class End2EndM3 {
         }
 
         // Ensure profile screen is ready before navigating
-        // Match t0 pattern: check if profile title exists, then click tab directly
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             composeTestRule
@@ -545,8 +544,17 @@ class End2EndM3 {
                 .isNotEmpty()
         }
 
+        // Wait for FEED_TAB to be displayed before clicking
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+
         // Navigate to feed and accept the request (this creates a reply)
-        // Match t0 pattern: direct click after profile screen is ready
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -648,7 +656,6 @@ class End2EndM3 {
         signInProgrammaticallyToApp(user1Email, user1Password)
 
         // Ensure profile screen is ready before navigating
-        // Match t0 pattern: check if profile title exists, then click tab directly
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
             composeTestRule
@@ -657,7 +664,17 @@ class End2EndM3 {
                 .isNotEmpty()
         }
 
-        // Navigate to chat list - match t0 pattern: direct click after profile screen is ready
+        // Wait for CHAT_TAB to be displayed before clicking
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        // Navigate to chat list
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
