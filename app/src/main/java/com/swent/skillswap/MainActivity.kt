@@ -49,6 +49,7 @@ import com.swent.skillswap.model.feed.RecommendationEngineFactory
 import com.swent.skillswap.model.feed.ThumbnailRepository
 import com.swent.skillswap.model.images.PictureRepository
 import com.swent.skillswap.model.notification.NotificationType
+import com.swent.skillswap.model.post.Post
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostType
 import com.swent.skillswap.model.user.UserRepoFirestore
@@ -331,13 +332,7 @@ fun SkillSwapApp(
                         onGoBack = { navigationActions.goBack() },
                         onEditPost = { post ->
                             // Navigate to edit screen based on post type
-                            if (post.type == PostType.REQUEST) {
-                                if (post.uid.isNotBlank()) {
-                                    navController.navigate(Screen.EditRequest.createRoute(post.uid))
-                                }
-                            } else {
-                                // TODO: Add navigation to edit offer screen when available
-                            }
+                            navigateToEditPost(post, navController)
                         }
                     )
                 }
@@ -366,29 +361,7 @@ fun SkillSwapApp(
 
             navigation(startDestination = Screen.Feed.route, route = Screen.Feed.name) {
                 composable(Screen.Feed.route) {
-                    if (controller == null) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    } else {
-                        val navigation = FeedScreenNavigation { userId ->
-                            navController.navigate(Screen.OtherUser.createRoute(userId))
-                        }
-
-                        val factory =
-                            remember(controller) {
-                                FeedScreenViewModelFactory(
-                                    navigation = navigation,
-                                    controller = controller!!,
-                                    notificationViewModel = notificationViewModel
-                                )
-                            }
-                        val vm: FeedScreenViewModel = viewModel(factory = factory)
-                        FeedScreen(vm = vm)
-                    }
+                    FeedContent(controller, navController, notificationViewModel)
                 }
                 composable(
                     Screen.OtherUser.route,
@@ -407,35 +380,7 @@ fun SkillSwapApp(
                 }
             }
 
-            composable(Screen.Chat.route) {
-                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                if (currentUserId == null) {
-                    Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
-                    return@composable
-                }
-                val postRepository = PostFirestoreRepository(Firebase.firestore)
-                val factory =
-                    ChatListViewModelFactory(
-                        chatRepository =
-                            ChatRepositoryFirestore(Firebase.firestore, postRepository),
-                        userRepository = UserRepoFirestore(Firebase.firestore),
-                        postRepository = postRepository,
-                        notificationViewModel = notificationViewModel
-                    )
-                val vm: ChatListViewModel = viewModel(factory = factory)
-                ChatListScreen(
-                    viewModel = vm,
-                    currentUserId = currentUserId,
-                    onChatClick = { chatId ->
-                        navController.navigate(Screen.ChatScreen.createRoute(chatId))
-                        notificationViewModel.markChatNotificationsAsRead(chatId)
-                    },
-                    onAvatarClick = { userId ->
-                        navController.navigate(Screen.OtherUser.createRoute(userId))
-                    },
-                    onNotificationClick = { navController.navigate(Screen.NotificationList.route) }
-                )
-            }
+            composable(Screen.Chat.route) { ChatContent(notificationViewModel, navController) }
 
             composable(
                 route = Screen.ChatScreen.route,
@@ -463,46 +408,10 @@ fun SkillSwapApp(
             }
 
             composable(Screen.NotificationList.route) {
-                NotificationScreen(
-                    viewModel = notificationViewModel,
-                    onGoBack = { navigationActions.goBack() },
-                    onNotificationClick = { notification ->
-                        when (notification.type) {
-                            NotificationType.MESSAGE -> {
-                                // Navigate to chat screen if relatedId (chatId) is available
-                                notification.relatedId?.let { chatId ->
-                                    navController.navigate(Screen.ChatScreen.createRoute(chatId))
-                                }
-                            }
-                            NotificationType.POST_REPLY,
-                            NotificationType.POST_ACCEPTED,
-                            NotificationType.POST_REJECTED,
-                            NotificationType.NEW_MATCHING_POST -> {
-                                // Navigate to feed for post-related notifications
-                                // TODO: Could navigate to specific post detail screen if available
-                                navigationActions.navigateTo(Screen.Feed)
-                            }
-                        }
-                    }
-                )
+                NofiticationScreenContent(notificationViewModel, navigationActions, navController)
             }
 
-            composable(Screen.AddRequest.route) {
-                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                if (currentUserId == null) {
-                    Log.d("MainActivity", "AddPost screen skipped: currentUserId is null")
-                    return@composable
-                }
-                RequestScreen(
-                    postRepository = PostFirestoreRepository(Firebase.firestore),
-                    storageRepository = PictureRepository(),
-                    currentUserId = currentUserId,
-                    uid = null,
-                    onGoBack = { navigationActions.goBack() },
-                    onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
-                    postOperation = PostOperation.ADD,
-                )
-            }
+            composable(Screen.AddRequest.route) { AddRequestContent(navigationActions) }
             composable(Screen.UnblockUser.route) {
                 UnblockUserScreen(
                     UnblockUserViewModel(UserRepoFirestore(Firebase.firestore)),
@@ -511,5 +420,118 @@ fun SkillSwapApp(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ChatContent(
+    notificationViewModel: NotificationViewModel,
+    navController: NavHostController
+) {
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    if (currentUserId == null) {
+        Log.d("MainActivity", "Chat screen skipped: currentUserId is null")
+        return
+    }
+    val postRepository = PostFirestoreRepository(Firebase.firestore)
+    val factory =
+        ChatListViewModelFactory(
+            chatRepository = ChatRepositoryFirestore(Firebase.firestore, postRepository),
+            userRepository = UserRepoFirestore(Firebase.firestore),
+            postRepository = postRepository,
+            notificationViewModel = notificationViewModel
+        )
+    val vm: ChatListViewModel = viewModel(factory = factory)
+    ChatListScreen(
+        viewModel = vm,
+        currentUserId = currentUserId,
+        onChatClick = { chatId ->
+            navController.navigate(Screen.ChatScreen.createRoute(chatId))
+            notificationViewModel.markChatNotificationsAsRead(chatId)
+        },
+        onAvatarClick = { userId -> navController.navigate(Screen.OtherUser.createRoute(userId)) },
+        onNotificationClick = { navController.navigate(Screen.NotificationList.route) }
+    )
+}
+
+@Composable
+private fun AddRequestContent(navigationActions: NavigationActions) {
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    if (currentUserId == null) {
+        Log.d("MainActivity", "AddPost screen skipped: currentUserId is null")
+        return
+    }
+    RequestScreen(
+        postRepository = PostFirestoreRepository(Firebase.firestore),
+        storageRepository = PictureRepository(),
+        currentUserId = currentUserId,
+        uid = null,
+        onGoBack = { navigationActions.goBack() },
+        onPostCreated = { navigationActions.navigateTo(Screen.Profile) },
+        postOperation = PostOperation.ADD,
+    )
+}
+
+@Composable
+private fun NofiticationScreenContent(
+    notificationViewModel: NotificationViewModel,
+    navigationActions: NavigationActions,
+    navController: NavHostController
+) {
+    NotificationScreen(
+        viewModel = notificationViewModel,
+        onGoBack = { navigationActions.goBack() },
+        onNotificationClick = { notification ->
+            when (notification.type) {
+                NotificationType.MESSAGE -> {
+                    // Navigate to chat screen if relatedId (chatId) is available
+                    notification.relatedId?.let { chatId ->
+                        navController.navigate(Screen.ChatScreen.createRoute(chatId))
+                    }
+                }
+                NotificationType.POST_REPLY,
+                NotificationType.POST_ACCEPTED,
+                NotificationType.POST_REJECTED,
+                NotificationType.NEW_MATCHING_POST -> {
+                    // Navigate to feed for post-related notifications
+                    // TODO: Could navigate to specific post detail screen if available
+                    navigationActions.navigateTo(Screen.Feed)
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun FeedContent(
+    controller: FeedController?,
+    navController: NavHostController,
+    notificationViewModel: NotificationViewModel
+) {
+    if (controller == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        val navigation = FeedScreenNavigation { userId ->
+            navController.navigate(Screen.OtherUser.createRoute(userId))
+        }
+
+        val factory =
+            remember(controller) {
+                FeedScreenViewModelFactory(
+                    navigation = navigation,
+                    controller = controller!!,
+                    notificationViewModel = notificationViewModel
+                )
+            }
+        val vm: FeedScreenViewModel = viewModel(factory = factory)
+        FeedScreen(vm = vm)
+    }
+}
+
+private fun navigateToEditPost(post: Post, navController: NavHostController) {
+    if (post.uid.isNotBlank()) {
+        navController.navigate(Screen.EditRequest.createRoute(post.uid))
     }
 }
