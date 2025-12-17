@@ -546,7 +546,7 @@ class End2EndM3 {
                     .assertIsDisplayed()
                 composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
                 true
-            } catch (_: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
         }
@@ -664,7 +664,7 @@ class End2EndM3 {
                     .assertIsDisplayed()
                 composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
                 true
-            } catch (_: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
         }
