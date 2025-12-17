@@ -129,29 +129,26 @@ class End2EndM3RequestInteractionFLow {
 
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
-A    /**
-     * HELPER FUNCTION : Add a response for a post
-     */
+    /** HELPER FUNCTION : Add a response for a post */
     private suspend fun addReplyToPost(
         postTitle: String,
         responderId: String = RESPONDER_UID,
         message: String = "Hi, I can help you with that!"
     ) {
-        val querySnapshot = db.collection(REQUESTS_COLLECTION)
-            .whereEqualTo("title", postTitle)
-            .get()
-            .await()
+        val querySnapshot =
+            db.collection(REQUESTS_COLLECTION).whereEqualTo("title", postTitle).get().await()
 
         val post = postRepo.getPost(PostType.REQUEST, querySnapshot.documents[0].id)
 
-        val postReply = PostReply(
-            postId = post.uid,
-            ownerId = responderId,
-            creation = Timestamp.now(),
-            message = message,
-            postType = PostType.REQUEST,
-            replyStatus = ReplyStatus.PROPOSED
-        )
+        val postReply =
+            PostReply(
+                postId = post.uid,
+                ownerId = responderId,
+                creation = Timestamp.now(),
+                message = message,
+                postType = PostType.REQUEST,
+                replyStatus = ReplyStatus.PROPOSED
+            )
 
         val responsePost = (post as Request).copy(postReplies = post.postReplies + postReply)
         postRepo.editPost(responsePost.uid, responsePost)
@@ -257,12 +254,10 @@ A    /**
         composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
 
         /** Add a response to the created post in firestore */
-        runBlocking {
-            addReplyToPost("TitleForE2E")
-        }
+        runBlocking { addReplyToPost("TitleForE2E") }
 
         /** Wait for the reply to show up */
-        composeTestRule.waitUntil(30_001) {
+        composeTestRule.waitUntil(30_000) {
             try {
                 composeTestRule.onNodeWithText("E2EResponder").assertExists()
                 true
@@ -290,7 +285,7 @@ A    /**
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
 
         /** Wait for the my posts screen to load */
-        composeTestRule.waitUntil(30_002) {
+        composeTestRule.waitUntil(30_000) {
             try {
                 composeTestRule.onNodeWithTag(PersonalPostsScreenTags.SCREEN).assertExists()
                 true
@@ -369,12 +364,10 @@ A    /**
         }
 
         /** Simulate response again */
-        runBlocking {
-            addReplyToPost("Edited")
-        }
+        runBlocking { addReplyToPost("Edited") }
 
         /** Wait for the reply to show up */
-        composeTestRule.waitUntil(30_003) {
+        composeTestRule.waitUntil(30_000) {
             try {
                 composeTestRule.onNodeWithText("E2EResponder").assertExists()
                 true
@@ -402,7 +395,7 @@ A    /**
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
 
         /** Wait for the my posts screen to load */
-        composeTestRule.waitUntil(30_004) {
+        composeTestRule.waitUntil(30_000) {
             try {
                 composeTestRule.onNodeWithTag(PersonalPostsScreenTags.SCREEN).assertExists()
                 true
