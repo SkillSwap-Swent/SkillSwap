@@ -153,8 +153,8 @@ class End2EndM3 {
 
     /** Helper function to create an account via UI */
     private fun createAccountViaUI(email: String, username: String, password: String) {
-        // Wait for sign in screen
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        // Wait for sign in screen with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
                 true
@@ -164,17 +164,31 @@ class End2EndM3 {
         }
 
         // Navigate to create account
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            try {
+                composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertExists()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performScrollTo()
         composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).assertIsDisplayed()
         composeTestRule.onNodeWithTag(SignInTags.CREATE_ACCOUNT_TEXT).performClick()
         composeTestRule.waitForIdle()
 
         // Username screen
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(CreateAccountTags.USERNAME_FIELD)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
         composeTestRule.onNodeWithTag(CreateAccountTags.USERNAME_FIELD).performTextInput(username)
         composeTestRule.waitForIdle()
@@ -182,11 +196,16 @@ class End2EndM3 {
         composeTestRule.waitForIdle()
 
         // Email screen
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.EMAIL_FIELD)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(CreateAccountTags.EMAIL_FIELD)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
         composeTestRule.onNodeWithTag(CreateAccountTags.EMAIL_FIELD).performTextInput(email)
         composeTestRule.waitForIdle()
@@ -194,11 +213,16 @@ class End2EndM3 {
         composeTestRule.waitForIdle()
 
         // Password screen
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.PASSWORD_FIELD)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(CreateAccountTags.PASSWORD_FIELD)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
         composeTestRule.onNodeWithTag(CreateAccountTags.PASSWORD_FIELD).performTextInput(password)
         composeTestRule.waitForIdle()
@@ -211,23 +235,33 @@ class End2EndM3 {
 
         // Skills screen - select at least one skill
         val skillTag = CreateAccountTags.SKILL_CHIP_PREFIX + "CALCULUS"
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            composeTestRule
-                .onAllNodesWithTag(CreateAccountTags.SKILLS_FLOW)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(CreateAccountTags.SKILLS_FLOW)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
         composeTestRule.onNodeWithTag(skillTag).performScrollTo()
         composeTestRule.onNodeWithTag(skillTag).performClick()
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
-        // Wait for profile screen
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        // Wait for profile screen with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
     }
 
@@ -255,8 +289,8 @@ class End2EndM3 {
     private fun signOut() {
         auth.signOut()
         composeTestRule.waitForIdle()
-        // Wait for sign in screen
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        // Wait for sign in screen with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(SignInTags.LOGO).assertIsDisplayed()
                 true
@@ -277,12 +311,17 @@ class End2EndM3 {
         }
         composeTestRule.waitForIdle()
 
-        // Wait for profile screen to appear after sign in
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        // Wait for profile screen to appear after sign in with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
     }
 
@@ -348,11 +387,16 @@ class End2EndM3 {
         composeTestRule.onNodeWithTag(NavigationTestTags.POSTS_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(10_000) {
-            composeTestRule
-                .onAllNodesWithTag(RequestScreenTags.TITLE_INPUT)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(RequestScreenTags.TITLE_INPUT)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
 
         // Fill request form
@@ -371,22 +415,32 @@ class End2EndM3 {
         composeTestRule.onNodeWithTag(RequestScreenTags.TAGS_INPUT).performTextInput("physics")
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule
-                .onAllNodesWithTag("${RequestScreenTags.TAG_SUGGESTION}_PHYSICS_MECHANICS")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag("${RequestScreenTags.TAG_SUGGESTION}_PHYSICS_MECHANICS")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
         composeTestRule
             .onNodeWithTag("${RequestScreenTags.TAG_SUGGESTION}_PHYSICS_MECHANICS")
             .performClick()
         composeTestRule.waitForIdle()
 
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule
-                .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag("${RequestScreenTags.TAG_CHIP}_PHYSICS_MECHANICS")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
 
         // Submit request
@@ -397,16 +451,21 @@ class End2EndM3 {
         composeTestRule.onNodeWithTag(RequestScreenTags.CREATE_BUTTON).performClick()
         composeTestRule.waitForIdle()
 
-        // Wait for navigation back to profile/feed
-        composeTestRule.waitUntil(10_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty() ||
+        // Wait for navigation back to profile/feed with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
                 composeTestRule
-                    .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
+                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                     .fetchSemanticsNodes()
-                    .isNotEmpty()
+                    .isNotEmpty() ||
+                    composeTestRule
+                        .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
 
         // Get the created request ID from Firestore
@@ -445,7 +504,7 @@ class End2EndM3 {
         assert(user2Id.isNotEmpty()) { "User2 ID should not be empty" }
 
         // Navigate to feed and accept the request (this creates a reply)
-        composeTestRule.waitUntil(10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertExists()
                 true
@@ -458,7 +517,12 @@ class End2EndM3 {
 
         // Wait for feed to load - just wait for navigation, don't check for specific elements
         // since the feed might be empty or loading
-        Thread.sleep(2000)
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            composeTestRule
+                .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
 
         // Accept the post (swipe right or click accept button)
         // This will create a PostReply and a chat
@@ -539,12 +603,20 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Navigate to chat list
+        // Navigate to chat list - wait for tab to be available first
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertExists()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // Wait for chat list to load
-        composeTestRule.waitUntil(20_000) {
+        // Wait for chat list to load with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule
                     .onAllNodesWithTag(ChatListTestTags.SCREEN)
@@ -556,8 +628,8 @@ class End2EndM3 {
             }
         }
 
-        // Navigate to "To Approve" section to see pending chats
-        composeTestRule.waitUntil(10_000) {
+        // Navigate to "To Approve" section to see pending chats with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).assertExists()
                 true
@@ -568,8 +640,8 @@ class End2EndM3 {
         composeTestRule.onNodeWithTag(ChatListTestTags.REPLIES_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // Wait for pending chats to appear
-        composeTestRule.waitUntil(20_000) {
+        // Wait for pending chats to appear with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule
                     .onAllNodesWithTag(ChatListTestTags.POSTS_LIST)
@@ -582,8 +654,8 @@ class End2EndM3 {
         }
 
         // Accept the first chat (user2's reply)
-        // Find and click the accept button
-        composeTestRule.waitUntil(10_000) {
+        // Find and click the accept button with longer timeout for CI
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
                 composeTestRule
                     .onAllNodesWithTag(ChatListTestTags.ACCEPT_CHAT)
