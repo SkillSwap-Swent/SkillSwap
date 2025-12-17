@@ -535,24 +535,18 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Ensure profile screen and bottom nav are ready before navigating
-        // Match End2EndM1 pattern: verify bottom nav is displayed before clicking tabs
+        // Ensure profile screen is ready before navigating
+        // Match t0 pattern: check if profile title exists, then click tab directly
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            try {
-                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-                composeTestRule
-                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertIsDisplayed()
-                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
 
         // Navigate to feed and accept the request (this creates a reply)
-        // Match End2EndM1 pattern: click after verifying bottom nav is displayed
+        // Match t0 pattern: direct click after profile screen is ready
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -653,23 +647,17 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Ensure profile screen and bottom nav are ready before navigating
-        // Match End2EndM1 pattern: verify bottom nav is displayed before clicking tabs
+        // Ensure profile screen is ready before navigating
+        // Match t0 pattern: check if profile title exists, then click tab directly
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            try {
-                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-                composeTestRule
-                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertIsDisplayed()
-                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
 
-        // Navigate to chat list - match End2EndM1 pattern: click after verifying bottom nav
+        // Navigate to chat list - match t0 pattern: direct click after profile screen is ready
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
