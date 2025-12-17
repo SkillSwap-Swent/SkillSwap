@@ -535,24 +535,22 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Ensure profile screen is ready before navigating
+        // Ensure profile screen and bottom nav are ready before navigating
+        // Match End2EndM1 pattern: verify bottom nav elements are displayed
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-
-        // Wait for FEED_TAB to be displayed before clicking
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertIsDisplayed()
                 composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
                 true
             } catch (_: Exception) {
                 false
             }
         }
+        composeTestRule.waitForIdle()
 
         // Navigate to feed and accept the request (this creates a reply)
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
@@ -655,24 +653,22 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Ensure profile screen is ready before navigating
+        // Ensure profile screen and bottom nav are ready before navigating
+        // Match End2EndM1 pattern: verify bottom nav elements are displayed
         composeTestRule.waitForIdle()
         composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-
-        // Wait for CHAT_TAB to be displayed before clicking
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertIsDisplayed()
                 composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
                 true
             } catch (_: Exception) {
                 false
             }
         }
+        composeTestRule.waitForIdle()
 
         // Navigate to chat list
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
