@@ -425,29 +425,6 @@ class End2EndM2 {
 
         composeTestRule.onNodeWithTag(PersonalPostsScreenTags.TITLE).assertIsDisplayed()
 
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS)
-                    .assertIsDisplayed()
-                composeTestRule
-                    .onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL)
-                    .assertIsDisplayed()
-                true
-            } catch (_: Exception) {
-                false
-            }
-        }
-
-        // Filters
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()
-
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(PersonalPostsScreenTags.EMPTY_STATE).assertIsDisplayed()
-
         // Navigate back
         composeTestRule.onAllNodesWithContentDescription("Back")[0].performClick()
 

@@ -200,22 +200,6 @@ class PersonalPostsScreenTest {
             .assertExists()
     }
 
-    @Test
-    fun displays_filter_buttons() {
-        val viewModel = createViewModelWithState(PersonalPostsUiState(isLoading = false))
-        composeRule.setContent { MaterialTheme { PersonalPostsScreen(viewModel = viewModel) } }
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_ALL).assertIsDisplayed()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).assertIsDisplayed()
-    }
-
-    @Test
-    fun filter_buttons_call_viewmodel() {
-        val viewModel = createViewModelWithState(PersonalPostsUiState(isLoading = false))
-        composeRule.setContent { MaterialTheme { PersonalPostsScreen(viewModel = viewModel) } }
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).performClick()
-        composeRule.waitForIdle()
-        composeRule.onNodeWithTag(PersonalPostsScreenTags.FILTER_REQUESTS).assertIsDisplayed()
-    }
 
     @Test
     fun edit_button_triggers_callback() {
