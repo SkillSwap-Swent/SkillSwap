@@ -26,6 +26,7 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
@@ -54,7 +55,7 @@ class End2EndM3RequestInteractionFLow {
     lateinit var auth: FirebaseAuth
     lateinit var storage: com.google.firebase.storage.FirebaseStorage
     lateinit var postRepo: PostFirestoreRepository
-    lateinit var chatRepo: com.swent.skillswap.model.chat.ChatRepositoryFirestore
+    lateinit var chatRepo: ChatRepositoryFirestore
     lateinit var userRepo: UserRepoFirestore
 
     val testEmail = "e2e@test.com"
@@ -108,8 +109,8 @@ class End2EndM3RequestInteractionFLow {
         auth = FirebaseEmulator.auth
         storage = FirebaseEmulator.storage
         postRepo = PostFirestoreRepository(db)
-        chatRepo = com.swent.skillswap.model.chat.ChatRepositoryFirestore(db, postRepo)
-        userRepo = com.swent.skillswap.model.user.UserRepoFirestore(db)
+        chatRepo = ChatRepositoryFirestore(db, postRepo)
+        userRepo = UserRepoFirestore(db)
 
         runBlocking {
             try {
@@ -306,6 +307,7 @@ class End2EndM3RequestInteractionFLow {
         composeTestRule.waitForIdle()
 
         /** Go to my post screen */
+        composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
 
         /** Wait for the my posts screen to load */
@@ -438,7 +440,9 @@ class End2EndM3RequestInteractionFLow {
         composeTestRule.waitForIdle()
 
         /** Go to my post screen */
+        composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performScrollTo()
         composeTestRule.onNodeWithTag(ProfileTestTags.MY_POSTS_BUTTON).performClick()
+
         /** Wait for the my posts screen to load */
         composeTestRule.waitUntil(30_004) {
             try {
