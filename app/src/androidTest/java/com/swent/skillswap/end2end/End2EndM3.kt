@@ -135,8 +135,9 @@ class End2EndM3 {
         db = FirebaseEmulator.firestore
         auth = FirebaseEmulator.auth
         // Create new repository instances (they just wrap the same db/auth instances)
+        // Note: ChatRepositoryFirestore requires postRepository as a parameter
         postRepository = PostFirestoreRepository(db)
-        chatRepository = ChatRepositoryFirestore(db)
+        chatRepository = ChatRepositoryFirestore(db, postRepository)
         notificationRepository = NotificationRepositoryFirestore(db)
     }
 
