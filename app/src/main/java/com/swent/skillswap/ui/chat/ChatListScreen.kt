@@ -287,7 +287,10 @@ fun ChatConversationItem(
                             text = {
                                 Text("Block User", color = MaterialTheme.colorScheme.onSurface)
                             },
-                            onClick = { showMenu = false },
+                            onClick = {
+                                viewModel.blockUser(otherUser)
+                                showMenu = false
+                            },
                             modifier = Modifier.testTag(BLOCK_BUTTON)
                         )
                     }
