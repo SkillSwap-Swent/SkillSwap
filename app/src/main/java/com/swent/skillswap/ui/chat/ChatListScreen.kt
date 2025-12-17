@@ -456,9 +456,7 @@ private fun RatingDialog(show: Boolean, onCancel: () -> Unit, onSubmit: (Int) ->
                                 val isSelected = rating <= selectedRating
                                 IconButton(onClick = { selectedRating = rating }) {
                                     Icon(
-                                        imageVector =
-                                            if (isSelected) Icons.Filled.Star
-                                            else Icons.Outlined.Star,
+                                        imageVector = starIcon(isSelected),
                                         contentDescription = "rating stars",
                                         tint =
                                             if (isSelected) MaterialTheme.colorScheme.primary
@@ -481,3 +479,6 @@ private fun RatingDialog(show: Boolean, onCancel: () -> Unit, onSubmit: (Int) ->
         )
     }
 }
+
+private fun starIcon(isSelected: Boolean) =
+    if (isSelected) Icons.Filled.Star else Icons.Outlined.Star
