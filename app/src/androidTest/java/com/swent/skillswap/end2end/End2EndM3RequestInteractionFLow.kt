@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.swent.skillswap.MainActivity
 import com.swent.skillswap.firebase.CloudReferences.values
 import com.swent.skillswap.firebase.FirestorePaths.REQUESTS_COLLECTION
+import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.model.post.PostFirestoreRepository
 import com.swent.skillswap.model.post.PostReply
 import com.swent.skillswap.model.post.PostType
@@ -26,7 +27,6 @@ import com.swent.skillswap.model.tags.SkillTag
 import com.swent.skillswap.model.user.Skill
 import com.swent.skillswap.model.user.User
 import com.swent.skillswap.model.user.UserRepoFirestore
-import com.swent.skillswap.model.chat.ChatRepositoryFirestore
 import com.swent.skillswap.ui.auth.SignInTags
 import com.swent.skillswap.ui.chat.ChatListTestTags
 import com.swent.skillswap.ui.navigation.NavigationTestTags
