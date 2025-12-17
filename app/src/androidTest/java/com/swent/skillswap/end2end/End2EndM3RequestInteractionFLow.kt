@@ -129,6 +129,35 @@ class End2EndM3RequestInteractionFLow {
 
     @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
+A    /**
+     * HELPER FUNCTION : Add a response for a post
+     */
+    private suspend fun addReplyToPost(
+        postTitle: String,
+        responderId: String = RESPONDER_UID,
+        message: String = "Hi, I can help you with that!"
+    ) {
+        val querySnapshot = db.collection(REQUESTS_COLLECTION)
+            .whereEqualTo("title", postTitle)
+            .get()
+            .await()
+
+        val post = postRepo.getPost(PostType.REQUEST, querySnapshot.documents[0].id)
+
+        val postReply = PostReply(
+            postId = post.uid,
+            ownerId = responderId,
+            creation = Timestamp.now(),
+            message = message,
+            postType = PostType.REQUEST,
+            replyStatus = ReplyStatus.PROPOSED
+        )
+
+        val responsePost = (post as Request).copy(postReplies = post.postReplies + postReply)
+        postRepo.editPost(responsePost.uid, responsePost)
+        chatRepo.createChat(listOf(responderId, post.ownerId), post.uid, post.type)
+    }
+
     @Test
     fun end2EndM3RequestInteractionFLow() {
         /** Wait for initial load of login screen */
@@ -229,31 +258,7 @@ class End2EndM3RequestInteractionFLow {
 
         /** Add a response to the created post in firestore */
         runBlocking {
-            val querySnapshot =
-                db.collection(REQUESTS_COLLECTION)
-                    .whereEqualTo("title", "TitleForE2E")
-                    .get()
-                    .await()
-
-            val post = postRepo.getPost(PostType.REQUEST, querySnapshot.documents[0].id)
-
-            val postReply =
-                PostReply(
-                    postId = post.uid,
-                    ownerId = "RESPONDER_UID",
-                    creation = Timestamp.now(),
-                    message = "Hi, I can help you with that!",
-                    postType = PostType.REQUEST,
-                    replyStatus = ReplyStatus.PROPOSED
-                )
-
-            val responsePost = (post as Request).copy(postReplies = post.postReplies + postReply)
-
-            /** Inject the reply directly into firestore */
-            postRepo.editPost(responsePost.uid, responsePost)
-
-            /** Manage chat creation */
-            chatRepo.createChat(listOf("RESPONDER_UID", post.ownerId), post.uid, post.type)
+            addReplyToPost("TitleForE2E")
         }
 
         /** Wait for the reply to show up */
@@ -365,28 +370,7 @@ class End2EndM3RequestInteractionFLow {
 
         /** Simulate response again */
         runBlocking {
-            val querySnapshot =
-                db.collection(REQUESTS_COLLECTION).whereEqualTo("title", "Edited").get().await()
-
-            val post = postRepo.getPost(PostType.REQUEST, querySnapshot.documents[0].id)
-
-            val postReply =
-                PostReply(
-                    postId = post.uid,
-                    ownerId = "RESPONDER_UID",
-                    creation = Timestamp.now(),
-                    message = "Hi, I can help you with that!",
-                    postType = PostType.REQUEST,
-                    replyStatus = ReplyStatus.PROPOSED
-                )
-
-            val responsePost = (post as Request).copy(postReplies = post.postReplies + postReply)
-
-            /** Inject the reply directly into firestore */
-            postRepo.editPost(responsePost.uid, responsePost)
-
-            /** Manage chat creation */
-            chatRepo.createChat(listOf("RESPONDER_UID", post.ownerId), post.uid, post.type)
+            addReplyToPost("Edited")
         }
 
         /** Wait for the reply to show up */
