@@ -535,15 +535,17 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Navigate to feed and accept the request (this creates a reply)
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertExists()
-                true
-            } catch (_: Exception) {
-                false
-            }
+        // Ensure profile screen is ready before navigating (matching t0 pattern)
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
+
+        // Navigate to feed and accept the request (this creates a reply)
+        // Match End2EndM1 pattern: direct click after profile screen is ready
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -644,15 +646,16 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Navigate to chat list - wait for tab to be available first
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertExists()
-                true
-            } catch (_: Exception) {
-                false
-            }
+        // Ensure profile screen is ready before navigating (matching t0 pattern)
+        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
         }
+
+        // Navigate to chat list - match End2EndM1 pattern: direct click after profile ready
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
