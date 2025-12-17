@@ -280,64 +280,29 @@ class End2EndM3RCRFlow {
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
-        // Robust wait for offer card or show no-offer with refresh attempts
-        var feedLoaded = false
-        var attempts = 0
-        while (!feedLoaded && attempts < 3) {
-            // Use waitUntil instead of runOnIdle to avoid nesting UI-sync calls
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
-                val hasCard =
+        // Wait up to 30s for at least one feed card to appear
+        val cardAppeared =
+            try {
+                composeTestRule.waitUntil(timeoutMillis = 30_000) {
                     composeTestRule
                         .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                         .fetchSemanticsNodes()
                         .isNotEmpty()
-                val hasNoOffer =
-                    composeTestRule
-                        .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
-                        .fetchSemanticsNodes()
-                        .isNotEmpty()
-                hasCard || hasNoOffer
-            }
-            val hasCard =
-                composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
-            val hasNoOffer =
-                composeTestRule
-                    .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
-            feedLoaded = hasCard || hasNoOffer
-
-            if (!feedLoaded) {
-                Thread.sleep(500)
-            }
-            // If no offer, refresh and wait
-            if (hasNoOffer) {
-                composeTestRule.onNodeWithTag(FeedScreenTestTags.REFRESH_BUTTON).performClick()
-                composeTestRule.waitForIdle()
-                composeTestRule.waitUntil(timeoutMillis = 20_000) {
-                    composeTestRule
-                        .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
-                        .fetchSemanticsNodes()
-                        .isNotEmpty() ||
-                        composeTestRule
-                            .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
-                            .fetchSemanticsNodes()
-                            .isNotEmpty()
                 }
+                true
+            } catch (_: AssertionError) {
+                false
+            } catch (_: IllegalStateException) {
+                false
             }
-            attempts++
-        }
 
-        // Ensure we actually have a card to act on; fail early if still none
         val hasCardFinal =
             composeTestRule
                 .onAllNodesWithTag(FeedScreenTestTags.FEED_CARD)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
-        if (!hasCardFinal) {
+
+        if (!cardAppeared || !hasCardFinal) {
             val hasNoOfferFinal =
                 composeTestRule
                     .onAllNodesWithTag(FeedScreenTestTags.NO_OFFER_TEXT)
@@ -345,9 +310,9 @@ class End2EndM3RCRFlow {
                     .isNotEmpty()
             val msg =
                 if (hasNoOfferFinal) {
-                    "No offer available in Feed after refresh attempts"
+                    "No offer available in Feed within timeout; UI shows 'no offer'"
                 } else {
-                    "Feed did not load a card and no 'No offer' state after refresh attempts"
+                    "Expected at least one feed card for responder but none appeared within timeout"
                 }
             throw AssertionError(msg)
         }
@@ -661,6 +626,28 @@ class End2EndM3RCRFlow {
 
         // ---------- Log out via UI ----------
         signOutViaUI()
+
+        // Extra safety: verify the author's request has been written to Firestore
+        val authorEmail = "bob@mail.com"
+        val maxAttempts = 10
+        var attempt = 0
+        var found = false
+        while (attempt < maxAttempts && !found) {
+            val snapshot =
+                Tasks.await(
+                    db.collection(FirestorePaths.REQUESTS_COLLECTION)
+                        .whereEqualTo("title", createdTitle)
+                        .get()
+                )
+            found = snapshot.documents.isNotEmpty()
+            if (!found) {
+                Thread.sleep(500)
+                attempt++
+            }
+        }
+        assert(found) {
+            "Author request '$createdTitle' for $authorEmail was not found in Firestore after creation UI flow"
+        }
     }
 
     @Test
@@ -765,8 +752,5 @@ class End2EndM3RCRFlow {
                 .fetchSemanticsNodes()
         val count = maxOf(approveButtons.size, chatRows.size)
         assert(count >= 1) { "Expected at least 1 chat to approve in Replies, found ${count}" }
-
-        // Sign out to clean state
-        signOutViaUI()
     }
 }
