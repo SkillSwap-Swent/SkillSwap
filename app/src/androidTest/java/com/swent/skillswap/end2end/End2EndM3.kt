@@ -382,11 +382,17 @@ class End2EndM3 {
         // Create user1 account
         createAccountViaUI(user1Email, user1Username, user1Password)
 
-        // Get user ID after account creation - use runOnIdle like End2EndM2 to ensure
-        // UI is completely idle and auth.currentUser is definitely set
+        // Wait for auth.currentUser to be available - use runOnIdle to ensure we're on the right
+        // thread
+        // and wait with retries inside it (matching End2EndM2 pattern for Firestore operations)
         composeTestRule.runOnIdle {
+            var attempts = 0
+            while (auth.currentUser == null && attempts < 40) {
+                Thread.sleep(500)
+                attempts++
+            }
             user1Id = auth.currentUser?.uid ?: ""
-            assert(user1Id.isNotEmpty()) { "User1 ID should not be empty" }
+            assert(user1Id.isNotEmpty()) { "User1 ID should not be empty after account creation" }
         }
 
         // Create a request - wait for bottom navigation to be available first
@@ -515,10 +521,15 @@ class End2EndM3 {
         // Create user2 account
         createAccountViaUI(user2Email, user2Username, user2Password)
 
-        // Get user ID after account creation - use runOnIdle like End2EndM2
+        // Wait for auth.currentUser to be available - use runOnIdle with retries
         composeTestRule.runOnIdle {
+            var attempts = 0
+            while (auth.currentUser == null && attempts < 40) {
+                Thread.sleep(500)
+                attempts++
+            }
             user2Id = auth.currentUser?.uid ?: ""
-            assert(user2Id.isNotEmpty()) { "User2 ID should not be empty" }
+            assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
         // Navigate to feed and accept the request (this creates a reply)
@@ -585,10 +596,15 @@ class End2EndM3 {
         // Create user3 account
         createAccountViaUI(user3Email, user3Username, user3Password)
 
-        // Get user ID after account creation - use runOnIdle like End2EndM2
+        // Wait for auth.currentUser to be available - use runOnIdle with retries
         composeTestRule.runOnIdle {
+            var attempts = 0
+            while (auth.currentUser == null && attempts < 40) {
+                Thread.sleep(500)
+                attempts++
+            }
             user3Id = auth.currentUser?.uid ?: ""
-            assert(user3Id.isNotEmpty()) { "User3 ID should not be empty" }
+            assert(user3Id.isNotEmpty()) { "User3 ID should not be empty after account creation" }
         }
 
         // Create reply programmatically
