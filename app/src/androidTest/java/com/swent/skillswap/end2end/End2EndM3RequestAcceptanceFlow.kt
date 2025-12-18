@@ -250,16 +250,19 @@ class End2EndM3 {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
-        // Wait until firestore auth operation completes and Profile Screen is displayed
-        // Match End2EndM1 pattern with 60 second timeout
+        // Wait for profile screen to confirm account created (matching End2EndM3RCRFlow pattern)
         composeTestRule.waitUntil(timeoutMillis = 60_000) {
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // Wait for profile title to be displayed (matching End2EndM3RCRFlow waitForProfileScreen)
+        composeTestRule.waitUntil(timeoutMillis = 5_000) {
             try {
-                composeTestRule
-                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
                 true
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 false
             }
         }
@@ -542,25 +545,10 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Wait for profile screen to be ready (matching End2EndM3RCRFlow pattern)
-        composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        // Wait for profile title to be displayed (matching End2EndM3RCRFlow waitForProfileScreen)
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            try {
-                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-                true
-            } catch (_: Throwable) {
-                false
-            }
-        }
-
+        // Profile screen is already ready from createAccountViaUI (which calls
+        // waitForProfileScreen)
         // Navigate to feed tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -661,25 +649,10 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Wait for profile screen to be ready (matching End2EndM3RCRFlow pattern)
-        composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 40_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
-        }
-        // Wait for profile title to be displayed (matching End2EndM3RCRFlow waitForProfileScreen)
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            try {
-                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-                true
-            } catch (_: Throwable) {
-                false
-            }
-        }
-
+        // Profile screen is already ready from signInProgrammaticallyToApp (which waits for
+        // profile)
         // Navigate to chat tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
