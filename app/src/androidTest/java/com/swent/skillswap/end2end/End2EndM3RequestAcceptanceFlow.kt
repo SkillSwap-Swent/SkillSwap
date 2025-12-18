@@ -251,12 +251,21 @@ class End2EndM3 {
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
         // Wait for profile screen to confirm account created
-        // Only check existence, not display (display check can be flaky in CI)
+        // Match End2EndM3RCRFlow pattern: wait for existence THEN display
         composeTestRule.waitUntil(timeoutMillis = 60_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
+        }
+        // Second step: wait for profile title to be displayed
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                true
+            } catch (_: Throwable) {
+                false
+            }
         }
         composeTestRule.waitForIdle()
     }
@@ -316,6 +325,15 @@ class End2EndM3 {
                     .isNotEmpty()
                 true
             } catch (_: Exception) {
+                false
+            }
+        }
+        // Second step: wait for profile title to be displayed
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                true
+            } catch (_: Throwable) {
                 false
             }
         }
@@ -526,15 +544,19 @@ class End2EndM3 {
         // Create user2 account
         createAccountViaUI(user2Email, user2Username, user2Password)
 
-        // Wait for Profile Screen (matching End2EndM3RequestE2E pattern exactly)
+        // createAccountViaUI already waits for profile screen to be displayed
+        // Wait for FEED_TAB to be displayed before clicking (matching End2EndM1 pattern)
         composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+            try {
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
         }
-
-        // Navigate to Feed tab (matching End2EndM3RequestE2E: direct click after profile ready)
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -646,9 +668,19 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // signInProgrammaticallyToApp already waits for profile screen
-        // Navigate to chat tab (matching End2EndM3RCRFlow: direct click after signInViaUI)
-        composeTestRule.waitForIdle()
+        // signInProgrammaticallyToApp already waits for profile screen to be displayed
+        // Wait for CHAT_TAB to be displayed before clicking (matching End2EndM1 pattern)
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertIsDisplayed()
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
+            }
+        }
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
