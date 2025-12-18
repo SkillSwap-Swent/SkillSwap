@@ -556,47 +556,34 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Ensure profile screen is fully displayed
-        // Match t0 pattern exactly: wait for profile screen, then click tab directly
+        // Ensure profile screen is ready (match End2EndM3RCRFlow pattern: check existence, then
+        // display)
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-
-        // Navigate to Feed tab
-        // Use retry mechanism with performTouchInput as fallback (matching End2EndM3RCRFlow
-        // pattern)
-        var clicked = false
-        try {
-            composeTestRule.waitUntil(timeoutMillis = 15_000) {
-                try {
-                    composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
-                    true
-                } catch (e: AssertionError) {
-                    false
-                }
+        // Wait for tab to exist, then wait for it to be displayed
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // Wait for tab to actually be displayed before interacting
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
             }
-            composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-            clicked = true
-        } catch (e: AssertionError) {
-            // performClick failed, try performTouchInput as fallback
-        } catch (e: IllegalStateException) {
-            // Node hierarchy changed, try performTouchInput as fallback
         }
 
-        if (!clicked) {
-            // Fallback: use performTouchInput with click gesture
-            composeTestRule.waitUntil(timeoutMillis = 15_000) {
-                composeTestRule
-                    .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
-            }
-            composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performTouchInput { click() }
-        }
+        // Navigate to Feed tab using performTouchInput (after confirming it's displayed)
+        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performTouchInput { click() }
         composeTestRule.waitForIdle()
 
         // Wait for feed to load - just wait for navigation, don't check for specific elements
@@ -697,46 +684,34 @@ class End2EndM3 {
         signInProgrammaticallyToApp(user1Email, user1Password)
 
         // signInProgrammaticallyToApp already waits for profile screen to be displayed
-        // Ensure profile screen is fully displayed (matching t0 pattern)
+        // Ensure profile screen is ready (match End2EndM3RCRFlow pattern: check existence, then
+        // display)
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-
-        // Navigate to chat tab
-        // Use retry mechanism with performTouchInput as fallback (matching End2EndM3RCRFlow
-        // pattern)
-        var clicked = false
-        try {
-            composeTestRule.waitUntil(timeoutMillis = 15_000) {
-                try {
-                    composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
-                    true
-                } catch (e: AssertionError) {
-                    false
-                }
+        // Wait for tab to exist, then wait for it to be displayed
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // Wait for tab to actually be displayed before interacting
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
+                true
+            } catch (e: AssertionError) {
+                false
             }
-            composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
-            clicked = true
-        } catch (e: AssertionError) {
-            // performClick failed, try performTouchInput as fallback
-        } catch (e: IllegalStateException) {
-            // Node hierarchy changed, try performTouchInput as fallback
         }
 
-        if (!clicked) {
-            // Fallback: use performTouchInput with click gesture
-            composeTestRule.waitUntil(timeoutMillis = 15_000) {
-                composeTestRule
-                    .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty()
-            }
-            composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performTouchInput { click() }
-        }
+        // Navigate to chat tab using performTouchInput (after confirming it's displayed)
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performTouchInput { click() }
         composeTestRule.waitForIdle()
 
         // Wait for chat list to load with longer timeout for CI
