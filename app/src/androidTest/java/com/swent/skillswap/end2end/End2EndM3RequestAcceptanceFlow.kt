@@ -36,7 +36,6 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -531,7 +530,6 @@ class End2EndM3 {
         }
     }
 
-    @Ignore("Flaky navigation issue - component not displayed error persists")
     @Test
     fun t1_createUser2AndReply() {
         // Ensure requestId is loaded (reload from Firestore if needed)
@@ -558,34 +556,45 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Ensure profile screen is ready (match End2EndM3RCRFlow pattern: check existence, then
-        // display)
+        // Ensure profile screen is ready - wait for both profile title and bottom navigation menu
+        // This ensures the entire UI is fully composed before interacting with tabs
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty() &&
+                    composeTestRule
+                        .onAllNodesWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
-        // Wait for tab to exist, then wait for it to be displayed
+        // Wait for bottom navigation menu to be displayed
         composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertIsDisplayed()
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        // Wait for FEED_TAB to exist (it should exist once bottom nav is displayed)
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        // Wait for tab to actually be displayed before interacting
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
 
-        // Navigate to Feed tab using performTouchInput (after confirming it's displayed)
-        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performTouchInput { click() }
+        // Navigate to Feed tab - use performClick which works on existing nodes
+        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
         // Wait for feed to load - just wait for navigation, don't check for specific elements
@@ -673,7 +682,6 @@ class End2EndM3 {
         }
     }
 
-    @Ignore("Flaky navigation issue - component not displayed error persists")
     @Test
     fun t3_user1AcceptsReplyAndVerifiesNotifications() {
         // Ensure requestId is loaded (reload from Firestore if needed)
@@ -687,34 +695,45 @@ class End2EndM3 {
         signInProgrammaticallyToApp(user1Email, user1Password)
 
         // signInProgrammaticallyToApp already waits for profile screen to be displayed
-        // Ensure profile screen is ready (match End2EndM3RCRFlow pattern: check existence, then
-        // display)
+        // Ensure profile screen is ready - wait for both profile title and bottom navigation menu
+        // This ensures the entire UI is fully composed before interacting with tabs
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            composeTestRule
-                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            try {
+                composeTestRule
+                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                    .fetchSemanticsNodes()
+                    .isNotEmpty() &&
+                    composeTestRule
+                        .onAllNodesWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                        .fetchSemanticsNodes()
+                        .isNotEmpty()
+                true
+            } catch (_: Exception) {
+                false
+            }
         }
-        // Wait for tab to exist, then wait for it to be displayed
+        // Wait for bottom navigation menu to be displayed
         composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            try {
+                composeTestRule
+                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
+                    .assertIsDisplayed()
+                true
+            } catch (_: AssertionError) {
+                false
+            }
+        }
+        // Wait for CHAT_TAB to exist (it should exist once bottom nav is displayed)
+        composeTestRule.waitUntil(timeoutMillis = 10_000) {
             composeTestRule
                 .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
         }
-        // Wait for tab to actually be displayed before interacting
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            try {
-                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
 
-        // Navigate to chat tab using performTouchInput (after confirming it's displayed)
-        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performTouchInput { click() }
+        // Navigate to chat tab - use performClick which works on existing nodes
+        composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
         // Wait for chat list to load with longer timeout for CI
