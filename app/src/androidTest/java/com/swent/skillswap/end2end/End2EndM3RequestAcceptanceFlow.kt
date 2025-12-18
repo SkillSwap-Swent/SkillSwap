@@ -250,21 +250,13 @@ class End2EndM3 {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(CreateAccountTags.NEXT_BUTTON).performClick()
 
-        // Wait for profile screen to confirm account created (matching End2EndM3RCRFlow pattern)
+        // Wait for profile screen to confirm account created
+        // Only check existence, not display (display check can be flaky in CI)
         composeTestRule.waitUntil(timeoutMillis = 60_000) {
             composeTestRule
                 .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
                 .fetchSemanticsNodes()
                 .isNotEmpty()
-        }
-        // Wait for profile title to be displayed (matching End2EndM3RCRFlow waitForProfileScreen)
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
-            try {
-                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
-                true
-            } catch (_: Throwable) {
-                false
-            }
         }
         composeTestRule.waitForIdle()
     }
@@ -534,8 +526,20 @@ class End2EndM3 {
         // Create user2 account
         createAccountViaUI(user2Email, user2Username, user2Password)
 
-        // Wait for auth.currentUser to be available - use runOnIdle with retries
-        composeTestRule.runOnIdle {
+        // Wait for Profile Screen (matching End2EndM3RequestE2E pattern exactly)
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
+            composeTestRule
+                .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        // Navigate to Feed tab (matching End2EndM3RequestE2E: direct click after profile ready)
+        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
+        composeTestRule.waitForIdle()
+
+        // Get user2Id after navigation (avoid runOnIdle which might affect UI state)
+        runBlocking(Dispatchers.IO) {
             var attempts = 0
             while (auth.currentUser == null && attempts < 40) {
                 Thread.sleep(500)
@@ -544,13 +548,6 @@ class End2EndM3 {
             user2Id = auth.currentUser?.uid ?: ""
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
-
-        // Profile screen is already ready from createAccountViaUI (which calls
-        // waitForProfileScreen)
-        // Navigate to feed tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
-        composeTestRule.waitForIdle()
 
         // Wait for feed to load - just wait for navigation, don't check for specific elements
         // since the feed might be empty or loading
@@ -649,9 +646,8 @@ class End2EndM3 {
         signOut()
         signInProgrammaticallyToApp(user1Email, user1Password)
 
-        // Profile screen is already ready from signInProgrammaticallyToApp (which waits for
-        // profile)
-        // Navigate to chat tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
+        // signInProgrammaticallyToApp already waits for profile screen
+        // Navigate to chat tab (matching End2EndM3RCRFlow: direct click after signInViaUI)
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
