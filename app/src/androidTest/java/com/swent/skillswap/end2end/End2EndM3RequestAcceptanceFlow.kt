@@ -556,44 +556,31 @@ class End2EndM3 {
             assert(user2Id.isNotEmpty()) { "User2 ID should not be empty after account creation" }
         }
 
-        // Ensure profile screen is ready - wait for both profile title and bottom navigation menu
-        // This ensures the entire UI is fully composed before interacting with tabs
+        // Ensure profile screen is ready - match End2EndM1 pattern exactly
+        // Wait for all bottom bar elements to be displayed before clicking
+        val visibleComposableBotBar =
+            listOf(
+                NavigationTestTags.BOTTOM_NAVIGATION_MENU,
+                NavigationTestTags.PROFILE_TAB,
+                NavigationTestTags.FEED_TAB,
+                NavigationTestTags.POSTS_TAB,
+                NavigationTestTags.CHAT_TAB
+            )
+
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
-                composeTestRule
-                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty() &&
-                    composeTestRule
-                        .onAllNodesWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                        .fetchSemanticsNodes()
-                        .isNotEmpty()
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                for (testTag in visibleComposableBotBar) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
                 true
-            } catch (_: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
-        }
-        // Wait for bottom navigation menu to be displayed
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertIsDisplayed()
-                true
-            } catch (_: AssertionError) {
-                false
-            }
-        }
-        // Wait for FEED_TAB to exist (it should exist once bottom nav is displayed)
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule
-                .onAllNodesWithTag(NavigationTestTags.FEED_TAB)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
         }
 
-        // Navigate to Feed tab - use performClick which works on existing nodes
+        // Navigate to Feed Screen - match End2EndM1 pattern exactly
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -695,44 +682,31 @@ class End2EndM3 {
         signInProgrammaticallyToApp(user1Email, user1Password)
 
         // signInProgrammaticallyToApp already waits for profile screen to be displayed
-        // Ensure profile screen is ready - wait for both profile title and bottom navigation menu
-        // This ensures the entire UI is fully composed before interacting with tabs
+        // Ensure profile screen is ready - match End2EndM1 pattern exactly
+        // Wait for all bottom bar elements to be displayed before clicking
+        val visibleComposableBotBar =
+            listOf(
+                NavigationTestTags.BOTTOM_NAVIGATION_MENU,
+                NavigationTestTags.PROFILE_TAB,
+                NavigationTestTags.FEED_TAB,
+                NavigationTestTags.POSTS_TAB,
+                NavigationTestTags.CHAT_TAB
+            )
+
         composeTestRule.waitForIdle()
-        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+        composeTestRule.waitUntil(timeoutMillis = 40_000) {
             try {
-                composeTestRule
-                    .onAllNodesWithTag(ProfileTestTags.PROFILE_TITLE)
-                    .fetchSemanticsNodes()
-                    .isNotEmpty() &&
-                    composeTestRule
-                        .onAllNodesWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                        .fetchSemanticsNodes()
-                        .isNotEmpty()
+                composeTestRule.onNodeWithTag(ProfileTestTags.PROFILE_TITLE).assertIsDisplayed()
+                for (testTag in visibleComposableBotBar) {
+                    composeTestRule.onNodeWithTag(testTag).assertIsDisplayed()
+                }
                 true
-            } catch (_: Exception) {
+            } catch (e: AssertionError) {
                 false
             }
-        }
-        // Wait for bottom navigation menu to be displayed
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertIsDisplayed()
-                true
-            } catch (_: AssertionError) {
-                false
-            }
-        }
-        // Wait for CHAT_TAB to exist (it should exist once bottom nav is displayed)
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule
-                .onAllNodesWithTag(NavigationTestTags.CHAT_TAB)
-                .fetchSemanticsNodes()
-                .isNotEmpty()
         }
 
-        // Navigate to chat tab - use performClick which works on existing nodes
+        // Navigate to Chat Screen - match End2EndM1 pattern exactly
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
