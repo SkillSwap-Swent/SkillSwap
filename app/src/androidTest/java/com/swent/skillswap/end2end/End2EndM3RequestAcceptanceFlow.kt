@@ -545,18 +545,7 @@ class End2EndM3 {
         createAccountViaUI(user2Email, user2Username, user2Password)
 
         // createAccountViaUI already waits for profile screen to be displayed
-        // Wait for FEED_TAB to be displayed before clicking (matching End2EndM1 pattern)
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertIsDisplayed()
-                composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
+        // Navigate to Feed tab (matching End2EndM3RCRFlow: direct click after waitForProfileScreen)
         composeTestRule.onNodeWithTag(NavigationTestTags.FEED_TAB).performClick()
         composeTestRule.waitForIdle()
 
@@ -669,18 +658,7 @@ class End2EndM3 {
         signInProgrammaticallyToApp(user1Email, user1Password)
 
         // signInProgrammaticallyToApp already waits for profile screen to be displayed
-        // Wait for CHAT_TAB to be displayed before clicking (matching End2EndM1 pattern)
-        composeTestRule.waitUntil(timeoutMillis = 15_000) {
-            try {
-                composeTestRule
-                    .onNodeWithTag(NavigationTestTags.BOTTOM_NAVIGATION_MENU)
-                    .assertIsDisplayed()
-                composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).assertIsDisplayed()
-                true
-            } catch (e: AssertionError) {
-                false
-            }
-        }
+        // Navigate to chat tab (matching End2EndM3RCRFlow: direct click after signInViaUI)
         composeTestRule.onNodeWithTag(NavigationTestTags.CHAT_TAB).performClick()
         composeTestRule.waitForIdle()
 
